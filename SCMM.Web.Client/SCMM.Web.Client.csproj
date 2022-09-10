@@ -3,22 +3,17 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>true</ImplicitUsings>
-    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Version>0.15-alpha</Version>
-    <AssemblyVersion>0.15.0.0</AssemblyVersion>
-    <FileVersion>0.15.0.0</FileVersion>
-    <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
-  </PropertyGroup>
-  
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.26.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+    <PackageReference Include="Markdig" Version="0.30.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageReference Include="MudBlazor" Version="6.0.2" />
-    <PackageReference Include="Syncfusion.Blazor.Charts" Version="19.3.0.45" />
+    <PackageReference Include="MudBlazor" Version="6.0.15" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Syncfusion.Blazor.Charts" Version="20.2.0.46" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="20.2.0.46" />
+    <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="20.2.0.46" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,6 @@
 ﻿using AngleSharp.Common;
 using AutoMapper;
-using SCMM.Shared.Web.Extensions;
+using SCMM.Shared.API.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Item;
@@ -16,12 +16,11 @@ namespace SCMM.Web.Server.Mappers
             var config = new ConfigurationManager().AddJsonFile("appsettings.json").Build();
 
             CreateMap<SteamItemStore, StoreIdentifierDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start != null ? p.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : p.Name.ToLower()));
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.StoreId()));
 
             CreateMap<SteamItemStore, StoreDetailsDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start != null ? p.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : p.Name.ToLower()))
-                .ForMember(x => x.ItemsMosaicUrl, o => o.MapFrom(p => p.ItemsThumbnailId != null ? $"{config.GetWebsiteUrl()}/api/image/{p.ItemsThumbnailId}" : null))
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.StoreId()))
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()
@@ -49,17 +48,18 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Item.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Item.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconUrl))
+                .ForMember(x => x.TimeCreated, o => o.MapFrom(p => p.Item.Description.TimeCreated))
                 .ForMember(x => x.TimeAccepted, o => o.MapFrom(p => p.Item.Description.TimeAccepted))
                 .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyTable(p => p.Prices))
+                .ForMember(x => x.StorePriceUsd, o => o.MapFrom(p => p.Price))
                 .ForMember(x => x.TopSellerIndex, o => o.MapFrom(p => p.TopSellerIndex))
                 .ForMember(x => x.IsStillAvailableFromStore, o => o.MapFrom(p => p.Item != null ? p.Item.IsAvailable : false))
                 .ForMember(x => x.HasReturnedToStoreBefore, o => o.MapFrom(p => p.Item != null ? p.Item.HasReturnedToStore : false))
                 .ForMember(x => x.MarketPrice, o => o.MapFromUsingCurrencyExchange(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.SellOrderLowestPrice : null, p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.Currency : null))
                 .ForMember(x => x.MarketSupply, o => o.MapFrom(p => p.Item.Description.MarketItem != null ? (long?)p.Item.Description.MarketItem.SellOrderCount : null))
                 .ForMember(x => x.MarketDemand24hrs, o => o.MapFrom(p => p.Item.Description.MarketItem != null ? (long?)p.Item.Description.MarketItem.Last24hrSales : null))
-                .ForMember(x => x.SalesMinimum, o => o.MapFrom(p => p.Item.TotalSalesMin))
-                .ForMember(x => x.SalesMaximum, o => o.MapFrom(p => p.Item.TotalSalesMax))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Item.Description.LifetimeSubscriptions))
+                .ForMember(x => x.SupplyTotalEstimated, o => o.MapFrom(p => p.Item.Description.SupplyTotalEstimated))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Item.Description.SubscriptionsCurrent))
                 .ForMember(x => x.IsMarketable, o => o.MapFrom(p => p.Item.Description.IsMarketable))
                 .ForMember(x => x.MarketableRestrictionDays, o => o.MapFrom(p => p.Item.Description.MarketableRestrictionDays))
                 .ForMember(x => x.IsTradable, o => o.MapFrom(p => p.Item.Description.IsTradable))
@@ -73,7 +73,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
             CreateMap<SteamStoreItemItemStore, ItemStoreInstanceDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Store.Start != null ? p.Store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : p.Store.Name.ToLower()))
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Store.StoreId()))
                 .ForMember(x => x.Date, o => o.MapFrom(p => p.Store.Start))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Store.Name))
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyTable(p => p.Prices));

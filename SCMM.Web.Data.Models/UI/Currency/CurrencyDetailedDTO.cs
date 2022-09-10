@@ -6,8 +6,6 @@ namespace SCMM.Web.Data.Models.UI.Currency
     {
         public Guid Guid { get; set; }
 
-        public uint Id { get; set; }
-
         public decimal ExchangeRateMultiplier { get; set; }
     }
 }

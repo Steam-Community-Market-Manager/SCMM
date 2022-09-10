@@ -4,6 +4,8 @@
     {
         public string Name;
         public string Description;
+        public bool AllowMultipleValues;
         public string[] AllowedValues;
+        public int RequiredFlags;
     }
 }

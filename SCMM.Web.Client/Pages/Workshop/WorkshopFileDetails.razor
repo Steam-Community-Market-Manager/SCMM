@@ -1,0 +1,158 @@
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Client.Shared.Dialogs.Items
+@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Workshop
+@inject ILogger<WorkshopFileDetails> Logger
+@inject IDialogService Dialogs
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
+
+<MudCard Outlined="true" Class="d-flex flex-column full-height" Style="@(Item.TimeAccepted != null ? "border-color: var(--mud-palette-success-darken); border-width:3px;" : null)">
+    <MudCardContent Class="pa-0">
+        <div class="d-flex justify-space-between align-start clickable" style="@GetPreviewImageStyles(Item)" @onclick="@(() => ViewItemWorkshopPage(Item))">
+            <MudTooltip Text="@($"View more items created by {Item.CreatorName}")">
+                <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="clickable ma-2" Style="filter: drop-shadow(2px 4px 6px black);" @onclick="@(() => ShowCreatorItemsDialog(Item))" />
+            </MudTooltip>
+            @if (Item.TimeAccepted != null)
+            {
+                <MudTooltip Text="This item has been accepted in-game">
+                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Success" Class="my-2 mx-1">
+                        <i class="fas fa-fw fa-check-circle" style="font-size:2em;" />
+                    </MudText>
+                </MudTooltip>
+            }
+        </div>
+        <div class="d-flex flex-row align-start justify-center pa-2">
+            <div class="d-flex flex-column justify-center align-center text-centered">
+                <MudText Typo="MudBlazor.Typo.body1">@Item.Name</MudText>
+                @if (!String.IsNullOrEmpty(Item.ItemCollection))
+                {
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap">
+                        <i class="fas fa-fw fa-paint-roller mud-secondary-text"></i>
+                        <span>
+                            <MudLink @onclick="@(() => ShowItemCollectionDialog(Item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.ItemCollection</MudLink>
+                        </span>
+                    </MudText>
+                }
+                @if (!String.IsNullOrEmpty(Item.ItemType))
+                {
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="d-flex no-wrap">
+                        <img src="@($"/images/app/{State.AppId}/items/{Item.ItemType.ToRustItemShortName()}.png")" class="mr-1" style="width:1.5em;height:1.5em" />
+                        <span>@Item.ItemType</span>
+                    </MudText>
+                }
+                @if (Item.SubscriptionsCurrent > 0)
+                {
+                    <MudTooltip Text="Subscribers from the workshop">
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                            <i class="fas fa-fw fa-user"></i>
+                            <span>@Item.SubscriptionsCurrent.Value.ToQuantityString()</span>
+                        </MudText>
+                    </MudTooltip>
+                }
+                @if (Item.Views > 0 || Item.FavouritedCurrent > 0)
+                {
+                    <div class="d-flex flex-row justify-center align-center text-centered">
+                        @if (Item.Views > 0)
+                        {
+                            <MudTooltip Text="Views from the workshop">
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                    <i class="fas fa-fw fa-eye ml-1"></i>
+                                    <span>
+                                        <span>@Item.Views.Value.ToQuantityString()</span>
+                                    </span>
+                                </MudText>
+                            </MudTooltip>
+                        }
+                        @if (Item.FavouritedCurrent > 0)
+                        {
+                            <MudTooltip Text="Favourites from the workshop">
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                    <i class="fas fa-fw fa-heart ml-1"></i>
+                                    <span>
+                                        <span>@Item.FavouritedCurrent.Value.ToQuantityString()</span>
+                                    </span>
+                                </MudText>
+                            </MudTooltip>
+                        }
+                    </div>
+                }
+                @if (Item.VotesUp != null && Item.VotesDown != null)
+                {
+                    <MudTooltip Text="Votes from the workshop">
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                            <i class="fas fa-fw fa-thumbs-up"></i>
+                            <span>
+                                <span>@(((int?)Item.VotesUp ?? 0).ToQuantityString()) votes</span>
+                            </span>
+                            <i class="fas fa-fw fa-thumbs-down"></i>
+                            <span>
+                                <span>@(((int?)Item.VotesDown ?? 0).ToQuantityString()) votes</span>
+                            </span>
+                        </MudText>
+                    </MudTooltip>
+                }
+                @if (Item.TimeAccepted != null)
+                {
+                    <MudTooltip Text="Time Accepted">
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                            <i class="fas fa-fw fa-clock"></i>
+                            <span>@Item.TimeAccepted.Value.Date.ToShortDateString()</span>
+                        </MudText>
+                    </MudTooltip>
+                }
+                else if (Item.TimeCreated != null)
+                {
+                    <MudTooltip Text="Time Published">
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                            <i class="fas fa-fw fa-clock"></i>
+                            <span>@Item.TimeCreated.Value.Date.ToShortDateString()</span>
+                        </MudText>
+                    </MudTooltip>
+                }
+            </div>
+        </div>
+    </MudCardContent>
+</MudCard>
+
+@code {
+
+    [Parameter]
+    public WorkshopFileDTO Item { get; set; }
+
+    private string GetPreviewImageStyles(WorkshopFileDTO item)
+    {
+        return $"background-image:url(\"{Item.PreviewUrl}\"); background-size:cover; background-position:center; height:200px;";
+    }
+
+    private void ViewItemWorkshopPage(WorkshopFileDTO item)
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamWorkshopFileDetailsPageRequest()
+        {
+            Id = item.Id.ToString()
+        });
+    }
+
+    private void ShowCreatorItemsDialog(WorkshopFileDTO item)
+    {
+        Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
+        {
+            ["ListName"] = $"Items by {Item.CreatorName}",
+            ["ListUrl"] = $"api/item?creatorId={Item.CreatorId}&count=-1",
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+            ["SortDirection"] = MudBlazor.SortDirection.Descending
+        });
+    }
+    
+    private void ShowItemCollectionDialog(WorkshopFileDTO item)
+    {
+        Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
+        {
+            ["CollectionName"] = $"{Item.ItemCollection} Collection",
+            ["CollectionUrl"] = $"api/item/collection/{Item.ItemCollection}?creatorId={Item.CreatorId}"
+        });
+    }
+
+}

@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
 using SCMM.Shared.Data.Models.Json;
+using SCMM.Web.Client;
+using SCMM.Web.Client.Shared;
+using SCMM.Web.Client.Shared.Navigation;
+using SCMM.Web.Client.Shared.Storage;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 
@@ -26,12 +30,6 @@ public static class WebAssemblyHostExtensions
                 BaseAddress = new Uri(navigationManager.BaseUri)
             };
 
-            var state = sp.GetService<AppState>();
-            if (state != null)
-            {
-                state.AddHeadersTo(client);
-            }
-
             return client;
         });
 
@@ -41,17 +39,14 @@ public static class WebAssemblyHostExtensions
     public static void AddUIServices(this IServiceCollection services)
     {
         services.AddScoped<AppState>();
-        services.AddScoped<LocalStorageService>();
         services.AddScoped<ICookieManager, CookieManager>();
         services.AddScoped<ExternalNavigationManager>();
         services.AddScoped<DocumentManager>();
-        services.AddScoped<UpdateManager>();
 
         services.AddMudServices(config =>
         {
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
             config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
-            config.SnackbarConfiguration.MaximumOpacity = 90;
             config.SnackbarConfiguration.NewestOnTop = true;
             config.SnackbarConfiguration.ShowCloseIcon = true;
             config.SnackbarConfiguration.RequireInteraction = true;
@@ -61,7 +56,7 @@ public static class WebAssemblyHostExtensions
 
         services.AddSyncfusionBlazor();
         SyncfusionLicenseProvider.RegisterLicense(
-            "NTE4NzkxQDMxMzkyZTMzMmUzMFpMRGZFaVVPSnVWQmx2VzFNNFFVL2RJYU41T1IxdDEyelVxSXN5aTNQaW89"
+            "NzA5NzIyQDMyMzAyZTMyMmUzMGwxeC9TdGYwelhEQzR4eTBaaFNTU0FReGZoNTdxUXBtV1gvanVVN2JmUnc9"
         );
     }
 }

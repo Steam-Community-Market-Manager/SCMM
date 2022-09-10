@@ -1,0 +1,21 @@
+﻿@inject NavigationManager NavigationManager
+
+<div class="twitch-container rounded" @attributes="AdditionalAttributes">
+    <iframe src="https://player.twitch.tv/?video=@(VideoId)&parent=@(Host)&autoplay=false" frameborder="0" allowfullscreen="true" scrolling="no"></iframe>
+</div>
+
+@code {
+
+    [Parameter]
+    public string VideoId { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+
+    private string Host;
+
+    protected override void OnParametersSet()
+    {
+        Host = new Uri(NavigationManager.BaseUri).Host;
+    }
+}

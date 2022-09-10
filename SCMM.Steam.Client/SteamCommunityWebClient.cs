@@ -14,30 +14,44 @@ namespace SCMM.Steam.Client
         {
         }
 
-        public async Task<SteamProfileXmlResponse> GetCustomProfile(SteamCustomProfilePageRequest request)
+        #region Profile
+
+        public async Task<SteamProfileXmlResponse> GetProfileById(SteamProfileByIdPageRequest request)
         {
-            return await GetXml<SteamCustomProfilePageRequest, SteamProfileXmlResponse>(request);
+            return await GetXml<SteamProfileByIdPageRequest, SteamProfileXmlResponse>(request);
         }
 
-        public async Task<XElement> GetStorePage(SteamStorePageRequest request)
-        {
-            return await GetHtml<SteamStorePageRequest>(request);
-        }
+        #endregion
 
-        public async Task<SteamStorePaginatedJsonResponse> GetStorePaginated(SteamStorePaginatedJsonRequest request)
-        {
-            return await GetJson<SteamStorePaginatedJsonRequest, SteamStorePaginatedJsonResponse>(request);
-        }
-
-        public async Task<XElement> GetStoreItemPage(SteamStoreItemPageRequest request)
-        {
-            return await GetHtml<SteamStoreItemPageRequest>(request);
-        }
+        #region Inventory
 
         public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request)
         {
             return await GetJson<SteamInventoryPaginatedJsonRequest, SteamInventoryPaginatedJsonResponse>(request);
         }
+
+        #endregion
+
+        #region Item Store
+
+        public async Task<XElement> GetStorePage(SteamItemStorePageRequest request)
+        {
+            return await GetHtml<SteamItemStorePageRequest>(request);
+        }
+
+        public async Task<SteamItemStoreGetItemDefsPaginatedJsonResponse> GetStorePaginated(SteamItemStoreGetItemDefsPaginatedJsonRequest request)
+        {
+            return await GetJson<SteamItemStoreGetItemDefsPaginatedJsonRequest, SteamItemStoreGetItemDefsPaginatedJsonResponse>(request);
+        }
+
+        public async Task<XElement> GetStoreItemPage(SteamItemStoreDetailPageRequest request)
+        {
+            return await GetHtml<SteamItemStoreDetailPageRequest>(request);
+        }
+
+        #endregion
+
+        #region Market
 
         public async Task<SteamMarketMyListingsPaginatedJsonResponse> GetMarketMyListingsPaginated(SteamMarketMyListingsPaginatedJsonRequest request)
         {
@@ -73,5 +87,7 @@ namespace SCMM.Steam.Client
         {
             return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request);
         }
+
+        #endregion
     }
 }

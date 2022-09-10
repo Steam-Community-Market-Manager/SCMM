@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Client;
@@ -57,14 +59,16 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _cfg;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly ServiceBusClient _serviceBus;
 
-        public UpdateSteamAssetDescription(ILogger<UpdateSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public UpdateSteamAssetDescription(ILogger<UpdateSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBus)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
+            _serviceBus = serviceBus;
         }
 
         public async Task<UpdateSteamAssetDescriptionResponse> HandleAsync(UpdateSteamAssetDescriptionRequest request)
@@ -76,14 +80,20 @@ namespace SCMM.Steam.API.Commands
                 throw new ArgumentNullException(nameof(request.AssetDescription));
             }
 
+            var app = (request.AssetDescription.App);
+            var appId = (request.AssetDescription.App != null ? (ulong?)UInt64.Parse(request.AssetDescription.App.SteamId) : null) ??
+                        (request.AssetItemDefinition != null ? (ulong?)request.AssetItemDefinition.AppId : null) ??
+                        (request.PublishedFile != null ? (ulong?)request.PublishedFile.ConsumerAppId : null);
+
             // Parse asset item definition details
             if (request.AssetItemDefinition != null)
             {
                 var itemDefinition = request.AssetItemDefinition;
-                assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || itemDefinition.WorkshopId > 0 ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
+                assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || request.PublishedFile?.PublishedFileId > 0 || itemDefinition.WorkshopId > 0 ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
                 assetDescription.WorkshopFileId = (assetDescription.WorkshopFileId == null && itemDefinition.WorkshopId > 0) ? itemDefinition.WorkshopId : assetDescription.WorkshopFileId;
                 assetDescription.ItemDefinitionId = itemDefinition.ItemDefId;
                 assetDescription.ItemShortName = (String.IsNullOrEmpty(assetDescription.ItemShortName) ? itemDefinition.ItemShortName : assetDescription.ItemShortName);
+                assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(itemDefinition.Type) && assetDescription.AssetType == SteamAssetDescriptionType.PublisherItem) ? itemDefinition.Type : assetDescription.ItemType);
                 assetDescription.Name = (String.IsNullOrEmpty(assetDescription.Name) ? (itemDefinition.Name ?? itemDefinition.MarketName) : assetDescription.Name);
                 assetDescription.NameHash = (String.IsNullOrEmpty(assetDescription.NameHash) ? itemDefinition.MarketHashName : assetDescription.NameHash);
                 assetDescription.IconUrl = (String.IsNullOrEmpty(assetDescription.IconUrl) && !String.IsNullOrEmpty(itemDefinition.IconUrl)) ? new SteamBlobRequest(itemDefinition.IconUrl) : assetDescription.IconUrl;
@@ -93,13 +103,14 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IsCommodity = itemDefinition.Commodity;
                 assetDescription.IsMarketable = itemDefinition.Marketable;
                 assetDescription.IsTradable = itemDefinition.Tradable;
-                assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
-                assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(itemDefinition.Modified.SteamTimestampToDateTimeOffset());
-                assetDescription.TimeAccepted = assetDescription.TimeAccepted.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
+                // NOTE: 'DateCreated' seems to reset in the item defs everytime the item is modified, so we always use the earliest known date.
+                //assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
+                //assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(itemDefinition.Modified.SteamTimestampToDateTimeOffset());
+                //assetDescription.TimeAccepted = assetDescription.TimeAccepted.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
                 assetDescription.IsAccepted = true;
 
                 // Parse asset description (if any)
-                if (!String.IsNullOrEmpty(itemDefinition.Description))
+                if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrEmpty(itemDefinition.Description))
                 {
                     // Strip any HTML and BBCode tags, just get the plain-text
                     itemDefinition.Description = Regex.Replace(itemDefinition.Description, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
@@ -133,9 +144,12 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
 
-                // TODO: Promo
-                // TODO: Exchange
-                // TODO: Price Category (https://partner.steamgames.com/doc/features/inventory/schema)
+                // TODO: Store tags "nocrate"
+
+                // TODO: Type ('item' | 'bundle' | 'generator' | 'playtimegenerator' | 'tag_generator')
+                // TODO: Promo (https://partner.steamgames.com/doc/features/inventory/schema#PromoItems)
+                // TODO: Exchange (https://partner.steamgames.com/doc/features/inventory/schema#ExchangeFormat)
+                // TODO: Price Category (https://partner.steamgames.com/doc/features/inventory/schema#SpecifyPrices)
 
             }
 
@@ -144,7 +158,8 @@ namespace SCMM.Steam.API.Commands
             {
                 var assetClass = request.AssetClass;
                 assetDescription.ClassId = assetClass.ClassId;
-                assetDescription.AssetType = (String.Equals(assetClass.Type == Constants.SteamAssetClassTypeWorkshopItem, StringComparison.OrdinalIgnoreCase) ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
+                assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || request.PublishedFile?.PublishedFileId > 0 || String.Equals(assetClass.Type == Constants.SteamAssetClassTypeWorkshopItem, StringComparison.OrdinalIgnoreCase) ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
+                assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetClass.Type) && assetDescription.AssetType == SteamAssetDescriptionType.PublisherItem) ? assetClass.Type : assetDescription.ItemType);
                 assetDescription.Name = assetClass.MarketName;
                 assetDescription.NameHash = assetClass.MarketHashName;
                 assetDescription.IconUrl = !string.IsNullOrEmpty(assetClass.IconUrl) ? new SteamEconomyImageBlobRequest(assetClass.IconUrl) : null;
@@ -161,19 +176,9 @@ namespace SCMM.Steam.API.Commands
                 // Parse asset description (if any)
                 if (assetClass.Descriptions != null)
                 {
-                    var itemDescription = assetClass.Descriptions
-                        .Where(x =>
-                            string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
-                            string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
-                        )
-                        .Select(x => x.Value)
-                        .FirstOrDefault();
-
+                    var itemDescription = ParseItemDescriptionText(assetClass.Descriptions);
                     if (!string.IsNullOrEmpty(itemDescription))
                     {
-                        // Strip any HTML and BBCode tags, just get the plain-text
-                        itemDescription = Regex.Replace(itemDescription, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
-                        itemDescription = Regex.Replace(itemDescription, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
                         assetDescription.Description = itemDescription;
                     }
                 }
@@ -199,11 +204,12 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.NameWorkshop = publishedFile.Title;
                 assetDescription.DescriptionWorkshop = publishedFile.Description;
                 assetDescription.PreviewUrl = publishedFile.PreviewUrl?.ToString();
-                assetDescription.CurrentSubscriptions = (long?)publishedFile.Subscriptions;
-                assetDescription.LifetimeSubscriptions = (long?)publishedFile.LifetimeSubscriptions;
-                assetDescription.CurrentFavourited = (long?)publishedFile.Favorited;
-                assetDescription.LifetimeFavourited = (long?)publishedFile.LifetimeFavorited;
+                assetDescription.SubscriptionsCurrent = (long?)publishedFile.Subscriptions;
+                assetDescription.SubscriptionsLifetime = (long?)publishedFile.LifetimeSubscriptions;
+                assetDescription.FavouritedCurrent = (long?)publishedFile.Favorited;
+                assetDescription.FavouritedLifetime = (long?)publishedFile.LifetimeFavorited;
                 assetDescription.Views = (long?)publishedFile.Views;
+                assetDescription.IsAccepted = (assetDescription.IsAccepted | (publishedFile.LifetimeSubscriptions > 0));
                 assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null);
                 assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null);
 
@@ -289,8 +295,8 @@ namespace SCMM.Steam.API.Commands
                         var updateDateTime = (updateDateTimeMatchGroup.Count > 1)
                             ? updateDateTimeMatchGroup[1].Value.Trim()
                             : null;
-                        if (DateTime.TryParseExact(updateDateTime, "d MMM @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp) ||
-                            DateTime.TryParseExact(updateDateTime, "d MMM, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp))
+                        if (DateTime.TryParseExact(updateDateTime, "d MMM, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp) ||
+                            DateTime.TryParseExact(updateDateTime, "d MMM @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp))
                         {
                             // Only track changes that happened after the item was accepted
                             if (timestamp > assetDescription.TimeAccepted)
@@ -300,6 +306,29 @@ namespace SCMM.Steam.API.Commands
                                     description = assetDescription.Changes[timestamp];
                                 }
                                 assetDescription.Changes[timestamp] = (description ?? string.Empty).FirstCharToUpper();
+                                if (!assetDescription.Changes.ContainsKey(timestamp))
+                                {
+                                    app = app ?? await _db.SteamApps.AsNoTracking().FirstOrDefaultAsync(x => x.SteamId == (appId ?? 0).ToString());
+                                    await _serviceBus.SendMessageAsync(new WorkshopFileUpdatedMessage()
+                                    {
+                                        AppId = UInt64.Parse(app.SteamId),
+                                        AppName = app?.Name,
+                                        AppIconUrl = app?.IconUrl,
+                                        AppColour = app?.PrimaryColor,
+                                        CreatorId = assetDescription.CreatorId ?? 0,
+                                        CreatorName = assetDescription.CreatorProfile?.Name,
+                                        CreatorAvatarUrl = assetDescription.CreatorProfile?.AvatarUrl,
+                                        ItemId = assetDescription.WorkshopFileId ?? 0,
+                                        ItemType = assetDescription.ItemType,
+                                        ItemShortName = assetDescription.ItemShortName,
+                                        ItemName = assetDescription.Name,
+                                        ItemDescription = assetDescription.Description,
+                                        ItemCollection = assetDescription.ItemCollection,
+                                        ItemImageUrl = assetDescription.PreviewUrl,
+                                        ChangeTimestamp = assetDescription.TimeUpdated?.UtcDateTime ?? timestamp,
+                                        ChangeNote = description
+                                    });
+                                }
                             }
                         }
                     }
@@ -329,8 +358,8 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
             }
-            
-            // Parse asset icon and image data
+
+            // Parse asset icon image data
             if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl))
             {
                 try
@@ -351,47 +380,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogWarning(ex, $"Unable to import asset description icon. {ex.Message}");
                 }
             }
-            if (assetDescription.IconLargeId == null && !string.IsNullOrEmpty(assetDescription.IconLargeUrl))
-            {
-                try
-                {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
-                    {
-                        Url = assetDescription.IconLargeUrl,
-                        UseExisting = true
-                    });
-                    if (importedImage?.File != null)
-                    {
-                        assetDescription.IconLarge = importedImage.File;
-                        assetDescription.IconLargeId = importedImage.File.Id;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Unable to import asset description large icon. {ex.Message}");
-                }
-            }
-            if (assetDescription.PreviewId == null && !string.IsNullOrEmpty(assetDescription.PreviewUrl))
-            {
-                try
-                {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
-                    {
-                        Url = assetDescription.PreviewUrl,
-                        UseExisting = true
-                    });
-                    if (importedImage?.File != null)
-                    {
-                        assetDescription.Preview = importedImage.File;
-                        assetDescription.PreviewId = importedImage.File.Id;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Unable to import asset description preview image. {ex.Message}");
-                }
-            }
-            
+
             // Parse asset description and name id from the market list page (if available)
             if (!string.IsNullOrEmpty(request.MarketListingPageHtml))
             {
@@ -406,18 +395,25 @@ namespace SCMM.Steam.API.Commands
                     {
                         // NOTE: This is a bit hacky, but the data we need is inside a JavaScript variable within a <script> element, so we try to parse the JSON value of the variable
                         var listingAsset = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>>>(listingAssetJson);
-                        var itemDescriptionHtml = listingAsset?
+                        var listingAssetClass = listingAsset?
                             .FirstOrDefault().Value?
                             .FirstOrDefault().Value?
-                            .FirstOrDefault().Value?
-                            .Descriptions?
-                            .Where(x => string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase))
-                            .Select(x => x.Value)
-                            .FirstOrDefault();
-                        if (!string.IsNullOrEmpty(itemDescriptionHtml))
+                            .FirstOrDefault().Value;
+                        var itemDescription = ParseItemDescriptionText(
+                            listingAssetClass?.Descriptions?.Select(x => new AssetClassDescriptionModel()
+                            {
+                                Type = x.Type,
+                                Value = x.Value,
+                                Color = x.Color,
+                            })
+                        );
+                        if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrWhiteSpace(itemDescription))
                         {
-                            // Strip any HTML tags, just get the plain-text
-                            assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
+                            assetDescription.Description = itemDescription;
+                        }
+                        if (listingAssetClass?.AppId > 0 && appId == null)
+                        {
+                            appId = listingAssetClass.AppId;
                         }
                     }
                     catch (Exception)
@@ -442,225 +438,238 @@ namespace SCMM.Steam.API.Commands
             if (request.StoreItemPageHtml != null)
             {
                 var itemDescriptionHtml = request.StoreItemPageHtml.Descendants("div").FirstOrDefault(x => x?.Attribute("class")?.Value == Constants.SteamStoreItemDescriptionName).Value;
-                if (!string.IsNullOrEmpty(itemDescriptionHtml))
+                if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrWhiteSpace(itemDescriptionHtml))
                 {
                     // Strip any HTML tags, just get the plain-text
                     assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
                 }
             }
 
-            // TODO: Parse store item id from workshop description "buy now" urls
-            //       @"\/252490\/[detail\/]*([0-9]+)\/"
-
-            // Parse asset crafting components from the description text (if available)
-            if (!string.IsNullOrEmpty(assetDescription.Description))
+            // Parse app specific data
+            // TODO: Ensure app id is always set
+            switch (appId ?? Constants.RustAppId)
             {
-                // Is this asset a permanent item?
-                var isPermanentDescription = @"This item will be permanently bound to your steam account";
-                if (Regex.IsMatch(assetDescription.Description, isPermanentDescription))
-                {
-                    assetDescription.Description = assetDescription.Description.Replace(isPermanentDescription, string.Empty).Trim();
-                    assetDescription.IsPermanent = true;
-                }
+                // CSGO
+                case Constants.CSGOAppId:
+                    break;
 
-                // Is this asset a glowing item?
-                var hasGlowDescription = @"This skin glows in the dark";
-                if (Regex.IsMatch(assetDescription.Description, hasGlowDescription))
-                {
-                    assetDescription.Description = assetDescription.Description.Replace(hasGlowDescription, string.Empty).Trim();
-                    assetDescription.HasGlow = true;
-                }
+                // Rust
+                case Constants.RustAppId:
 
-                // Is this asset a crafting component?
-                // e.g. "Cloth can be combined to craft"
-                var craftingComponentMatchGroup = Regex.Match(assetDescription.Description, @"(.*) can be combined to craft").Groups;
-                var craftingComponent = (craftingComponentMatchGroup.Count > 1)
-                    ? craftingComponentMatchGroup[1].Value.Trim()
-                    : null;
-                if (!string.IsNullOrEmpty(craftingComponent))
-                {
-                    if (string.Equals(assetDescription.Name, craftingComponent, StringComparison.InvariantCultureIgnoreCase))
+                    // Parse asset crafting components from the description text (if available)
+                    if (!string.IsNullOrEmpty(assetDescription.Description))
                     {
-                        assetDescription.IsCraftingComponent = true;
-                    }
-                }
-
-                // Is this asset able to be broken down in to crafting components?
-                // e.g. "Breaks down into 1x Cloth"
-                var breaksDownMatchGroup = Regex.Match(assetDescription.Description, @"Breaks down into (.*)").Groups;
-                var breaksDown = (breaksDownMatchGroup.Count > 1)
-                    ? breaksDownMatchGroup[1].Value.Trim()
-                    : null;
-                if (!string.IsNullOrEmpty(breaksDown))
-                {
-                    assetDescription.Description = assetDescription.Description.Replace(breaksDownMatchGroup[0].Value, string.Empty).Trim();
-                    assetDescription.IsBreakable = true;
-                    assetDescription.BreaksIntoComponents = new PersistableAssetQuantityDictionary();
-
-                    // e.g. "1x Cloth", "1x Wood", "1x Metal"
-                    var componentMatches = Regex.Matches(breaksDown, @"(\d+)\s*x\s*(\D*)").OfType<Match>();
-                    foreach (var componentMatch in componentMatches)
-                    {
-                        var componentQuantity = componentMatch.Groups[1].Value;
-                        var componentName = componentMatch.Groups[2].Value;
-                        if (!string.IsNullOrEmpty(componentName))
+                        // Is this asset a permanent item?
+                        var isPermanentDescription = @"This item will be permanently bound to your steam account";
+                        if (Regex.IsMatch(assetDescription.Description, isPermanentDescription))
                         {
-                            assetDescription.BreaksIntoComponents[componentName] = uint.Parse(componentQuantity);
+                            assetDescription.Description = assetDescription.Description.Replace(isPermanentDescription, string.Empty).Trim();
+                            assetDescription.IsPermanent = true;
                         }
-                    }
-                }
 
-                // Is this asset a skin container and can it be sold on the market? If so, it is PROBABLY a craftable asset
-                // e.g. "Barrels contain skins for weapons and tools."
-                // e.g. "Bags contain clothes."
-                // e.g. "Boxes contain deployables,"
-                var isSkinContainer = Regex.IsMatch(assetDescription.Description, @"(.*)s contain (skins|weapons|tools|clothes|deployables)");
-                if (isSkinContainer && assetDescription.IsMarketable)
-                {
-                    assetDescription.IsCraftable = true;
-                }
-
-                // Cleanup the asset description text
-                assetDescription.Description = assetDescription.Description.Trim(' ', '.', '\t', '\n', '\r');
-            }
-
-            // Parse asset item type (if missing)
-            if (string.IsNullOrEmpty(assetDescription.ItemType))
-            {
-                if (!string.IsNullOrEmpty(assetDescription.Description))
-                {
-                    // e.g. "This is a skin for the Large Wood Box item." 
-                    var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item\.").Groups;
-                    var itemType = (itemTypeMatchGroup.Count > 1)
-                        ? itemTypeMatchGroup[1].Value.Trim()
-                        : null;
-
-                    // Is it an item skin?
-                    if (!string.IsNullOrEmpty(itemType))
-                    {
-                        assetDescription.ItemType = itemType;
-                    }
-                    // Is it a crafting component?
-                    else if (assetDescription.IsCraftingComponent)
-                    {
-                        assetDescription.ItemType = Constants.RustItemTypeResource;
-                    }
-                    // Is it a craftable container?
-                    else if (assetDescription.IsCraftable)
-                    {
-                        assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
-                    }
-                    // Is it a non-craftable container?
-                    // e.g. "This special crate acquired from a twitch drop during Trust in Rust 3 will yield a random skin"
-                    else if (Regex.IsMatch(assetDescription.Description, @"crate .* random skin"))
-                    {
-                        assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
-                    }
-                    // Is it a miscellaneous item?
-                    // e.g. "Having this item in your Steam Inventory means you'll be able to craft it in game. If you sell, trade or break this item you will no longer have this ability in game."
-                    else if (Regex.IsMatch(assetDescription.Description, @"craft it in game"))
-                    {
-                        assetDescription.ItemType = Constants.RustItemTypeMiscellaneous;
-                    }
-                    // Is it an underwear item?
-                    // e.g. "Having this item in your Steam Inventory means you'll be able to select this as your players default appearance. If you sell, trade or break this item you will no longer have this ability in game."
-                    else if (Regex.IsMatch(assetDescription.Description, @"players default appearance"))
-                    {
-                        assetDescription.ItemType = Constants.RustItemTypeUnderwear;
-                    }
-                }
-                else
-                {
-                    // HACK: Facepunch messed up the LR300 item descriptions (they are empty), so try fill in the blanks
-                    if (assetDescription.ItemShortName == Constants.RustItemShortNameLR300 || assetDescription.Tags.Any(x => x.Value == Constants.RustItemShortNameLR300 || x.Value == Constants.RustItemTypeLR300))
-                    {
-                        assetDescription.ItemType = Constants.RustItemTypeLR300;
-                    }
-                }
-            }
-            
-            // Parse asset item type (if missing)
-            if (string.IsNullOrEmpty(assetDescription.ItemShortName) && !string.IsNullOrEmpty(assetDescription.ItemType))
-            {
-                assetDescription.ItemShortName = assetDescription.ItemType.ToRustItemShortName();
-            }
-
-            // Parse asset item collection (if missing and is a user created item)
-            if (string.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.CreatorId != null)
-            {
-                // Find existing item collections we fit in to (if any)
-                var existingItemCollections = await _db.SteamAssetDescriptions
-                    .Where(x => x.CreatorId == assetDescription.CreatorId)
-                    .Where(x => !string.IsNullOrEmpty(x.ItemCollection))
-                    .Select(x => x.ItemCollection)
-                    .Distinct()
-                    .ToListAsync();
-                if (existingItemCollections.Any())
-                {
-                    foreach (var existingItemCollection in existingItemCollections.OrderByDescending(x => x.Length))
-                    {
-                        var isCollectionMatch = existingItemCollection
-                            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                            .All(x => assetDescription.Name.Contains(x));
-                        if (isCollectionMatch)
+                        // Is this asset a glowing item?
+                        var hasGlowDescription = @"This skin glows in the dark";
+                        if (Regex.IsMatch(assetDescription.Description, hasGlowDescription))
                         {
-                            assetDescription.ItemCollection = existingItemCollection;
-                            break;
+                            assetDescription.Description = assetDescription.Description.Replace(hasGlowDescription, string.Empty).Trim();
+                            assetDescription.HasGlow = true;
                         }
-                    }
-                }
 
-                // If we don't have an item collection at this point, then there are no existing collections that we fit into  :(
-                // Find other skins similar to us and see if we can start a new item collection, with black jack and hookers...
-                if (string.IsNullOrEmpty(assetDescription.ItemCollection))
-                {
-                    // Remove all common item words from the collection name (e.g. "Box", "Pants", Door", etc)
-                    // NOTE: Pattern match word boundarys to prevent replacing words within words.
-                    //       e.g. "Stone" in "Stonecraft Hatchet" shouldn't end up like "craft Hatchet"
-                    var newItemCollection = assetDescription.Name;
-                    if (!string.IsNullOrEmpty(assetDescription.ItemType))
-                    {
-                        foreach (var word in assetDescription.ItemType.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        // Is this asset a crafting component?
+                        // e.g. "Cloth can be combined to craft"
+                        var craftingComponentMatchGroup = Regex.Match(assetDescription.Description, @"(.*) can be combined to craft").Groups;
+                        var craftingComponent = (craftingComponentMatchGroup.Count > 1)
+                            ? craftingComponentMatchGroup[1].Value.Trim()
+                            : null;
+                        if (!string.IsNullOrEmpty(craftingComponent))
                         {
-                            newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                        }
-                    }
-                    foreach (var word in Constants.RustItemNameCommonWords)
-                    {
-                        newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                    }
-
-                    // Ensure all remaining words are longer than one character, otherwise strip them out.
-                    // This fixes scenarios like "Satchelo" => "o", "Rainbow Doors" => "Rainbow s", etc
-                    newItemCollection = Regex.Replace(newItemCollection, @"\b(\w{1,2})\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
-                    // Trim any junk characters
-                    newItemCollection = newItemCollection.Trim(' ', ',', '.', '-', '\'', ':').Trim();
-
-                    // If there is anything left, we have a unique collection name, try find others with the same name
-                    if (!string.IsNullOrEmpty(newItemCollection))
-                    {
-                        // Count the number of other assets created by the same author that also contain the remaining unique collection words.
-                        // If there is more than one item, then it must be part of a set.
-                        var query = _db.SteamAssetDescriptions
-                            .Where(x => x.CreatorId == assetDescription.CreatorId)
-                            .Where(x => string.IsNullOrEmpty(x.ItemCollection));
-                        foreach (var word in newItemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                        {
-                            query = query.Where(x => x.Name.Contains(word));
-                        }
-                        var collectionItems = await query.ToListAsync();
-                        if (collectionItems.Count > 1)
-                        {
-                            // Update all items in the collection (this helps fix old items when they become part of a new collection)
-                            foreach (var item in collectionItems)
+                            if (string.Equals(assetDescription.Name, craftingComponent, StringComparison.InvariantCultureIgnoreCase))
                             {
-                                item.ItemCollection = newItemCollection;
+                                assetDescription.IsCraftingComponent = true;
+                            }
+                        }
+
+                        // Is this asset able to be broken down in to crafting components?
+                        // e.g. "Breaks down into 1x Cloth"
+                        var breaksDownMatchGroup = Regex.Match(assetDescription.Description, @"Breaks down into (.*)").Groups;
+                        var breaksDown = (breaksDownMatchGroup.Count > 1)
+                            ? breaksDownMatchGroup[1].Value.Trim()
+                            : null;
+                        if (!string.IsNullOrEmpty(breaksDown))
+                        {
+                            assetDescription.Description = assetDescription.Description.Replace(breaksDownMatchGroup[0].Value, string.Empty).Trim();
+                            assetDescription.IsBreakable = true;
+                            assetDescription.BreaksIntoComponents = new PersistableAssetQuantityDictionary();
+
+                            // e.g. "1x Cloth", "1x Wood", "1x Metal"
+                            var componentMatches = Regex.Matches(breaksDown, @"(\d+)\s*x\s*(\D*)").OfType<Match>();
+                            foreach (var componentMatch in componentMatches)
+                            {
+                                var componentQuantity = componentMatch.Groups[1].Value;
+                                var componentName = componentMatch.Groups[2].Value;
+                                if (!string.IsNullOrEmpty(componentName))
+                                {
+                                    assetDescription.BreaksIntoComponents[componentName] = uint.Parse(componentQuantity);
+                                }
+                            }
+                        }
+
+                        // Is this asset a skin container and can it be sold on the market? If so, it is PROBABLY a craftable asset
+                        // e.g. "Barrels contain skins for weapons and tools."
+                        // e.g. "Bags contain clothes."
+                        // e.g. "Boxes contain deployables,"
+                        var isSkinContainer = Regex.IsMatch(assetDescription.Description, @"(.*)s contain (skins|weapons|tools|clothes|deployables)");
+                        if (isSkinContainer && (assetDescription.IsMarketable || assetDescription.MarketableRestrictionDays > 0))
+                        {
+                            assetDescription.IsCraftable = true;
+                        }
+                    }
+
+                    // Parse asset item type (if missing)
+                    if (string.IsNullOrEmpty(assetDescription.ItemType))
+                    {
+                        if (!string.IsNullOrEmpty(assetDescription.Description))
+                        {
+                            // e.g. "This is a skin for the Large Wood Box item." 
+                            var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item\.").Groups;
+                            var itemType = (itemTypeMatchGroup.Count > 1)
+                                ? itemTypeMatchGroup[1].Value.Trim()
+                                : null;
+
+                            // Is it an item skin?
+                            if (!string.IsNullOrEmpty(itemType))
+                            {
+                                assetDescription.ItemType = itemType;
+                            }
+                            // Is it a crafting component?
+                            else if (assetDescription.IsCraftingComponent)
+                            {
+                                assetDescription.ItemType = Constants.RustItemTypeResource;
+                            }
+                            // Is it a craftable container?
+                            else if (assetDescription.IsCraftable)
+                            {
+                                assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
+                            }
+                            // Is it a non-craftable container?
+                            // e.g. "This special crate acquired from a twitch drop during Trust in Rust 3 will yield a random skin"
+                            else if (Regex.IsMatch(assetDescription.Description, @"crate .* random skin"))
+                            {
+                                assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
+                            }
+                            // Is it a miscellaneous item?
+                            // e.g. "Having this item in your Steam Inventory means you'll be able to craft it in game. If you sell, trade or break this item you will no longer have this ability in game."
+                            else if (Regex.IsMatch(assetDescription.Description, @"craft it in game"))
+                            {
+                                assetDescription.ItemType = Constants.RustItemTypeMiscellaneous;
+                            }
+                            // Is it an underwear item?
+                            // e.g. "Having this item in your Steam Inventory means you'll be able to select this as your players default appearance. If you sell, trade or break this item you will no longer have this ability in game."
+                            else if (Regex.IsMatch(assetDescription.Description, @"players default appearance"))
+                            {
+                                assetDescription.ItemType = Constants.RustItemTypeUnderwear;
+                            }
+                        }
+                        else
+                        {
+                            // HACK: Facepunch messed up the LR300 item descriptions (they are empty), so try fill in the blanks
+                            if (assetDescription.ItemShortName == Constants.RustItemShortNameLR300 || assetDescription.Tags.Any(x => x.Value == Constants.RustItemShortNameLR300 || x.Value == Constants.RustItemTypeLR300))
+                            {
+                                assetDescription.ItemType = Constants.RustItemTypeLR300;
                             }
                         }
                     }
-                }
+
+                    // Parse asset item type (if missing)
+                    if (string.IsNullOrEmpty(assetDescription.ItemShortName) && !string.IsNullOrEmpty(assetDescription.ItemType))
+                    {
+                        assetDescription.ItemShortName = assetDescription.ItemType.ToRustItemShortName();
+                    }
+
+                    // Parse asset item collection (if missing and is a user created item)
+                    if (string.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.CreatorId != null)
+                    {
+                        // Find existing item collections we fit in to (if any)
+                        var existingItemCollections = await _db.SteamAssetDescriptions
+                            .Where(x => x.CreatorId == assetDescription.CreatorId)
+                            .Where(x => !string.IsNullOrEmpty(x.ItemCollection))
+                            .Select(x => x.ItemCollection)
+                            .Distinct()
+                            .ToListAsync();
+                        if (existingItemCollections.Any())
+                        {
+                            foreach (var existingItemCollection in existingItemCollections.OrderByDescending(x => x.Length))
+                            {
+                                var isCollectionMatch = existingItemCollection
+                                    .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                    .All(x => assetDescription.Name.Contains(x, StringComparison.InvariantCultureIgnoreCase));
+                                if (isCollectionMatch)
+                                {
+                                    assetDescription.ItemCollection = existingItemCollection;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // If we don't have an item collection at this point, then there are no existing collections that we fit into  :(
+                        // Find other skins similar to us and see if we can start a new item collection, with black jack and hookers...
+                        if (string.IsNullOrEmpty(assetDescription.ItemCollection))
+                        {
+                            // Remove all common item words from the collection name (e.g. "Box", "Pants", Door", etc)
+                            // NOTE: Pattern match word boundarys to prevent replacing words within words.
+                            //       e.g. "Stone" in "Stonecraft Hatchet" shouldn't end up like "craft Hatchet"
+                            var newItemCollection = assetDescription.Name;
+                            if (!string.IsNullOrEmpty(assetDescription.ItemType))
+                            {
+                                foreach (var word in assetDescription.ItemType.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                                {
+                                    newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                                }
+                            }
+                            foreach (var word in Constants.RustItemNameCommonWords)
+                            {
+                                newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                            }
+
+                            // Ensure all remaining words are longer than one character, otherwise strip them out.
+                            // This fixes scenarios like "Satchelo" => "o", "Rainbow Doors" => "Rainbow s", etc
+                            newItemCollection = Regex.Replace(newItemCollection, @"\b(\w{1,2})\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+                            // Trim any junk characters
+                            newItemCollection = newItemCollection.Trim(' ', ',', '.', '-', '\'', ':').Trim();
+
+                            // If there is anything left, we have a unique collection name, try find others with the same name
+                            if (!string.IsNullOrEmpty(newItemCollection))
+                            {
+                                // Count the number of other assets created by the same author that also contain the remaining unique collection words.
+                                // If there is more than one item, then it must be part of a set.
+                                var query = _db.SteamAssetDescriptions
+                                    .Where(x => x.CreatorId == assetDescription.CreatorId)
+                                    .Where(x => string.IsNullOrEmpty(x.ItemCollection));
+                                foreach (var word in newItemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                                {
+                                    query = query.Where(x => x.Name.Contains(word));
+                                }
+                                var collectionItems = await query.ToListAsync();
+                                if (collectionItems.Count > 1)
+                                {
+                                    // Update all items in the collection (this helps fix old items when they become part of a new collection)
+                                    foreach (var item in collectionItems)
+                                    {
+                                        item.ItemCollection = newItemCollection;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+
             }
+
+            // Cleanup the asset description text
+            assetDescription.Description = assetDescription.Description
+                ?.Trim("&nbsp;")
+                ?.Trim(' ', '.', '\t', '\n', '\r');
 
             // Check if this is a special/twitch drop item
             if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)
@@ -673,13 +682,43 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            // Update last checked on
-            assetDescription.TimeRefreshed = DateTimeOffset.Now;
+            // Update last checked on (unless this is a newly created asset)
+            if (!assetDescription.IsTransient)
+            {
+                assetDescription.TimeRefreshed = DateTimeOffset.Now;
+            }
 
             return new UpdateSteamAssetDescriptionResponse
             {
                 AssetDescription = assetDescription
             };
+        }
+
+        private string ParseItemDescriptionText(IEnumerable<AssetClassDescriptionModel> descriptions)
+        {
+            if (descriptions?.Any() != true)
+            {
+                return null;
+            }
+            return String.Join("\n",
+                descriptions
+                    .Where(x => !string.IsNullOrEmpty(x.Value))
+                    .Where(x =>
+                        string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
+                        string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
+                    )
+                    .Select(x =>
+                    {
+                        // Strip any HTML and BBCode tags, just get the plain-text
+                        x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
+                        x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
+                        return x;
+                    })
+                    .Select(x => (x.Color != null ? $"<span style='color:{x.Color.SteamColourToWebHexString()}'>{x.Value}</span>" : x.Value))
+                    .Select(x => (x == " " ? "&nbsp;" : x))
+                    .Where(x => !String.IsNullOrEmpty(x))
+                    .ToArray()
+            );
         }
     }
 }

@@ -11,29 +11,31 @@ namespace SCMM.Steam.API.Commands
     {
         public string ProfileId { get; set; }
 
-        public int TileSize { get; set; } = 128;
+        public int ItemSize { get; set; } = 64;
 
-        public int Columns { get; set; } = 5;
+        public int ItemColumns { get; set; } = 5;
 
-        public int? Rows { get; set; } = 5;
+        public int ItemRows { get; set; } = 5;
 
         public DateTimeOffset? ExpiresOn { get; set; } = null;
     }
 
     public class GenerateSteamProfileInventoryThumbnailResponse
     {
-        public FileData Image { get; set; }
+        public string ImageUrl { get; set; }
     }
 
     public class GenerateSteamProfileInventoryThumbnail : ICommandHandler<GenerateSteamProfileInventoryThumbnailRequest, GenerateSteamProfileInventoryThumbnailResponse>
     {
         private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly ICommandProcessor _commandProcessor;
 
-        public GenerateSteamProfileInventoryThumbnail(SteamDbContext db, IQueryProcessor queryProcessor)
+        public GenerateSteamProfileInventoryThumbnail(SteamDbContext db, IQueryProcessor queryProcessor, ICommandProcessor commandProcessor)
         {
             _db = db;
             _queryProcessor = queryProcessor;
+            _commandProcessor = commandProcessor;
         }
 
         public async Task<GenerateSteamProfileInventoryThumbnailResponse> HandleAsync(GenerateSteamProfileInventoryThumbnailRequest request)
@@ -44,20 +46,23 @@ namespace SCMM.Steam.API.Commands
                 Id = request.ProfileId
             });
 
-            var showDrops = (resolvedId.Profile?.ShowItemDrops ?? false);
+            // TODO: Consider making these arguments in the request?
+            var showDrops = false;// (resolvedId.Profile?.InventoryShowItemDrops ?? true);
+            var showUnmarketable = false;// (resolvedId.Profile?.InventoryShowUnmarketableItems ?? true);
             var inventoryItemIcons = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
                 .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
+                .Where(x => showUnmarketable || (x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0))
                 .Select(x => new
                 {
                     IconUrl = x.Description.IconUrl,
                     Quantity = x.Quantity,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
-                    Value = (x.Description.MarketItem != null ? x.Description.MarketItem.LastSaleValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
-                    ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.LastSaleValue - x.Description.MarketItem.Stable24hrValue > 0 : false),
-                    ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.LastSaleValue - x.Description.MarketItem.Stable24hrValue < 0 : false),
+                    Value = (x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
+                    ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice - x.Description.MarketItem.Stable24hrSellOrderLowestPrice > 0 : false),
+                    ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice - x.Description.MarketItem.Stable24hrSellOrderLowestPrice < 0 : false),
                     Banned = x.Description.IsBanned
                 })
                 .OrderByDescending(x => x.Value)
@@ -93,27 +98,30 @@ namespace SCMM.Steam.API.Commands
             var inventoryImageMosaic = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = inventoryImageSources,
-                TileSize = request.TileSize,
-                Columns = request.Columns,
-                Rows = request.Rows
+                ImageSize = request.ItemSize,
+                ImageColumns = request.ItemColumns,
+                ImageRows = request.ItemRows
             });
             if (inventoryImageMosaic?.Data == null)
             {
                 return null;
             }
 
-            var imageData = new FileData()
+            var uploadedInventoryImageMosaic = await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
             {
+                Name = $"{request.ProfileId}-inventory-thumbnail-{request.ItemSize}x{request.ItemRows}x{request.ItemColumns}-{DateTime.UtcNow.Ticks}",
                 MimeType = inventoryImageMosaic.MimeType,
                 Data = inventoryImageMosaic.Data,
                 ExpiresOn = request.ExpiresOn
-            };
-
-            _db.FileData.Add(imageData);
+            });
+            if (uploadedInventoryImageMosaic?.ImageUrl == null)
+            {
+                return null;
+            }
 
             return new GenerateSteamProfileInventoryThumbnailResponse()
             {
-                Image = imageData
+                ImageUrl = uploadedInventoryImageMosaic?.ImageUrl
             };
         }
     }

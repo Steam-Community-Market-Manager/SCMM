@@ -14,6 +14,20 @@
     margin-right: 8px;
 }
 
+.mud-input-full-height .mud-input-control-input-container,
+.mud-input-full-height .mud-input {
+    height: 100%;
+    margin-top: 0px !important;
+}
+
+.mud-input-no-frills .mud-input-text {
+    margin: 0px !important;
+}
+
+.mud-input-no-frills .mud-input-underline:before {
+    border: none !important;
+}
+
 .mud-input-transparent .mud-input-label {
     background: black;
 }
@@ -37,6 +51,10 @@
     margin-bottom: -16px !important;
 }
 
+.mud-badge-border-inherit {
+    border-color: inherit !important;
+}
+
 .mud-table-dense-extra * .mud-table-row .mud-table-cell {
     padding-top: 0px !important;
     padding-bottom: 0px !important;
@@ -50,10 +68,21 @@
     background-color: rgba(255,255,255,.5);
 }
 
+.mud-paper-inverted .mud-paper {
+    background: var(--mud-palette-appbar-background) !important;
+}
+
 .mud-link:hover {
     cursor: pointer;
 }
-
+/*
+.mud-scroll-to-top {
+    top: 64px;
+    right: 16px;
+    bottom: unset;
+    left: unset;
+}
+*/
 .mud-scroll-to-top.hidden {
     transform: scale(0) !important;
 }
@@ -69,4 +98,8 @@
 .mud-dialog > div:not(.mud-dialog-title) {
     overflow-x: hidden;
     overflow-y: auto;
+}
+
+.mud-nav-item-centered > .mud-nav-link {
+    align-items: center !important;
 }

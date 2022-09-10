@@ -6,12 +6,12 @@ namespace SCMM.Azure.ServiceBus.Extensions
 {
     public static class ServiceBusAdministrationClientExtensions
     {
-        public static Task<bool> SubscriptionExistsAsync<T>(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client) where T : IMessage
+        public static Task<bool> TopicSubscriptionExistsAsync<T>(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client) where T : IMessage
         {
-            return SubscriptionExistsAsync(client, typeof(T));
+            return TopicSubscriptionExistsAsync(client, typeof(T));
         }
 
-        public static async Task<bool> SubscriptionExistsAsync(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client, Type messageType)
+        public static async Task<bool> TopicSubscriptionExistsAsync(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client, Type messageType)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
             if (!string.IsNullOrEmpty(topicName))
@@ -25,10 +25,10 @@ namespace SCMM.Azure.ServiceBus.Extensions
 
         public static Task<SubscriptionProperties> CreateSubscriptionAsync<T>(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client, Action<CreateSubscriptionOptions> optionsAction = null) where T : IMessage
         {
-            return CreateSubscriptionAsync(client, typeof(T), optionsAction);
+            return CreateTopicSubscriptionAsync(client, typeof(T), optionsAction);
         }
 
-        public static async Task<SubscriptionProperties> CreateSubscriptionAsync(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client, Type messageType, Action<CreateSubscriptionOptions> optionsAction = null)
+        public static async Task<SubscriptionProperties> CreateTopicSubscriptionAsync(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client, Type messageType, Action<CreateSubscriptionOptions> optionsAction = null)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
             if (!string.IsNullOrEmpty(topicName))

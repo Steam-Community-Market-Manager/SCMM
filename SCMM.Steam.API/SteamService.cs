@@ -8,6 +8,7 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using Steam.Models.SteamEconomy;
 using System.Globalization;
 using System.Reflection;
@@ -34,47 +35,89 @@ namespace SCMM.Steam.API
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, DateTimeOffset timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeChecked)
         {
-            var dbItem = await _db.SteamStoreItems
-                .Include(x => x.Stores).ThenInclude(x => x.Store)
-                .Include(x => x.Description)
-                .Where(x => x.AppId == app.Id)
-                .FirstOrDefaultAsync(x => x.SteamId == asset.Name);
+            // Find the item by it's store id or asset class id (which ever exists first)
+            var dbItem = (
+                await _db.SteamStoreItems
+                    .Include(x => x.Stores).ThenInclude(x => x.Store)
+                    .Include(x => x.Description)
+                    .Include(x => x.Description.App)
+                    .Include(x => x.Description.CreatorProfile)
+                    .Where(x => x.AppId == app.Id)
+                    .FirstOrDefaultAsync(x => x.SteamId == asset.Name) ??
+                await _db.SteamStoreItems
+                    .Include(x => x.Stores).ThenInclude(x => x.Store)
+                    .Include(x => x.Description)
+                    .Include(x => x.Description.App)
+                    .Include(x => x.Description.CreatorProfile)
+                    .Where(x => x.AppId == app.Id)
+                    .FirstOrDefaultAsync(x => x.Description.ClassId == asset.ClassId)
+            );
 
-            if (dbItem != null)
-            {
-                // Item is now available again
-                dbItem.IsAvailable = true;
-                return dbItem;
-            }
-
-            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-            {
-                AppId = ulong.Parse(app.SteamId),
-                AssetClassId = asset.ClassId
-            });
-            var assetDescription = importAssetDescription.AssetDescription;
+            // Find the item asset description, or import it if missing
+            var assetDescription = (dbItem?.Description ??
+                await _db.SteamAssetDescriptions
+                    .Include(x => x.App)
+                    .Include(x => x.CreatorProfile)
+                    .FirstOrDefaultAsync(x => x.AppId == app.Id && x.ClassId == asset.ClassId)
+            );
             if (assetDescription == null)
             {
-                return null;
+                var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                {
+                    AppId = ulong.Parse(app.SteamId),
+                    AssetClassId = asset.ClassId
+                });
+                assetDescription = importAssetDescription.AssetDescription;
+                if (assetDescription == null)
+                {
+                    // The asset description for this item doesn't exist, bail...
+                    return null;
+                }
             }
 
+            // If the store item doesn't exist yet, create it now
+            if (dbItem == null)
+            {
+                app.StoreItems.Add(dbItem = new SteamStoreItem()
+                {
+                    App = app,
+                    AppId = app.Id,
+                    Description = assetDescription,
+                    DescriptionId = assetDescription.Id
+                });
+
+                var prices = ParseStoreItemPriceTable(asset.Prices);
+                dbItem.UpdatePrice(
+                    currency,
+                    prices.FirstOrDefault(x => x.Key == currency?.Name).Value,
+                    new PersistablePriceDictionary(prices)
+                );
+            }
+
+            // If the asset item is not yet accepted, accept it now
             assetDescription.IsAccepted = true;
             if (assetDescription.TimeAccepted == null)
             {
-                assetDescription.TimeAccepted = timeChecked;
+                if (!String.IsNullOrEmpty(asset.Date))
+                {
+                    DateTimeOffset storeDate;
+                    if (DateTimeOffset.TryParseExact(asset.Date, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate) ||
+                        DateTimeOffset.TryParseExact(asset.Date, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+                    {
+                        assetDescription.TimeAccepted = storeDate;
+                    }
+                }
+                else
+                {
+                    assetDescription.TimeAccepted = timeChecked;
+                }
             }
 
-            // TODO: This is creating duplicate items, need to find and re-use any existing items before creating new ones
-            app.StoreItems.Add(dbItem = new SteamStoreItem()
-            {
-                SteamId = asset.Name,
-                AppId = app.Id,
-                Description = assetDescription,
-                IsAvailable = true
-            });
-
+            // Mark the store item as available
+            dbItem.SteamId = asset.Name;
+            dbItem.IsAvailable = true;
             return dbItem;
         }
 
@@ -92,10 +135,15 @@ namespace SCMM.Steam.API
                 return dbItem;
             }
 
+            if (asset.ClassId == null)
+            {
+                return null;
+            }
+
             var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
             {
                 AppId = ulong.Parse(app.SteamId),
-                AssetClassId = asset.ClassId
+                AssetClassId = asset.ClassId.Value
             });
             var assetDescription = importAssetDescription.AssetDescription;
             if (assetDescription == null || assetDescription.NameId == null)

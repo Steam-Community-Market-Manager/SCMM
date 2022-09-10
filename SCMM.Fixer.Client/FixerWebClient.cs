@@ -2,22 +2,22 @@
 
 namespace SCMM.Fixer.Client
 {
-    public class FixerWebClient
+    public class FixerWebClient : Worker.Client.WebClient
     {
         private const string BaseUri = "https://data.fixer.io/api/";
 
-        private readonly FixerConfiguration _cfg;
+        private readonly FixerConfiguration _configuration;
 
-        public FixerWebClient(FixerConfiguration cfg)
+        public FixerWebClient(FixerConfiguration configuration)
         {
-            _cfg = cfg;
+            _configuration = configuration;
         }
 
         public async Task<IDictionary<string, decimal>> GetHistoricalRatesAsync(DateTime date, string from, params string[] to)
         {
-            using (var client = new HttpClient())
+            using (var client = BuildWebApiHttpClient())
             {
-                var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_cfg.ApiKey}&base={from}&symbols={string.Join(',', to)}";
+                var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_configuration.ApiKey}&base={from}&symbols={string.Join(',', to)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
@@ -27,5 +27,4 @@ namespace SCMM.Fixer.Client
             }
         }
     }
-
 }

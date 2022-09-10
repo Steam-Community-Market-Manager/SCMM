@@ -1,0 +1,59 @@
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@using SCMM.Web.Client.Shared.Components.Items
+@inject AppState State
+
+<MudExpansionPanel Class="px-1 pb-1" @bind-IsExpanded="@IsExpanded">
+    <TitleContent>
+        <div class="d-flex flex-row justify-start align-center my-n2 mx-n4">
+            <img src="@ItemsImageUrl" class="icon mr-2" />
+            <div class="d-flex flex-column">
+                <MudText Typo="Typo.body1" Color="Color.Default">
+                    <span>@Collection.Name</span>
+                    <span class="@((ItemsCount == ItemsOwnedCount) ? "mud-success-text" : "mud-warning-text")">(@ItemsOwnedCount/@ItemsCount)</span>
+                </MudText>
+                @if (ItemsMissingCount > 0)
+                {
+                    <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
+                        <span>You can buy the remaining @ItemsMissingCount items for <strong>@State.Currency.ToPriceString(ItemsMissingPrice)</strong></span>
+                    </MudText>
+                }
+            </div>
+        </div>
+    </TitleContent>
+    <ChildContent>
+        @if (IsExpanded)
+        {
+            <ItemCollectionLayout Items="@Collection.Items.Select(x => x.Item)" AcquiredItems="@Collection.Items.Where(x => x.IsOwned).Select(x => x.Item)" />
+        }
+    </ChildContent>
+</MudExpansionPanel>
+
+@code {
+
+    [Parameter]
+    public ProfileInventoryCollectionDTO Collection { get; set; }
+
+    private string ItemsImageUrl;
+
+    private int ItemsCount;
+
+    private int ItemsOwnedCount;
+
+    private int ItemsMissingCount;
+
+    private long ItemsMissingPrice;
+
+    private bool IsExpanded;
+
+    protected override void OnParametersSet()
+    {
+        if (Collection != null)
+        {
+            ItemsImageUrl = Collection.Items.FirstOrDefault()?.Item?.IconUrl;
+            ItemsCount = Collection.Items.Count();
+            ItemsOwnedCount = Collection.Items.Count(x => x.IsOwned);
+            ItemsMissingCount = Collection.Items.Count(x => !x.IsOwned && x.Item.BuyNowPrice != null);
+            ItemsMissingPrice = Collection.Items.Where(x => !x.IsOwned && x.Item.BuyNowPrice != null).Sum(x => x.Item.BuyNowPrice.Value);
+        }
+    }
+}

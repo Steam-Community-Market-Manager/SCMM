@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.Extensions;
+using SCMM.Web.Data.Models.UI.Analytic;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models.UI.Statistic;
@@ -38,6 +40,464 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get marketplace sales and revenue chart data, grouped by day (UTC)
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="maxDays">The maximum number of days worth of market history to return. Use <code>-1</code> for all history</param>
+        /// <response code="200">List of market sales and revenue grouped/keyed per day by UTC date.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/sales")]
+        [ProducesResponseType(typeof(IEnumerable<MarketSalesChartPointDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketSales(int maxDays = 30)
+        {
+            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var appId = this.App().Guid;
+            var query = _db.SteamMarketItemSale
+                .AsNoTracking()
+                .Where(x => x.Item.AppId == appId)
+                .Where(x => x.Timestamp.Date <= yesterday.Date)
+                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
+                .GroupBy(x => x.Timestamp.Date)
+                .OrderBy(x => x.Key.Date)
+                .Select(x => new
+                {
+                    // TODO: Snapshot these for faster querying
+                    Date = x.Key,
+                    Volume = x.Sum(y => y.Quantity),
+                    Revenue = x.Sum(y => y.Quantity * y.MedianPrice)
+                });
+
+            var salesPerDay = (await query.ToListAsync()).Select(
+                x => new MarketSalesChartPointDTO
+                {
+                    Date = x.Date,
+                    Volume = x.Volume,
+                    Revenue = this.Currency().ToPrice(this.Currency().CalculateExchange(x.Revenue))
+                }
+            );
+
+            return Ok(salesPerDay);
+        }
+
+        /// <summary>
+        /// Get marketplace index fund chart data, grouped by day (UTC)
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="maxDays">The maximum number of days worth of market history to return. Use <code>-1</code> for all history</param>
+        /// <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/indexFund")]
+        [ProducesResponseType(typeof(IEnumerable<MarketIndexFundChartPointDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketIndexFund(int maxDays = 30)
+        {
+            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var appId = this.App().Guid;
+            var query = _db.SteamMarketItemSale
+                .AsNoTracking()
+                .Where(x => x.Item.AppId == appId)
+                .Where(x => x.Timestamp.Date <= yesterday.Date)
+                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
+                .GroupBy(x => x.Timestamp.Date)
+                .OrderBy(x => x.Key.Date)
+                .Select(x => new
+                {
+                    // TODO: Snapshot these for faster querying
+                    Date = x.Key,
+                    Volume = x/*.DistinctBy(x => x.ItemId)*/.Sum(y => y.Quantity),
+                    MedianPrice = x.Average(y => y.MedianPrice),
+                });
+
+            var salesPerDay = (await query.ToListAsync()).Select(
+                x => new MarketIndexFundChartPointDTO
+                {
+                    Date = x.Date,
+                    Volume = x.Volume/*(long)Math.Round((x.Volume > 0 && x.ItemCount > 0) ? (x.Volume / (decimal)x.ItemCount) : 0, 0)*/,
+                    Value = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.MedianPrice, 0)))
+                }
+            );
+
+            return Ok(salesPerDay);
+        }
+
+        /// <summary>
+        /// Get items that can be instantly flipped on to the Steam Community Market for profit
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
+        /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="sellNow">If true, sell prices are based on highest buy order. If false, sell prices are based on lowest sell order. Default is true.</param>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [HttpGet("market/flips")]
+        [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipAnalyticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            var appId = this.App().Guid;
+            if (market == null)
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) > 0)
+                    .Where(x => ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
+                    .OrderByDescending(x => (decimal)((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((decimal)(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)(x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)));
+
+                return Ok(
+                    await query.PaginateAsync(start, count, x => new MarketItemFlipAnalyticDTO()
+                    {
+                        Id = x.Description.ClassId ?? 0,
+                        AppId = ulong.Parse(x.App.SteamId),
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        BuyFrom = x.BuyNowFrom,
+                        BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                        BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
+                        BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
+                        SellTo = MarketType.SteamCommunityMarket,
+                        SellPrice = this.Currency().CalculateExchange(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice, x.Currency),
+                        SellFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice), x.Currency) : 0),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                );
+            }
+            else
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => x.BuyPrices.Serialised.Contains(market.ToString()))
+                    .Select(x => new
+                    {
+                        Id = x.Description.ClassId,
+                        AppId = x.App.SteamId,
+                        AppName = x.App.Name,
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        CurrencyExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        BuyOrderHighestPrice = x.BuyOrderHighestPrice,
+                        SellOrderLowestPrice = x.SellOrderLowestPrice,
+                        Prices = x.BuyPrices,
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .ToList()
+                    .Select(x => new MarketItemFlipAnalyticDTO()
+                    {
+                        Id = x.Id ?? 0,
+                        AppId = ulong.Parse(x.AppId),
+                        IconUrl = x.IconUrl,
+                        Name = x.Name,
+                        BuyFrom = market.Value,
+                        BuyPrice = this.Currency().CalculateExchange(
+                             x.Prices.FirstOrDefault(x => x.Key == market).Value.Price,
+                             x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyFee = this.Currency().CalculateExchange(
+                            (includeFees ? market.Value.GetMarketBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyUrl = market.Value.GetMarketBuyUrl(
+                            x.AppId, x.AppName, x.Id, x.Name
+                        ),
+                        SellTo = MarketType.SteamCommunityMarket,
+                        SellPrice = this.Currency().CalculateExchange(
+                            (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        SellFee = this.Currency().CalculateExchange(
+                            (includeFees ? EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) : 0),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .AsQueryable()
+                    .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.SellPrice > 0)
+                    .Where(x => (x.SellPrice - (x.SellPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
+                    .OrderByDescending(x => (decimal)(x.SellPrice - ((decimal)(x.SellPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)(x.BuyPrice + (includeFees ? x.BuyFee : 0)));
+
+                return Ok(
+                    query.Paginate(start, count)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Get the cheapeast market listing for items
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
+        /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [HttpGet("market/cheapestListings")]
+        [ProducesResponseType(typeof(PaginatedResult<MarketItemListingAnalyticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            var appId = this.App().Guid;
+            if (market == null)
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) <= x.SellOrderLowestPrice)
+                    .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.SellOrderLowestPrice > 0)
+                    .OrderByDescending(x => (decimal)(x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.SellOrderLowestPrice);
+
+                return Ok(
+                    await query.PaginateAsync(start, count, x => new MarketItemListingAnalyticDTO()
+                    {
+                        Id = x.Description.ClassId ?? 0,
+                        AppId = ulong.Parse(x.App.SteamId),
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        BuyFrom = x.BuyNowFrom,
+                        BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                        BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
+                        BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
+                        ReferenceFrom = MarketType.SteamCommunityMarket,
+                        ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                );
+            }
+            else
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => x.BuyPrices.Serialised.Contains(market.ToString()))
+                    .Select(x => new
+                    {
+                        Id = x.Description.ClassId,
+                        AppId = x.App.SteamId,
+                        AppName = x.App.Name,
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        CurrencyExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        SellOrderLowestPrice = x.SellOrderLowestPrice,
+                        Prices = x.BuyPrices,
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .ToList()
+                    .Select(x => new MarketItemListingAnalyticDTO()
+                    {
+                        Id = x.Id ?? 0,
+                        AppId = ulong.Parse(x.AppId),
+                        IconUrl = x.IconUrl,
+                        Name = x.Name,
+                        BuyFrom = market.Value,
+                        BuyPrice = this.Currency().CalculateExchange(
+                             x.Prices.FirstOrDefault(x => x.Key == market).Value.Price,
+                             x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyFee = this.Currency().CalculateExchange(
+                            (includeFees ? market.Value.GetMarketBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyUrl = market.Value.GetMarketBuyUrl(
+                            x.AppId, x.AppName, x.Id, x.Name
+                        ),
+                        ReferenceFrom = MarketType.SteamCommunityMarket,
+                        ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.CurrencyExchangeRateMultiplier),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .AsQueryable()
+                    .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) <= x.ReferemcePrice)
+                    .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.ReferemcePrice > 0)
+                    .OrderByDescending(x => (decimal)(x.ReferemcePrice - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)x.ReferemcePrice);
+
+                return Ok(
+                    query.Paginate(start, count)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Get the chespest method of aquiring crafting components, sorted by lowest cost
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/cheapestCraftingResourceCosts")]
+        [ProducesResponseType(typeof(PaginatedResult<MarketCraftingItemCostAnalyticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetCraftingCheapestComponentCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            var appId = this.App().Guid;
+            var query = _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
+                .Where(x => x.IsCraftingComponent)
+                .Where(x => x.MarketItem != null)
+                .Select(x => new
+                {
+                    Resource = x,
+                    CheapestItem = x.App.AssetDescriptions
+                        .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
+                        .Where(y => y.MarketItem != null && y.MarketItem.SellOrderLowestPrice > 0)
+                        .OrderBy(y => y.MarketItem.SellOrderLowestPrice)
+                        .Select(y => new
+                        {
+                            Item = y,
+                            Currency = y.MarketItem.Currency,
+                            BuyNowPrice = y.MarketItem.SellOrderLowestPrice,
+                        })
+                        .FirstOrDefault()
+                })
+                .OrderBy(x => x.Resource.MarketItem.SellOrderLowestPrice);
+
+            return Ok(
+                query.Paginate(start, count, x => new MarketCraftingItemCostAnalyticDTO
+                {
+                    Id = x.Resource.ClassId ?? 0,
+                    AppId = ulong.Parse(x.Resource.App.SteamId),
+                    Name = x.Resource.Name,
+                    BackgroundColour = x.Resource.BackgroundColour,
+                    ForegroundColour = x.Resource.ForegroundColour,
+                    IconUrl = x.Resource.IconUrl,
+                    BuyFrom = x.Resource.MarketItem.BuyNowFrom,
+                    BuyPrice = this.Currency().CalculateExchange(x.Resource.MarketItem.BuyNowPrice, x.Resource.MarketItem.Currency),
+                    BuyFee = (includeFees ? this.Currency().CalculateExchange(x.Resource.MarketItem.BuyNowFee, x.Resource.MarketItem.Currency) : 0),
+                    BuyUrl = x.Resource.MarketItem.Description.GetBuyPrices(x.Resource.MarketItem.Currency)?.FirstOrDefault(p => p.MarketType == x.Resource.MarketItem.BuyNowFrom)?.Url,
+                    CheapestItem = new ItemValueStatisticDTO()
+                    {
+                        Id = x.CheapestItem.Item.ClassId ?? 0,
+                        AppId = ulong.Parse(x.CheapestItem.Item.App.SteamId),
+                        Name = x.CheapestItem.Item.Name,
+                        BackgroundColour = x.CheapestItem.Item.BackgroundColour,
+                        ForegroundColour = x.CheapestItem.Item.ForegroundColour,
+                        IconUrl = x.CheapestItem.Item.IconUrl,
+                        BuyNowPrice = this.Currency().CalculateExchange(x.CheapestItem.BuyNowPrice, x.CheapestItem.Currency),
+                    }
+                })
+            );
+        }
+
+        /// <summary>
+        /// Get the cheapest method of aquiring craftable item containers, sorted by lowest cost
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/cheapestCraftableContainerCosts")]
+        [ProducesResponseType(typeof(PaginatedResult<MarketCraftableItemCostAnalyticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketCheapestCraftableContainerCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            var appId = this.App().Guid;
+            var resources = await _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
+                .Where(x => x.IsCraftingComponent)
+                .Where(x => x.MarketItem != null)
+                .Select(x => new
+                {
+                    Resource = x,
+                    ResourcePrice = (x.MarketItem.SellOrderLowestPrice > 0 ? (x.MarketItem.SellOrderLowestPrice / x.MarketItem.Currency.ExchangeRateMultiplier) : 0),
+                    CheapestItem = x.App.AssetDescriptions
+                        .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
+                        .Where(y => y.MarketItem != null && y.MarketItem.SellOrderLowestPrice > 0)
+                        .OrderBy(y => y.MarketItem.SellOrderLowestPrice)
+                        .Select(y => new
+                        {
+                            Item = y,
+                            ItemPrice = (y.MarketItem.SellOrderLowestPrice / y.MarketItem.Currency.ExchangeRateMultiplier),
+                            MarketItem = y.MarketItem
+                        })
+                        .FirstOrDefault()
+                })
+                .OrderBy(x => x.Resource.MarketItem.SellOrderLowestPrice)
+                .ToListAsync();
+
+            var query = _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
+                .Where(x => x.IsCraftable)
+                .Where(x => x.MarketItem != null)
+                .OrderBy(x => x.MarketItem.SellOrderLowestPrice);
+
+            return Ok(
+                query.Paginate(start, count, x => new MarketCraftableItemCostAnalyticDTO
+                {
+                    Id = x.ClassId ?? 0,
+                    AppId = ulong.Parse(x.App.SteamId),
+                    Name = x.Name,
+                    BackgroundColour = x.BackgroundColour,
+                    ForegroundColour = x.ForegroundColour,
+                    IconUrl = x.IconUrl,
+                    BuyFrom = x.MarketItem.BuyNowFrom,
+                    BuyPrice = this.Currency().CalculateExchange(x.MarketItem.BuyNowPrice, x.MarketItem.Currency),
+                    BuyFee = (includeFees ? this.Currency().CalculateExchange(x.MarketItem.BuyNowFee, x.MarketItem.Currency) : 0),
+                    BuyUrl = x.MarketItem.Description.GetBuyPrices(x.MarketItem.Currency)?.FirstOrDefault(p => p.MarketType == x.MarketItem.BuyNowFrom)?.Url,
+                    CraftingComponents = x.CraftingComponents
+                        .Join(resources, x => x.Key, x => x.Resource.Name, (x, y) => new
+                        {
+                            Name = y.Resource.Name,
+                            Quantity = x.Value,
+                            CheapestItem = (y.ResourcePrice <= y.CheapestItem.ItemPrice) ? y.Resource : y.CheapestItem.Item,
+                        })
+                        .Select(y => new ItemCraftingComponentCostDTO()
+                        {
+                            Name = y.Name,
+                            Quantity = y.Quantity,
+                            Component = new ItemValueStatisticDTO
+                            {
+                                Id = y.CheapestItem.ClassId ?? 0,
+                                AppId = ulong.Parse(y.CheapestItem.App.SteamId),
+                                Name = y.CheapestItem.Name,
+                                BackgroundColour = y.CheapestItem.BackgroundColour,
+                                ForegroundColour = y.CheapestItem.ForegroundColour,
+                                IconUrl = y.CheapestItem.IconUrl,
+                                BuyNowPrice = (y.CheapestItem.GetCheapestBuyPrice(this.Currency())?.Price ?? 0),
+                            }
+                        })
+                        .ToArray()
+                })
+            );
+        }
+
+        /// 
+        /// <summary>
         /// Get marketplace listing activity from the last 24hrs
         /// </summary>
         /// <param name="filter">Optional filter, matches against the buyer name, seller name, or item name</param>
@@ -52,10 +512,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMarketActivity([FromQuery] string filter = null, [FromQuery] string item = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemActivity
                 .AsNoTracking()
                 .Include(x => x.Description).ThenInclude(x => x.App)
                 .Include(x => x.Currency)
+                .Where(x => x.Item.AppId == appId)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.BuyerName.Contains(filter) || x.SellerName.Contains(filter))
                 .Where(x => string.IsNullOrEmpty(item) || x.Description.Name.Contains(item))
                 .OrderByDescending(x => x.Timestamp);
@@ -63,7 +525,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemActivityStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.Description.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -82,87 +544,57 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get items with the highest amount of market listing activity in the last 24hrs
+        /// Get store item top seller changes timeline
         /// </summary>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <param name="start">Starting from date</param>
+        /// <param name="end">Ending at date</param>
+        /// <response code="200">The store item top seller changes timeline.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("market/activityTopItems")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemDescriptionDTO>), StatusCodes.Status200OK)]
+        [HttpGet("store/topSellers")]
+        [ProducesResponseType(typeof(IEnumerable<StoreTopSellerItemDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketActivityTopItems([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetStoreItemTopSellersTimeline([FromQuery] long start, [FromQuery] long? end)
         {
-            var topAssetDescriptionIds = await _db.SteamMarketItemActivity
-                .AsNoTracking()
-                .Where(x => !string.IsNullOrEmpty(x.SellerName) && !string.IsNullOrEmpty(x.BuyerName))
-                .GroupBy(x => x.DescriptionId)
-                .OrderByDescending(x => x.Count())
-                .Select(x => x.Key)
-                .Take(30)
-                .ToArrayAsync();
-
-            var query = _db.SteamAssetDescriptions
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Where(x => topAssetDescriptionIds.Contains(x.Id))
-                .ToList()
-                .OrderBy(x => topAssetDescriptionIds.IndexOf(x.Id))
-                .Select(x => new ItemDescriptionDTO()
-                {
-                    Id = x.ClassId,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    Name = x.Name,
-                    BackgroundColour = x.BackgroundColour,
-                    ForegroundColour = x.ForegroundColour,
-                    IconUrl = x.IconUrl
-                })
-                .AsQueryable();
-
-            return Ok(
-                query.Paginate(start, count)
-            );
-        }
-
-        /// <summary>
-        /// Get marketplace sales and revenue chart data, grouped by day (UTC)
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <response code="200">List of market sales and revenue per day grouped/keyed by UTC date.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("market/activityTimeline")]
-        [ProducesResponseType(typeof(IEnumerable<MarketActivityChartStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketActivityTimeline()
-        {
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var query = _db.SteamMarketItemSale
-                .AsNoTracking()
-                .Where(x => x.Timestamp.Date <= yesterday.Date)
-                .GroupBy(x => x.Timestamp.Date)
-                .OrderBy(x => x.Key.Date)
+            var app = this.App();
+            var startDate = new DateTimeOffset(start, TimeZoneInfo.Utc.BaseUtcOffset);
+            var endDate = (end != null ? new DateTimeOffset(end.Value, TimeZoneInfo.Utc.BaseUtcOffset) : (DateTimeOffset?) null);
+            var topSellerPositions = await _db.SteamStoreItemTopSellerPositions
+                .Where(x => x.Description.AppId == app.Guid)
+                .Where(x => x.Timestamp >= startDate)
+                .Where(x => endDate == null || x.Timestamp <= endDate)
                 .Select(x => new
                 {
-                    Date = x.Key,
-                    // TODO: Snapshot these for faster querying
-                    Sales = x.Sum(y => y.Quantity),
-                    Revenue = x.Sum(y => y.Quantity * y.MedianPrice)
-                });
+                    Name = x.Description.Name,
+                    IconUrl = x.Description.IconUrl,
+                    DominantColour = x.Description.DominantColour,
+                    Timestamp = x.Timestamp,
+                    Position = x.Position,
+                    Total = x.Total,
+                    IsActive = x.IsActive
+                })
+                .ToListAsync();
 
-            var salesPerDay = (await query.ToListAsync()).Select(
-                x => new MarketActivityChartStatisticDTO
-                {
-                    Date = x.Date,
-                    Sales = x.Sales,
-                    Revenue = this.Currency().ToPrice(this.Currency().CalculateExchange(x.Revenue))
-                }
+            return Ok(
+                topSellerPositions.GroupBy(x => new { x.Name, x.IconUrl, x.DominantColour }).Select(
+                    x => new StoreTopSellerItemDTO
+                    {
+                        Name = x.Key.Name,
+                        IconUrl = x.Key.IconUrl,
+                        DominantColour = x.Key.DominantColour,
+                        Position = x.FirstOrDefault(x => x.IsActive)?.Position ?? 0,
+                        PositionChanges = x.Select(p => new StoreTopSellerPositionChartPointDTO
+                        {
+                            Timestamp = p.Timestamp.UtcDateTime,
+                            Position = p.Position,
+                            Total = p.Total,
+                            IsActive = p.IsActive
+                        }).ToList()
+                    }
+                ).ToList()
             );
-
-            return Ok(salesPerDay);
         }
 
         /// <summary>
@@ -178,15 +610,17 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsMostDemanded([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.Last24hrSales > 0)
                 .OrderByDescending(x => x.Last24hrSales)
                 .Select(x => new ItemSupplyDemandStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -214,15 +648,17 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsMostSaturated([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.SellOrderCount > 0)
                 .OrderByDescending(x => x.SellOrderCount)
                 .Select(x => new ItemSupplyDemandStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -255,22 +691,23 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var sevenDays = TimeSpan.FromDays(7);
             var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => (x.LastSaleValue - x.AllTimeHighestValue) >= 0)
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeHighestValue > 0)
-                .OrderBy(x => Math.Abs(x.LastSaleValue - x.AllTimeHighestValue))
-                .ThenByDescending(x => x.LastSaleValue - x.Last24hrValue);
+                .Where(x => (x.SellOrderLowestPrice - x.AllTimeHighestValue) >= 0)
+                .OrderBy(x => Math.Abs(x.SellOrderLowestPrice - x.AllTimeHighestValue));
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -298,117 +735,28 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetItemsAllTimeLow([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => (x.LastSaleValue - x.AllTimeLowestValue) <= 0)
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeLowestValue > 0)
-                .OrderBy(x => Math.Abs(x.LastSaleValue - x.AllTimeLowestValue))
-                .ThenBy(x => x.LastSaleValue - x.Last24hrValue);
+                .Where(x => (x.SellOrderLowestPrice - x.AllTimeLowestValue) <= 0)
+                .OrderBy(x => Math.Abs(x.SellOrderLowestPrice - x.AllTimeLowestValue));
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency)
-                })
-            );
-        }
-
-        /// <summary>
-        /// List items with largest gap between buy now and buy asking price, sorted by highest potential profit
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("items/profitableFlips")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemBuySellOrderStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsProfitableFlips([FromQuery] int start = 0, [FromQuery] int count = 10)
-        {
-            var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
-            var now = DateTimeOffset.UtcNow;
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.Last24hrValue > x.Last168hrValue)
-                .Where(x => x.BuyOrderHighestPrice < x.Last24hrValue)
-                .Where(x => x.BuyOrderHighestPrice > x.AllTimeLowestValue)
-                .Where(x => x.SellOrderLowestPrice > x.Last24hrValue)
-                .Where(x => x.SellOrderLowestPrice < x.AllTimeHighestValue)
-                .Where(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.FeeMultiplier)) > 300) // more than $3 profit
-                .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .OrderByDescending(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.FeeMultiplier)));
-
-            return Ok(
-                await query.PaginateAsync(start, count, x => new ItemBuySellOrderStatisticDTO()
-                {
-                    Id = x.Description.ClassId,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    Name = x.Description.Name,
-                    BackgroundColour = x.Description.BackgroundColour,
-                    ForegroundColour = x.Description.ForegroundColour,
-                    IconUrl = x.Description.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
-                    BuyAskingPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency)
-                })
-            );
-        }
-
-        /// <summary>
-        /// List items with largest gap between buy now price and average market value
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("items/manipulated")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemManipulationStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsManipulated([FromQuery] int start = 0, [FromQuery] int count = 10)
-        {
-            var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
-            var now = DateTimeOffset.UtcNow;
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.SellOrderLowestPrice > 0 && x.AllTimeAverageValue > 0)
-                .Where(x => x.SellOrderLowestPrice / x.AllTimeAverageValue > 5) // more than 5x average price
-                .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .OrderByDescending(x => x.SellOrderLowestPrice / x.AllTimeAverageValue);
-
-            return Ok(
-                await query.PaginateAsync(start, count, x => new ItemManipulationStatisticDTO()
-                {
-                    Id = x.Description.ClassId,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    Name = x.Description.Name,
-                    BackgroundColour = x.Description.BackgroundColour,
-                    ForegroundColour = x.Description.ForegroundColour,
-                    IconUrl = x.Description.IconUrl,
-                    AverageMarketValue = this.Currency().CalculateExchange(x.AllTimeAverageValue, x.Currency),
                     BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency)
                 })
             );
@@ -430,18 +778,20 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsMostExpensive([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.SellOrderLowestPrice > 0)
                 .OrderByDescending(x => x.SellOrderLowestPrice);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -453,46 +803,34 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List items, sorted by highest number of sales
+        /// List items, sorted by highest estimated total supply
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("items/mostSales")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemSalesStatisticDTO>), StatusCodes.Status200OK)]
+        [HttpGet("items/mostSupply")]
+        [ProducesResponseType(typeof(PaginatedResult<ItemSupplyStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsMostSales([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetItemsMostSupply([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
-                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.LifetimeSubscriptions > 0)
-                .OrderByDescending(x => x.LifetimeSubscriptions)
-                .Select(x => new
+                .Where(x => x.AppId == appId)
+                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.SupplyTotalEstimated > 0)
+                .OrderByDescending(x => x.SupplyTotalEstimated)
+                .Select(x => new ItemSupplyStatisticDTO()
                 {
-                    Item = x,
-                    // TODO: Snapshot these for faster querying
-                    Subscriptions = (x.LifetimeSubscriptions ?? 0),
-                    TotalSalesMin = (x.StoreItem != null ? (x.StoreItem.TotalSalesMin ?? 0) : 0),
-                    KnownInventoryDuplicates = 0/*x.InventoryItems
-                        .GroupBy(y => y.ProfileId)
-                        .Where(y => y.Count() > 1)
-                        .Select(y => y.Sum(z => z.Quantity))
-                        .Sum(x => x)*/
-                })
-                .Select(x => new ItemSalesStatisticDTO()
-                {
-                    Id = x.Item.ClassId,
-                    AppId = ulong.Parse(x.Item.App.SteamId),
-                    Name = x.Item.Name,
-                    BackgroundColour = x.Item.BackgroundColour,
-                    ForegroundColour = x.Item.ForegroundColour,
-                    IconUrl = x.Item.IconUrl,
-                    Subscriptions = x.Subscriptions,
-                    KnownInventoryDuplicates = x.KnownInventoryDuplicates,
-                    EstimatedOtherDuplicates = Math.Max(0, x.TotalSalesMin - x.Subscriptions - x.KnownInventoryDuplicates)
+                    Id = x.ClassId ?? 0,
+                    AppId = ulong.Parse(x.App.SteamId),
+                    Name = x.Name,
+                    BackgroundColour = x.BackgroundColour,
+                    ForegroundColour = x.ForegroundColour,
+                    IconUrl = x.IconUrl,
+                    SupplyTotalEstimated = x.SupplyTotalEstimated.Value
                 });
 
             return Ok(
@@ -513,15 +851,17 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsLargestCollections([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.ItemCollection != null)
                 .Select(x => new
                 {
                     CreatorId = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorId : null,
                     Name = x.ItemCollection,
-                    IconUrl = x.IconLargeUrl,
+                    IconUrl = x.IconUrl,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
                     BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.SellOrderLowestPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null),
                     Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null)
@@ -549,148 +889,11 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List crafting resources/items, sorted by lowest cost
-        /// </summary>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("items/cheapestResourcesCosts")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemResourceCostStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsCheapestResourceCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
-        {
-            var query = _db.SteamAssetDescriptions
-                .Include(x => x.App)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .Where(x => x.IsCraftingComponent)
-                .Where(x => x.MarketItem != null)
-                .Select(x => new
-                {
-                    Resource = x,
-                    CheapestItem = x.App.AssetDescriptions
-                        .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
-                        .Where(y => y.MarketItem != null && y.MarketItem.SellOrderLowestPrice > 0)
-                        .OrderBy(y => y.MarketItem.SellOrderLowestPrice)
-                        .Select(y => new
-                        {
-                            Item = y,
-                            Currency = y.MarketItem.Currency,
-                            BuyNowPrice = y.MarketItem.SellOrderLowestPrice,
-                        })
-                        .FirstOrDefault()
-                })
-                .OrderBy(x => x.Resource.MarketItem.SellOrderLowestPrice);
-
-            return Ok(
-                query.Paginate(start, count, x => new ItemResourceCostStatisticDTO
-                {
-                    Id = x.Resource.ClassId,
-                    AppId = ulong.Parse(x.Resource.App.SteamId),
-                    Name = x.Resource.Name,
-                    BackgroundColour = x.Resource.BackgroundColour,
-                    ForegroundColour = x.Resource.ForegroundColour,
-                    IconUrl = x.Resource.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.Resource.MarketItem.SellOrderLowestPrice, x.Resource.MarketItem.Currency),
-                    CheapestItem = new ItemValueStatisticDTO()
-                    {
-                        Id = x.CheapestItem.Item.ClassId,
-                        AppId = ulong.Parse(x.CheapestItem.Item.App.SteamId),
-                        Name = x.CheapestItem.Item.Name,
-                        BackgroundColour = x.CheapestItem.Item.BackgroundColour,
-                        ForegroundColour = x.CheapestItem.Item.ForegroundColour,
-                        IconUrl = x.CheapestItem.Item.IconUrl,
-                        BuyNowPrice = this.Currency().CalculateExchange(x.CheapestItem.BuyNowPrice, x.CheapestItem.Currency),
-                    }
-                })
-            );
-        }
-
-        /// <summary>
-        /// List craftable containers/items, sorted by lowest cost
-        /// </summary>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("items/cheapestCraftingCosts")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemCraftingCostStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsCheapestCraftingCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
-        {
-            var resources = await _db.SteamAssetDescriptions
-                .Include(x => x.App)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .Where(x => x.IsCraftingComponent)
-                .Where(x => x.MarketItem != null)
-                .Select(x => new
-                {
-                    Resource = x,
-                    ResourcePrice = (x.MarketItem.SellOrderLowestPrice > 0 ? (x.MarketItem.SellOrderLowestPrice / x.MarketItem.Currency.ExchangeRateMultiplier) : 0),
-                    CheapestItem = x.App.AssetDescriptions
-                        .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
-                        .Where(y => y.MarketItem != null && y.MarketItem.SellOrderLowestPrice > 0)
-                        .OrderBy(y => y.MarketItem.SellOrderLowestPrice)
-                        .Select(y => new
-                        {
-                            Item = y,
-                            ItemPrice = (y.MarketItem.SellOrderLowestPrice / y.MarketItem.Currency.ExchangeRateMultiplier),
-                            MarketItem = y.MarketItem
-                        })
-                        .FirstOrDefault()
-                })
-                .OrderBy(x => x.Resource.MarketItem.SellOrderLowestPrice)
-                .ToListAsync();
-
-            var query = _db.SteamAssetDescriptions
-                .Include(x => x.App)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .Where(x => x.IsCraftable)
-                .Where(x => x.MarketItem != null)
-                .OrderBy(x => x.MarketItem.SellOrderLowestPrice);
-
-            return Ok(
-                query.Paginate(start, count, x => new ItemCraftingCostStatisticDTO
-                {
-                    Id = x.ClassId,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    Name = x.Name,
-                    BackgroundColour = x.BackgroundColour,
-                    ForegroundColour = x.ForegroundColour,
-                    IconUrl = x.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.MarketItem.SellOrderLowestPrice, x.MarketItem.Currency),
-                    CraftingComponents = x.CraftingComponents
-                        .Join(resources, x => x.Key, x => x.Resource.Name, (x, y) => new
-                        {
-                            CheapestItem = (y.ResourcePrice <= y.CheapestItem.ItemPrice) ? y.Resource : y.CheapestItem.Item,
-                            Quantity = x.Value
-                        })
-                        .Select(y => new ItemCraftingComponentCostDTO()
-                        {
-                            Component = new ItemValueStatisticDTO
-                            {
-                                Id = y.CheapestItem.ClassId,
-                                AppId = ulong.Parse(y.CheapestItem.App.SteamId),
-                                Name = y.CheapestItem.Name,
-                                BackgroundColour = y.CheapestItem.BackgroundColour,
-                                ForegroundColour = y.CheapestItem.ForegroundColour,
-                                IconUrl = y.CheapestItem.IconUrl,
-                                BuyNowPrice = (y.CheapestItem[this.Currency()]?.LowestPrice ?? 0),
-                            },
-                            Quantity = y.Quantity
-                        })
-                })
-            );
-        }
-
-        /// <summary>
         /// List profiles with accepted workshop items, sorted by highest number of items
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="200">Paginated list of profiles matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("profiles/largestCreators")]
@@ -698,10 +901,11 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfilesLargestCreators([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamProfiles
                 .AsNoTracking()
-                .Where(x => x.AssetDescriptions.Count(y => y.TimeAccepted != null) > 0)
-                .OrderByDescending(x => x.AssetDescriptions.Count(y => y.TimeAccepted != null))
+                .Where(x => x.AssetDescriptions.Count(y => y.AppId == appId && y.TimeAccepted != null) > 0)
+                .OrderByDescending(x => x.AssetDescriptions.Count(y => y.AppId == appId && y.TimeAccepted != null))
                 .Select(x => new ProfileAcceptedItemsStatisticDTO()
                 {
                     SteamId = x.SteamId,
@@ -716,10 +920,95 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// List profiles inventory values, sorted by highest value first
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of profiles matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("profiles/highestValueInventory")]
+        [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryValueStatisticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProfilesHighestValueInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var appId = this.App().Guid;
+            var query = _db.SteamProfileInventoryValues
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.MarketValue > 0)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .OrderByDescending(x => x.MarketValue)
+                .Select(x => new ProfileInventoryValueStatisticDTO()
+                {
+                    SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
+                    Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
+                    AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    Items = x.Items,
+                    Value = x.MarketValue,
+                    LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
+                });
+
+            var profiles = await query.PaginateAsync(start, count, x =>
+            {
+                x.Value = this.Currency().CalculateExchange(x.Value);
+                return x;
+            });
+
+            // Calculate rank positions
+            for(int i = 0; i < profiles.Items.Length; i++)
+            {
+                profiles.Items[i].Rank = (start + i + 1);
+            }
+
+            return Ok(profiles);
+        }
+
+        /// <summary>
+        /// List profiles inventory values, sorted by most recently updated first
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of profiles matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("profiles/mostRecentInventory")]
+        [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryValueStatisticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProfilesMostRecentInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var appId = this.App().Guid;
+            var query = _db.SteamProfileInventoryValues
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.MarketValue > 0 && x.Profile.LastUpdatedInventoryOn != null)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .OrderByDescending(x => x.Profile.LastUpdatedInventoryOn)
+                .ThenByDescending(x => x.MarketValue)
+                .Select(x => new ProfileInventoryValueStatisticDTO()
+                {
+                    SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
+                    Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
+                    AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    Items = x.Items,
+                    Value = x.MarketValue,
+                    LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
+                });
+
+            return Ok(
+                await query.PaginateAsync(start, count, x =>
+                {
+                    x.Value = this.Currency().CalculateExchange(x.Value);
+                    return x;
+                })
+            );
+        }
+
+        /// <summary>
         /// List profiles who have the donator role, sorted by highest contribution
         /// </summary>
-        /// <returns>The list of users who have donated</returns>
-        /// <response code="200">The list of users who have donated.</response>
+        /// <returns>The list of profiles who have donated</returns>
+        /// <response code="200">The list of profiles who have donated.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("donators")]
@@ -740,8 +1029,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List profiles who have the contributor role
         /// </summary>
-        /// <returns>The list of users who have contributed</returns>
-        /// <response code="200">The list of users who have contributed.</response>
+        /// <returns>The list of profiles who have contributed</returns>
+        /// <response code="200">The list of profiles who have contributed.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("contributors")]

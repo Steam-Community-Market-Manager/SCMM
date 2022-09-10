@@ -1,0 +1,78 @@
+﻿@inherits PersistentComponent
+@inject ILogger<AppBarAppControls> Logger
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject AppState State
+@inject HttpClient Http
+
+@if (Apps != null)
+{
+    <div @attributes="AdditionalAttributes">
+        <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" 
+                 Size="MudBlazor.Size.Large" Dense="false" MaxHeight="500" Class="px-2 hover-darken" Disabled="State.IsPrerendering" title="Change the selected game">
+            <ActivatorContent>
+                <MudText Typo="Typo.h4" Class="pt-2">
+                    @if (State.AppId > 0)
+                    {
+                        <img src="/images/app/@(State.AppId.ToString())/logo.svg" style="height:1em" />
+                    }
+                </MudText>
+            </ActivatorContent>
+            <ChildContent>
+                <div class="mx-4">
+                    <MudText Typo="MudBlazor.Typo.body1" Color="@MudBlazor.Color.Secondary">Select a game</MudText>
+                </div>
+                @foreach (var app in Apps)
+                {
+                    <MudMenuItem OnTouch="@(() => ChangeApp(app))" OnClick="@(() => ChangeApp(app))" Disabled="@(app.Id == State.AppId)">
+                        <div class="d-flex justify-center" style="@((app.Id == State.AppId) ? "opacity: 0.2" : null)">
+                            <img src="/images/app/@(app.Id.ToString())/logo.svg" style="max-height:3em; max-width:6em;" />
+                        </div>
+                    </MudMenuItem>
+                }
+            </ChildContent>
+        </MudMenu>
+    </div>
+}
+
+@code
+{
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+
+    private AppDetailedDTO[] Apps;
+
+    protected override async Task OnLoadStateAsync()
+    {
+        Apps = await RestoreFromStateOrLoad(nameof(Apps), async () =>
+        {
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<AppDetailedDTO[]>($"api/app?detailed=true");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading apps");
+                Snackbar.Add($"Unable to load app list. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Apps), Apps);
+        return Task.CompletedTask;
+    }
+
+    private void ChangeApp(AppDetailedDTO app)
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var authority = uri.Authority.Replace(State.App?.Subdomain, String.Empty, StringComparison.InvariantCultureIgnoreCase).Trim('.');
+        var appUrl = $"{uri.Scheme}://{app.Subdomain}.{authority}{uri.PathAndQuery}";
+        Logger.LogInformation($"App was changed to '{app.Name}'");
+        State.App = app;
+
+        NavigationManager.NavigateTo(appUrl);
+    }
+}

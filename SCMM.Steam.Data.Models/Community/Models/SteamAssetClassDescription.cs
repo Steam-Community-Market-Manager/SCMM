@@ -9,5 +9,8 @@ namespace SCMM.Steam.Data.Models.Community.Models
 
         [JsonPropertyName("value")]
         public string Value { get; set; }
+
+        [JsonPropertyName("color")]
+        public string Color { get; set; }
     }
 }

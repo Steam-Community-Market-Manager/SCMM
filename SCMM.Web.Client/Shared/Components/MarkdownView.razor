@@ -14,12 +14,18 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
     
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
         if (!String.IsNullOrWhiteSpace(Content))
         {
             MarkupContent = new MarkupString(
-                Markdown.ToHtml(Content, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build())
+                Markdown.ToHtml(
+                    Content, 
+                    new MarkdownPipelineBuilder()
+                        .UseAdvancedExtensions()
+                        .UseSoftlineBreakAsHardlineBreak()
+                        .Build()
+                )
             );
         }
         else 

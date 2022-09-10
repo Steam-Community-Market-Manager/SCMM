@@ -2,68 +2,60 @@
 @namespace SCMM.Web.Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using Microsoft.AspNetCore.Components.Web
+@using SCMM.Shared.Web.Extensions
 @using SCMM.Web.Client;
 @using SCMM.Web.Data.Models
-@inject ICookieManager CookieManager
+@model IndexModel
 @{
-    var runtime = RuntimeType.Server;// await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.Server);
-    var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssembly);
+    var runtime = Model.AppState.Runtime;
+    var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssemblyPrerendered);
     var prerenderMode = (runtime == RuntimeType.Server ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered);
+    if (renderMode == prerenderMode)
+    {
+        Model.AppState.IsPrerendering = true;
+    }
 }
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Rust - Steam Community Market Manager</title>
+    
+    <title>@(Model.AppName ?? Model.AppId) - Steam Community Market Manager</title>
+    
     <meta charset="utf-8" />
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
-    <meta name="title" property="og:title" content="Rust - Steam Community Market Manager">
-    <meta name="image" property="og:image" content="https://scmm.app/images/og.image.png">
-    <meta name="description" property="og:description" content="SCMM is an app for analysing Steam Community Market information from the video game Rust">
+    <meta name="title" property="og:title" content="@(Model.AppName ?? Model.AppId) - Steam Community Market Manager">
+    <meta name="image" property="og:image" content="https://@(Model.Host)/images/app/@(Model.AppId)/og.image.png">
+    <meta name="description" property="og:description" content="Track @(Model.AppName ?? Model.AppId) skin prices, find cheap deals, check your inventory value, and much more">
     <meta name="determiner" property="og:determiner" content="the">
     <meta name="type" property="og:type" content="website">
-    <meta name="url" property="og:url" content="https://scmm.app">
+    <meta name="url" property="og:url" content="https://@(Model.Host)">
     <meta name="site_name" property="og:site_name" content="SCMM">
-    <meta name="keywords" content="Steam, Community, Market, SCM, SCMM, Rust, Store, Skin, Inventory, Value, Statistics, Analytics">
+    <meta name="keywords" content="Steam, Community, Market, SCM, SCMM, Rust, CSGO, Store, Shop, Skin, Skins, Inventory, Value, Cheap, Cheapest, Price, Prices, Deal, Deals, Sale Sales, History, Statistics, Analytics, Invest, Investment">
+    
     <base href="/" />
+    
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" rel="stylesheet" />
-    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <link href="_content/Syncfusion.Blazor.Themes/material-dark.css" rel="stylesheet" />
+    <link href="_content/Syncfusion.Blazor.Themes/fluent-dark.css" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link href="/css/scmm-mudblazor-theme.css" rel="stylesheet" />
     <link href="/css/scmm-preloader.css" rel="stylesheet" />
     <link href="/css/scmm.css" rel="stylesheet" />
     <link href="scmm.web.client.styles.css" rel="stylesheet" />
-    <link href="icon-512.png" rel="icon" type="image/png" />
-    <link href="icon-512.png" rel="apple-touch-icon" type="image/png" sizes="512x512" />
-@if (runtime == RuntimeType.WebAssembly)
-{
-    <link href="manifest.json" rel="manifest" />
-}
-    <script type="text/javascript">
-        !function (T, l, y) { var S = T.location, k = "script", D = "instrumentationKey", C = "ingestionendpoint", I = "disableExceptionTracking", E = "ai.device.", b = "toLowerCase", w = "crossOrigin", N = "POST", e = "appInsightsSDK", t = y.name || "appInsights"; (y.name || T[e]) && (T[e] = t); var n = T[t] || function (d) { var g = !1, f = !1, m = { initialize: !0, queue: [], sv: "5", version: 2, config: d }; function v(e, t) { var n = {}, a = "Browser"; return n[E + "id"] = a[b](), n[E + "type"] = a, n["ai.operation.name"] = S && S.pathname || "_unknown_", n["ai.internal.sdkVersion"] = "javascript:snippet_" + (m.sv || m.version), { time: function () { var e = new Date; function t(e) { var t = "" + e; return 1 === t.length && (t = "0" + t), t } return e.getUTCFullYear() + "-" + t(1 + e.getUTCMonth()) + "-" + t(e.getUTCDate()) + "T" + t(e.getUTCHours()) + ":" + t(e.getUTCMinutes()) + ":" + t(e.getUTCSeconds()) + "." + ((e.getUTCMilliseconds() / 1e3).toFixed(3) + "").slice(2, 5) + "Z" }(), iKey: e, name: "Microsoft.ApplicationInsights." + e.replace(/-/g, "") + "." + t, sampleRate: 100, tags: n, data: { baseData: { ver: 2 } } } } var h = d.url || y.src; if (h) { function a(e) { var t, n, a, i, r, o, s, c, u, p, l; g = !0, m.queue = [], f || (f = !0, t = h, s = function () { var e = {}, t = d.connectionString; if (t) for (var n = t.split(";"), a = 0; a < n.length; a++) { var i = n[a].split("="); 2 === i.length && (e[i[0][b]()] = i[1]) } if (!e[C]) { var r = e.endpointsuffix, o = r ? e.location : null; e[C] = "https://" + (o ? o + "." : "") + "dc." + (r || "services.visualstudio.com") } return e }(), c = s[D] || d[D] || "", u = s[C], p = u ? u + "/v2/track" : d.endpointUrl, (l = []).push((n = "SDK LOAD Failure: Failed to load Application Insights SDK script (See stack for details)", a = t, i = p, (o = (r = v(c, "Exception")).data).baseType = "ExceptionData", o.baseData.exceptions = [{ typeName: "SDKLoadFailed", message: n.replace(/\./g, "-"), hasFullStack: !1, stack: n + "\nSnippet failed to load [" + a + "] -- Telemetry is disabled\nHelp Link: https://go.microsoft.com/fwlink/?linkid=2128109\nHost: " + (S && S.pathname || "_unknown_") + "\nEndpoint: " + i, parsedStack: [] }], r)), l.push(function (e, t, n, a) { var i = v(c, "Message"), r = i.data; r.baseType = "MessageData"; var o = r.baseData; return o.message = 'AI (Internal): 99 message:"' + ("SDK LOAD Failure: Failed to load Application Insights SDK script (See stack for details) (" + n + ")").replace(/\"/g, "") + '"', o.properties = { endpoint: a }, i }(0, 0, t, p)), function (e, t) { if (JSON) { var n = T.fetch; if (n && !y.useXhr) n(t, { method: N, body: JSON.stringify(e), mode: "cors" }); else if (XMLHttpRequest) { var a = new XMLHttpRequest; a.open(N, t), a.setRequestHeader("Content-type", "application/json"), a.send(JSON.stringify(e)) } } }(l, p)) } function i(e, t) { f || setTimeout(function () { !t && m.core || a() }, 500) } var e = function () { var n = l.createElement(k); n.src = h; var e = y[w]; return !e && "" !== e || "undefined" == n[w] || (n[w] = e), n.onload = i, n.onerror = a, n.onreadystatechange = function (e, t) { "loaded" !== n.readyState && "complete" !== n.readyState || i(0, t) }, n }(); y.ld < 0 ? l.getElementsByTagName("head")[0].appendChild(e) : setTimeout(function () { l.getElementsByTagName(k)[0].parentNode.appendChild(e) }, y.ld || 0) } try { m.cookie = l.cookie } catch (p) { } function t(e) { for (; e.length;)!function (t) { m[t] = function () { var e = arguments; g || m.queue.push(function () { m[t].apply(m, e) }) } }(e.pop()) } var n = "track", r = "TrackPage", o = "TrackEvent"; t([n + "Event", n + "PageView", n + "Exception", n + "Trace", n + "DependencyData", n + "Metric", n + "PageViewPerformance", "start" + r, "stop" + r, "start" + o, "stop" + o, "addTelemetryInitializer", "setAuthenticatedUserContext", "clearAuthenticatedUserContext", "flush"]), m.SeverityLevel = { Verbose: 0, Information: 1, Warning: 2, Error: 3, Critical: 4 }; var s = (d.extensionConfig || {}).ApplicationInsightsAnalytics || {}; if (!0 !== d[I] && !0 !== s[I]) { var c = "onerror"; t(["_" + c]); var u = T[c]; T[c] = function (e, t, n, a, i) { var r = u && u(e, t, n, a, i); return !0 !== r && m["_" + c]({ message: e, url: t, lineNumber: n, columnNumber: a, error: i }), r }, d.autoExceptionInstrumented = !0 } return m }(y.cfg); function a() { y.onInit && y.onInit(n) } (T[t] = n).queue && 0 === n.queue.length ? (n.queue.push(a), n.trackPageView({})) : a() }(window, document, {
-            src: "https://js.monitor.azure.com/scripts/b/ai.2.min.js", // The SDK URL Source
-            // name: "appInsights", // Global SDK Instance name defaults to "appInsights" when not supplied
-            ld: -1, // Defines the load delay (in ms) before attempting to load the sdk. -1 = block page load and add to head. (default) = 0ms load after timeout,
-            // useXhr: 1, // Use XHR instead of fetch to report failures (if available),
-            crossOrigin: "anonymous", // When supplied this will add the provided value as the cross origin attribute on the script tag
-            // onInit: null, // Once the application insights instance has loaded and initialized this callback function will be called with 1 argument -- the sdk instance (DO NOT ADD anything to the sdk.queue -- As they won't get called)
-            cfg: { // Application Insights Configuration
-                instrumentationKey: "2b12c131-a146-4333-b11c-0abdc79c5c54",
-                disableFetchTracking: false,
-                enableCorsCorrelation: true,
-                enableRequestHeaderTracking: true,
-                enableResponseHeaderTracking: true
-            }
-        });
-    </script>
+    
+    <link href="/images/app/@(Model.AppId)/og.icon-512.png" rel="icon" type="image/png" />
+    <link href="/images/app/@(Model.AppId)/og.icon-512.png" rel="apple-touch-icon" type="image/png" sizes="512x512" />
+    
     <component type="typeof(HeadOutlet)" render-mode="@prerenderMode" />
+
 </head>
-<body>
+<body class="no-select">
  
     <div id="app">
         <component type="typeof(App)" render-mode="@renderMode" />
-        <persist-component-state />
+
 @if (runtime == RuntimeType.Server)
 {
         <div id="blazor-error-ui" class="component-error-banner hidden pa-2">
@@ -75,7 +67,7 @@
         </div>
         <div id="components-reconnect-modal" class="components-reconnect-modal components-reconnect-hide pa-4">
             <div class="show">
-                <h5>Server connection was lost, attempting to reconnect...</h5>
+                <h5>Server connection was interrupted,<br/>attempting to reconnect...</h5>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="height: 4em; width: 4em;">
                     <circle cx="50" cy="50" fill="none" stroke="#fff" stroke-width="5" r="35" stroke-dasharray="150 50">
                         <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50; 360 50 50" keyTimes="0;1"></animateTransform>
@@ -83,80 +75,93 @@
                 </svg>
             </div>
             <div class="failed">
-                <h5>Server connection failed after several attempts. Reconnect to try again.</h5>
+                <h5>Server connection failed after several attempts.<br/>Reconnect to try again.</h5>
                 <a href="" onclick="window.Blazor.reconnect()" class="mud-button-root mud-button mud-button-outlined mud-button-outlined-size-medium mt-2" title="Attempt to reconnect with the server">Reconnect</a>
             </div>
             <div class="rejected">
-                <h5>Server connection was lost. Reload to restore functionality.</h5>
+                <h5>Server connection was lost.<br/>Reload to restore functionality.</h5>
                 <a href="" onclick="location.reload()" class="mud-button-root mud-button mud-button-outlined mud-button-outlined-size-medium mt-2" title="Reload the application">Reload</a>
             </div>
         </div>
 }
-else
+
+    </div>
+
+@if (runtime == RuntimeType.WebAssembly)
 {
-        <div id="blazor-preloader-ui" class="preloader">
-            <div id="wasm-unsupported" class="wasm-unsupported-root hidden">
-                <img src="images/webassembly.png" />
-                <p>
-                    <span class="preloader-text">Your browser does not support WebAssembly (Wasm).</span><br />
-                    <span><a href="https://caniuse.com/wasm" class="preloader-subtext">https://caniuse.com/wasm</a></span>
-                </p>
+    <div id="blazor-preloader-ui" class="preloader">
+        <div id="wasm-unsupported" class="wasm-unsupported-root hidden">
+            <img src="images/webassembly.png" />
+            <p>
+                <strong>Your browser does not support WebAssembly (Wasm).</strong><br />
+                <span><a href="https://caniuse.com/wasm">https://caniuse.com/wasm</a></span>
+            </p>
+        </div>
+        <div id="blazor-loading" class="blazor-loading-root hidden">
+            <p class="preloader-animation">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="height: 8em; width: 8em;">
+                    <circle cx="50" cy="50" fill="none" stroke="#fff" stroke-width="5" r="35" stroke-dasharray="150 50">
+                        <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50; 360 50 50" keyTimes="0;1"></animateTransform>
+                    </circle>
+                </svg>
+            </p>
+            <div id="preloader-progress" class="preloader-progress-bar-root hidden">
+                <div style="width:0%"></div>
             </div>
-            <div id="wasm-loading" class="wasm-loading-root hidden">
-                <p class="preloader-animation">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="height: 8em; width: 8em;">
-                        <circle cx="50" cy="50" fill="none" stroke="#fff" stroke-width="5" r="35" stroke-dasharray="150 50">
-                            <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50; 360 50 50" keyTimes="0;1"></animateTransform>
-                        </circle>
-                    </svg>
-                </p>
-                <div id="preloader-progress" class="preloader-progress-bar-root hidden">
-                    <div style="width:0%"></div>
-                </div>
-                <p class="preloader-text">
-                    <span>Initialising Blazor...</span>
-                </p>
-            </div>
-            <script type="text/javascript">
+            <p>
+                <span>Initialising Blazor...</span>
+            </p>
+        </div>
+        <div id="blazor-load-error" class="blazor-load-error-root hidden">
+            <img src="images/blazor.png" style="filter: hue-rotate(90deg)" />
+            <p>
+                <strong>Blazor initialisation error.</strong><br />
+                <span>Try clearing your browse cache.</span>
+                <pre id="blazor-load-error-details"></pre>
+            </p>
+        </div>
+        <script type="text/javascript" nonce="@HttpContext.GetNonce()">
 
-                function wasmIsSupported() {
-                    try {
-                        if (typeof WebAssembly === "object" &&
-                            typeof WebAssembly.instantiate === "function") {
-                            const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
-                            if (module instanceof WebAssembly.Module) {
-                                return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
-                            }
+            function wasmIsSupported() {
+                try {
+                    if (typeof WebAssembly === "object" &&
+                        typeof WebAssembly.instantiate === "function") {
+                        const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+                        if (module instanceof WebAssembly.Module) {
+                            return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
                         }
-                    } catch (e) {
                     }
-                    return false;
+                } catch (e) {
                 }
+                return false;
+            }
 
+            if (wasmIsSupported()) {
+                document.getElementById("blazor-loading").style.display = "flex";
+            }
+            else {
+                document.getElementById("wasm-unsupported").style.display = "flex";
+            }
+
+        </script>
+        <script type="text/javascript" nonce="@HttpContext.GetNonce()">
+
+            /* Start Blazor and report loading progress back to the UI */
+
+            let resourceIndex = 0;
+            let resourcesLoaded = [];
+            let progressBarElement = document.getElementById('preloader-progress');
+            let progressElement = progressBarElement.children[0];
+            document.addEventListener("DOMContentLoaded", function() {
                 if (wasmIsSupported()) {
-                    document.getElementById("wasm-loading").style.display = "flex";
-                }
-                else {
-                    document.getElementById("wasm-unsupported").style.display = "flex";
-                }
-
-            </script>
-            <script type="text/javascript">
-
-                /* Start Blazor and report loading progress back to the UI */
-
-                let resourceIndex = 0;
-                let resourcesLoaded = [];
-                let progressBarElement = document.getElementById('preloader-progress');
-                let progressElement = progressBarElement.children[0];
-                document.addEventListener("DOMContentLoaded", function() {
                     Blazor.start({
 
                         loadBootResource: (type, name, defaultUri, integrity) => {
                             if (type == "dotnetjs") {
                                 return defaultUri;
                             }
-
+                                
+                            console.log(`Loading: '${type}', '${name}', '${defaultUri}', '${integrity}'`);
                             var fetchResource = fetch(defaultUri, {
                                 cache: 'no-cache',
                                 integrity: integrity
@@ -180,13 +185,23 @@ else
 
                     }).then(function () {
                         document.getElementById("blazor-preloader-ui").style.display = "none";
+                    }).catch(function (err) {
+                        console.log(`Blazor startup has failed`, err);
+                        document.getElementById("app").style.display = "none";
+                        document.getElementById("blazor-loading").style.display = "none";
+                        document.getElementById("blazor-load-error").style.display = "flex";
+                        if (err) {
+                            document.getElementById("blazor-load-error-details").innerHTML = err;
+                        }
                     });
-                });
+                }
+            });
 
-            </script>
-        </div>
-}
+        </script>
     </div>
+}
+
+    <persist-component-state />
 
 @if (runtime == RuntimeType.Server)
 {
@@ -197,60 +212,50 @@ else
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
 }
 
-    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js" integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww==" crossorigin="anonymous"></script>
-    <script src="https://cdn.syncfusion.com/blazor/syncfusion-blazor-base.min.js"></script>
-    <script src="/js/azure-storage.blob.min.js"></script>
-    <script src="/js/interops.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js" type="text/javascript" integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww==" crossorigin="anonymous"></script>
+    <script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js" type="text/javascript"></script>
+    <script src="/js/azure-storage.blob.min.js" type="text/javascript"></script>
+    <script src="/js/interops.js" type="text/javascript"></script>
     
 @if (runtime == RuntimeType.WebAssembly)
 {
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="@HttpContext.GetNonce()">
 
-        /* Register PWA service worker and send update notifications to Blazor */
+        /* Unregister old PWA service worker (if present) */
 
-        let refreshing = false;
         if ('serviceWorker' in navigator) {
-
-            navigator.serviceWorker.register('service-worker.js').then(worker => {
-                UpdateInterop.worker = worker;
-
-                // When a new update is ready, notify the user
-                worker.addEventListener('updatefound', () => {
-                    console.log('a new update was found');
-                    var newWorker = worker.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state == 'installed') {
-                            console.log('update has been installed, ready for activation');
-                            if (navigator.serviceWorker.controller) {
-                                UpdateInterop.worker = newWorker;
-                                if (UpdateInterop.callback) {
-                                    UpdateInterop.callback.invokeMethodAsync('ShowUpdateNotification');
-                                } else {
-                                    UpdateInterop.applyPendingUpdate();
-                                }
-                            }
-                        }
-                        if (newWorker.state == 'activated') {
-                            console.log('update has been activated');
-                        }
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                if (!registrations.length) {
+                    console.log('No serviceWorker registrations found.');
+                    return;
+                }
+                for(let registration of registrations) {
+                    registration.unregister().then(function (boolean) {
+                        console.log(
+                            (boolean ? 'Successfully unregistered' : 'Failed to unregister'), 'ServiceWorkerRegistration\n' +
+                            (registration.installing ? '  .installing.scriptURL = ' + registration.installing.scriptURL + '\n' : '') +
+                            (registration.waiting ? '  .waiting.scriptURL = ' + registration.waiting.scriptURL + '\n' : '') +
+                            (registration.active ? '  .active.scriptURL = ' + registration.active.scriptURL + '\n' : '') +
+                            '  .scope: ' + registration.scope + '\n'
+                        );
                     });
-                });
-
-            });
-
-            // When a new update has been activated, reload the page so that the user sees the changes
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
-                    window.location.reload();
-                    refreshing = true;
                 }
             });
-
         }
 
     </script>
 }
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-226353518-1">
+    </script>
+    <script type="text/javascript" nonce="@HttpContext.GetNonce()">
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'UA-226353518-1');
+    </script>
 
 </body>
 </html>

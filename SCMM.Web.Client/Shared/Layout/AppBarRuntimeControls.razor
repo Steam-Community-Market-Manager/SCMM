@@ -1,0 +1,39 @@
+﻿@inject ILogger<AppBarRuntimeControls> Logger
+@inject NavigationManager NavigationManager
+@inject AppState State
+
+<div @attributes="AdditionalAttributes">
+    <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change the user interface rendering mode">
+        <ActivatorContent>
+            <MudIconButton Icon="@((State.Runtime == RuntimeType.Server) ? "fas fa-fw fa-server" : "fas fa-fw fa-desktop")" Disabled="State.IsPrerendering"></MudIconButton>
+        </ActivatorContent>
+        <ChildContent>
+            <MudMenuItem OnTouch="@(() => ChangeRuntime(RuntimeType.Server))" OnClick="@(() => ChangeRuntime(RuntimeType.Server))" Disabled="@(State.Runtime == RuntimeType.Server)" Class="d-flex align-center">
+                <MudText Typo="Typo.body2"  Class="d-flex align-center">
+                    <i class="fas fa-fw fa-server" />
+                    <span class="ml-2">Server-side rendering mode</span>
+                </MudText>
+            </MudMenuItem>
+            <MudMenuItem OnTouch="@(() => ChangeRuntime(RuntimeType.WebAssembly))" OnClick="@(() => ChangeRuntime(RuntimeType.WebAssembly))" Disabled="@(State.Runtime == RuntimeType.WebAssembly)" Class="d-flex align-center">
+                <MudText Typo="Typo.body2" Class="d-flex align-center">
+                    <i class="fas fa-fw fa-desktop" />
+                    <span class="ml-2">Client-side rendering mode</span>
+                </MudText>
+            </MudMenuItem>
+        </ChildContent>
+    </MudMenu>
+</div>
+
+@code
+{
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+    
+    private void ChangeRuntime(RuntimeType runtime)
+    {
+        Logger.LogInformation($"Runtime was changed to '{runtime}'");
+        State.Runtime = runtime;
+
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
+    }
+}

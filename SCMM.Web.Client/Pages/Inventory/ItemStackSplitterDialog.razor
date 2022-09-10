@@ -1,0 +1,189 @@
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inherits ResponsiveDialog
+@inject ILogger<ItemStackCombinerDialog> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject ExternalNavigationManager ExternalNavigationManager
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">
+            <i class="fa fa-fw fa-object-ungroup"></i>
+            <span>Split Item Stack</span>
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Class="mud-alert-outlined-warning">
+            <span><strong>This action requires your <MudLink Href="https://steamcommunity.com/dev/apikey" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Steam API Key</MudLink> to modify your inventory items.</strong> Make sure you fully understand the implications of sharing your API Key with a 3rd party before proceeding. Read our <MudLink Href="/privacy" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Privacy Policy</MudLink> for more info.</span>
+        </MudAlert>
+        <div class="d-flex flex-row flex-wrap align-center justify-center full-width py-4">
+            <div class="d-flex flex-wrap flex-row align-start justify-center full-width mud-paper-inverted">
+                @foreach (var stack in SelectedStacks.OrderByDescending(x => x.Key.Quantity))
+                {
+                    <MudPaper Outlined="true" Class="d-flex flex-row align-center full-width pa-2 my-2">
+                        <img src="@(Item.IconUrl)" class="icon flex-shrink-1 flex-grow-0 mr-2" />
+                        <div class="d-flex flex-column flex-grow-1">
+                            <div class="d-flex flex-row justify-space-between">
+                                <MudText Typo="Typo.body2" Class="mx-1 text-left" Style="color: {(Item.ForegroundColour)}">
+                                    @if ((stack.Key.Quantity - stack.Value) > 1) {
+                                        <span><strong>@((stack.Key.Quantity - stack.Value).ToQuantityString())</strong> @Item.Name</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@Item.Name</span>
+                                    }
+                                </MudText>
+                                @if (stack.Value > 0)
+                                {
+                                    <MudText Typo="Typo.body2" Class="mx-1 text-centered">
+                                        @if (!IsSplitting)
+                                        {
+                                            <i class="fa fa-fw fa-plus"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-fw fa-cog fa-spin mud-secondary-text"></i>
+                                        }
+                                    </MudText>
+                                    <MudText Typo="Typo.body2" Class="mx-1 text-right" Style="color: {(Item.ForegroundColour)}">
+                                        @if (stack.Value > 1)
+                                        {
+                                            <span><strong>@stack.Value.ToQuantityString()</strong> @Item.Name</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@Item.Name</span>
+                                        }
+                                    </MudText>
+                                }
+                            </div>
+                            <MudSlider T="int" @bind-Value="@SelectedStacks[stack.Key]" Min="0" Max="@(stack.Key.Quantity - 1)" Step="1" Class="px-2" />
+                            <div class="d-flex flex-row justify-space-between">
+                                <small class="mx-1 no-wrap mud-secondary-text text-left"> 
+                                    <span>@stack.Key.SteamId</span>
+                                </small>
+                                @if (stack.Value > 0)
+                                {
+                                    <small class="mx-1 no-wrap mud-secondary-text text-right"> 
+                                        <span>??????????</span>
+                                    </small>
+                                }
+                            </div>
+				        </div>
+                        @if (stack.Value > 0)
+                        {
+                            <img src="@(Item.IconUrl)" class="icon flex-shrink-1 flex-grow-0 ml-2" />
+                        }
+			        </MudPaper>
+                }
+            </div>
+        </div>
+        <MudTextField T="string" @bind-Text="@SteamApiKey" DebounceInterval="500" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" 
+                      Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="Click on the question mark icon to view and manage your Steam API Key"
+                      Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
+        <div class="mt-2">
+            <MudCheckBox T="bool" @bind-Checked="@StackNewItems" Color="Color.Primary" Label="Automatically stack the newly created items after splitting" Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="mx-4 my-2">
+            <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+            <MudButton OnClick="SplitSelectedItemStacks" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@(IsSplitting ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
+                       Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))">
+                @if(IsSplitting)
+                {
+                    <span>Splitting...</span>
+                }
+                else
+                {
+                    <span>Split Items</span>
+                }
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+
+    [Parameter]
+    public ProfileInventoryItemDescriptionDTO Item { get; set; }
+
+    private IDictionary<ProfileInventoryItemDescriptionStackDTO, int> SelectedStacks { get; set; }
+
+    private string SteamApiKey { get; set; }
+
+    private bool StackNewItems { get; set; } = true;
+
+    private bool IsSplitting { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Item != null)
+        {
+            SelectedStacks = Item.Stacks
+                .Where(x => x.Quantity > 1)
+                .ToDictionary(x => x, x => 0);
+        }
+    }
+
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Small;
+        options.FullWidth = true; // force item images to scale equally
+        options.CloseButton = true;
+    }
+
+    private async Task SplitSelectedItemStacks()
+    {
+        try 
+        {
+            IsSplitting = true;
+            StateHasChanged();
+
+            foreach (var sourceItem in SelectedStacks.Where(x => x.Value > 0))
+            {
+                Logger.LogTrace($"Splitting item {sourceItem.Key.SteamId} in to {sourceItem.Value}");
+                var request = new HttpRequestMessage()
+                {
+                    RequestUri = new Uri($"{Http.BaseAddress}api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{sourceItem.Key.SteamId}/split?stackNewItems={StackNewItems}"),
+                    Method = HttpMethod.Put,
+                    Headers = {
+                        { "Steam-Api-Key", SteamApiKey }
+                    },
+                    Content = JsonContent.Create(sourceItem.Value)
+                };
+
+                var response = await Http.SendAsync(request);
+                if(!response.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+                }
+
+                var updatedItems = await response.Content.ReadFromJsonAsync<IEnumerable<ProfileInventoryItemDescriptionStackDTO>>();
+                if (updatedItems != null)
+                {
+                    Item.Stacks = Item.Stacks?.Except(Item.Stacks?.Where(x => updatedItems.Any(y => y.SteamId == x.SteamId)))?.ToArray();
+                    Item.Stacks = Item.Stacks?.Union(updatedItems)?.ToArray();
+                }
+            
+            }
+
+            Snackbar.Add($"Items were successfully split.", MudBlazor.Severity.Success, x => x.RequireInteraction = false);
+            Dialog.Close(true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error splitting items");
+            Snackbar.Add($"Unable to split items. {ex.Message}", MudBlazor.Severity.Error, x => x.RequireInteraction = false);
+        }
+        finally
+        {
+            IsSplitting = false;
+            StateHasChanged();
+        }
+    }
+}

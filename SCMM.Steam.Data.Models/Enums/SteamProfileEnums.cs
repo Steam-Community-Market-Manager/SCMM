@@ -28,13 +28,13 @@ public enum StoreTopSellerRankingType
 
 public enum MarketValueType
 {
-    [Display(Name = "Sell Order Prices")]
+    [Display(Name = "Lowest Sell Order Price")]
     SellOrderPrices = 0,
 
-    [Display(Name = "Buy Order Prices")]
+    [Display(Name = "Highest Buy Order Price")]
     BuyOrderPrices,
 
-    [Display(Name = "Median Sale Prices")]
+    [Display(Name = "Median 24hr Sale Price")]
     MedianSalePrices
 }
 
@@ -50,11 +50,14 @@ public enum ItemInfoType
     [Display(Name = "Demand")]
     Demand = 0x04,
 
-    [Display(Name = "Subscriptions")]
+    [Display(Name = "Subscribers")]
     Subscriptions = 0x08,
 
     [Display(Name = "Age")]
-    Age = 0x10
+    Age = 0x10,
+
+    [Display(Name = "Estimated Total Supply")]
+    EstimatedTotalSupply = 0x20,
 }
 
 public enum ItemInfoWebsiteType
@@ -64,4 +67,13 @@ public enum ItemInfoWebsiteType
 
     [Display(Name = "Steam")]
     External
+}
+
+public enum InventoryValueMovementDisplayType
+{
+    [Display(Name = "Show as price")]
+    Price = 0,
+
+    [Display(Name = "Show as percentage")]
+    Percentage
 }

@@ -20,6 +20,10 @@ namespace SCMM.Steam.Data.Store
 
         public int Quantity { get; set; }
 
+        public bool TradableAndMarketable { get; set; }
+
+        public DateTimeOffset? TradableAndMarketablAfter { get; set; }
+
         public SteamProfileInventoryItemFlags Flags { get; set; }
     }
 }

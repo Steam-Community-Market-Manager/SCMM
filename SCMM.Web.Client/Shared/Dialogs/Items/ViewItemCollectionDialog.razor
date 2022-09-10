@@ -1,0 +1,165 @@
+﻿@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Data.Models.UI.Item
+@inherits ResponsiveDialog
+@inject ILogger<ViewItemCollectionDialog> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject AppState State
+
+<MudDialog>
+    <TitleContent>
+        @if (Collection == null || String.IsNullOrEmpty(Collection.Name))
+        {
+            <MudText Typo="MudBlazor.Typo.h6">@CollectionName</MudText>
+        } 
+        else
+        {
+            <div class="d-flex mr-4">
+                @if (!String.IsNullOrEmpty(Collection.CreatorAvatarUrl))
+                {
+                    <MudTooltip Text="@Collection.CreatorName">
+                        <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="mt-2" />
+                    </MudTooltip>
+                }
+                <div class="ml-4">
+                    <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
+                        <span>There are <strong>@(Collection.AcceptedItems?.Length ?? 0) accepted items</strong> in this collection.</span>
+                    </MudText>
+                    @if(Collection.BuyNowPrice > 0)
+                    {
+                        <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
+                            <span>Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                        </MudText>
+                    }
+                </div>
+                <MudSpacer />
+                <MudMenu Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" 
+                         Dense="true" Class="hover-darken align-self-start mx-4 " title="Change sort order">
+                    <ActivatorContent>
+                        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">
+                            <i class="fas fa-fw fa-sort-alpha-down" />
+                        </MudText>
+                    </ActivatorContent>
+                    <ChildContent>
+                        @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
+                        {
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.TimeAccepted), Data.Models.SortDirection.Descending))">Newest</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.TimeAccepted), Data.Models.SortDirection.Ascending))">Oldest</MudMenuItem>
+                        }
+                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.BuyNowPrice), Data.Models.SortDirection.Ascending))">Lowest Price</MudMenuItem>
+                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.BuyNowPrice), Data.Models.SortDirection.Descending))">Highest Price</MudMenuItem>
+                        @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
+                        {
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Ascending))">Lowest Subscribers</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Descending))">Highest Subscribers</MudMenuItem>
+                        }
+                        @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
+                        {
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
+                        }
+                    </ChildContent>
+                </MudMenu>
+            </div>
+        }
+    </TitleContent>
+    <DialogContent>
+        @if (Collection == null)
+        {
+            <Loading Message="Loading item collection..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+        } 
+        else
+        {
+            <div class="py-4">
+                <MudGrid>
+                    @if (Collection.AcceptedItems?.Any() == true)
+                    {
+                        @foreach (var item in GetSortedItems(Collection.AcceptedItems, SortBy, SortDirection))
+                        {
+                            <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                                <ItemDescriptionSummary Item="@item" />
+                            </MudItem>
+                        }
+                    }
+                    @if (Collection.UnacceptedItems?.Any() == true)
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Color="Color.Default">
+                                <span>Workshop submissions from the collection</span>
+                            </MudText>
+                            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                                <span>There are <strong>@(Collection.UnacceptedItems?.Length ?? 0) unaccepted items</strong> from this collection still in the workshop.</span>
+                            </MudText>
+                            <MudDivider />
+                        </MudItem>
+                        @foreach (var item in GetSortedItems(Collection.UnacceptedItems, nameof(IItemDescription.TimeCreated), Data.Models.SortDirection.Descending))
+                        {
+                            <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                                <ItemDescriptionSummary Item="@item" />
+                            </MudItem>
+                        }
+                    }
+                </MudGrid>
+            </div>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public string CollectionName { get; set; }
+    
+    [Parameter]
+    public string CollectionUrl { get; set; }
+    
+    [Parameter]
+    public string SortBy { get; set; } = nameof(ItemDescriptionWithPriceDTO.TimeAccepted);
+
+    [Parameter]
+    public Data.Models.SortDirection SortDirection { get; set; } = Data.Models.SortDirection.Descending;
+
+    private ItemCollectionDTO Collection { get; set; }
+    
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Large;
+        options.FullWidth = true; // force item images to scale equally
+        options.CloseButton = true;
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>(CollectionUrl);
+            Dialog.ForceRender();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the item collection");
+            Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+    
+    private void SetSortOrder(string sortBy, Data.Models.SortDirection sortDirection)
+    {
+        SortBy = sortBy;
+        SortDirection = sortDirection;
+        StateHasChanged();
+    }
+
+    private IEnumerable<T> GetSortedItems<T>(IEnumerable<T> items, string sortBy, Data.Models.SortDirection sortDirection) where T : IItemDescription
+    {
+        if (!String.IsNullOrEmpty(sortBy))
+        {
+            items = items.AsQueryable().SortBy(sortBy, sortDirection);
+        }
+
+        return items;
+    }
+}

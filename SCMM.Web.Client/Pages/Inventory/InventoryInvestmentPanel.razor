@@ -9,12 +9,12 @@
 }
 else
 {
-    <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@ReadOnly" Class="mud-table-dense-extra"
-              ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes" AllowUnsorted="false">
+    <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@(!State.Is(SteamId) || State.IsPrerendering)" Class="mud-table-dense-extra"
+              ServerData="@LoadItems" RowsPerPage="25" Breakpoint="Breakpoint.Xs" CommitEditTooltip="Save Changes" AllowUnsorted="false">
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
                 <span>Track your investment returns against the latest market value.</span><br/>
-                <span class="mud-secondary-text">Click on an items "Purchase Price" column to edit the purchase information. Your return on investment (RoI) will then be automatically calculated.</span>
+                <span class="mud-secondary-text">Click on an items "Purchase Price" column to edit the purchase information. Your return on investment (RoI) will then automatically calculate.</span>
             </MudText>
         </ToolBarContent>
         <HeaderContent>
@@ -30,22 +30,25 @@ else
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The price you could reasonably expect to sell the item for right now by undercutting the lowest 'buy now' price">
-                    <MudTableSortLabel SortLabel="ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="SellLaterPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
+            @if (State.Profile.ItemIncludeMarketFees)
+            {
+                <MudTh Class="mud-primary-text">
+                    <MudTooltip Text="The fees charged when selling this item on the market">
+                        <MudTableSortLabel SortLabel="SellLaterFee" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
+                    </MudTooltip>
+                </MudTh>
+            }
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The fees Steam charge when selling items on the Steam Community Market (~12% of sale price)">
-                    <MudTableSortLabel SortLabel="ResellTax" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
-                </MudTooltip>
-            </MudTh>
-            <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and Steam seller fees">
-                    <MudTableSortLabel SortLabel="ResellProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
+                <MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and market fees (if fees are enabled)">
+                    <MudTableSortLabel SortLabel="SellLaterProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="Your return on investment, as a percentage. 0% is break-even, a positive number is profit, negative is a loss">
-                    <MudTableSortLabel SortLabel="ResellRoI" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">RoI %</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="SellLaterRoI" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">RoI %</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
         </HeaderContent>
@@ -56,7 +59,7 @@ else
                     <strong>@context.Name</strong>
                     @if (context.Quantity > 1)
                     { 
-                        <MudChip Variant="MudBlazor.Variant.Text" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Primary" Class="mud-chip-outlined ml-1">@context.Quantity</MudChip>
+                        <MudChip Variant="MudBlazor.Variant.Outlined" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Default" Class="mud-chip-outlined ml-1">@context.Quantity</MudChip>
                     }
                 </div>
             </MudTd>
@@ -135,29 +138,35 @@ else
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null)
+                @if (context.SellLaterPrice != null)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value) 
+                    <div class="d-flex flex-row justify-start align-center">
+                        <img src="@($"/images/app/{State.App.Id}/markets/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                        <span>@State.Currency.ToPriceString(context.SellLaterPrice.Value)</span>
+                    </div>
                 }
                 else
                 {
                     <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
+            @if (State.Profile.ItemIncludeMarketFees)
+            {
+                <MudTd>
+                    @if (context.SellLaterFee != null)
+                    {
+                        @State.Currency.ToPriceString(context.SellLaterFee.Value) 
+                    }
+                    else
+                    {
+                        <span class="mud-secondary-text">—</span>
+                    }
+                </MudTd>
+            }
             <MudTd>
-                @if (context.ResellTax != null)
+                @if (context.SellLaterPrice != null && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellTax.Value) 
-                }
-                else
-                {
-                    <span class="mud-secondary-text">—</span>
-                }
-            </MudTd>
-            <MudTd>
-                @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
-                {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPriceLocal ?? 0)) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0) - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -165,9 +174,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.ResellPrice - context.ResellTax) != 0)
+                @if (context.SellLaterPrice != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) != 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -182,13 +191,13 @@ else
                     <strong>@context.Name</strong>
                     @if (context.Quantity > 1)
                     { 
-                        <MudChip Variant="MudBlazor.Variant.Text" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Primary" Class="mud-chip-outlined ml-1">@context.Quantity</MudChip>
+                        <MudChip Variant="MudBlazor.Variant.Outlined" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Default" Class="mud-chip-outlined ml-1">@context.Quantity</MudChip>
                     }
                 </div>
             </MudTd>
             <MudTd>
                 <div class="d-flex flex-row justify-space-between align-baseline">
-                    <MudSelect T="SteamProfileInventoryItemAcquisitionType" Value="@context.AcquiredBy" ValueChanged="@((x) => UpdateItemAcquired(context, x))">
+                    <MudSelect T="SteamProfileInventoryItemAcquisitionType" Value="@context.AcquiredBy" ValueChanged="@((x) => UpdateItemAcquired(context, x))" Disabled="State.IsPrerendering">
                         <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Store">
                             <i class="fas fa-fw fa-shopping-cart" />
                             <span>Store</span>
@@ -226,35 +235,41 @@ else
                             context.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Drop)
                     {
                         <MudTextField @bind-Value="@context.BuyPriceText" OnDebounceIntervalElapsed="@((e) => UpdateItemPrice(context, context.BuyPriceText))" DebounceInterval="500" PlaceHolder="Price" AutoFocus="true"
-                                      Adornment="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? MudBlazor.Adornment.Start : MudBlazor.Adornment.End)"
+                                      Adornment="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? MudBlazor.Adornment.Start : MudBlazor.Adornment.End)" Disabled="State.IsPrerendering"
                                       AdornmentText="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? State.Currency.PrefixText : State.Currency.SuffixText)" />
                     }
                 </div>
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null)
+                @if (context.SellLaterPrice != null)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value) 
+                    <div class="d-flex flex-row justify-start align-center">
+                        <img src="@($"/images/app/{State.App.Id}/markets/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                        <span>@State.Currency.ToPriceString(context.SellLaterPrice.Value)</span>
+                    </div>
                 }
                 else
                 {
                     <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
+            @if (State.Profile.ItemIncludeMarketFees)
+            {
+                <MudTd>
+                    @if (context.SellLaterFee != null)
+                    {
+                        @State.Currency.ToPriceString(context.SellLaterFee.Value) 
+                    }
+                    else
+                    {
+                        <span class="mud-secondary-text">—</span>
+                    }
+                </MudTd>
+            }
             <MudTd>
-                @if (context.ResellTax != null)
+                @if (context.SellLaterPrice != null && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellTax.Value) 
-                }
-                else
-                {
-                    <span class="mud-secondary-text">—</span>
-                }
-            </MudTd>
-            <MudTd>
-                @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
-                {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPriceLocal ?? 0)) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0) - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -262,9 +277,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.SellLaterPrice != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) > 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -291,9 +306,6 @@ else
     [Parameter]
     public string Filter { get; set; }
 
-    [Parameter]
-    public bool ReadOnly { get; set; }
-
     private MudTable<ProfileInventoryInvestmentItemDTO> Table { get; set; }
     
     private Exception LoadingError { get; set; }
@@ -311,7 +323,7 @@ else
         {
             LoadingError = null;
             var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryInvestmentItemDTO>>(
-                $"api/profile/{SteamId}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={state.Page * state.PageSize}&count={state.PageSize}&sortBy={state.SortLabel}&sortDirection={state.SortDirection}"
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={state.Page * state.PageSize}&count={state.PageSize}&sortBy={state.SortLabel}&sortDirection={state.SortDirection}"
             );
 
             return new TableData<ProfileInventoryInvestmentItemDTO>() 
@@ -342,17 +354,22 @@ else
             item.BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             
-            Logger.LogInformation($"Updating buy price for '{item.Guid}' (aquired: '{item.AcquiredBy}', price: '{item.BuyPrice}', currency: '{item.BuyCurrency?.CultureName}')");
-            await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
+            Logger.LogTrace($"Updating buy price for '{item.ItemId}' (aquired: '{item.AcquiredBy}', price: '{item.BuyPrice}', currency: '{item.BuyCurrency?.CultureName}')");
+            var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
                 CurrencyGuid = item.BuyCurrency?.Guid,
                 BuyPrice = item.BuyPrice
             });
+            
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error updating item acquired by for '{item.Guid}' (aquired: '{value}')");
+            Logger.LogError(ex, $"Error updating item acquired by for '{item.ItemId}' (aquired: '{value}')");
         }
         finally
         {
@@ -372,16 +389,21 @@ else
                 item.BuyPrice = buyPrice;
                 item.BuyPriceLocal = buyPrice;
 
-                Logger.LogInformation($"Updating buy price for '{item.Guid}' (raw: '{value}', old: '{oldBuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
-                await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
+                Logger.LogTrace($"Updating buy price for '{item.ItemId}' (raw: '{value}', old: '{oldBuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
+                var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
                 {
                     CurrencyGuid = State.Currency.Guid,
                     BuyPrice = buyPrice
                 });
+                
+                if(!response.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error updating item buy price for '{item.Guid}' (value: '{value}')");
+                Logger.LogError(ex, $"Error updating item buy price for '{item.ItemId}' (value: '{value}')");
             }
             finally
             {
@@ -392,11 +414,11 @@ else
     
     private string GetItemClass(ProfileInventoryInvestmentItemDTO item, int index = 0)
     {
-        if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.ResellPrice == null || item.ResellTax == null)
+        if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.SellLaterPrice == null)
         {
             return null;
         }
-        var roi = ((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPriceLocal.Value) * 100, 0));
+        var roi = ((int)Math.Round(((decimal)(item.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? item.SellLaterFee ?? 0 : 0)) / item.BuyPriceLocal.Value) * 100, 0));
         if (roi > 100)
         {
             return "mud-success";

@@ -1,6 +1,8 @@
 ﻿namespace SCMM.Shared.Data.Store
 {
-    public class FileData : Entity
+    public class FileData : FileData<Guid> { }
+
+    public class FileData<TId> : Entity<TId>
     {
         /// <summary>
         /// URL describing where this file originally came from

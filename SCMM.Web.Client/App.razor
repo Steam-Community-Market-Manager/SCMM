@@ -1,14 +1,16 @@
+@inherits PersistentComponent
 @inject ILogger<App> Logger
-@inject IJSRuntime JS
 @inject ISnackbar Snackbar
-@inject UpdateManager UpdateManager
-@inject AppState AppState
+@inject AppState State
 @inject HttpClient Http
 
-<AppProviders />
+@if (State.App != null)
+{
+    <AppProviders />
+}
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        @if (State != null)
+        @if (State.App != null && State.Profile != null)
         {
             <CascadingValue Value="@routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)" />
@@ -25,63 +27,31 @@
 
 @code {
 
-    private AppState State { get; set; }
-
-    private DotNetObjectReference<App> Instance { get; set; }
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnLoadStateAsync()
     {
-        try 
+        // Load the application state
+        await State.LoadFromCookiesAsync();
+        
+        // Load the our profile
+        State.Profile = await RestoreFromStateOrLoad(nameof(State.Profile), async () =>
         {
-            // Check if there are pending updates
-            await UpdateManager.SetCallbackAsync(Instance = DotNetObjectReference.Create(this));
-            if (await UpdateManager.IsUpdatePendingAsync())
+            try
             {
-                ShowUpdateNotification();
+                await State.LoadFromServerProfileAsync(Http);
+                return State.Profile;
             }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "Failed to check for app updates");
-        }
-
-        try
-        {
-            // Load the application state
-            if (!(await AppState.ReadFromStorageAsync()))
+            catch (Exception ex)
             {
-                await AppState.TryGuessLocalityAsync();
-                await AppState.WriteToStorageAsync();
+                Snackbar.Add($"Unable to load your profile. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
             }
-            await AppState.RefreshAsync(Http);
-
-            State = AppState;
-            State.Changed += (s, e) => StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to initialise app state");
-            Snackbar.Add($"Unable to load application state. {ex.Message}", MudBlazor.Severity.Error);
-        }
+        });
     }
 
-    [JSInvokable]
-    public void ShowUpdateNotification()
+    protected override Task OnPersistStateAsync()
     {
-        Snackbar.Add("A new update is available", MudBlazor.Severity.Success, config =>
-        {
-            config.RequireInteraction = true;
-            config.CloseAfterNavigation = false;
-            config.ShowCloseIcon = false;
-            config.Icon = "fas fa-arrow-circle-up";
-            config.Action = "Update";
-            config.ActionColor = MudBlazor.Color.Dark;
-            config.ActionVariant = MudBlazor.Variant.Outlined;
-            config.Onclick = async snackbar =>
-            {
-                await UpdateManager.ApplyPendingUpdateAsync();
-            };
-        });
+        PersistToState(nameof(State.Profile), State.Profile);
+        return Task.CompletedTask;
     }
 
 }

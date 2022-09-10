@@ -1,24 +1,23 @@
 ﻿@page "/tos"
+@inject NavigationManager NavigationManager;
 
 <PageContainer Title="Terms of Service">
     <MudPaper Outlined="true" Class="pa-4">
 
         <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Default" GutterBottom>Terms and Conditions of Use</MudText>
         
-        <MudAlert Severity="Severity.Info" NoIcon="true" Elevation="10" Class="mb-4">
-            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Primary">TL;DR;</MudText>
-            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Primary" GutterBottom>
-                <ul class="fa-ul">
-                    <li><span class="fa-li">-</span>You are responsible for your own financial decisions and should do your own research before acting on information provided by SCMM;</li>
-                    <li><span class="fa-li">-</span>You cannot use SCMM data or materials for commerical purposes <i>(unless you have explicit permission to do so from the SCMM author)</i>;</li>
-                    <li><span class="fa-li">-</span>SCMM is not responsible for any external content linked on the website;</li>
-                    <li><span class="fa-li">-</span>Don't spam or abuse the SCMM APIs;</li>
-                </ul>
-            </MudText>
-        </MudAlert>
+        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">TL;DR;</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+            <ul class="fa-ul">
+                <li><span class="fa-li">-</span>You are responsible for your own financial decisions and should do your own research before acting on information provided by SCMM;</li>
+                <li><span class="fa-li">-</span>You cannot use SCMM data or materials for commerical purposes <i>(unless you have explicit permission to do so from the SCMM author)</i>;</li>
+                <li><span class="fa-li">-</span>SCMM is not responsible for any external content linked on the website;</li>
+                <li><span class="fa-li">-</span>Don't spam or abuse the SCMM APIs;</li>
+            </ul>
+        </MudText>
 
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>1. Terms</MudText>
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>By accessing this website, accessible from https://scmm.app, you are agreeing to be bound by these Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site. The materials contained in this website are protected by copyright and trade mark law.</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>By accessing this website, accessible from @(NavigationManager.BaseUri.ToString()), you are agreeing to be bound by these Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site. The materials contained in this website are protected by copyright and trade mark law.</MudText>
     
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>2. Use License</MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>Permission is granted to temporarily download one copy of the materials on SCMM's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</MudText>
@@ -47,7 +46,7 @@
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>SCMM has not reviewed all of the sites linked to its website and is not responsible for the contents of any such linked site. The presence of any link does not imply endorsement by SCMM of the site. The use of any linked website is at the user’s own risk.</MudText>
         
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>7. Fair Use</MudText>
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>SCMM provides a subset of material and infomation via its <MudLink Typo="MudBlazor.Typo.body2" Href="/docs">public API</MudLink> for use in (non-commerical) 3rd party systems. By using these APIs, you agree to do so in a way that is considered <MudLink Typo="MudBlazor.Typo.body2" Href="https://www.copyright.gov/fair-use/more-info.html">"fair use"</MudLink> and with consideration for the performance of SCMM services. Excessive spam or abuse of these APIs may lead to your access being revoked without notice.</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>SCMM provides a subset of material and infomation via its <MudLink Typo="MudBlazor.Typo.body2" Href="/docs" Target="_blank">public API</MudLink> for use in (non-commerical) 3rd party systems. By using these APIs, you agree to do so in a way that is considered <MudLink Typo="MudBlazor.Typo.body2" Href="https://www.copyright.gov/fair-use/more-info.html">"fair use"</MudLink> and with consideration for the performance of SCMM services. Excessive spam or abuse of these APIs may lead to your access being revoked without notice.</MudText>
     
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>8. Privacy</MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>Please read our <MudLink Typo="MudBlazor.Typo.body2" Href="/privacy">Privacy Policy</MudLink>.</MudText>

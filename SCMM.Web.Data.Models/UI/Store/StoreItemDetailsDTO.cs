@@ -58,9 +58,13 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string IconUrl { get; set; }
 
+        public DateTimeOffset? TimeCreated { get; set; }
+
         public DateTimeOffset? TimeAccepted { get; set; }
 
         public long? StorePrice { get; set; }
+
+        public long? StorePriceUsd { get; set; }
 
         public int? TopSellerIndex { get; set; }
 
@@ -78,11 +82,9 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public int MarketRankTotal { get; set; }
 
+        public long? SupplyTotalEstimated { get; set; }
+
         public long? Subscriptions { get; set; }
-
-        public long? SalesMinimum { get; set; }
-
-        public long? SalesMaximum { get; set; }
 
         public bool IsMarketable { get; set; }
 
@@ -102,7 +104,7 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string BanReason { get; set; }
 
-        public IList<string> Notes { get; set; }
+        public string[] Notes { get; set; }
 
         public bool IsDraft { get; set; }
     }

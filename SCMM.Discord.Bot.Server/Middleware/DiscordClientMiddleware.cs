@@ -1,9 +1,12 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
+using SCMM.Discord.Data.Models;
+using SCMM.Discord.Data.Store;
+using SCMM.Redis.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Data.Store;
+using DiscordConfiguration = SCMM.Discord.Client.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Middleware
 {
@@ -11,23 +14,26 @@ namespace SCMM.Discord.Bot.Server.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<DiscordClientMiddleware> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<DiscordDbContext> _discordDbFactory;
         private readonly DiscordClient _client;
+        private readonly DiscordConfiguration _configuration;
+        private readonly RedisConnection _cache;
         private readonly Timer _statusUpdateTimer;
         private DateTimeOffset _statusNextStoreUpdate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
 
-        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
+        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<DiscordDbContext> discordDbFactory, DiscordConfiguration discordConfiguration, DiscordClient discordClient, RedisConnection cache)
         {
             _next = next;
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _serviceScopeFactory = serviceScopeFactory;
+            _discordDbFactory = discordDbFactory;
             _statusUpdateTimer = new Timer(OnStatusUpdate);
+            _configuration = discordConfiguration;
+            _cache = cache;
             _client = discordClient;
             _client.Connected += OnConnected;
             _client.Disconnected += OnDisconnected;
-            _client.Ready += OnReady;
-            _client.GuildJoined += OnGuildJoined;
-            _client.GuildLeft += OnGuildLeft;
             _ = _client.ConnectAsync().ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
@@ -35,6 +41,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                     _logger.LogError(x.Exception, "Failed to connect to Discord");
                 }
             });
+            _cache = cache;
         }
 
         public Task Invoke(HttpContext httpContext)
@@ -46,6 +53,8 @@ namespace SCMM.Discord.Bot.Server.Middleware
         {
             // Start the status update timer
             _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+
+            _ = RepopulateSystemLatestChangeMessagesCache();
         }
 
         private void OnDisconnected()
@@ -54,34 +63,23 @@ namespace SCMM.Discord.Bot.Server.Middleware
             _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.Zero);
         }
 
-        private void OnReady(IEnumerable<Client.DiscordGuild> guilds)
-        {
-            // Add any missing guilds to our database
-            _ = AddGuildsToDatabaseIfMissing(guilds.ToArray());
-        }
-
-        private void OnGuildJoined(Client.DiscordGuild guild)
-        {
-            // Add new guild to our database
-            _logger.LogInformation($"New guild was joined: {guild.Name} #{guild.Id}");
-            _ = AddGuildsToDatabaseIfMissing(guild);
-        }
-
-        private void OnGuildLeft(Client.DiscordGuild guild)
-        {
-            _logger.LogInformation($"Guild was left: {guild.Name} #{guild.Id}");
-        }
-
         private async void OnStatusUpdate(object state)
         {
             // If the next store update time is in the past by more than 6 hours, requery it to get a new timestamp
             if ((_statusNextStoreUpdate - DateTimeOffset.Now).Add(TimeSpan.FromHours(6)) <= TimeSpan.Zero)
             {
-                using var scope = _scopeFactory.CreateScope();
+                using var scope = _serviceScopeFactory.CreateScope();
                 try
                 {
                     var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
+                    {
+                        AppId = _configuration.AppId
+                    });
+                    if (storeNextUpdateTime == null)
+                    {
+                        return; // No stores to report on...
+                    }
                     _statusNextStoreUpdate = storeNextUpdateTime.Timestamp;
                 }
                 catch (Exception ex)
@@ -103,37 +101,35 @@ namespace SCMM.Discord.Bot.Server.Middleware
             }
         }
 
-        private async Task AddGuildsToDatabaseIfMissing(params Client.DiscordGuild[] guilds)
+        // TODO: Move this somewhere else and hook in to channel message events so this happens automatically when new messages are sent
+        private async Task RepopulateSystemLatestChangeMessagesCache()
         {
-            using var scope = _scopeFactory.CreateScope();
-            try
-            {
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                var discordGuildIds = await db.DiscordGuilds
-                    .Select(x => x.DiscordId)
-                    .AsNoTracking()
-                    .ToListAsync();
+            var messages = await _client.GetMessagesAsync(
+                guildId: 935704534808920114, // TODO: Move to config
+                channelId: 935710112063041546, // TODO: Move to config
+                messageLimit: 10
+            );
 
-                var missingGuilds = guilds.Where(x => !discordGuildIds.Any(y => y == x.Id.ToString())).ToList();
-                if (missingGuilds.Any())
+            var latestSystemChanges = messages.Select(m => new TextMessage()
+            {
+                Id = m.Id,
+                AuthorId = m.AuthorId,
+                Content = m.Content,
+                Attachments = m.Attachments?.Select(a => new MessageAttachment()
                 {
-                    foreach (var guild in missingGuilds)
-                    {
-                        _logger.LogInformation($"New guild was joined: {guild.Name} #{guild.Id}");
-                        db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
-                        {
-                            DiscordId = guild.Id.ToString(),
-                            Name = guild.Name
-                        });
-                    }
+                    Id = a.Id,
+                    Url = a.Url,
+                    FileName = a.FileName,
+                    ContentType = a.ContentType,
+                    Description = a.Description
+                })?.ToArray(),
+                Timestamp = m.Timestamp
+            });
 
-                    await db.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to add newly joined guilds to persistent storage (count: {guilds.Length})");
-            }
+            await _cache.SetAsync(
+                SCMM.Steam.Data.Models.Constants.LatestSystemUpdatesCacheKey,
+                latestSystemChanges.ToArray()
+            );
         }
     }
 

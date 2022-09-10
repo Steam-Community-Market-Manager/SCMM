@@ -1,0 +1,89 @@
+﻿@inject IDialogService Dialogs
+@inject AppState State
+
+<MudNavMenu Color="Color.Primary" Bordered="true" Class="flex-grow-1">
+    
+    @if (!String.IsNullOrEmpty(State.Profile?.SteamId))
+    {
+        <MudNavLink Href="@($"/inventory/{State.Profile.SteamId}")" Match="NavLinkMatch.All" Disabled="@State.IsPrerendering">
+            <div class="d-flex align-center ml-n4">
+                <MudAvatar Image="@State.Profile.AvatarUrl" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" />
+                <span class="px-3 no-wrap">My Inventory</span>
+            </div>
+        </MudNavLink>
+    }
+    <MudNavLink Href="/inventory" Icon="fas fa-fw fa-trophy" Match="NavLinkMatch.All" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Inventory Leaderboard</span>
+    </MudNavLink>
+    
+    <MudDivider />
+
+    <MudNavLink Href="/items" Icon="fas fa-fw fa-tshirt" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Items</span>
+    </MudNavLink>
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) == true || State.App?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) == true)
+    {
+        <MudNavLink Href="/store" Icon="fas fa-fw fa-shopping-cart" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Stores</span>
+        </MudNavLink>
+    }
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
+    {
+        <MudNavLink Href="/workshop" Icon="fas fa-fw fa-tools" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Workshop</span>
+        </MudNavLink>
+    }
+
+    <MudDivider />
+    
+    <MudNavLink Href="/deals" Icon="fas fa-fw fa-search-dollar" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Market Deals</span>
+    </MudNavLink>
+    @*
+    <MudNavLink Href="/activity" Icon="fas fa-fw fa-exchange-alt" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Market Activity</span>
+    </MudNavLink>
+    *@
+    <MudNavLink Href="/stats" Icon="fas fa-fw fa-chart-pie" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Market Statistics</span>
+    </MudNavLink>
+
+    <MudDivider />
+    
+    <MudNavLink OnClick="ShowCommunitiesDialog" Icon="fab fa-fw fa-discord" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Discord Communities</span>
+    </MudNavLink>
+    <MudNavLink Href="https://discord.com/api/oauth2/authorize?client_id=761034518424715264&permissions=18496&scope=bot%20applications.commands" Icon="fas fa-fw fa-robot" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Discord Bot</span>
+    </MudNavLink>
+    
+    <MudDivider />
+    
+    <MudNavLink Href="https://discord.gg/WvTBkhtDvn" Icon="fas fa-fw fa-question-circle" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Help & Support</span>
+    </MudNavLink>
+
+    <MudDivider />
+    
+    <MudNavLink Href="/about" Icon="fas fa-fw fa-info-circle" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">About</span>
+    </MudNavLink>
+    <MudNavLink OnClick="ShowDonationDialog" Icon="fas fa-fw fa-fw fa-donate" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Donate</span>
+    </MudNavLink>
+    
+</MudNavMenu>
+
+@code {
+    
+    private void ShowCommunitiesDialog()
+    {
+        Dialogs.Show<CommunitiesDialog>();
+    }
+
+    private void ShowDonationDialog()
+    {
+        Dialogs.Show<DonateDialog>();
+    }
+
+}

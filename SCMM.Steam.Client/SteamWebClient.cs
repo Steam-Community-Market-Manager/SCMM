@@ -13,29 +13,45 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    public class SteamWebClient
+    public abstract class SteamWebClient : Worker.Client.WebClient
     {
         private readonly ILogger<SteamWebClient> _logger;
-        private readonly HttpClientHandler _httpHandler;
         private readonly SteamSession _session;
 
-        public SteamWebClient(ILogger<SteamWebClient> logger, SteamSession session)
+        public SteamWebClient(ILogger<SteamWebClient> logger, SteamSession session) : base(cookieContainer: session?.Cookies)
         {
             _logger = logger;
             _session = session;
-            _httpHandler = new HttpClientHandler()
-            {
-                UseCookies = (session?.Cookies != null),
-                CookieContainer = (session?.Cookies ?? new CookieContainer())
-            };
         }
 
         public SteamSession Session => _session;
 
+        private async Task<HttpResponseMessage> Post<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            using (var client = BuildHttpClient())
+            {
+                try
+                {
+                    var response = await client.PostAsync(request.Uri, null);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
+                    }
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    throw new SteamRequestException($"POST '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
+                }
+            }
+        }
+
         private async Task<HttpResponseMessage> Get<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
-            using (var client = new HttpClient(_httpHandler, false))
+            using (var client = BuildHttpClient())
             {
                 try
                 {
@@ -63,15 +79,22 @@ namespace SCMM.Steam.Client
             }
             catch (SteamRequestException ex)
             {
-                if (ex.IsSessionStale)
+                // Check if the request might have failed due to missing or expired authentication
+                // 400: BadRequest
+                // 401: Unauthorized
+                // 403: Forbidden
+                if (ex.IsAuthenticiationRequired && _session != null)
                 {
-                    _logger.LogWarning("Steam session is stale, attempting to refresh and try again...");
+                    // Login to steam again, get a new auth token, retry the request again
+                    _logger.LogWarning("Steam session authentication is stale, attempting to refresh and try again...");
                     _session.Refresh();
                     return await Get(request);
                 }
-                else if (ex.IsThrottled)
+                // Check if the request failed due to rate limiting
+                // 429: TooManyRequests
+                else if (ex.IsRateLimited)
                 {
-                    _logger.LogWarning("Steam session is throttled, need to back off...");
+                    _logger.LogWarning("Steam session has been rate limited, need to back off for a while...");
                 }
 
                 throw;
@@ -161,6 +184,19 @@ namespace SCMM.Steam.Client
             where TRequest : SteamRequest
         {
             var json = await GetText(request);
+            if (string.IsNullOrEmpty(json))
+            {
+                return default;
+            }
+
+            return JsonSerializer.Deserialize<TResponse>(json);
+        }
+
+        public async Task<TResponse> PostJson<TRequest, TResponse>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var response = await Post(request);
+            var json = await response.Content.ReadAsStringAsync();
             if (string.IsNullOrEmpty(json))
             {
                 return default;

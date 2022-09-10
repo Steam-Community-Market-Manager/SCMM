@@ -2,16 +2,17 @@
 using Azure.Identity;
 using CommandQuery;
 using CommandQuery.DependencyInjection;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.OpenApi.Models;
+using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Redis.Client.Extensions;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Formatters;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
@@ -19,7 +20,9 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Client.Shared.Storage;
 using SCMM.Web.Server;
+using SCMM.Web.Server.Shared.Storage;
 using System.Reflection;
 using System.Security.Claims;
 
@@ -39,31 +42,35 @@ public static class WebApplicationExtensions
     public static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
     {
         builder.Logging.ClearProviders();
-        builder.Logging.AddDebug();
-        builder.Logging.AddConsole();
-        builder.Logging.AddApplicationInsights();
-        builder.Logging.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Logging.AddDebug();
+            builder.Logging.AddConsole();
+        }
+        else
+        {
+            builder.Logging.AddApplicationInsights();
+        }
         return builder;
     }
 
     public static WebApplicationBuilder ConfigureAppConfiguration(this WebApplicationBuilder builder)
     {
-        builder.Configuration.AddAzureAppConfiguration(
-            options =>
-            {
-                var connectionString = builder.Configuration.GetConnectionString("AppConfigurationConnection");
-                if (!String.IsNullOrEmpty(connectionString))
+        var appConfigConnectionString = builder.Configuration.GetConnectionString("AppConfigurationConnection");
+        if (!String.IsNullOrEmpty(appConfigConnectionString))
+        {
+            builder.Configuration.AddAzureAppConfiguration(
+                options =>
                 {
-                    options.Connect(builder.Configuration.GetConnectionString("AppConfigurationConnection"))
+                    options.Connect(appConfigConnectionString)
                         .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
                         .Select(KeyFilter.Any, LabelFilter.Null)
                         .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
                         .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
-                }
-            },
-            optional: true
-        );
-
+                },
+                optional: true
+            );
+        }
         return builder;
     }
 
@@ -71,13 +78,12 @@ public static class WebApplicationExtensions
     {
         // Logging 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-        builder.Services.AddApplicationInsightsTelemetry(options =>
-        {
-            options.InstrumentationKey = builder.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
-        });
+        builder.Services.AddApplicationInsightsTelemetry();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
 
         // Authentication
-        builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
                 options.LoginPath = "/signin";
@@ -87,7 +93,7 @@ public static class WebApplicationExtensions
                 options.ExpireTimeSpan = TimeSpan.FromDays(7);
                 options.Cookie.IsEssential = true;
                 options.Cookie.HttpOnly = false;
-                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             })
             .AddSteam(options =>
@@ -123,26 +129,38 @@ public static class WebApplicationExtensions
         });
 
         // Database
-        builder.Services.AddDbContext<SteamDbContext>(options =>
+        var dbConnectionString = builder.Configuration.GetConnectionString("SteamDbConnection");
+        if (!String.IsNullOrEmpty(dbConnectionString))
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("SteamDbConnection"), sql =>
+            builder.Services.AddDbContext<SteamDbContext>(options =>
             {
-                //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                sql.EnableRetryOnFailure();
+                options.UseSqlServer(dbConnectionString, sql =>
+                {
+                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    sql.EnableRetryOnFailure();
+                });
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
-            options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
-            options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
-        });
+        }
 
         // Service bus
-        builder.Services.AddAzureServiceBus(
-            builder.Configuration.GetConnectionString("ServiceBusConnection")
-        );
+        var serviceBusConnectionString = builder.Configuration.GetConnectionString("ServiceBusConnection");
+        if (!String.IsNullOrEmpty(serviceBusConnectionString))
+        {
+            builder.Services.AddAzureServiceBus(serviceBusConnectionString);
+        }
+
+        // Redis cache
+        var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+        if (!String.IsNullOrEmpty(redisConnectionString))
+        {
+            builder.Services.AddRedis(redisConnectionString);
+        }
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
         builder.Services.AddSingleton<SteamSession>();
-        builder.Services.AddScoped<SteamWebClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
 
@@ -150,14 +168,15 @@ public static class WebApplicationExtensions
         builder.Services.AddAutoMapper(Assembly.GetEntryAssembly());
 
         // Command/query/message handlers
-        builder.Services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-        builder.Services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-        builder.Services.AddMessages(Assembly.GetEntryAssembly());
+        builder.Services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+        builder.Services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+        builder.Services.AddMessages(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
 
         // Services
         builder.Services.AddScoped<SteamService>();
         builder.Services.AddScoped<LanguageCache>();
         builder.Services.AddScoped<CurrencyCache>();
+        builder.Services.AddScoped<AppCache>();
 
         // Controllers
         builder.Services
@@ -191,23 +210,46 @@ public static class WebApplicationExtensions
             {
                 // Probably haven't generated XML docs, not a deal breaker...
             }
-            config.SwaggerDoc("v1",
+
+            config.SwaggerDoc(
+                "preview",
                 new OpenApiInfo
                 {
                     Title = "SCMM",
-                    Version = "v1",
+                    Version = "Preview",
                     Description = (
                         "Steam Community Market Manager (SCMM) API.<br/>" +
                         "These APIs are provided unrestricted, unthrottled, and free of charge in the hopes that they are useful to somebody. If you abuse them or are the cause of significant performance degradation, don't be surprised if you get blocked."
                     ),
                     Contact = new OpenApiContact()
                     {
-                        Name = "More about this project",
+                        Name = "About",
                         Url = new Uri($"{builder.Configuration.GetWebsiteUrl()}/about")
                     },
                     TermsOfService = new Uri($"{builder.Configuration.GetWebsiteUrl()}/tos")
                 }
             );
+
+            var securitySchema = new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: `Authorization: Bearer {token}`",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            };
+
+            config.AddSecurityDefinition("Bearer", securitySchema);
+            config.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                { securitySchema, new[] { "Bearer" } }
+            });
+
         });
 
         return builder;
@@ -239,12 +281,6 @@ public static class WebApplicationExtensions
                 client.DefaultRequestHeaders.Add("Cookie", string.Join(';', cks));
             }
 
-            var state = sp.GetService<AppState>();
-            if (state != null)
-            {
-                state.AddHeadersTo(client);
-            }
-
             return client;
         });
 
@@ -273,6 +309,7 @@ public static class WebApplicationExtensions
         {
             scope.ServiceProvider.GetService<LanguageCache>()?.RepopulateCache();
             scope.ServiceProvider.GetService<CurrencyCache>()?.RepopulateCache();
+            scope.ServiceProvider.GetService<AppCache>()?.RepopulateCache();
         }
 
         // Enable Swagger API auto-docs
@@ -283,12 +320,23 @@ public static class WebApplicationExtensions
         app.UseSwaggerUI(config =>
         {
             config.RoutePrefix = "docs";
-            config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");
+            config.SwaggerEndpoint("/docs/preview/swagger.json", "SCMM API (Preview)");
             config.InjectStylesheet("/css/scmm-swagger-theme.css");
             config.OAuth2RedirectUrl("/signin");
         });
 
         app.UseHttpsRedirection();
+
+        var allowLoopbackConnectHack = app.Environment.IsDevelopment() ? "wss://localhost:44353" : null;
+        app.UseOWASPSecurityHeaders(
+            cspScriptSources: "'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.skypack.dev www.googletagmanager.com www.google-analytics.com",
+            cspStyleSources: "'self' 'unsafe-inline' cdnjs.cloudflare.com fonts.googleapis.com www.google-analytics.com",
+            cspFontSources: "'self' data: cdnjs.cloudflare.com fonts.gstatic.com",
+            cspImageSources: "'self' *.scmm.app steamcommunity-a.akamaihd.net steamuserimages-a.akamaihd.net steamcdn-a.akamaihd.net avatars.steamstatic.com avatars.akamai.steamstatic.com cdn.discordapp.com www.google-analytics.com",
+            cspFrameSources: "'self' www.youtube.com",
+            cspConnectSources: $"'self' *.scmm.app discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowLoopbackConnectHack}",
+            cspAllowCrossOriginEmbedding: true
+        );
 
         app.UseBlazorFrameworkFiles(); // Wasm
         app.UseStaticFiles();

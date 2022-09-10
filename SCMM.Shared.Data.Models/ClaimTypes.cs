@@ -11,6 +11,7 @@
         public const string Country = "http://scmm.app/identity/claims/country";
         public const string Language = "http://scmm.app/identity/claims/language";
         public const string Currency = "http://scmm.app/identity/claims/currency";
+        public const string AppId = "http://scmm.app/identity/claims/appId";
         public const string Role = "http://scmm.app/identity/claims/role";
     }
 }

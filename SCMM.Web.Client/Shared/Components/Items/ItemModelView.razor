@@ -1,18 +1,20 @@
 ﻿@using MudBlazor.Utilities
+@using SCMM.Web.Client.Shared.Dialogs.Items
 @implements IAsyncDisposable
 @inject ILogger<ViewItemModelDialog> Logger
 @inject IJSRuntime JS
+@inject AppState State
 
 <div @attributes="AdditionalAttributes">
     <div @ref=Container class="scene-container interactive full-width full-height">
         
         <div class="scene-controls position-top d-flex flex-wrap flex-row align-center justify-center full-width pa-4">
             <MudTooltip Text="Reset camera" Class="mx-4">
-                <MudIconButton OnClick="@OnResetCameraClicked" Icon="fas fa-video" Color="Color.Default" Disabled="@(Scene == null)" />
+                <MudIconButton OnClick="@OnResetCameraClicked" Icon="fas fa-video" Color="Color.Default" Disabled="@(Scene == null || State.IsPrerendering)" />
             </MudTooltip>
             <div class="d-flex flex-row align-center mx-4">
                 <MudTooltip Text="Toggle rotate animation">
-                    <MudToggleIconButton Toggled="@IsRotating" ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" />
+                    <MudToggleIconButton Toggled="@IsRotating" ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null || State.IsPrerendering)" />
                 </MudTooltip>
                 <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap">Auto-rotate</MudText>
             </div>
@@ -20,7 +22,7 @@
             {
                 <div class="d-flex flex-row align-center mx-4">
                     <MudTooltip Text="Show/hide cutout">
-                        <MudToggleIconButton Toggled="@IsCutoutVisible" ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" Class="ml-2" />
+                        <MudToggleIconButton Toggled="@IsCutoutVisible" ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null || State.IsPrerendering)" Class="ml-2" />
                     </MudTooltip>
                     <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap">Cutout</MudText>
                 </div>
@@ -29,16 +31,16 @@
             {
                 <div class="d-flex flex-row align-center mx-4">
                     <MudTooltip Text="Slide to set the glow effect intensity">
-                        <MudIcon Icon="fas fa-fw fa-moon ml-2" Size="@Size.Medium" />
+                        <MudIcon Icon="fas fa-fw fa-moon ml-2" Size="@Size.Medium" Color="@Color.Default" />
                     </MudTooltip>
-                    <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null)" Class="ml-4 ma-2" />
+                    <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Color="@Color.Secondary" Disabled="@(Scene == null || State.IsPrerendering)" Class="ml-4 ma-2" />
                 </div>
             }
             <div class="d-flex flex-row align-center mx-4">
                 <MudTooltip Text="Toggle the lights on/off">
-                    <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null)" Class="" />
+                    <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null || State.IsPrerendering)" Class="" />
                 </MudTooltip>
-                <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null || !IsLightOn)" Class="ma-2 mr-4" />
+                <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Color="@Color.Warning" Disabled="@(Scene == null || !IsLightOn || State.IsPrerendering)" Class="ma-2 mr-4" />
             </div>
             @if (AdditionalTools != null)
             {
@@ -93,16 +95,16 @@
 
     [Parameter]
     public string ItemType { get; set; }
-    
+
     [Parameter]
     public string WorkshopFileUrl { get; set; }
-    
+
     [Parameter]
     public bool DisableCutoutControls { get; set; }
-    
+
     [Parameter]
     public bool DisableGlowControls { get; set; }
-    
+
     [Parameter]
     public RenderFragment AdditionalTools { get; set; }
 
@@ -112,17 +114,17 @@
     private ElementReference Container { get; set; }
 
     private ThreeJsScene Scene { get; set; }
-    
+
     private bool IsRotating { get; set; } = false;
-    
+
     private bool IsCutoutVisible { get; set; } = false;
-    
+
     private bool IsLightOn { get; set; } = true;
 
-    private bool IsLoading { get; set; }
+    private bool IsLoading { get; set; } = true;
 
     private long? ProgressLoaded { get; set; }
-    
+
     private long? ProgressTotal { get; set; }
 
     private string Error { get; set; }
@@ -133,11 +135,14 @@
         {
             try
             {
+                IsLoading = true;
                 Scene = await CreateSceneFromWorkshopFileAsync(
                     Container,
                     new
                     {
-                        ModelEndpoint = $"https://scmm.blob.core.windows.net/models",
+                        // TODO: Add endpoint url configuration
+                        ModelEndpoint = $"https://data.scmm.app/{Constants.BlobContainerModels}",
+                        // TODO: Add support for other apps
                         ModelName = ItemType.ToRustItemShortName(),
                         WorkshopFileUrl = WorkshopFileUrl,
                         AutoRotate = IsRotating,                        Light = IsLightOn
@@ -148,6 +153,7 @@
             {
                 Logger.LogError(ex, "Failed to initialise the model viewer");
                 Error = $"Unable to initialise the model viewer. {ex.Message}";
+                IsLoading = false;
                 StateHasChanged();
                 throw ex;
             }
@@ -204,7 +210,7 @@
         IsLoading = true;
         ProgressLoaded = loaded;
         ProgressTotal = total;
-        Logger.LogInformation($"Load Progress: {loaded}/{total}");
+        Logger.LogTrace($"Load Progress: {loaded}/{total}");
         StateHasChanged();
     }
     
@@ -215,7 +221,7 @@
         IsLoading = false;
         ProgressLoaded = null;
         ProgressTotal = null;
-        Logger.LogInformation($"Load Complete!");
+        Logger.LogTrace($"Load Complete!");
         StateHasChanged();
     }
 

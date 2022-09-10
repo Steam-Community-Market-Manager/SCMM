@@ -43,7 +43,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string DescriptionWorkshop { get; set; }
 
-        public IList<string> Notes { get; set; }
+        public string[] Notes { get; set; }
 
         public IDictionary<long, string> Changes { get; set; }
 
@@ -75,13 +75,25 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public IDictionary<string, SteamMediaType> Previews { get; set; }
 
-        public long? CurrentSubscriptions { get; set; }
+        public long? SupplyTotalEstimated { get; set; }
 
-        public long? LifetimeSubscriptions { get; set; }
+        public long? SupplyTotalMarketsKnown { get; set; }
 
-        public long? CurrentFavourited { get; set; }
+        public long? SupplyTotalInvestorsKnown { get; set; }
 
-        public long? LifetimeFavourited { get; set; }
+        public long? SupplyTotalInvestorsEstimated { get; set; }
+
+        public long? SupplyTotalOwnersKnown { get; set; }
+
+        public long? SupplyTotalOwnersEstimated { get; set; }
+
+        public long? SubscriptionsCurrent { get; set; }
+
+        public long? SubscriptionsLifetime { get; set; }
+
+        public long? FavouritedCurrent { get; set; }
+
+        public long? FavouritedLifetime { get; set; }
 
         public long? Views { get; set; }
 
@@ -139,7 +151,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? StorePrice { get; set; }
 
-        public IEnumerable<ItemStoreInstanceDTO> Stores { get; set; }
+        public ItemStoreInstanceDTO[] Stores { get; set; }
 
         #endregion
 
@@ -157,10 +169,6 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? MarketSellOrderLowestPrice { get; set; }
 
-        public long? MarketResellPrice { get; set; }
-
-        public long? MarketResellTax { get; set; }
-
         public long? Market1hrSales { get; set; }
 
         public long? Market1hrValue { get; set; }
@@ -177,23 +185,39 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? MarketLowestValue { get; set; }
 
+        public long? MarketRankIndex { get; set; }
+
+        public long? MarketRankTotal { get; set; }
+
         public DateTimeOffset? TimeMarketHighestValue { get; set; }
 
         public DateTimeOffset? TimeMarketLowestValue { get; set; }
 
         public DateTimeOffset? TimeMarketFirstSold { get; set; }
+        
+        public bool IsBeingManipulated { get; set; }
 
         #endregion
 
         #region Prices
 
-        public PriceType? BuyNowFrom { get; set; }
+        public MarketType? BuyNowFrom { get; set; }
 
         public long? BuyNowPrice { get; set; }
 
         public string BuyNowUrl { get; set; }
 
-        public IEnumerable<ItemPriceDTO> Prices { get; set; }
+        public ItemMarketPriceDTO[] BuyPrices { get; set; }
+
+        // TODO: BuyLater
+        // TODO: SellNow
+        // TODO: SellLater
+
+        #endregion
+
+        #region Interactions
+
+        public ItemInteractionDTO[] Actions { get; set; }
 
         #endregion
     }

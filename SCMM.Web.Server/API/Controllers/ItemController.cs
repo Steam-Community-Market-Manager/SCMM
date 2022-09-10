@@ -7,12 +7,14 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API;
-using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Item;
+using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Server.Extensions;
+using SCMM.Steam.Data.Models.Enums;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -53,7 +55,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
         /// <param name="marketable">If <code>true</code>, only marketable items are returned</param>
-        /// <param name="tradeable">If <code>true</code>, only tradable items are returned</param>
+        /// <param name="tradable">If <code>true</code>, only tradable items are returned</param>
         /// <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>
         /// <param name="banned">If <code>true</code>, only banned items are returned</param>
         /// <param name="specialDrop">If <code>true</code>, only special drops are returned</param>
@@ -76,7 +78,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null,
-                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false, [FromQuery] bool tradeable = false,
+                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false, [FromQuery] bool tradable = false,
                                                   [FromQuery] bool returning = false, [FromQuery] bool banned = false, [FromQuery] bool specialDrop = false, [FromQuery] bool twitchDrop = false, [FromQuery] bool craftable = false,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
@@ -90,8 +92,12 @@ namespace SCMM.Web.Server.API.Controllers
                 count = int.MaxValue;
             }
 
-            var query = _db.SteamAssetDescriptions.AsNoTracking();
+            // Filter app
+            var appId = this.App().Guid;
+            var query = _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId);
 
+            // Filter search
             filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
             var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             foreach (var filterWord in filterWords)
@@ -109,6 +115,7 @@ namespace SCMM.Web.Server.API.Controllers
                 );
             }
 
+            // Filter toggles
             if (!string.IsNullOrEmpty(type))
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.ItemType == type);
@@ -119,7 +126,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (creatorId != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()));
+                query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()));
             }
             if (glow)
             {
@@ -137,9 +144,9 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.ClassId) || (x.IsMarketable == true || x.MarketableRestrictionDays > 0));
             }
-            if (tradeable)
+            if (tradable)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.IsTradable == true);
+                query = query.Where(x => id.Contains(x.ClassId) || (x.IsTradable == true || x.TradableRestrictionDays > 0 || (x.IsTradable && x.TradableRestrictionDays == null)));
             }
             if (returning)
             {
@@ -161,16 +168,25 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsCraftable == true);
             }
-
+            
+            // Join
             query = query
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
+                .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency);
 
-            // TODO: Sorting...
+            // Sort
+            if (!String.IsNullOrEmpty(sortBy))
+            {
+                query = query.SortBy(sortBy, sortDirection);
+            }
+            else
+            {
+                query = query.OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
+            }
 
-            // Paginate and return
+            // Paginate
             return Ok(!detailed
                 ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this))
                 : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this))
@@ -206,6 +222,7 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
             var item = await _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
@@ -213,76 +230,48 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
                 .FirstOrDefaultAsync(x =>
                     (guid != Guid.Empty && x.Id == guid) ||
                     (id64 > 0 && x.ClassId == id64) ||
                     (x.Name == id)
                 );
 
-            if (item == null)
+            var itemDetails = _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this);
+            if (itemDetails == null)
             {
                 return NotFound($"Item was not found");
             }
 
-            return Ok(
-                _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this)
-            );
-        }
-
-        /// <summary>
-        /// Get item price list
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="id">Item GUID, ID64, or name</param>
-        /// <response code="200">The item price list.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the request item cannot be found.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("{id}/prices")]
-        [ProducesResponseType(typeof(IEnumerable<ItemPriceDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemPrices([FromRoute] string id)
-        {
-            if (string.IsNullOrEmpty(id))
+            // Calculate market price ranks
+            if (!String.IsNullOrEmpty(itemDetails?.ItemType))
             {
-                return BadRequest("Item id is invalid");
-            }
+                var thisItemCheapestPrice = (itemDetails.IsAvailableOnStore
+                    ? (itemDetails.StorePrice > 0 && itemDetails.MarketSellOrderLowestPrice > 0) ? Math.Min(itemDetails.StorePrice.Value, itemDetails.MarketSellOrderLowestPrice.Value) : itemDetails.StorePrice
+                    : itemDetails.MarketSellOrderLowestPrice
+                );
+                var otherItems = await _db.SteamAssetDescriptions
+                    .AsNoTracking()
+                    .Where(x => x.ItemType == itemDetails.ItemType)
+                    .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0)
+                    .Select(x => new
+                    {
+                        MarketPrice = (x.MarketItem != null ? x.MarketItem.SellOrderLowestPrice : 0),
+                        MarketCurrency = (x.MarketItem != null ? x.MarketItem.Currency : null),
+                        StorePrices = (x.StoreItem != null && x.StoreItem.IsAvailable ? x.StoreItem.Prices : null)
+                    })
+                    .ToListAsync();
 
-            var guid = Guid.Empty;
-            var id64 = (ulong)0;
-            Guid.TryParse(id, out guid);
-            ulong.TryParse(id, out id64);
-
-            var item = await _db.SteamAssetDescriptions
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .FirstOrDefaultAsync(x =>
-                    (guid != Guid.Empty && x.Id == guid) ||
-                    (id64 > 0 && x.ClassId == id64) ||
-                    (x.Name == id)
+                var otherCheaperItems = otherItems.Where(x =>
+                    (x.MarketPrice > 0 && this.Currency().CalculateExchange(x.MarketPrice, x.MarketCurrency) < thisItemCheapestPrice) ||
+                    (x.StorePrices != null && x.StorePrices.ContainsKey(this.Currency().Name) && x.StorePrices[this.Currency().Name] < thisItemCheapestPrice)
                 );
 
-            if (item == null)
-            {
-                return NotFound($"Item was not found");
+                itemDetails.MarketRankIndex = otherCheaperItems.Count();
+                itemDetails.MarketRankTotal = otherItems.Count();
             }
 
-            return Ok(
-                item.GetPrices(this.Currency())
-                    .OrderByDescending(x => x.Type == PriceType.SteamStore)
-                    .ThenByDescending(x => x.Type == PriceType.SteamCommunityMarket)
-                    .ThenByDescending(x => x.IsAvailable)
-                    .ThenBy(x => x.LowestPrice)
-                    .Select(x => _mapper.Map<Price, ItemPriceDTO>(x, this))
-                    .ToList()
-            );
+            return Ok(itemDetails);
         }
 
         /// <summary>
@@ -313,8 +302,10 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemSellOrder
                 .Include(x => x.Item.Currency)
+                .Where(x => x.Item.AppId == appId)
                 .Where(x =>
                     (guid != Guid.Empty && x.Item.Description.Id == guid) ||
                     (id64 > 0 && x.Item.Description.ClassId == id64) ||
@@ -355,8 +346,10 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemBuyOrder
                 .Include(x => x.Item.Currency)
+                .Where(x => x.Item.AppId == appId)
                 .Where(x =>
                     (guid != Guid.Empty && x.Item.Description.Id == guid) ||
                     (id64 > 0 && x.Item.Description.ClassId == id64) ||
@@ -373,15 +366,19 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get item sales history chart data, grouped by day (UTC)
         /// </summary>
         /// <remarks>
+        /// Detailed financial details (high/low/open/close) are only reported for periods less than 30 days.
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
+        /// <param name="id">Item GUID, ID64, or name</param>
+        /// <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
         /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{id}/salesHistory")]
-        [ProducesResponseType(typeof(IEnumerable<ItemSaleChartDTO>), StatusCodes.Status200OK)]
+        [HttpGet("{id}/sales")]
+        [ProducesResponseType(typeof(IEnumerable<ItemSalesChartPointDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemSalesTimeline([FromRoute] string id)
+        public async Task<IActionResult> GetItemSales([FromRoute] string id, int maxDays = 30)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -393,34 +390,106 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var getCandleData = (maxDays >= 1 && maxDays <= 30);
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
+                .Where(x => x.Item.AppId == appId)
                 .Where(x =>
                     (guid != Guid.Empty && x.Item.Description.Id == guid) ||
                     (id64 > 0 && x.Item.Description.ClassId == id64) ||
                     (x.Item.Description.Name == id)
                 )
-                .Where(x => x.Timestamp.Date <= yesterday.Date)
+                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
                 .GroupBy(x => x.Timestamp.Date)
                 .OrderBy(x => x.Key.Date)
                 .Select(x => new
                 {
                     Date = x.Key,
-                    MedianPrice = x.Average(y => y.MedianPrice),
-                    Quantity = x.Sum(y => y.Quantity)
+                    Median = x.Average(y => y.MedianPrice),
+                    High = (getCandleData ? x.Max(y => y.MedianPrice) : 0),
+                    Low = (getCandleData ? x.Min(y => y.MedianPrice) : 0),
+                    Open = (getCandleData && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).FirstOrDefault().MedianPrice : 0),
+                    Close = (getCandleData && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).LastOrDefault().MedianPrice : 0),
+                    Volume = x.Sum(y => y.Quantity)
                 });
 
             var sales = (await query.ToListAsync()).Select(
-                x => new ItemSaleChartDTO
+                x => new ItemSalesChartPointDTO
                 {
                     Date = x.Date,
-                    Price = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.MedianPrice, 0))),
-                    Quantity = x.Quantity
+                    Median = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.Median, 0))),
+                    High = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.High)),
+                    Low = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Low)),
+                    Open = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Open)),
+                    Close = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Close)),
+                    Volume = x.Volume
                 }
             );
 
             return Ok(sales);
+        }
+
+        /// <summary>
+        /// Get list of top users holding an item
+        /// </summary>
+        /// <param name="id">Item GUID, ID64, or name</param>
+        /// <param name="max">The maximum number of users to return.</param>
+        /// <response code="200">List of top user holding the item.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}/topHolders")]
+        [ProducesResponseType(typeof(IEnumerable<ItemHoldingUserDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemTopHolders([FromRoute] string id, int max = 30)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Item id is invalid");
+            }
+
+            max = Math.Max(max, 0);
+            if (max <= 0)
+            {
+                return BadRequest("Max must be greater than zero");
+            }
+
+            var guid = Guid.Empty;
+            var id64 = (ulong)0;
+            Guid.TryParse(id, out guid);
+            ulong.TryParse(id, out id64);
+
+            var appId = this.App().Guid;
+            var topHoldingProfiles = await _db.SteamProfileInventoryItems
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .Where(x =>
+                    (guid != Guid.Empty && x.Description.Id == guid) ||
+                    (id64 > 0 && x.Description.ClassId == id64) ||
+                    (x.Description.Name == id)
+                )
+                .GroupBy(x => x.ProfileId)
+                .Select(x => new
+                {
+                    Profile = _db.SteamProfiles.FirstOrDefault(p => p.Id == x.Key),
+                    Items = x.Sum(y => y.Quantity)
+                })
+                .OrderByDescending(x => x.Items)
+                .Take(max)
+                .ToListAsync();
+
+            return Ok(
+                topHoldingProfiles.Select(x => new ItemHoldingUserDTO
+                {
+                    SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
+                    Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
+                    AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    Items = x.Items
+                })
+            );
         }
 
         /// <summary>
@@ -444,28 +513,55 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] ulong? creatorId = null)
         {
+            var appId = this.App().Guid;
+
             if (string.IsNullOrEmpty(name))
             {
                 return BadRequest("Collection name is missing");
             }
 
-            var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
+            var acceptedAssetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.IsAccepted == true)
                 .Where(x => x.ItemCollection == name)
-                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
                 .ToListAsync();
-
-            if (assetDescriptions?.Any() != true)
+            if (acceptedAssetDescriptions?.Any() != true)
             {
                 return NotFound("Collection does not exist");
             }
 
-            var assetDetails = _mapper.Map<List<SteamAssetDescription>, ItemCollectionDTO>(assetDescriptions, this);
-            return Ok(assetDetails);
+            var unacceptedWorkshopFiles = await _db.SteamWorkshopFiles.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.IsAccepted == false)
+                .Where(x => x.ItemCollection == name)
+                .Where(x => x.DescriptionId == null)
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()))
+                .Include(x => x.App)
+                .Include(x => x.CreatorProfile)
+                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
+                .ToListAsync();
+
+            var creator = acceptedAssetDescriptions
+                .Where(x => x.CreatorProfile != null)
+                .GroupBy(x => x.CreatorProfile)
+                .FirstOrDefault();
+
+            return Ok(new ItemCollectionDTO()
+            {
+                Name = name,
+                CreatorName = creator?.Key.Name,
+                CreatorAvatarUrl = creator?.Key.AvatarUrl,
+                BuyNowPrice = acceptedAssetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency())?.Price ?? 0),
+                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this)?.ToArray(),
+                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this)?.ToArray()
+            });
         }
 
         /// <summary>
@@ -475,17 +571,54 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("types")]
-        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ItemTypeGroupDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemTypes()
         {
+            var appId = this.App().Guid;
+            var itemTypes = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => !String.IsNullOrEmpty(x.ItemType))
+                .GroupBy(x => x.ItemType)
+                .Select(x => x.Key)
+                .ToArrayAsync();
+
+            // TODO: Add support for other apps
             return Ok(
-                await _db.SteamAssetDescriptions
-                    .AsNoTracking()
-                    .Where(x => !String.IsNullOrEmpty(x.ItemType))
-                    .GroupBy(x => x.ItemType)
-                    .Select(x => x.Key)
-                    .ToArrayAsync()
+                itemTypes.GroupBy(x => x.ToRustItemGroup()).OrderBy(x => x.Key).Select(g => new ItemTypeGroupDTO()
+                { 
+                    Name = g.Key,
+                    ItemTypes = g.OrderBy(x => x).Select(i => new ItemTypeDTO()
+                    {
+                        Id = i.ToRustItemShortName(),
+                        Name = i
+                    }).ToArray()
+                })
+            );
+        }
+
+        /// <summary>
+        /// List all item prices across all known markets
+        /// </summary>
+        /// <response code="200">List of item prices</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("prices")]
+        [ProducesResponseType(typeof(IEnumerable<ItemMarketPricingDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemPrices()
+        {
+            var appId = this.App().Guid;
+            var items = await _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
+                .OrderBy(x => x.ClassId)
+                .ToArrayAsync();
+
+            return Ok(
+                _mapper.Map<SteamAssetDescription, ItemMarketPricingDTO>(items, this)
             );
         }
     }

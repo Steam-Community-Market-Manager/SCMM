@@ -1,47 +1,84 @@
 ﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject AppState State
 
-@if(!State.Is(Profile?.SteamId))
-{
-    <MudItem xs="12" sm="6" lg="4" xl="2">
-        <div class="d-flex flex-row justify-start align-center">
+<MudItem xs="12" sm="6" lg="4" xl="2">
+    <div class="d-flex flex-row justify-start align-start">
+        @if (Profile == null)
+        {
+            <MudSkeleton SkeletonType="MudBlazor.SkeletonType.Circle" Width="48px" Height="48px" Class="mud-skeleton-light" />
+        }
+        else
+        {
+            <MudAvatar Image="@Profile.AvatarUrl" />
+        }
+        <div class="ml-2">
             @if (Profile == null)
             {
-                <MudSkeleton SkeletonType="MudBlazor.SkeletonType.Circle" Width="48px" Height="48px" Class="mud-skeleton-light" />
+                <MudSkeleton Width="12em" Class="mud-skeleton-light" />
+                <MudSkeleton Width="8em" Class="mud-skeleton-light" />
             }
             else
             {
-                <MudAvatar Image="@Profile.AvatarUrl" />
-            }
-            <div class="ml-2">
-                @if (Profile == null)
+                <MudText Typo="MudBlazor.Typo.body2">
+                    <span>@Profile.Name</span>
+                </MudText>
+                <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                    <small class="no-wrap">
+                        <i class="fa fa-fw fa-fingerprint"></i>
+                        <span>@Profile.SteamId</span>
+                    </small>
+                    <small class="no-wrap">
+                        @if (!String.IsNullOrEmpty(Profile.ProfileId) && !String.Equals(Profile.ProfileId, Profile.SteamId, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <i class="fa fa-fw fa-user"></i>
+                            <span>@Profile.ProfileId</span>
+                        }
+                    </small>
+                </MudText>
+                @if (Profile.LastUpdatedInventoryOn != null)
                 {
-                    <MudSkeleton Width="12em" Class="mud-skeleton-light" />
-                    <MudSkeleton Width="8em" Class="mud-skeleton-light" />
-                }
-                else
-                {
-                    <MudText Typo="MudBlazor.Typo.body2">
-                        <span>@Profile.Name</span>
-                    </MudText>
                     <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                        <span>@(String.IsNullOrEmpty(Profile.ProfileId) ? Profile.SteamId : Profile.ProfileId)</span>
+                        <small class="no-wrap">
+                            <i class="fa fa-fw fa-clock"></i>
+                            <span>Last synchronised @((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1))</span>
+                        </small>
                     </MudText>
                 }
-            </div>
+            }
         </div>
-    </MudItem>
-}
+        @if (Profile?.Roles?.Contains(Roles.VIP) == true)
+        {
+            <MudSpacer />
+            <MudTooltip>
+                <TooltipContent>
+                    @if (Profile?.Roles?.Contains(Roles.Donator) == true)
+                    {
+                        <span>Donator. Thank you for your generous support and donation(s) to the SCMM project</span>
+                    }
+                    else
+                    {
+                        <span>VIP. Thank you for contributing to the SCMM project</span>
+                    }
+                </TooltipContent>
+                <ChildContent>
+                    <MudAvatar Class="ml-2" Style="background-color: transparent; color: gold">
+                        <i class="fas fa-fw fa-crown"></i>
+                    </MudAvatar>
+                </ChildContent>
+            </MudTooltip>
+        }
+    </div>
+</MudItem>
 
 <MudItem xs="12" sm="6" lg="4" xl="2">
     <MudTooltip Text="The total number of items in this inventory">
-        <div class="d-flex flex-row justify-start align-center">
+        <div class="d-flex flex-row justify-start align-start">
             <MudAvatar Class="mud-info">
                 <i class="fas fa-fw fa-th"></i>
             </MudAvatar>
             <div class="ml-2">
-                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Inventory Items</MudText>
-                <MudText Typo="MudBlazor.Typo.subtitle2">
+                <MudText Typo="MudBlazor.Typo.body2">Inventory Items</MudText>
+                <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
                     @if (InventoryTotal == null)
                     {
                         <MudSkeleton Width="50%" Class="mud-skeleton-light" />
@@ -60,13 +97,13 @@
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
         <MudTooltip Text="How much people have recently paid for the items in this inventory, based on the most recent median sales price of each item">
-            <div class="d-flex flex-row justify-start align-center">
+            <div class="d-flex flex-row justify-start align-start">
                 <MudAvatar Class="mud-info">
                     <i class="fas fa-fw fa-balance-scale-left"></i>
                 </MudAvatar>
                 <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Value</MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2">
+                    <MudText Typo="MudBlazor.Typo.body2">Inventory Value</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
                         @if (InventoryTotal == null)
                         {
                             <MudSkeleton Class="mud-skeleton-light" />
@@ -74,20 +111,18 @@
                         else 
                         {
                             <span>@State.Currency.ToPriceString(InventoryTotal.MarketValue)</span>
-                            @if (InventoryTotal.MarketMovementValue > 0)
-                            {
-                                <small class="mud-success-text ml-1">
-                                    <i class="fas fa-fw fa-arrow-up"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
-                                </small>
-                            }
-                            @if (InventoryTotal.MarketMovementValue < 0)
-                            {
-                                <small class="mud-error-text ml-1">
-                                    <i class="fas fa-fw fa-arrow-down"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
-                                </small>
-                            }
+                            <small class="@($"ml-1 {(InventoryTotal.MarketMovementValue > 0 ? "mud-success-text" : "mud-error-text")}")">
+                                <i class="@($"fas fa-fw {(InventoryTotal.MarketMovementValue > 0 ? "fa-arrow-up" : "fa-arrow-down")}")"></i>
+                                @switch(@State.Profile.InventoryValueMovementDisplay)
+                                {
+                                    case InventoryValueMovementDisplayType.Price:
+                                        <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
+                                        break;
+                                    case InventoryValueMovementDisplayType.Percentage:
+                                        <span>@InventoryTotal.MarketMovementValue.ToPercentageString(InventoryTotal.MarketValue, decimals: 1) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
+                                        break;
+                                }
+                            </small>
                         }
                     </MudText>
                 </div>
@@ -100,13 +135,13 @@
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
         <MudTooltip Text="The total amount of money spent to purchase this inventory">
-            <div class="d-flex flex-row justify-start align-center">
+            <div class="d-flex flex-row justify-start align-start">
                 <MudAvatar Class="mud-error">
                     <i class="fas fa-fw fa-dollar-sign"></i>
                 </MudAvatar>
                 <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Investment Costs</MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2">
+                    <MudText Typo="MudBlazor.Typo.body2">Investment Costs</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
                         @if (InventoryTotal == null)
                         {
                             <MudSkeleton Class="mud-skeleton-light" />
@@ -126,7 +161,7 @@
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
         <MudTooltip Text="The total amount of investment gains and losses for this inventory. Calculated by subtracting the cost of purchasing all items (where purchase price is known) from the last median sales price">
-            <div class="d-flex flex-row justify-start align-center">
+            <div class="d-flex flex-row justify-start align-start">
                 <MudAvatar Class="@(InventoryTotal?.InvestmentNetReturn >= 0 ? "mud-success" : "mud-error")">
                     @if (InventoryTotal == null)
                     {
@@ -138,7 +173,7 @@
                     }
                 </MudAvatar>
                 <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
+                    <MudText Typo="MudBlazor.Typo.body2">
                         @if (InventoryTotal == null)
                         {
                             <MudSkeleton Width="8em" Class="mud-skeleton-light" />
@@ -148,7 +183,7 @@
                             <span>Investment Returns</span>
                         }
                     </MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Default">
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
                         @if (InventoryTotal == null)
                         {
                             <MudSkeleton Width="12em" Class="mud-skeleton-light" />
@@ -175,27 +210,6 @@
                 </div>
             </div>
         </MudTooltip>
-    </MudItem>
-}
-
-@if (Profile != null && State.Is(Profile.SteamId))
-{
-    <MudItem xs="12" sm="6" lg="4" xl="2" Class="d-flex flex-row justify-start align-center">
-        <MudTooltip Text="Fetch the latest inventory data from your Steam account">
-            <MudButton Variant="MudBlazor.Variant.Outlined" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Secondary" OnClick="@SynchroniseInventory">
-                Refresh
-            </MudButton>
-        </MudTooltip>
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="ml-2 no-wrap">
-            @if (@Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) > 0)
-            {
-                <span>Last refreshed @((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1))</span>
-            }
-            else
-            {
-                <span>Last refreshed a few moments ago</span>
-            }
-        </MudText>
     </MudItem>
 }
 

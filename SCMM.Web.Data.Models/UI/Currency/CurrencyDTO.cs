@@ -4,6 +4,8 @@ namespace SCMM.Web.Data.Models.UI.Currency
 {
     public class CurrencyDTO : ICurrency
     {
+        public uint Id { get; set; }
+
         public string Name { get; set; }
 
         public string PrefixText { get; set; }

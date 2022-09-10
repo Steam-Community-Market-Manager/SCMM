@@ -30,11 +30,11 @@ namespace SCMM.Steam.Client.Exceptions
 
         public HttpStatusCode? StatusCode { get; set; }
 
-        public bool IsThrottled => (
+        public bool IsRateLimited => (
             StatusCode == HttpStatusCode.TooManyRequests
         );
 
-        public bool IsSessionStale => (
+        public bool IsAuthenticiationRequired => (
             StatusCode == HttpStatusCode.BadRequest ||
             StatusCode == HttpStatusCode.Unauthorized ||
             StatusCode == HttpStatusCode.Forbidden

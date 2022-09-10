@@ -1,4 +1,5 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
+using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
 
@@ -18,21 +19,23 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public CurrencyDetailedDTO Currency { get; set; }
 
+        public AppDetailedDTO App { get; set; }
+
         public StoreTopSellerRankingType StoreTopSellers { get; set; }
 
         public MarketValueType MarketValue { get; set; }
 
-        public bool IncludeMarketTax { get; set; }
-
-        public IEnumerable<ItemInfoType> ItemInfo { get; set; }
+        public ItemInfoType[] ItemInfo { get; set; }
 
         public ItemInfoWebsiteType ItemInfoWebsite { get; set; }
 
-        public bool ShowItemDrops { get; set; }
+        public bool ItemIncludeMarketFees { get; set; }
 
-        public string DiscordId { get; set; }
+        public bool InventoryShowItemDrops { get; set; }
 
-        public string[] Roles { get; set; }
+        public bool InventoryShowUnmarketableItems { get; set; }
+
+        public InventoryValueMovementDisplayType InventoryValueMovementDisplay { get; set; }
 
         public int DonatorLevel { get; set; }
     }

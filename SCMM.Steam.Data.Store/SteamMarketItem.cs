@@ -1,8 +1,11 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Attributes;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store.Types;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -10,6 +13,8 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamMarketItem()
         {
+            BuyPrices = new PersistableMarketPriceDictionary();
+            SellPrices = new PersistableMarketPriceDictionary();
             Activity = new Collection<SteamMarketItemActivity>();
             BuyOrders = new Collection<SteamMarketItemBuyOrder>();
             BuyOrderHighestPriceRolling24hrs = new PersistablePriceCollection();
@@ -24,6 +29,40 @@ namespace SCMM.Steam.Data.Store
 
         public SteamCurrency Currency { get; set; }
 
+        [Required]
+        public PersistableMarketPriceDictionary BuyPrices { get; set; }
+
+        public int BuyPricesTotalSupply { get; set; }
+
+        public MarketType BuyNowFrom { get; set; }
+
+        public long BuyNowPrice { get; set; }
+
+        public long BuyNowFee { get; set; }
+
+        public MarketType BuyLaterFrom { get; set; }
+
+        public long BuyLaterPrice { get; set; }
+
+        public long BuyLaterFee { get; set; }
+
+        [Required]
+        public PersistableMarketPriceDictionary SellPrices { get; set; }
+
+        public int SellPricesTotalSupply { get; set; }
+
+        public MarketType SellNowTo { get; set; }
+
+        public long SellNowPrice { get; set; }
+
+        public long SellNowFee { get; set; }
+
+        public MarketType SellLaterTo { get; set; }
+
+        public long SellLaterPrice { get; set; }
+
+        public long SellLaterFee { get; set; }
+
         public ICollection<SteamMarketItemActivity> Activity { get; set; }
 
         public ICollection<SteamMarketItemBuyOrder> BuyOrders { get; set; }
@@ -36,6 +75,9 @@ namespace SCMM.Steam.Data.Store
 
         // What is the most expensive buy order
         public long BuyOrderHighestPrice { get; set; }
+
+        // What was the most expensive buy order starting at todays open (UTC)
+        public long Stable24hrBuyOrderHighestPrice { get; set; }
 
         [Required]
         public PersistablePriceCollection BuyOrderHighestPriceRolling24hrs { get; set; }
@@ -51,14 +93,11 @@ namespace SCMM.Steam.Data.Store
         // What is the cheapest sell order
         public long SellOrderLowestPrice { get; set; }
 
+        // What was the cheapest sell order starting at todays open (UTC)
+        public long Stable24hrSellOrderLowestPrice { get; set; }
+
         [Required]
         public PersistablePriceCollection SellOrderLowestPriceRolling24hrs { get; set; }
-
-        // What is the price you could reasonably flip this for given the current sell orders
-        public long ResellPrice { get; set; }
-
-        // What tax is owed on resell price
-        public long ResellTax { get; set; }
 
         public ICollection<SteamMarketItemOrderSummary> OrdersHistory { get; set; }
 
@@ -85,7 +124,7 @@ namespace SCMM.Steam.Data.Store
         // What was the average price from the last 24hrs (1 day)
         public long Last24hrValue { get; set; }
 
-        // Was was the price starting at todays open (UTC) or the last time it was sold (if no sales in last 24hrs)
+        // What was the price starting at todays open (UTC) or the last time it was sold (if no sales in last 24hrs)
         public long Stable24hrValue { get; set; }
 
         // What was the total number of sales from the last 48hrs (2 days)
@@ -148,11 +187,165 @@ namespace SCMM.Steam.Data.Store
         // How long since orders were last checked
         public DateTimeOffset? LastCheckedOrdersOn { get; set; }
 
-        // How long since prices were last checked
+        // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
+
+        /// <summary>
+        /// If true, price is likely being manipulated right now
+        /// </summary>
+        public bool IsBeingManipulated { get; set; }
+
+        public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
+        {
+            BuyPrices = new PersistableMarketPriceDictionary(BuyPrices);
+            if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
+            {
+                BuyPrices[type] = price.Value;
+            }
+            else if (BuyPrices.ContainsKey(type))
+            {
+                BuyPrices.Remove(type);
+            }
+
+            var availablePrices = BuyPrices
+                .Where(x => x.Value.Price > 0 && x.Value.Supply != 0)
+                .Select(x => new
+                {
+                    Type = x.Key,
+                    Supply = x.Value.Supply,
+                    Price = x.Value.Price,
+                    BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>(),
+                    SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>()
+                })
+                .ToArray();
+
+            BuyPricesTotalSupply = availablePrices.Sum(x => x.Supply) ?? 0;
+
+            if (availablePrices.Any(x => x.BuyFrom != null))
+            {
+                var lowestBuyPrice = availablePrices
+                    .Where(x => x.BuyFrom != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = x.Price,
+                        Fee = (x.BuyFrom.FeeRate != 0 ? x.Price.MarketSaleFeeComponentAsInt(x.BuyFrom.FeeRate) : 0) + x.BuyFrom.FeeSurcharge
+                    })
+                    .MinBy(x => x.Price + x.Fee);
+                BuyNowFrom = lowestBuyPrice.From;
+                BuyNowPrice = lowestBuyPrice.Price;
+                BuyNowFee = lowestBuyPrice.Fee;
+            }
+            else
+            {
+                BuyNowFrom = MarketType.Unknown;
+                BuyNowPrice = 0;
+                BuyNowFee = 0;
+            }
+
+            if (availablePrices.Any(x => x.SellTo != null))
+            {
+                var highestSellPrice = availablePrices
+                    .Where(x => x.SellTo != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = (x.Price - 1),
+                        Fee = (x.SellTo.FeeRate != 0 ? (x.Price - 1).MarketSaleFeeComponentAsInt(x.SellTo.FeeRate) : 0) + x.SellTo.FeeSurcharge
+                    })
+                    .MaxBy(x => x.Price);
+                SellLaterTo = highestSellPrice.From;
+                SellLaterPrice = highestSellPrice.Price;
+                SellLaterFee = highestSellPrice.Fee;
+            }
+            else
+            {
+                SellLaterTo = MarketType.Unknown;
+                SellLaterPrice = 0;
+                SellLaterFee = 0;
+            }
+
+            RecalulateIsBeingManipulated();
+        }
+
+        public void UpdateSellPrices(MarketType type, PriceWithSupply? price)
+        {
+            SellPrices = new PersistableMarketPriceDictionary(SellPrices);
+            if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
+            {
+                SellPrices[type] = price.Value;
+            }
+            else if (SellPrices.ContainsKey(type))
+            {
+                SellPrices.Remove(type);
+            }
+
+            var availablePrices = SellPrices
+                .Where(x => x.Value.Price > 0 && x.Value.Supply != 0)
+                .Select(x => new
+                {
+                    Type = x.Key,
+                    Supply = x.Value.Supply,
+                    Price = x.Value.Price,
+                    SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>(),
+                    BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()
+                })
+                .ToArray();
+
+            SellPricesTotalSupply = availablePrices.Sum(x => x.Supply) ?? 0;
+
+            if (availablePrices.Any(x => x.SellTo != null))
+            {
+                var highestSellPrice = availablePrices
+                    .Where(x => x.SellTo != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = x.Price,
+                        Fee = (x.SellTo.FeeRate != 0 ? x.Price.MarketSaleFeeComponentAsInt(x.SellTo.FeeRate) : 0) + x.SellTo.FeeSurcharge
+                    })
+                    .MaxBy(x => x.Price);
+                SellNowTo = highestSellPrice.From;
+                SellNowPrice = highestSellPrice.Price;
+                SellNowFee = highestSellPrice.Fee;
+            }
+            else
+            {
+                SellNowTo = MarketType.Unknown;
+                SellNowPrice = 0;
+                SellNowFee = 0;
+            }
+
+            if (availablePrices.Any(x => x.BuyFrom != null))
+            {
+                var lowestBuyPrice = availablePrices
+                    .Where(x => x.BuyFrom != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = (x.Price + 1),
+                        Fee = (x.BuyFrom.FeeRate != 0 ? (x.Price + 1).MarketSaleFeeComponentAsInt(x.BuyFrom.FeeRate) : 0) + x.BuyFrom.FeeSurcharge
+                    })
+                    .MinBy(x => x.Price);
+                BuyLaterFrom = lowestBuyPrice.From;
+                BuyLaterPrice = lowestBuyPrice.Price;
+                BuyLaterFee = lowestBuyPrice.Fee;
+            }
+            else
+            {
+                BuyLaterFrom = MarketType.Unknown;
+                BuyLaterPrice = 0;
+                BuyLaterFee = 0;
+            }
+
+            RecalulateIsBeingManipulated();
+        }
 
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
         {
+            var now = DateTimeOffset.UtcNow;
+            var dayOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset);
+
             // Recalculate buy order stats
             if (buyOrders != null)
             {
@@ -165,14 +358,20 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
-                var cumulativeBuyOrderPrice = buyOrdersSorted.Sum(x => x.Price * x.Quantity);
-                var highestBuyOrderPrice = (buyOrdersSorted.FirstOrDefault()?.Price ?? 0);
+                var cumulativeBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
+                var highestBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Max(x => x.Price) : 0);
 
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //BuyOrderCount = buyOrdersSorted.Sum(y => y.Quantity);
                 BuyOrderCount = (buyOrderCount ?? BuyOrderCount);
                 BuyOrderCumulativePrice = cumulativeBuyOrderPrice;
                 BuyOrderHighestPrice = highestBuyOrderPrice;
+
+                UpdateSellPrices(MarketType.SteamCommunityMarket, new PriceWithSupply
+                {
+                    Price = BuyOrderCount > 0 ? BuyOrderHighestPrice : 0,
+                    Supply = BuyOrderCount
+                });
             }
 
             // Recalculate sell order stats
@@ -187,19 +386,22 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
-                var lowestSellOrderPrice = (sellOrdersSorted.FirstOrDefault()?.Price ?? 0);
-                var cumulativeSellOrderPrice = sellOrdersSorted.Sum(x => x.Price * x.Quantity);
-                var resellPrice = lowestSellOrderPrice;
-                var resellTax = resellPrice.SteamFeeAsInt();
-
+                var cumulativeSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
+                var lowestSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Min(x => x.Price) : 0);
+                
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //SellOrderCount = sellOrdersSorted.Sum(y => y.Quantity);
                 SellOrderCount = (sellOrderCount ?? SellOrderCount);
                 SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
-                ResellPrice = resellPrice;
-                ResellTax = resellTax;
+                
+                UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply
+                {
+                    Price = SellOrderCount > 0 ? SellOrderLowestPrice : 0,
+                    Supply = SellOrderCount
+                });
             }
+
             /*
             // Update the latest order summary for the hour
             var hourOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date.AddHours(DateTime.UtcNow.Hour), TimeZoneInfo.Utc.BaseUtcOffset);
@@ -234,6 +436,8 @@ namespace SCMM.Steam.Data.Store
             BuyOrderHighestPriceRolling24hrs = new PersistablePriceCollection(buyOrderHighestPriceRolling24hrs);
             SellOrderLowestPriceRolling24hrs = new PersistablePriceCollection(sellOrderLowestPriceRolling24hrs);
             */
+
+            RecalulateIsBeingManipulated();
         }
 
         public void RecalculateSales(SteamMarketItemSale[] newSales = null)
@@ -253,15 +457,12 @@ namespace SCMM.Steam.Data.Store
 
             // Recalculate sales stats
             var now = DateTimeOffset.UtcNow;
-            var dayOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset);
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
             var firstSaleOn = salesSorted.FirstOrDefault()?.Timestamp;
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();
             var first24hrSales = first24hrs.Sum(x => x.Quantity);
             var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.MedianPrice) : 0, 0);
-            var stable24hrs = salesSorted.Where(x => x.Timestamp >= dayOpenTimestamp.AddDays(-1) && x.Timestamp <= dayOpenTimestamp).ToArray();
-            var stable24hrAverageValue = (long)Math.Round(stable24hrs.Length > 0 ? stable24hrs.Average(x => x.MedianPrice) : 0, 0);
             var last1hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(1))).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
             var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.MedianPrice) : 0, 0);
@@ -294,7 +495,6 @@ namespace SCMM.Steam.Data.Store
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
             Last1hrValue = last1hrValue;
-            Stable24hrValue = (stable24hrAverageValue > 0 ? stable24hrAverageValue : lastSaleValue);
             Last24hrSales = last24hrSales;
             Last24hrValue = last24hrValue;
             Last48hrSales = last48hrSales;
@@ -312,7 +512,7 @@ namespace SCMM.Steam.Data.Store
             LastSaleValue = lastSaleValue;
             LastSaleOn = lastSaleOn;
 
-            // The first three days on the market is always overinflated, filter these out before calculating overall averages
+            // The first seven days on the market is always overinflated, filter these out before calculating overall averages
             var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
             if (salesAfterFirstSevenDays.Any())
             {
@@ -326,8 +526,21 @@ namespace SCMM.Steam.Data.Store
                 AllTimeLowestValueOn = allTimeLow?.Timestamp;
             }
 
-            // Update the rolling 24hr values
-            // TODO: This...
+            RecalulateIsBeingManipulated();
+        }
+
+        public void RecalulateIsBeingManipulated()
+        {
+            var marketAge = (FirstSaleOn != null ? (DateTimeOffset.UtcNow - FirstSaleOn) : TimeSpan.Zero);
+            var cheapestPrice = SellOrderLowestPrice;
+            var medianPriceLastWeek = Last168hrValue;
+            
+            // If the item is more than 7 days old and the buy now price is +200% the median price over the last week
+            IsBeingManipulated = (
+                (marketAge > TimeSpan.FromDays(7)) &&
+                (cheapestPrice > 0 && medianPriceLastWeek > 0) &&
+                (cheapestPrice / (decimal)medianPriceLastWeek) > 2m 
+            );
         }
     }
 }

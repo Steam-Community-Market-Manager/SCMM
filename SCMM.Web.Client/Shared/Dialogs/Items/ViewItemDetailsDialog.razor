@@ -1,0 +1,61 @@
+﻿@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Data.Models.UI.Item
+@inherits ResponsiveDialog
+@inject ILogger<ViewItemDetailsDialog> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject AppState State
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6">@ItemName Details</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (Item == null)
+        {
+            <Loading Message="Loading item..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+        } 
+        else
+        {
+            <div class="mud-paper-inverted">
+                <ItemDescriptionDetails Item="@Item" />
+            </div>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public string ItemName { get; set; }
+    
+    [Parameter]
+    public string ItemUrl { get; set; }
+
+    private ItemDetailedDTO Item { get; set; }
+    
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Md;
+        options.MaxWidth = MudBlazor.MaxWidth.ExtraLarge;
+        options.FullWidth = true;
+        options.CloseButton = true;
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>(ItemUrl);
+            Dialog.ForceRender();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the item details");
+            Snackbar.Add($"Unable to load item details. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+}

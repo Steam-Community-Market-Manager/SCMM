@@ -12,6 +12,7 @@
         public const string SteamAssetTagWorkshop = "workshop";
         public const string SteamAssetTagStore = "store";
 
+        public static string SteamWorkshopTagSkin = "Skin";
         public static readonly string[] SteamIgnoredWorkshopTags = {
             "Skin", "Version3"
         };
@@ -31,8 +32,12 @@
         public const string SteamStoreItemDefLinkRegex = @"detail\/(\d+)";
         public const string SteamStoreItemDescriptionName = "item_description_snippet";
 
-        public const string SteamMarketListingItemNameIdRegex = @"ItemActivityTicker.Start\((.*)\);";
+        public const string SteamMarketListingItemNameIdRegex = @"Market_LoadOrderSpread\((.*)\);";
         public const string SteamMarketListingAssetJsonRegex = @"g_rgAssets\s*=\s*(.*);";
+
+        public const string SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex = @"Tradable \& Marketable After\: \[date\]([0-9]+)\[\/date\]";
+
+        public const ulong SteamAssetDefaultInstanceId = 0;
 
         public const string SteamAssetClassDescriptionTypeHtml = "html";
         public const string SteamAssetClassDescriptionStripHtmlRegex = @"<[^>]*>";
@@ -40,8 +45,16 @@
         public const string SteamAssetClassDescriptionStripBBCodeRegex = @"\[[^\]]*\]";
 
         public const string SteamCurrencyUSD = "USD";
+        public const string SteamCurrencyEUR = "EUR";
+        public const string SteamCurrencyCNY = "CNY";
         public const string SteamLanguageEnglish = "english";
         public const string SteamDefaultLanguage = SteamLanguageEnglish;
+
+        #region CSGO
+
+        public const ulong CSGOAppId = 730L;
+
+        #endregion
 
         #region Rust
 
@@ -67,8 +80,11 @@
         public const string SCMMStoreIdDateFormat = "yyyy-MM-dd-HHmm";
 
         public const string BlobContainerWorkshopFiles = "workshop-files";
+        public const string BlobContainerModels = "models";
         public const string BlobContainerImages = "images";
 
+        public const string BlobMetadataAutoDelete = "autodelete";
+        public const string BlobMetadataExpiresOn = "expireson";
         public const string BlobMetadataPublishedFileId = "PublishedFileId";
         public const string BlobMetadataPublishedFileName = "PublishedFileName";
         public const string BlobMetadataIconAnalysed = "IconAnalysed";
@@ -76,6 +92,8 @@
         public const string AssetTagAi = "ai";
         public const string AssetTagAiTag = "ai.tag";
         public const string AssetTagAiCaption = "ai.caption";
+
+        public const string LatestSystemUpdatesCacheKey = "latest-system-updates";
 
         #endregion
     }

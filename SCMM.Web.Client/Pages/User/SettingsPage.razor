@@ -1,12 +1,12 @@
-@page "/settings"
 @using SCMM.Web.Data.Models.UI.Profile
+@page "/settings"
 @inject ILogger<SettingsPage> Logger
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
-@inject NavigationManager Navigation
-@inject ExternalNavigationManager ExternalNavigation
-@inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
 @inject AppState State
 
 <PageContainer Title="Settings" class="mt-3 mb-6 mx-6">
@@ -17,7 +17,7 @@
     }
 
     <MudTabs Elevation="0" Class="mud-tabs-transparent">
-        <MudTabPanel Icon="fas fa-fw fa-user mr-2" Text="General">
+        <MudTabPanel Icon="fas fa-fw fa-user mr-2" Text="Profile" Disabled="State.IsPrerendering">
             <MudGrid Spacing="3">
                 <MudItem xs="12">
                     <MudCard class="full-height d-flex flex-column mud-card">
@@ -42,13 +42,14 @@
                                 <MudItem xs="12" md="9" xl="10" xxl="11">
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12">
-                                            <MudTextField Label="Steam Trade URL" Variant="MudBlazor.Variant.Outlined" FullWidth
+                                            <MudTextField Label="Steam Trade URL" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="State.IsPrerendering"
                                                           @bind-Value="@Update.TradeUrl" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateProfile"
-                                                          HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade." />
+                                                          HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade. Click on the question mark icon to view and manage your Steam Trade URL."
+                                                          Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab($"https://steamcommunity.com/id/{State.Profile.SteamId}/tradeoffers/privacy#trade_offer_access_url"))" />
                                         </MudItem>
                                         <MudItem xs="12" lg="6" xl="4" xxl="3">
                                             <MudSelect T="ItemAnalyticsParticipationType" Value="@Update.ItemAnalyticsParticipation" ValueChanged="((x) => { Update.ItemAnalyticsParticipation = x; _ = UpdateProfile(); })" Label="Item Analytics" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true"
-                                                       HelperText="Participation allows SCMM to use public information about the items in your inventory to improve the accuracy of item analytics. Some analytics may only be available to users that choose to participate, fair is fair.">
+                                                       HelperText="Participation allows SCMM to use public information about the items in your inventory to improve the accuracy of item analytics. Some analytics may only be available to users that choose to participate, fair is fair." Disabled="State.IsPrerendering">
                                                @foreach (var value in Enum.GetValues<ItemAnalyticsParticipationType>())
                                                {
                                                     <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
@@ -56,7 +57,7 @@
                                             </MudSelect>
                                         </MudItem>
                                         <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                            <MudTextField Label="Gambling Balance" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
+                                            <MudTextField Label="Gambling Balance" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="State.IsPrerendering || true"
                                                           Value="@State.Profile.Currency.ToPriceString(State.Profile.GamblingOffset)" 
                                                           HelperText="Optional. If you use gambling sites, enter your total win/lose amount here. We'll factor this in to your inventory profit/loss total." />
                                         </MudItem>
@@ -80,16 +81,16 @@
                                 <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Inherit">
                                     @if (State.IsInRole(Roles.Donator))
                                     {
-                                        <span>Thank you for your generous support and donation(s) to SCMM project. As a small token of my appreciation, you're profile has the following extra benefits:</span>
+                                        <span>Thank you for your generous support and donation(s) to the SCMM project. As a small token of my appreciation, you're profile has the following extra benefits:</span>
                                     }
                                     else
                                     {
-                                        <span>Thank you for contributing to the SCMM project and/or the OMIGHTY Discord community. As a small token of our appreciation, you're profile has the following extra benefits:</span>
+                                        <span>Thank you for contributing to the SCMM project. As a small token of our appreciation, you're profile has the following extra benefits:</span>
                                     }
                                     <ul>
                                         <li>
                                             <span class="px-1">-</span>
-                                            <span>A special <strong>@(State.Profile.DonatorLevel > 0 ? Roles.Donator : Roles.VIP) role</strong> to flex with.</span>
+                                            <span>A special gold <strong>@(State.Profile.DonatorLevel > 0 ? Roles.Donator : Roles.VIP) role</strong> to flex on others with.</span>
                                         </li>
                                         @if (State.IsInRole(Roles.Donator))
                                         {
@@ -100,11 +101,11 @@
                                         }
                                         <li>
                                             <span class="px-1">-</span>
-                                            <span>Access to <strong>personalised alerts and notifications</strong>.</span>
+                                            <span>Early access to certain <strong>new features</strong> before the general public.</span>
                                         </li>
                                         <li>
                                             <span class="px-1">-</span>
-                                            <i>with more benfits coming soon...</i>
+                                            <i>with more benefits to come in the future...</i>
                                         </li>
                                     </ul>
                                 </MudText>
@@ -114,7 +115,7 @@
                 }
             </MudGrid>
         </MudTabPanel>
-        <MudTabPanel Icon="fas fa-fw fa-sliders-h mr-2" Text="Preferences">
+        <MudTabPanel Icon="fas fa-fw fa-sliders-h mr-2" Text="Preferences" Disabled="State.IsPrerendering">
             <MudGrid Spacing="3">
                 <MudItem xs="12">
                     <MudCard class="full-height d-flex flex-column mud-card">
@@ -128,12 +129,12 @@
                         <MudCardContent class="pt-0">
                             <MudGrid Spacing="4">
                                 <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                    <MudTextField Label="Preferred Language" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true" 
+                                    <MudTextField Label="Preferred Language" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="State.IsPrerendering || true"
                                                   Value="@State.Profile.Language.Name"
                                                   HelperText="Some underlying Steam data is only available in English and therefore we may not be able to show all text in your preferred language." />
                                 </MudItem>
                                 <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                    <MudTextField Label="Preferred Currency" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true" 
+                                    <MudTextField Label="Preferred Currency" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="State.IsPrerendering || true"
                                                   Value="@State.Profile.Currency.Name"
                                                   HelperText="To change currency, use the currency picker in the top-right corner of the page." />
                                 </MudItem>
@@ -153,8 +154,8 @@
                         <MudCardContent class="pt-0">
                             <MudGrid Spacing="4">
                                 <Preference Title="Store 'Top Sellers'" 
-                                            Description="Which data source is used to determine an item stores top selling items.">
-                                    <MudSelect T="StoreTopSellerRankingType" Value="@Update.StoreTopSellers" ValueChanged="((x) => { Update.StoreTopSellers = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
+                                            Description="Which data source is used to determine top selling items in the store.">
+                                    <MudSelect T="StoreTopSellerRankingType" Value="@Update.StoreTopSellers" ValueChanged="((x) => { Update.StoreTopSellers = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering">
                                         @foreach (var value in Enum.GetValues<StoreTopSellerRankingType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
@@ -163,24 +164,19 @@
                                 </Preference>
                                 <Preference Title="Market 'Value'" 
                                             Description="Which data source is used to determine an items price/value.">
-                                    <MudSelect T="MarketValueType" Value="@Update.MarketValue" ValueChanged="((x) => { Update.MarketValue = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="true">
+                                    <MudSelect T="MarketValueType" Value="@Update.MarketValue" ValueChanged="((x) => { Update.MarketValue = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering || true">
                                         @foreach (var value in Enum.GetValues<MarketValueType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </Preference>
-                                <Preference Title="Market Tax" 
-                                            Description="Should the 13% Steam Community Market tax be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily buy and sell your items from the Steam Community Market.">  
-                                    <MudSwitch T="bool" Checked="@Update.IncludeMarketTax" CheckedChanged="((x) => { Update.IncludeMarketTax = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.IncludeMarketTax ? "Include" : "Exclude")</MudSwitch>
-                                </Preference>
                                 <Preference Title="Item Summary Information" 
                                             Description="What additional information to show when viewing item summaries.">
-                                    <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true"
-                                               AdornmentIcon="fas fa-fw fa-check-square" AdornmentColor="Color.Primary" Adornment="Adornment.End" OnAdornmentClick="@(() => UpdateProfile())"
-                                               @bind-SelectedValues="@Update.ItemInfo" ToStringFunc="@((x) => x.GetDisplayName())" OnInternalInputChanged="@((x) => UpdateProfile())"
+                                    <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true" Disabled="State.IsPrerendering"
+                                               @bind-SelectedValues="@SelectedItemInfoTypes" ToStringFunc="@((x) => x.GetDisplayName())" OnClose="@((x) => UpdateProfile())"
                                                MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))">
-                                        @foreach (var value in Enum.GetValues<ItemInfoType>())
+                                        @foreach (var value in Enum.GetValues<ItemInfoType>().OrderBy(x => x.ToString()))
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
                                         }
@@ -188,16 +184,33 @@
                                 </Preference>
                                 <Preference Title="Item Detailed Information" 
                                             Description="Which website to use when you click on an item (to view more details).">
-                                    <MudSelect T="ItemInfoWebsiteType" Value="@Update.ItemInfoWebsite" ValueChanged="((x) => { Update.ItemInfoWebsite = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
+                                    <MudSelect T="ItemInfoWebsiteType" Value="@Update.ItemInfoWebsite" ValueChanged="((x) => { Update.ItemInfoWebsite = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering">
                                         @foreach (var value in Enum.GetValues<ItemInfoWebsiteType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </Preference>
-                                <Preference Title="'Free' Item Drops" 
-                                            Description="Should 'free' item drops from Twitch and Facepunch be shown when viewing item inventories and item collections.">  
-                                    <MudSwitch T="bool" Checked="@Update.ShowItemDrops" CheckedChanged="((x) => { Update.ShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.ShowItemDrops ? "Show" : "Hide")</MudSwitch>
+                                <Preference Title="Item Market Fees" 
+                                            Description="Should market sales fees be included in all resell, profit, and investment gain/loss calculations. This is recommended if you primarily sell your items on skin marketplaces (as opposed to selling for cash).">  
+                                    <MudSwitch T="bool" Checked="@Update.ItemIncludeMarketFees" CheckedChanged="((x) => { Update.ItemIncludeMarketFees = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.ItemIncludeMarketFees ? "Include" : "Exclude")</MudSwitch>
+                                </Preference>
+                                <Preference Title="Inventory Item Drops" 
+                                            Description="Should 'free' item drops (e.g. Twitch and Facepunch items) be shown when viewing item inventories and item collections.">  
+                                    <MudSwitch T="bool" Checked="@Update.InventoryShowItemDrops" CheckedChanged="((x) => { Update.InventoryShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.InventoryShowItemDrops ? "Show" : "Hide")</MudSwitch>
+                                </Preference>
+                                <Preference Title="Inventory Unmarketable Items" 
+                                            Description="Should unmarketable items (e.g. Permanent store and charity items) be shown when viewing item inventories and item collections.">  
+                                    <MudSwitch T="bool" Checked="@Update.InventoryShowUnmarketableItems" CheckedChanged="((x) => { Update.InventoryShowUnmarketableItems = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.InventoryShowUnmarketableItems ? "Show" : "Hide")</MudSwitch>
+                                </Preference>
+                                <Preference Title="Inventory Value Movement Display" 
+                                            Description="How should inventory value movements be shown.">  
+                                    <MudSelect T="InventoryValueMovementDisplayType" Value="@Update.InventoryValueMovemenDisplay" ValueChanged="((x) => { Update.InventoryValueMovemenDisplay = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering">
+                                        @foreach (var value in Enum.GetValues<InventoryValueMovementDisplayType>())
+                                        {
+                                            <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
+                                        }
+                                    </MudSelect>
                                 </Preference>
                             </MudGrid>
                         </MudCardContent>
@@ -205,7 +218,7 @@
                 </MudItem>
             </MudGrid>
         </MudTabPanel>
-        <MudTabPanel Icon="fas fa-fw fa-bell mr-4" Text="Notifications">
+        <MudTabPanel Icon="fas fa-fw fa-bell mr-4" Text="Notifications" Disabled="State.IsPrerendering">
             <MudGrid Spacing="3">
                 <MudItem xs="12">
                     <MudCard class="full-height d-flex flex-column mud-card">
@@ -220,49 +233,49 @@
                             <MudGrid Spacing="4">
                                 <Preference Title="New Workshop Item Submission" 
                                             Description="Be notified when an accepted item author submits a new item to the workshop. Items from accepted authors are generally the highest quality workshop submissions. Recommended if you like to stay up to date with the latest item submissions that have the potentional to be accepted in-game.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="New Workshop Collection Submission" 
                                             Description="Be notifieid when a accepted item collection gets continued with a new workshop submission. Recommended if you like to stay up to date with ermering collections and continuations.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="New Store Items" 
                                             Description="Be notified when new items are released to the store. This generally happens every Thursday around 8PM UTC, exact times vary week to week.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="New Store Video" 
                                             Description="Be notified when a new community video featuring the item store has been uploaded. Recommended if you like to watch commentary about the weeks store items.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="New Market Items" 
                                             Description="Be notified when new items are release to the Steam Community Market. This generally happens every Thursday at 12AM UTC and 8PM UTC (when the item store updates). Recommended if you prefer to buy items from the market and want to get a low buy order in early.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="Item Updated" 
                                             Description="Be notified when accepted items are updated. This doesn't happen often, but occasionally Facepunch will modify or fix items after they have been accepted in-game. In rare instances, the appearance of items can be modified. Recommended if you'd like to stay up to day with potential changes to in-game items.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="Item Market High" 
                                             Description="Be notified when an item reaches a new all-time high price on the Steam Community Market. Recommended if you like to sell items as they peak in price. This notification has a 24hr cool-down to avoid spam.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="Item Market Low" 
                                             Description="Be notified when an item reaches a new all-time low price on the Steam Community Market. Recommended if you like to buy items while at their cheapest. This notification has a 24hr cool-down to avoid spam.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="true">
+                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>
                                 </Preference>
@@ -279,26 +292,14 @@
                                 </MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
-                        <MudCardContent class="pt-0">
-                            <MudGrid Spacing="4">
-                                <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                    <MudTextField Label="Discord ID" Variant="MudBlazor.Variant.Outlined" FullWidth
-                                                  @bind-Value="@Update.DiscordId" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateProfile"
-                                                  HelperText="Make sure to include the 4-digit number after your username" />
-                                </MudItem>
-                                @* TODO: Verify ownership
-                                @if (!String.IsNullOrEmpty(Update.DiscordId))
-                                {
-                                    <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                        <MudText Typo="Typo.body1" Color="Color.Primary" GutterBottom Class="mt-2">
-                                            <i class="fas fa-fw fa-exclamation-triangle"></i>
-                                            <span>You have not verified this Discord ID yet.</span>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Disabled="true">Verify Now</MudButton>
-                                        </MudText>
-                                    </MudItem>
-                                } *@
-                            </MudGrid>
+                        <MudCardContent class="py-0">
+                            <MudAlert Severity="MudBlazor.Severity.Normal" ContentAlignment="HorizontalAlignment.Center" NoIcon="true" Class="pa-8">Empty</MudAlert>
                         </MudCardContent>
+                        <MudCardActions class="pa-4">
+                            <MudButton Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-link" Disabled="State.IsPrerendering || true">
+                                Link Discord
+                            </MudButton>
+                        </MudCardActions>
                     </MudCard>
                 </MudItem>
                 <MudItem xs="12">
@@ -314,7 +315,7 @@
                             <MudAlert Severity="MudBlazor.Severity.Normal" ContentAlignment="HorizontalAlignment.Center" NoIcon="true" Class="pa-8">Empty</MudAlert>
                         </MudCardContent>
                         <MudCardActions class="pa-4">
-                            <MudButton Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-plus" Disabled="true">
+                            <MudButton Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-plus" Disabled="State.IsPrerendering || true">
                                 Add Webhook
                             </MudButton>
                         </MudCardActions>
@@ -322,7 +323,7 @@
                 </MudItem>
             </MudGrid>
         </MudTabPanel>
-        <MudTabPanel Icon="fas fa-fw fa-database mr-3" Text="Data">
+        <MudTabPanel Icon="fas fa-fw fa-database mr-3" Text="Data" Disabled="State.IsPrerendering">
             <MudGrid Spacing="3">
                 <MudItem xs="12">
                     <MudCard class="full-height d-flex flex-column mud-card">
@@ -353,16 +354,16 @@
                             </MudText>
                             @if (State.IsInRole(Roles.Creator))
                             {
-                                <MudAlert Severity="Severity.Warning" Icon="fas fa-fw fa-exclamation-triangle" Class="mt-4">
+                                <MudAlert Severity="Severity.Warning" Icon="fas fa-fw fa-exclamation-triangle" Class="mt-4 mud-alert-outlined-warning">
                                     <span>As an accepted item creator, if you choose to delete your data, we must still retain a minimal amount of your public Steam information-- specifically, your Steam ID, Name, and Avatar URL. This is nessecary to protect the integrity of the SCMM database and allow other users to view the items that you've created.</span>
                                 </MudAlert>
                             }
                         </MudCardContent>
                         <MudCardActions class="d-flex flex-wrap pt-4 px-4">
-                            <MudButton OnClick="@DownloadProfileData" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Class="mr-4 mb-4">
+                            <MudButton OnClick="@DownloadProfileData" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Default" StartIcon="fas fa-fw fa-download" Class="mr-4 mb-4" Disabled="State.IsPrerendering">
                                 Download Your Data
                             </MudButton>
-                            <MudButton OnClick="@ShowDeleteProfileDataConfirmationDialog" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Class="mr-4 mb-4">
+                            <MudButton OnClick="@ShowDeleteProfileDataConfirmationDialog" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Class="mr-4 mb-4" Disabled="State.IsPrerendering">
                                 Delete Your Data
                             </MudButton>
                         </MudCardActions>
@@ -380,16 +381,19 @@
 
     private UpdateProfileCommand Update { get; set; }
 
+    private IEnumerable<ItemInfoType> SelectedItemInfoTypes { get; set; }
+
     private Exception UpdateException { get; set; }
 
     protected override void OnInitialized()
     {
         if (!State.IsAuthenticated)
         {
-            ExternalNavigation.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+            ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
         }
         else 
         {
+            SelectedItemInfoTypes = State.Profile.ItemInfo;
             Update = new UpdateProfileCommand()
             {
                 TradeUrl = State.Profile.TradeUrl,
@@ -397,11 +401,12 @@
                 GamblingOffset = State.Profile.GamblingOffset,
                 StoreTopSellers = State.Profile.StoreTopSellers,
                 MarketValue = State.Profile.MarketValue,
-                IncludeMarketTax = State.Profile.IncludeMarketTax,
                 ItemInfo = State.Profile.ItemInfo,
                 ItemInfoWebsite = State.Profile.ItemInfoWebsite,
-                ShowItemDrops = State.Profile.ShowItemDrops,
-                DiscordId = State.Profile.DiscordId,
+                ItemIncludeMarketFees = State.Profile.ItemIncludeMarketFees,
+                InventoryShowItemDrops = State.Profile.InventoryShowItemDrops,
+                InventoryShowUnmarketableItems = State.Profile.InventoryShowUnmarketableItems,
+                InventoryValueMovemenDisplay = State.Profile.InventoryValueMovementDisplay
             };
         }
     }
@@ -415,17 +420,24 @@
         try 
         {
             IsUpdating = true;
+            Update.ItemInfo = SelectedItemInfoTypes?.ToArray();
             StateHasChanged();
-            await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);
+
+            var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
+            
+            UpdateException = null;
             Snackbar.Add($"Changes saved!", MudBlazor.Severity.Success, options =>
             {
                 options.Icon = "fas fa-fw fa-check";
                 options.RequireInteraction = false;
                 options.ShowCloseIcon = false;
             });
-            UpdateException = null;
 
-            await State.RefreshAsync(Http);
+            await State.LoadFromServerProfileAsync(Http);
         }
         catch (Exception ex)
         {
@@ -447,7 +459,7 @@
     
     private void DownloadProfileData()
     {
-        ExternalNavigation.NavigateTo("/api/profile/data");
+        ExternalNavigationManager.NavigateTo("/api/profile/data");
     }
     
     private async Task ShowDeleteProfileDataConfirmationDialog()
@@ -471,8 +483,12 @@
         try 
         {
             var response = await Http.DeleteAsync($"api/profile/data");
-            response.EnsureSuccessStatusCode();
-            ExternalNavigation.NavigateTo("/signout");
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
+
+            ExternalNavigationManager.NavigateTo("/signout");
         }
         catch (Exception)
         {

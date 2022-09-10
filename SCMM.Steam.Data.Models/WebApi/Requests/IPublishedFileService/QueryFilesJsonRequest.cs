@@ -5,6 +5,8 @@
     /// </summary>
     public class QueryFilesJsonRequest : SteamRequest
     {
+        // https://partner.steamgames.com/doc/webapi/IPublishedFileService#EPublishedFileQueryType
+        public const int QueryTypeAcceptedForGameRankedByAcceptanceDate = 2;
         public const int QueryTypeRankedByTextSearch = 12;
 
         public string Key { get; set; }
@@ -44,7 +46,7 @@
         public bool StripDescriptionBBCode { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{Constants.SteamWebApiUrl}/IPublishedFileService/QueryFiles/v1/?key={Uri.EscapeDataString(Key)}&query_type={QueryType}&page={Page}&numperpage={NumPerPage}&appid={AppId}&search_text={Uri.EscapeDataString(SearchText)}&return_vote_data={(ReturnVoteData ? 1 : 0)}&return_tags={(ReturnTags ? 1 : 0)}&return_kv_tags={(ReturnKVTags ? 1 : 0)}&return_previews={(ReturnPreviews ? 1 : 0)}&return_children={(ReturnChildren ? 1 : 0)}&return_short_description={(ReturnShortDescription ? 1 : 0)}&return_for_sale_data={(ReturnForSaleData ? 1 : 0)}&return_metadata={(ReturnMetadata ? 1 : 0)}&return_playtime_stats={(ReturnPlaytimeStats ? 1 : 0)}&return_details={(ReturnDetails ? 1 : 0)}&return_reactions={(ReturnReactions ? 1 : 0)}&strip_description_bbcode={(StripDescriptionBBCode ? 1 : 0)}"
+            $"{Constants.SteamWebApiUrl}/IPublishedFileService/QueryFiles/v1/?key={Uri.EscapeDataString(Key)}&query_type={QueryType}&page={Page}&numperpage={NumPerPage}&appid={AppId}&search_text={Uri.EscapeDataString(SearchText ?? String.Empty)}&return_vote_data={(ReturnVoteData ? 1 : 0)}&return_tags={(ReturnTags ? 1 : 0)}&return_kv_tags={(ReturnKVTags ? 1 : 0)}&return_previews={(ReturnPreviews ? 1 : 0)}&return_children={(ReturnChildren ? 1 : 0)}&return_short_description={(ReturnShortDescription ? 1 : 0)}&return_for_sale_data={(ReturnForSaleData ? 1 : 0)}&return_metadata={(ReturnMetadata ? 1 : 0)}&return_playtime_stats={(ReturnPlaytimeStats ? 1 : 0)}&return_details={(ReturnDetails ? 1 : 0)}&return_reactions={(ReturnReactions ? 1 : 0)}&strip_description_bbcode={(StripDescriptionBBCode ? 1 : 0)}"
         );
     }
 }

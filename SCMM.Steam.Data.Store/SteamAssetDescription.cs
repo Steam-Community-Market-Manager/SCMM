@@ -4,10 +4,13 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store.Types;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -28,8 +31,7 @@ namespace SCMM.Steam.Data.Store
 
         public SteamApp App { get; set; }
 
-        [Required]
-        public ulong ClassId { get; set; }
+        public ulong? ClassId { get; set; }
 
         /// <summary>
         /// e.g. Publisher Item, Workshop Item
@@ -85,7 +87,7 @@ namespace SCMM.Steam.Data.Store
         public PersistableStringDictionary Tags { get; set; }
 
         /// <summary>
-        /// If true, the item is from the "general" (permanent) item store. Otherwise, it is assumed to be a limited time item.
+        /// If true, the item is always available for purchase. Otherwise, it is assumed to be purchasable for a limited time only.
         /// </summary>
         public bool IsPermanent { get; set; }
 
@@ -127,26 +129,30 @@ namespace SCMM.Steam.Data.Store
 
         public string IconLargeUrl { get; set; }
 
-        public Guid? IconLargeId { get; set; }
-
-        public FileData IconLarge { get; set; }
-
         public string PreviewUrl { get; set; }
-
-        public Guid? PreviewId { get; set; }
-
-        public FileData Preview { get; set; }
 
         [Required]
         public PersistableMediaDictionary Previews { get; set; }
 
-        public long? CurrentSubscriptions { get; set; }
+        public long? SupplyTotalEstimated { get; set; }
 
-        public long? LifetimeSubscriptions { get; set; }
+        public long? SupplyTotalMarketsKnown { get; set; }
 
-        public long? CurrentFavourited { get; set; }
+        public long? SupplyTotalInvestorsKnown { get; set; }
 
-        public long? LifetimeFavourited { get; set; }
+        public long? SupplyTotalInvestorsEstimated { get; set; }
+
+        public long? SupplyTotalOwnersKnown { get; set; }
+
+        public long? SupplyTotalOwnersEstimated { get; set; }
+
+        public long? SubscriptionsCurrent { get; set; }
+
+        public long? SubscriptionsLifetime { get; set; }
+
+        public long? FavouritedCurrent { get; set; }
+
+        public long? FavouritedLifetime { get; set; }
 
         public long? Views { get; set; }
 
@@ -202,22 +208,32 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
 
+        public ICollection<SteamStoreItemTopSellerPosition> StoreItemTopSellerPositions { get; set; }
+
         #region Pricing
 
         public SteamStoreItem StoreItem { get; set; }
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public Price this[IExchangeableCurrency currency] =>
-            GetPrices(currency).Where(x => x.IsAvailable).OrderBy(x => x.LowestPrice).FirstOrDefault();
-
-        public IEnumerable<Price> GetPrices(IExchangeableCurrency currency)
+        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency)
         {
-            // Steam store
+            // TODO: Currently prioritises first part markets over third party markets, re-think this....
+            return GetBuyPrices(currency)
+                .Where(x => x.IsAvailable)
+                .OrderByDescending(x => x.IsFirstPartyMarket)
+                .ThenBy(x => x.Price + x.Fee)
+                .FirstOrDefault();
+        }
+
+        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency)
+        {
+            // Store price
             if (StoreItem != null && StoreItem.Currency != null)
             {
-                var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
-                var lowestPrice = (long?)null;
+                var app = (StoreItem.App ?? App);
+                var appId = (app?.SteamId);
+                var lowestPrice = 0L;
                 if (currency != null)
                 {
                     if (StoreItem.Prices != null && StoreItem.Prices.ContainsKey(currency.Name))
@@ -232,77 +248,150 @@ namespace SCMM.Steam.Data.Store
                 else
                 {
                     currency = StoreItem.Currency;
-                    lowestPrice = StoreItem.Price;
+                    lowestPrice = StoreItem.Price ?? 0;
                 }
-                yield return new Price
+                var buyUrl = (string)null;
+                if (!String.IsNullOrEmpty(StoreItem.SteamId) && app != null)
                 {
-                    Type = PriceType.SteamStore,
-                    Currency = currency,
-                    LowestPrice = lowestPrice ?? 0,
-                    QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null),
-                    IsAvailable = (StoreItem.IsAvailable && lowestPrice > 0),
-                    Url = !string.IsNullOrEmpty(StoreItem.SteamId)
-                        ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
-                        : new SteamStorePageRequest() { AppId = appId }
-                };
-            }
-
-            // Steam community market
-            if (MarketItem != null && MarketItem.Currency != null)
-            {
-                var appId = (MarketItem.App?.SteamId ?? App?.SteamId);
-                var lowestPrice = (long?)null;
-                if (currency != null)
-                {
-                    lowestPrice = currency.CalculateExchange(MarketItem.SellOrderLowestPrice, MarketItem.Currency);
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    {
+                        buyUrl = new SteamItemStoreDetailPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
+                    else
+                    {
+                        buyUrl = new SteamBuyItemPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
                 }
                 else
                 {
-                    currency = MarketItem.Currency;
-                    lowestPrice = MarketItem.SellOrderLowestPrice;
+                    buyUrl = new SteamItemStorePageRequest() 
+                    { 
+                        AppId = appId 
+                    };
                 }
-                yield return new Price
+                yield return new MarketPrice
                 {
-                    Type = PriceType.SteamCommunityMarket,
+                    Type = PriceTypes.Cash,
+                    MarketType = MarketType.SteamStore,
                     Currency = currency,
-                    LowestPrice = lowestPrice ?? 0,
-                    QuantityAvailable = MarketItem.SellOrderCount,
-                    IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && MarketItem.SellOrderCount > 0),
+                    Price = lowestPrice,
+                    Fee = 0,
+                    Supply = (!StoreItem.IsAvailable ? 0 : null),
+                    IsAvailable = (StoreItem.IsAvailable && lowestPrice > 0),
+                    Url = buyUrl
+                };
+            }
+
+            // Market prices
+            if (MarketItem != null && MarketItem.Currency != null)
+            {
+                var app = (MarketItem.App ?? App);
+                foreach (var marketPrice in MarketItem.BuyPrices)
+                {
+                    var lowestPrice = 0L;
+                    if (currency != null)
+                    {
+                        lowestPrice = currency.CalculateExchange(marketPrice.Value.Price, MarketItem.Currency);
+                    }
+                    else
+                    {
+                        currency = MarketItem.Currency;
+                        lowestPrice = marketPrice.Value.Price;
+                    }
+                    yield return new MarketPrice
+                    {
+                        Type = (marketPrice.Key.GetMarketPriceType() ?? PriceTypes.None),
+                        MarketType = marketPrice.Key,
+                        Currency = currency,
+                        Price = lowestPrice,
+                        Fee = marketPrice.Key.GetMarketBuyFees(lowestPrice),
+                        Supply = marketPrice.Value.Supply,
+                        IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Supply != 0),
+                        Url = marketPrice.Key.GetMarketBuyUrl(
+                            app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash
+                        )
+                    };
+                }
+            }
+        }
+
+        public IEnumerable<ItemInteraction> GetInteractions()
+        {
+            if (WorkshopFileId > 0)
+            {
+                yield return new ItemInteraction
+                {
+                    Icon = "fa-tools",
+                    Name = "View Workshop",
+                    Url = new SteamWorkshopFileDetailsPageRequest()
+                    {
+                        Id = WorkshopFileId.Value.ToString()
+                    }
+                };
+            }
+
+            if (MarketItem != null && !String.IsNullOrEmpty(NameHash) && !String.IsNullOrEmpty(MarketItem.SteamId))
+            {
+                yield return new ItemInteraction
+                {
+                    Icon = "fa-balance-scale-left",
+                    Name = "View Market",
                     Url = new SteamMarketListingPageRequest()
                     {
-                        AppId = appId,
+                        AppId = (MarketItem.App?.SteamId ?? App?.SteamId),
                         MarketHashName = NameHash
                     }
                 };
             }
 
-            if (MarketItem != null && MarketItem.SellOrderLowestPrice > 0 && MarketItem.Currency != null)
+            if (StoreItem != null)
             {
-                // TODO: Implement these properly...
-                yield return new Price
+                var app = (StoreItem.App ?? App);
+                var storeActionName = (string)null;
+                var storeUrl = (string)null;
+                if (!String.IsNullOrEmpty(StoreItem.SteamId) && StoreItem.IsAvailable && app != null)
                 {
-                    Type = PriceType.Skinport
-                };
-                yield return new Price
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    {
+                        storeActionName = "View Store";
+                        storeUrl = new SteamItemStoreDetailPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
+                    else
+                    {
+                        storeActionName = "Buy Now";
+                        storeUrl = new SteamBuyItemPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
+                }
+                else if (StoreItem.Stores?.Any(x => x.Store != null) == true)
                 {
-                    Type = PriceType.BitSkins
-                };
-                yield return new Price
+                    storeActionName = "View Store";
+                    storeUrl = $"/store/{StoreItem.Stores.Where(x => x.Store != null).MaxBy(x => x.Store.Start).Store.StoreId()}";
+                }
+                if (!String.IsNullOrEmpty(storeUrl))
                 {
-                    Type = PriceType.SwapGG
-                };
-                yield return new Price
-                {
-                    Type = PriceType.TradeitGG
-                };
-                yield return new Price
-                {
-                    Type = PriceType.Dmarket
-                };
-                yield return new Price
-                {
-                    Type = PriceType.CSDeals
-                };
+                    yield return new ItemInteraction
+                    {
+                        Icon = "fa-shopping-cart",
+                        Name = storeActionName,
+                        Url = storeUrl
+                    };
+                }
             }
         }
 

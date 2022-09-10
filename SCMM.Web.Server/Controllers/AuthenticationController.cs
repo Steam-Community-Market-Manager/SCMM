@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace SCMM.Web.Server.Controllers
 {
     [AllowAnonymous]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class AuthenticationController : Controller
     {
         /// <summary>

@@ -28,20 +28,7 @@ else
     <MudExpansionPanels Dense="true" DisableGutters="true">
         @foreach (var collection in InventoryCollections.FilterBy(Filter))
         {
-            <MudExpansionPanel Class="px-1 pb-1">
-                <TitleContent>
-                    <div class="d-flex flex-row justify-start align-center">
-                        <img src="@collection.Items.FirstOrDefault()?.Item?.IconUrl" class="icon mr-2" />
-                        <MudText Typo="Typo.body1" Color="Color.Default">
-                            <span>@collection.Name</span>
-                            <span class="mud-secondary-text">(@collection.Items.Count(x => x.IsOwned)/@collection.Items.Count())</span>
-                        </MudText>
-                    </div>
-                </TitleContent>
-                <ChildContent>
-                    <ItemCollectionLayout Items="@collection.Items.Select(x => x.Item)" AcquiredItems="@collection.Items.Where(x => x.IsOwned).Select(x => x.Item)" />
-                </ChildContent>
-            </MudExpansionPanel>
+            <InventoryCollectionExpansionPanel Collection="collection" />
         }
     </MudExpansionPanels>
 }
@@ -63,16 +50,11 @@ else
         await LoadInventoryCollections();
     }
     
-    private void OnItemClicked(ItemDescriptionDTO item)
-    {
-        ExternalNavigationManager.NavigateToItem(item);
-    }
-
     private async Task LoadInventoryCollections()
     {
         try
         {
-            Logger.LogInformation("Fetching inventory collections...");
+            Logger.LogTrace("Fetching inventory collections...");
             InventoryCollections = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ProfileInventoryCollectionDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/collections"
             );

@@ -21,17 +21,23 @@ namespace SCMM.Steam.Client
 
         public void Refresh()
         {
+            if (String.IsNullOrEmpty(_configuration?.Username) || String.IsNullOrEmpty(_configuration?.Password))
+            {
+                _logger.LogWarning("Unable to refresh Steam session cookies, no username/password was specified");
+                return;
+            }
+
             lock (_lock)
             {
                 try
                 {
                     // Refresh session
-                    _logger.LogInformation($"Refreshing Steam session cookies...");
+                    _logger.LogTrace($"Refreshing Steam session cookies...");
                     var login = new UserLogin(_configuration.Username, _configuration.Password);
                     var result = login.DoLogin();
                     if (result == LoginResult.LoginOkay)
                     {
-                        _logger.LogInformation($"Steam login was successful (result: {result})");
+                        _logger.LogTrace($"Steam login was successful (result: {result})");
                         _session = login.Session;
                     }
                     else

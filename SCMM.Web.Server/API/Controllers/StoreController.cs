@@ -41,17 +41,24 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <returns>List of stores</returns>
         /// <response code="200">List of known item stores. Use <see cref="GetStore(string)"/> <code>/store/{dateTime}</code> to get the details of a specific store.</response>
+        /// <response code="400">If the current app does not support stores.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<StoreIdentifierDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStores()
         {
-            var appId = this.App();
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             var itemStores = await _db.SteamItemStores
                 .AsNoTracking()
-                .Where(x => x.App.SteamId == appId)
+                .Where(x => x.AppId == app.Guid)
                 .OrderByDescending(x => x.Start == null)
                 .ThenByDescending(x => x.Start)
                 .ToListAsync();
@@ -70,11 +77,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <returns>The most recent item store</returns>
         /// <response code="200">The most recent item store.</response>
+        /// <response code="400">If the current app does not support stores.</response>
         /// <response code="404">If there are no currently active item stores.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("current")]
         [ProducesResponseType(typeof(StoreDetailsDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCurrentStore()
@@ -92,7 +101,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <response code="200">The store details.</response>
-        /// <response code="400">If the store date is invalid or cannot be parsed as a date time.</response>
+        /// <response code="400">If the store date is invalid or cannot be parsed as a date time or the current app does not support stores.</response>
         /// <response code="404">If the store cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -103,6 +112,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStore([FromRoute] string id)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             var guid = Guid.Empty;
             var storeStartDate = DateTime.MinValue;
             var storeName = (string)null;
@@ -120,7 +135,8 @@ namespace SCMM.Web.Server.API.Controllers
             var itemStore = await _db.SteamItemStores
                 .AsNoTracking()
                 .OrderByDescending(x => x.Start)
-                .Where(x => (guid != Guid.Empty && guid == x.Id) || (storeStartDate > DateTime.MinValue && storeStartDate >= x.Start) || (!String.IsNullOrEmpty(storeName) && storeName == x.Name))
+                .Where(x => x.AppId == app.Guid)
+                .Where(x => (guid != Guid.Empty && guid == x.Id) || (storeStartDate > DateTime.MinValue && x.Start != null && storeStartDate >= x.Start) || (!String.IsNullOrEmpty(storeName) && storeName == x.Name) || x.Start == null)
                 .Take(1)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
@@ -170,7 +186,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            // Sort items based on users preference (if an)
+            // Sort items based on users preference (if any)
             var topSellersRanking = this.User.Preference(_db, x => x.StoreTopSellers);
             switch (topSellersRanking)
             {
@@ -178,21 +194,21 @@ namespace SCMM.Web.Server.API.Controllers
                     itemStoreDetail.Items = itemStoreDetail.Items
                         .OrderByDescending(x => x.TopSellerIndex != null)
                         .ThenBy(x => x.TopSellerIndex)
-                        .ThenByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
+                        .ThenByDescending(x => (x.SupplyTotalEstimated ?? 0) * x.StorePrice)
                         .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
-                        .ToList();
+                        .ToArray();
                     break;
                 case StoreTopSellerRankingType.HighestTotalRevenue:
                     itemStoreDetail.Items = itemStoreDetail.Items
-                        .OrderByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
+                        .OrderByDescending(x => (x.SupplyTotalEstimated ?? 0) * x.StorePrice)
                         .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
-                        .ToList();
+                        .ToArray();
                     break;
                 case StoreTopSellerRankingType.HighestTotalSales:
                     itemStoreDetail.Items = itemStoreDetail.Items
-                        .OrderByDescending(x => (x.SalesMinimum ?? 0))
+                        .OrderByDescending(x => (x.SupplyTotalEstimated ?? 0))
                         .ThenByDescending(x => (x.Subscriptions ?? 0))
-                        .ToList();
+                        .ToArray();
                     break;
             }
 
@@ -206,7 +222,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
         /// <returns>The item sales chart data</returns>
         /// <response code="200">The item sales chart data.</response>
-        /// <response code="400">If the store id is invalid.</response>
+        /// <response code="400">If the store id is invalid or the current app does not support stores.</response>
         /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -217,6 +233,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid id)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -224,23 +246,23 @@ namespace SCMM.Web.Server.API.Controllers
 
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Id == id)
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
-                .Where(x => x.Item.Description.LifetimeSubscriptions > 0)
+                .Where(x => x.Item.Description.SupplyTotalEstimated > 0 || x.Item.Description.SubscriptionsLifetime > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
-                    Subscriptions = x.Item.Description.LifetimeSubscriptions ?? 0,
-                    TotalSalesMin = x.Item.TotalSalesMin ?? 0,
-                    KnownInventoryDuplicates = x.Item.Description.InventoryItems
-                        .GroupBy(y => y.ProfileId)
-                        .Where(y => y.Count() > 1)
-                        .Select(y => y.Sum(z => z.Quantity))
-                        .Sum(x => x)
+                    SupplyTotalEstimated = x.Item.Description.SupplyTotalEstimated ?? x.Item.Description.SubscriptionsLifetime ?? 0,
+                    SupplyTotalMarketsKnown = x.Item.Description.SupplyTotalMarketsKnown ?? 0,
+                    SupplyTotalInvestorsKnown = x.Item.Description.SupplyTotalInvestorsKnown ?? 0,
+                    SupplyTotalInvestorsEstimated = x.Item.Description.SupplyTotalInvestorsEstimated ?? 0,
+                    SupplyTotalOwnersKnown = x.Item.Description.SupplyTotalOwnersKnown ?? 0,
+                    SupplyTotalOwnersEstimated = x.Item.Description.SupplyTotalOwnersEstimated ?? 0,
                 })
-                .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates))
+                .OrderBy(x => x.SupplyTotalEstimated)
                 .ToListAsync();
 
             if (storeItems?.Any() != true)
@@ -252,9 +274,12 @@ namespace SCMM.Web.Server.API.Controllers
                 x => new StoreChartItemSalesDTO
                 {
                     Name = x.Name,
-                    Subscriptions = x.Subscriptions,
-                    KnownInventoryDuplicates = x.KnownInventoryDuplicates,
-                    EstimatedOtherDuplicates = Math.Max(0, x.TotalSalesMin - x.Subscriptions - x.KnownInventoryDuplicates)
+                    SupplyTotalEstimated = x.SupplyTotalEstimated,
+                    SupplyTotalMarketsKnown = x.SupplyTotalMarketsKnown,
+                    SupplyTotalInvestorsKnown = x.SupplyTotalInvestorsKnown,
+                    SupplyTotalInvestorsEstimated = Math.Max(x.SupplyTotalInvestorsEstimated - x.SupplyTotalInvestorsKnown, 0),
+                    SupplyTotalOwnersKnown = x.SupplyTotalOwnersKnown,
+                    SupplyTotalOwnersEstimated = Math.Max(x.SupplyTotalOwnersEstimated - x.SupplyTotalOwnersKnown, 0),
                 }
             );
 
@@ -271,7 +296,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <returns>The item revenue chart data</returns>
         /// <response code="200">The item revenue chart data.</response>
-        /// <response code="400">If the store id is invalid.</response>
+        /// <response code="400">If the store id is invalid or the current app does not support stores.</response>
         /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -280,6 +305,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid id)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -287,25 +318,21 @@ namespace SCMM.Web.Server.API.Controllers
 
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Id == id)
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
-                .Where(x => x.Item.Description.LifetimeSubscriptions > 0)
+                .Where(x => x.Item.Description.SupplyTotalEstimated > 0 || x.Item.Description.SubscriptionsLifetime > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
                     Currency = x.Item.Currency,
                     Price = x.Item.Price,
                     Prices = x.Item.Prices,
-                    Subscriptions = x.Item.Description.LifetimeSubscriptions ?? 0,
-                    KnownInventoryDuplicates = x.Item.Description.InventoryItems
-                        .GroupBy(y => y.ProfileId)
-                        .Where(y => y.Count() > 1)
-                        .Select(y => y.Sum(z => z.Quantity))
-                        .Sum(x => x)
+                    SupplyTotalEstimated = x.Item.Description.SupplyTotalEstimated ?? x.Item.Description.SubscriptionsLifetime ?? 0,
                 })
-                .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates) * x.Price)
+                .OrderBy(x => x.SupplyTotalEstimated * x.Price)
                 .ToListAsync();
 
             if (storeItems?.Any() != true)
@@ -317,12 +344,14 @@ namespace SCMM.Web.Server.API.Controllers
             var usdCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
             var storeItemRevenue = (
                 from storeItem in storeItems
-                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(usdCurrency.Name) ? storeItem.Prices[usdCurrency.Name] : 0))
-                let salesTax = (long)Math.Round(total * 0.20)
+                let total = (storeItem.SupplyTotalEstimated * (storeItem.Prices.ContainsKey(usdCurrency.Name) ? storeItem.Prices[usdCurrency.Name] : 0))
+                let salesTax = EconomyExtensions.SteamSaleTaxComponentAsInt(total)
                 let totalAfterTax = (total - salesTax)
-                let authorRevenue = EconomyExtensions.SteamFeeAuthorComponentAsInt(totalAfterTax)
-                let platformRevenue = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
-                let publisherRevenue = (totalAfterTax - platformRevenue - authorRevenue)
+                let authorRevenue = EconomyExtensions.SteamSaleAuthorComponentAsInt(totalAfterTax)
+                let totalAfterTaxAndAuthorSplit = (totalAfterTax - authorRevenue)
+                let platformRevenue = EconomyExtensions.SteamSalePlatformFeeComponentAsInt(totalAfterTax - authorRevenue)
+                let totalAfterTaxAndAuthorAndPlatformSplit = (totalAfterTaxAndAuthorSplit - platformRevenue)
+                let publisherRevenue = (totalAfterTax - authorRevenue - platformRevenue)
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,
@@ -345,19 +374,25 @@ namespace SCMM.Web.Server.API.Controllers
         /// The item ID and store price (in USD) of the item to be linked to the store
         /// </param>
         /// <response code="200">If the item was linked successfully.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="400">If the request data is malformed/invalid or the current app does not support stores.</response>
         /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
         /// <response code="404">If the store or item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(Roles = $"{Roles.Administrator},{Roles.Contributor}")]
         [HttpPost("{id}/linkItem")]
-        [ProducesResponseType(typeof(SteamStoreItemItemStore), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StoreItemDetailsDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LinkStoreItem([FromRoute] Guid id, [FromBody] LinkStoreItemCommand command)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -369,7 +404,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var store = await _db.SteamItemStores
                 .Include(x => x.Items)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.Id == id);
             if (store == null)
             {
                 return NotFound("Store not found");
@@ -385,7 +420,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
-                .FirstOrDefaultAsync(x => x.ClassId == command.AssetDescriptionId);
+                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.ClassId == command.AssetDescriptionId);
             if (assetDescription == null)
             {
                 return NotFound("Asset description not found");
@@ -437,7 +472,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(x => x.ExchangeRateMultiplier)
                         .FirstOrDefaultAsync();
 
-                    storeItemLink.Prices[currency.Name] = EconomyExtensions.SteamStorePriceRounded(
+                    storeItemLink.Prices[currency.Name] = EconomyExtensions.SteamPriceRounded(
                         exchangeRate.CalculateExchange(command.StorePrice)
                     );
                 }
@@ -468,7 +503,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The item ID and store price (in USD) of the item to be unlinked from the store
         /// </param>
         /// <response code="200">If the item was unlinked successfully.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="400">If the request data is malformed/invalid or the current app does not support stores.</response>
         /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
         /// <response code="404">If the store or item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -481,6 +516,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnlinkStoreItem([FromRoute] Guid id, [FromBody] UnlinkStoreItemCommand command)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -493,7 +534,7 @@ namespace SCMM.Web.Server.API.Controllers
             var store = await _db.SteamItemStores
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.Id == id);
             if (store == null)
             {
                 return NotFound("Store not found");
@@ -527,14 +568,26 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
         /// <returns>The expected store release date/time</returns>
         /// <response code="200">The expected date/time of the next item store release.</response>
+        /// <response code="400">If the current app does not support store rotations.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("nextUpdateTime")]
         [ProducesResponseType(typeof(DateTimeOffset?), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreNextUpdateTime()
         {
-            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support store rotations");
+            }
+
+            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
+            {
+                AppId = app.Id
+            });
+
             return Ok(nextUpdateTime?.Timestamp);
         }
     }

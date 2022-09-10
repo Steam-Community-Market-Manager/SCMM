@@ -4,13 +4,16 @@ using System.Text.Json.Serialization;
 
 namespace SCMM.Shared.Data.Store
 {
-    public abstract class Entity
+    public abstract class Entity : Entity<Guid> { }
+
+    public abstract class Entity<TId>
     {
         [Key]
-        public Guid Id { get; set; }
+        [Required]
+        public TId Id { get; set; }
 
         [JsonIgnore]
         [NotMapped]
-        public bool IsTransient => Id == Guid.Empty;
+        public bool IsTransient => Object.Equals(Id, default(TId));
     }
 }

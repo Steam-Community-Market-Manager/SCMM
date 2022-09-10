@@ -1,7 +1,7 @@
-﻿@page "/activity"
-@using SCMM.Steam.Data.Models.Community.Requests.Html
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Statistic
+@page "/activity"
 @inject ILogger<ActivityPage> Logger
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
@@ -13,30 +13,15 @@
     <MudGrid Spacing="2">
 
         <MudItem xs="12">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search market activity..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search market activity..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+                          FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         
-        <MudItem xs="12">
-            <div class="d-flex flex-row justify-start align-center">
-                <Virtualize ItemsProvider="LoadMarketActivityTopItems" Context="item">
-                    <ItemContent>
-                        <div class="@(String.Equals(Filter, item.Name, StringComparison.InvariantCultureIgnoreCase) ? "mud-paper mud-paper-outlined" : null)">
-                            <MudTooltip Text="@item.Name">
-                                <div class="d-flex flex-column justify-start align-center ma-2 clickable hover-zoom hover-zoom-extra" @onclick="@(() => ToggleItemFilter(item))">
-                                    <img src="@item.IconUrl" style="width:96px; height:96px;" />
-                                </div>
-                            </MudTooltip>
-                        </div>
-                    </ItemContent>
-                </Virtualize>
-            </div>
-        </MudItem>
-    
-        <MudItem xs="12">
+        <MudItem xs="12" Class="pa-0">
             <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item">
                 <ItemContent>
-                    <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
-                        <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken">
+                    <div class="@($"{(item.IsSale ? "mud-theme-dark" : null)} hover-darken pa-1")">
+                        <div class="d-flex flex-row flex-wrap justify-start align-center">
                             @if (!String.IsNullOrEmpty(item.BuyerName))
                             {
                                 <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
@@ -59,15 +44,19 @@
                                 <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                 <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                             }
-                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 text-right mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
+                            <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 text-right mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
                         </div>
                     </div>
+                    <MudDivider />
                 </ItemContent>
                 <Placeholder>
-                    <div class="d-flex flex-row justify-start align-center">
-                        <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
+                    <div class="hover-darken pa-1">
+                        <div class="d-flex flex-row justify-start align-center">
+                            <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
+                        </div>
                     </div>
+                    <MudDivider />
                 </Placeholder>
             </Virtualize>
         </MudItem>
@@ -112,20 +101,6 @@
 
         await MarketActivityTable.RefreshDataAsync();
         StateHasChanged();
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemDescriptionDTO>> LoadMarketActivityTopItems(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionDTO>>($"api/stats/market/activityTopItems?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemDescriptionDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'activity top items' market statistics");
-            throw;
-        }
     }
     
     protected async ValueTask<ItemsProviderResult<ItemActivityStatisticDTO>> LoadMarketActivity(ItemsProviderRequest request)

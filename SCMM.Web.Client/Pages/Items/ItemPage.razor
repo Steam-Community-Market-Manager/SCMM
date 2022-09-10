@@ -1,15 +1,18 @@
-﻿@page "/item/{Name}"
+﻿@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Data.Models.UI.Item
+@page "/item/{Name}"
 @page "/items/{Name}"
 @page "/skin/{Name}"
 @page "/skins/{Name}"
-@using SCMM.Web.Client.Shared.Components.Items
-@using SCMM.Web.Data.Models.UI.Item
+@inherits PersistentComponent
 @inject ILogger<ItemPage> Logger
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject AppState State
 
-<PageContainer Title="@(Item != null ? $"Item - {Item.Name}" : Name)">
+<PageContainer Title="@(Item != null ? $"Item - {Item.Name}" : Name)" 
+               Description="@(Item?.Description)"
+               ImageUrl="@(Item?.PreviewUrl ?? Item?.IconLargeUrl)">
 
     @if (Item == null)
     {
@@ -23,17 +26,27 @@
 </PageContainer>
 
 @code {
-    
+
     [Parameter]
     public string Name { get; set; }
-    
-    private ItemDetailedDTO Item { get; set; }
-    
-    protected override async Task OnInitializedAsync()
+
+    private ItemDetailedDTO Item;
+
+    protected override async Task OnLoadStateAsync()
     {
-        await LoadItem();
+        Item = await RestoreFromStateOrLoad(nameof(Item), async () =>
+        {
+            await LoadItem();
+            return Item;
+        });
     }
-    
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Item), Item);
+        return Task.CompletedTask;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         // If we have navigated to a different item, reload the new item
@@ -42,7 +55,6 @@
             Item = null;
             StateHasChanged();
             await LoadItem();
-            StateHasChanged();
         }
     }
     
@@ -50,12 +62,16 @@
     {
         try
         {
-            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>($"/api/item/{Name}");
+            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>($"/api/item/{Uri.EscapeDataString(Name)}");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error loading the item details");
             Snackbar.Add($"Unable to load item details. {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 

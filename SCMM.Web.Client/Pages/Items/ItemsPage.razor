@@ -1,44 +1,135 @@
-﻿@page "/items"
-@page "/skins"
-@using SCMM.Web.Client.Shared.Components.Items
+﻿@using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
+@page "/"
+@page "/items"
+@page "/skins"
+@inherits PersistentComponent
 @inject ILogger<ItemsPage> Logger
+@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
+@inject AppState State
 
 <PageContainer Title="Items">
 
     <MudGrid Spacing="2">
-        <MudItem xs="12" sm="6">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item..." 
-                          Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
+        <MudItem xs="12" sm="6" md="4" lg="6">
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item, type, collection, author, or tags..." 
+                          Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudSelect T="string" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Label="Item Type" Clearable="true"
-                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0">
-                @if (ItemTypes != null)
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4" lg="3">
+            <MudSelect T="Tuple<string, Data.Models.SortDirection>" Value="@Sort" ValueChanged="SetSortOrder" Label="Sorting" Clearable="false" Disabled="State.IsPrerendering"
+                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fas fa-fw fa-sort-alpha-down mr-1" Class="mud-input-transparent ma-0">
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
                 {
-                    @foreach (var itemType in ItemTypes)
-                    {
-                        <MudSelectItem Value="@itemType" />
-                    }
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("TimeAccepted", Data.Models.SortDirection.Descending))">Newest</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("TimeAccepted", Data.Models.SortDirection.Ascending))">Oldest</MudSelectItem>
+                }
+                <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderLowestPrice", Data.Models.SortDirection.Ascending))">Lowest Price</MudSelectItem>
+                <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderLowestPrice", Data.Models.SortDirection.Descending))">Highest Price</MudSelectItem>
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Ascending))">Lowest Market Supply</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Descending))">Highest Market Supply</MudSelectItem>
+                }
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Demand))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Ascending))">Lowest Market Demand</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Descending))">Highest Market Demand</MudSelectItem>
+                }
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SubscriptionsCurrent", Data.Models.SortDirection.Ascending))">Lowest Subscribers</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SubscriptionsCurrent", Data.Models.SortDirection.Descending))">Highest Subscribers</MudSelectItem>
+                }
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudSelectItem>
                 }
             </MudSelect>
         </MudItem>
         <MudItem xs="12">
-            <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Info" />
-            </MudPaper>
+            <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+                <MudExpansionPanels Dense="true" DisableGutters="true">
+                    <MudExpansionPanel Disabled="State.IsPrerendering">
+                        <TitleContent>
+                            <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Default" Class="text-centered my-n3">
+                                <i class="fa fa-fw fa-toggle-off mr-1" />
+                                <span>Toggle Item Features</span>
+                            </MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <div Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGlowing))
+                                {
+                                    <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                    <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCutout))
+                                {
+                                    <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCrafting))
+                                {
+                                    <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGameDrops))
+                                {
+                                    <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
+                                {
+                                    <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                                {
+                                    <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                            </div>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
+                <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGlowing))
+                    {
+                        <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                        <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCutout))
+                    {
+                        <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCrafting))
+                    {
+                        <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGameDrops))
+                    {
+                        <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
+                    {
+                        <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    {
+                        <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                </MudPaper>
+            </MudHidden>
         </MudItem>
         @if (Items == null)
         {
@@ -46,11 +137,11 @@
                 <Loading Message="Finding items..." />
             </MudItem>
         }
-        else 
+        else if (Items.Items.Any())
         {
             @foreach (var item in Items.Items)
             {
-                <MudItem xs="6" sm="4" md="3" lg="2" xl="1">
+                <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
                     <MudPaper Outlined="true" Class="full-height">
                         <ItemDescriptionSummary Item="@item" OnClick="@OnItemClicked" />
                     </MudPaper>
@@ -61,9 +152,18 @@
                 <MudItem xs="12" Class="d-flex justify-center">
                     <MudPagination SelectedChanged="@OnPageChange" Color="@Color.Primary" ShowFirstButton="true" ShowLastButton="true" 
                                    Selected="@((int)Math.Floor(Start > 0 ? ((double)Start.Value / Math.Max(Count ?? 100, 1)) + 1 : 1))" 
-                                   Count="@((int)Math.Ceiling((double)Items.Total / Math.Max(Count ?? 100, 1)))" />
+                                   Count="@((int)Math.Ceiling((double)Items.Total / Math.Max(Count ?? 100, 1)))" Disabled="State.IsPrerendering" />
                 </MudItem>
             }
+        }
+        else
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                    <TumbleWeed Light="true" />
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try searching for something else</MudText>
+                </div>
+            </MudItem>
         }
     </MudGrid>
 
@@ -71,58 +171,54 @@
 
 @code {
 
-    private PaginatedResult<ItemDescriptionWithPriceDTO> Items { get; set; }
-    
-    private string[] ItemTypes { get; set; }
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string Type { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Glow { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Glowsight { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Cutout { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Craftable { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool SpecialDrop { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool TwitchDrop { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
-    public bool Tradeable { get; set; }
-    
+    public bool Tradable { get; set; }
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Marketable { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Returning { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Banned { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public Nullable<int> Start { get; set; }
@@ -131,24 +227,64 @@
     [SupplyParameterFromQuery]
     public Nullable<int> Count { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortBy { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortDirection { get; set; }
+
+    private Tuple<string, Data.Models.SortDirection> Sort;
+
+    private PaginatedResult<ItemDescriptionWithPriceDTO> Items;
+
+    protected override void OnInitialized()
     {
-        await RefreshItemTypes();
-        await RefreshItems();
+        SortBy = nameof(ItemDescriptionWithPriceDTO.TimeAccepted);
+        SortDirection = Data.Models.SortDirection.Descending.ToString();
+        Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Data.Models.SortDirection.Descending);
     }
-    
+
+    protected override async Task OnLoadStateAsync()
+    {
+        Items = await RestoreFromStateOrLoad(nameof(Items), async () =>
+        {
+            await RefreshItems();
+            return Items;
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Items), Items);
+        return Task.CompletedTask;
+    }
+
     private void OnItemClicked(IItemDescription item)
     {
-        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");  
+        ExternalNavigationManager.NavigateToNewTab($"/item/{Uri.EscapeDataString(item.Name)}");
     }
 
     private void OnSearch(string text)
     {
         if (Filter != text)
         {
+            Start = 0;
             Filter = text;
-            RefreshItems();
+            _ = RefreshItems();
         };
+    }
+
+    private void SetSortOrder(Tuple<string, Data.Models.SortDirection> sort)
+    {
+        Start = 0;
+        Sort = sort;
+        SortBy = sort.Item1;
+        SortDirection = sort.Item2.ToString();
+        StateHasChanged();
+        
+        _ = RefreshItems();
     }
     
     private void OnPageChange(int page)
@@ -157,23 +293,7 @@
         if (Start != newStart)
         {
             Start = newStart;
-            RefreshItems();
-        }
-    }
-    
-    private async Task RefreshItemTypes()
-    {
-        try
-        {
-            ItemTypes = await Http.GetFromJsonWithDefaultsAsync<string[]>($"api/item/types");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing item types");
-        }
-        finally
-        {
-            StateHasChanged();
+            _ = RefreshItems();
         }
     }
 
@@ -183,13 +303,15 @@
         {
             Items = null;
             StateHasChanged();
+
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradable={Tradable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
             );
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing items");
+            Snackbar.Add($"Unable to load list. {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

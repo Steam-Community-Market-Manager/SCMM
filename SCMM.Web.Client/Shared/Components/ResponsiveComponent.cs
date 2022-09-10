@@ -4,22 +4,48 @@ using MudBlazor.Services;
 
 namespace SCMM.Web.Client.Shared.Components;
 
-public abstract class ResponsiveComponent : ComponentBase
+public abstract class ResponsiveComponent : ComponentBase, IAsyncDisposable
 {
     [Inject]
-    protected IResizeListenerService ResizeListener { get; set; }
+    protected IBreakpointService BreakpointListener { get; set; }
 
     protected Breakpoint Breakpoint { get; set; }
+
+    private Guid _breakpointSubscriptionId;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            ResizeListener.OnBreakpointChanged += OnResized;
-            OnResized(this, await ResizeListener.GetBreakpoint());
+            var subscriptionResult = await BreakpointListener.Subscribe(
+                (breakpoint) =>
+                {
+                    Breakpoint = breakpoint;
+                    OnBreakpointChanged(breakpoint);
+                }, 
+                new ResizeOptions
+                {
+                    ReportRate = 250,
+                    NotifyOnBreakpointOnly = true,
+                }
+            );
+
+            _breakpointSubscriptionId = subscriptionResult.SubscriptionId;
+
+            Breakpoint = subscriptionResult.Breakpoint;
+            OnBreakpointChanged(subscriptionResult.Breakpoint);
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_breakpointSubscriptionId != Guid.Empty)
+        {
+            await BreakpointListener.Unsubscribe(_breakpointSubscriptionId);
+            _breakpointSubscriptionId = Guid.Empty;
+        }
     }
 
     protected virtual void OnBreakpointChanged(Breakpoint breakpoint)
@@ -27,19 +53,8 @@ public abstract class ResponsiveComponent : ComponentBase
         InvokeAsync(StateHasChanged);
     }
 
-    private void OnResized(object sender, Breakpoint breakpoint)
-    {
-        Breakpoint = breakpoint;
-        OnBreakpointChanged(breakpoint);
-    }
-
     protected bool IsMediaSize(Breakpoint breakpoint)
     {
-        return ResizeListener.IsMediaSize(breakpoint, Breakpoint);
-    }
-
-    public void Dispose()
-    {
-        ResizeListener.OnBreakpointChanged -= OnResized;
+        return BreakpointListener.IsMediaSize(breakpoint, Breakpoint);
     }
 }

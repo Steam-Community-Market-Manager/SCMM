@@ -1,6 +1,8 @@
-﻿@page "/inventory/{SteamId}"
-@page "/steam/inventory/{SteamId}"
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
+@page "/inventory/{SteamId}"
+@page "/steam/inventory/{SteamId}"
+@inherits PersistentComponent
 @inject ILogger<InventoryPage> Logger
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -10,12 +12,12 @@
 
 <PageContainer Title="@(Profile != null ? $"Inventory - {Profile.Name}" : "Inventory")">
     <MudGrid Spacing="2">
-        <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" SynchroniseInventory="@OnSynchroniseInventory" />
+        <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" />
         @if (Profile != null && InventoryTotals != null)
         {
             <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
                 <MudItem xs="12" sm="6" lg="4" xl="2" Class="d-flex flex-row justify-start align-center">
-                    <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="ma-0"
+                    <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering"
                                   Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Variant="MudBlazor.Variant.Outlined" />
                 </MudItem>
 		    </MudHidden>
@@ -47,37 +49,47 @@
             {
                 <MudTabs Elevation="0" ActivePanelIndex="PanelIndex" ActivePanelIndexChanged="OnSelectedPanelChanged" Class="mud-tabs-transparent">
                     <ChildContent>
-                        <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory">
+                        <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
-                                <InventoryItemsPanel SteamId="@SteamId" Filter="@Filter" />
+                                <InventoryItemsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-tshirt mr-2" Text="Collections">
+                        <MudTabPanel Icon="fas fa-fw fa-tshirt mr-4" Text="Collections" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
-                                <InventoryCollectionsPanel SteamId="@SteamId" Filter="@Filter" />
+                                <InventoryCollectionsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Movement">
+                        <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Performance" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
-                                <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                                <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Returns" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">
+                        <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Performance" Disabled="@((!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator)) || State.IsPrerendering)">
                             <MudPaper Outlined="true">
-                                <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))"/>
+                                <InventoryInvestmentPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="true">
+                        <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
-                                <InventoryStatisticsPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                                <InventoryStatisticsPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
                             </MudPaper>
                         </MudTabPanel>
 					</ChildContent>
 	                <Header>
                         <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
-                            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mt-0 mr-1"
-                                          Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+                            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
+                                          Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
 					    </MudHidden>
+                        <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" OffsetY Disabled="State.IsPrerendering">
+                            <MudMenuItem OnTouch="@ViewProfileOnSteam" OnClick="@ViewProfileOnSteam">
+                                <i class="fab fa-fw fa-steam mr-1"></i>
+                                <span>View on Steam</span>
+                            </MudMenuItem>
+                            <MudMenuItem OnTouch="@SynchroniseProfileWithSteam" OnClick="@SynchroniseProfileWithSteam">
+                                <i class="fa fa-fw fa-sync mr-1"></i>
+                                <span>Synchronise with Steam</span>
+                            </MudMenuItem>
+                        </MudMenu>
 	                </Header>
                 </MudTabs>
             }
@@ -90,27 +102,60 @@
     [Parameter]
     public string SteamId { get; set; }
 
-    private ProfileDetailedDTO Profile { get; set; }
-    
-    private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
-
-    private string LoadingMessage { get; set; }
-
-    private Exception LoadingError { get; set; }
-    
-    private HttpStatusCode? LoadingErrorStatusCode => (LoadingError as HttpRequestException)?.StatusCode;
-    
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string Panel { get; set; }
 
-    private int PanelIndex { get; set; }
+    private ProfileDetailedDTO Profile;
 
-    protected override async Task OnInitializedAsync()
+    private ProfileInventoryTotalsDTO InventoryTotals;
+
+    private bool InventoryIsPrivate;
+
+    private int PanelIndex;
+
+    private string LoadingMessage;
+
+    private string LoadingError;
+
+    private HttpStatusCode? LoadingErrorStatusCode;
+
+    protected override async Task OnLoadStateAsync()
+    {
+        Profile = await RestoreFromStateOrLoad(nameof(Profile), async () =>
+        {
+            await LoadProfileAndInventory();
+            return Profile;
+        });
+        InventoryTotals = RestoreFromStateOrDefault(nameof(InventoryTotals), InventoryTotals);
+        InventoryIsPrivate = RestoreFromStateOrDefault(nameof(InventoryIsPrivate), InventoryIsPrivate);
+        PanelIndex = RestoreFromStateOrDefault(nameof(PanelIndex), PanelIndex);
+        LoadingMessage = RestoreFromStateOrDefault(nameof(LoadingMessage), LoadingMessage);
+        LoadingError = RestoreFromStateOrDefault(nameof(LoadingError), LoadingError);
+        LoadingErrorStatusCode = RestoreFromStateOrDefault(nameof(LoadingErrorStatusCode), LoadingErrorStatusCode);
+        if (InventoryIsPrivate)
+        {
+            ShowInventoryPrivateNotification();
+        }
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Profile), Profile);
+        PersistToState(nameof(InventoryTotals), InventoryTotals);
+        PersistToState(nameof(InventoryIsPrivate), InventoryIsPrivate);
+        PersistToState(nameof(PanelIndex), PanelIndex);
+        PersistToState(nameof(LoadingMessage), LoadingMessage);
+        PersistToState(nameof(LoadingError), LoadingError);
+        PersistToState(nameof(LoadingErrorStatusCode), LoadingErrorStatusCode);
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnParametersSetAsync()
     {
         switch (Panel)
         {
@@ -120,12 +165,7 @@
             case "investment": PanelIndex = 3; break;
             case "statistics": PanelIndex = 4; break;
         }
-        
-        await LoadProfileAndInventory();
-    }
-    
-    protected override async Task OnParametersSetAsync()
-    {
+
         // If we have navigated to a different profile, reload the new profile
         if ((Profile != null) &&
             !String.Equals(SteamId, Profile?.SteamId, StringComparison.InvariantCultureIgnoreCase) &&
@@ -134,7 +174,7 @@
             await LoadProfileAndInventory();
         }
     }
-    
+
     private void OnSearch(string text)
     {
         Filter = text;
@@ -146,29 +186,40 @@
         var filter = !String.IsNullOrEmpty(Filter) ? $"&filter={Uri.EscapeDataString(Filter)}" : String.Empty;
 
         PanelIndex = index;
-        switch (index)
+        if (!State.IsPrerendering)
         {
-            case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items{filter}"); break;
-            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=collections{filter}"); break;
-            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market{filter}"); break;
-            case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment{filter}"); break;
-            case 4: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics{filter}"); break;
+            switch (index)
+            {
+                case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items{filter}"); break;
+                case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=collections{filter}"); break;
+                case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market{filter}"); break;
+                case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment{filter}"); break;
+                case 4: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics{filter}"); break;
+            }
         }
     }
-    
-    private async Task OnSynchroniseInventory()
+
+    private void ViewProfileOnSteam()
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamProfilePageRequest()
+        {
+            SteamId = Uri.EscapeDataString(Profile?.SteamId ?? SteamId)
+        });
+    }
+
+    private async Task SynchroniseProfileWithSteam()
     {
         Profile = null;
         StateHasChanged();
         await LoadProfileAndInventory(force: true);
         StateHasChanged();
     }
-    
+
     private async Task LoadProfileAndInventory(bool force = false)
     {
         try
         {
-            Logger.LogInformation($"Loading inventory for '{SteamId}'...");
+            Logger.LogTrace($"Loading inventory for '{Uri.EscapeDataString(SteamId)}'...");
             Profile = null;
             InventoryTotals = null;
 
@@ -184,14 +235,15 @@
             LoadingMessage = "Calculating inventory value...";
             StateHasChanged();
             await LoadInventoryTotals();
-            
+
             LoadingMessage = null;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error loading profile inventory '{SteamId}'");
+            Logger.LogError(ex, $"Error loading profile inventory '{Uri.EscapeDataString(SteamId)}'");
             LoadingMessage = null;
-            LoadingError = ex;
+            LoadingError = ex.Message;
+            LoadingErrorStatusCode = (ex as HttpRequestException)?.StatusCode;
             throw;
         }
         finally
@@ -204,71 +256,47 @@
     {
         try
         {
-            Logger.LogInformation("Fetching inventory profile...");
+            Logger.LogTrace("Fetching inventory profile...");
             Profile = await Http.GetFromJsonWithDefaultsAsync<ProfileDetailedDTO>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/summary"
             );
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error fetching inventory profile for '{SteamId}'");
+            Logger.LogError(ex, $"Error fetching inventory profile for '{Uri.EscapeDataString(SteamId)}'");
             Profile = null;
             throw;
         }
     }
-    
+
     private async Task SynchroniseInventory(bool force = false)
     {
         try
         {
-            Logger.LogInformation("Synchronising inventory items...");
-            var response = await Http.PostAsync(
-                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/sync?force={force}", null
-            );
+            Logger.LogTrace("Synchronising inventory items...");
+            var response = await Http.PostAsync($"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/sync?force={force}", null);
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
 
-            response?.EnsureSuccessStatusCode();
+            if (Profile != null && force == true)
+            {
+                Profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
+            }
         }
         catch (Exception ex)
         {
             var httpErrorCode = (ex as HttpRequestException)?.StatusCode;
             if (httpErrorCode == HttpStatusCode.Unauthorized)
             {
-                var snackBarMessage = (Profile?.LastUpdatedInventoryOn != null
-                    ? $"<strong>This inventory is currently private.</strong><br/>You are viewing an old snapshot from {Profile.LastUpdatedInventoryOn.Value.ToString("g")} as we are unable to show you the latest information at this time. "
-                    : $"<strong>This inventory is currently private.</strong><br/>We are unable to show you the contents of this inventory. "
-                );
-
-                var thisIsMyInventory = State.Is(Profile?.SteamId);
-                if (thisIsMyInventory)
-                {
-                    snackBarMessage += (
-                        $"To resolve this, click the action button to update your Steam inventory privacy settings to 'Public', then refresh this page after a few minutes. "
-                    );
-                }
-
-                Logger.LogWarning(ex, $"Inventory is currently private for '{SteamId}', unable to synchronise at this time");
-                Snackbar.Add(
-				    snackBarMessage,
-                    Severity.Warning,
-                    options =>
-                    {
-                        options.Icon = "fas fa-fw fa-eye-slash ma-2";
-                        if (thisIsMyInventory)
-                        {
-                            options.Action = "Privacy Settings";
-                            options.Onclick = async (x) =>
-                            {
-                                ExternalNavigationManager.NavigateToNewTab(
-                                    $"https://steamcommunity.com/profiles/{Profile?.SteamId}/edit/settings"
-                                );
-                            };
-                        }
-                    }
-                );
+                Logger.LogWarning(ex, $"Inventory is currently private for '{Uri.EscapeDataString(SteamId)}', unable to synchronise at this time");
+                ShowInventoryPrivateNotification();
+                InventoryIsPrivate = true;
             }
             else
             {
-                Logger.LogError(ex, $"Error synchronising inventory items for '{SteamId}'");
+                Logger.LogError(ex, $"Error synchronising inventory items for '{Uri.EscapeDataString(SteamId)}'");
                 throw;
             }
         }
@@ -278,17 +306,52 @@
     {
         try
         {
-            Logger.LogInformation("Fetching inventory totals...");
+            Logger.LogTrace("Fetching inventory totals...");
             InventoryTotals = await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/total"
             );
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error fetching inventory totals for '{SteamId}'");
+            Logger.LogError(ex, $"Error fetching inventory totals for '{Uri.EscapeDataString(SteamId)}'");
             InventoryTotals = null;
             throw;
         }
     }
 
+    private void ShowInventoryPrivateNotification()
+    {
+        var thisIsMyInventory = State.Is(Profile?.SteamId);
+        var snackBarMessage = $"<strong>{(thisIsMyInventory ? "Your" : "This")} inventory is currently private.</strong><br/>";
+        snackBarMessage += (Profile?.LastUpdatedInventoryOn != null
+            ? $" You are viewing an old snapshot from {Profile.LastUpdatedInventoryOn.Value.ToString("g")} as we are unable to show you the latest contents of {(thisIsMyInventory ? "your" : "this")} inventory."
+            : $" We are unable to show you the contents of this inventory."
+        );
+
+        if (thisIsMyInventory)
+        {
+            snackBarMessage += (
+                $" To fix this, change your Steam inventory privacy settings to 'Public'."
+            );
+        }
+
+        Snackbar.Add(
+			snackBarMessage,
+            Severity.Warning,
+            options =>
+            {
+                options.Icon = "fas fa-fw fa-eye-slash ma-2";
+                if (thisIsMyInventory)
+                {
+                    options.Action = "Change Privacy Settings";
+                    options.Onclick = async (x) =>
+                    {
+                        ExternalNavigationManager.NavigateToNewTab(
+                            $"https://steamcommunity.com/profiles/{Profile?.SteamId}/edit/settings"
+                        );
+                    };
+                }
+            }
+        );
+    }
 }

@@ -28,13 +28,16 @@ namespace SCMM.Shared.Data.Store.Types
         [Required]
         public virtual string Serialised
         {
-            get => string.Join(ValueSeperator, _data.Select(x => ConvertSingleValueToPersistable(x)));
+            get 
+            {
+                return string.Join(ValueSeperator, _data.Select(x => ConvertSingleValueToPersistable(x)));
+            }
             set
             {
                 _data.Clear();
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var values = value.Split(ValueSeperator, StringSplitOptions.None).Select(x => ConvertSingleValueToRuntime(x)).ToList();
+                    var values = value.Split(ValueSeperator, StringSplitOptions.None).Select(x => ConvertSingleValueToRuntime(x)).ToArray();
                     foreach (var x in values)
                     {
                         _data.Add(x);

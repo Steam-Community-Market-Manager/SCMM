@@ -1,0 +1,80 @@
+﻿@using SCMM.Web.Client.Shared.Dialogs.Items
+@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Search
+@inject ILogger<SearchBar> Logger
+@inject IDialogService Dialogs
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
+@inject HttpClient Http
+
+<MudAutocomplete T="SearchResultDTO" Value="@Search" SearchFunc="@SearchAsync" ValueChanged="@OnResultSelected" ToStringFunc="@(x => x?.Description)" ResetValueOnEmptyText="true" 
+                 Placeholder="Search for an item, type, or collection..." DebounceInterval="500" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
+                 Variant="MudBlazor.Variant.Text" AdornmentIcon="fas fa-fw fa-search ml-2" IconSize="MudBlazor.Size.Small" Class="mud-input-no-frills ma-0 px-4" Style="max-width: 350px">
+    <ItemTemplate Context="item">
+        <div class="d-flex algin-center">
+            <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
+            <MudText Class="my-1">@item.Description</MudText>
+            <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="ml-2">@item.Type</MudChip>
+        </div>
+    </ItemTemplate>
+    <ItemSelectedTemplate Context="item">
+        <div class="d-flex algin-center">
+            <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
+            <MudText Class="my-1">@item.Description</MudText>
+            <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="ml-2">@item.Type</MudChip>
+        </div>
+    </ItemSelectedTemplate>
+</MudAutocomplete>
+
+@code {
+
+    private SearchResultDTO Search;
+
+    private async Task<IEnumerable<SearchResultDTO>> SearchAsync(string value)
+    {
+        try
+        {
+            return await Http.GetFromJsonWithDefaultsAsync<SearchResultDTO[]>($"api/search?query={value}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error searching");
+            throw;
+        }
+    }
+
+    private void OnResultSelected(SearchResultDTO result)
+    {
+        Search = null;
+        switch (result.Type)
+        {
+            case "Type":
+                Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
+                {
+                    ["ListName"] = $"All {result.Description.Pluralise()}",
+                    ["ListUrl"] = result.Url,
+                    ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+                    ["SortDirection"] = MudBlazor.SortDirection.Descending
+                });
+                break;
+
+            case "Collection":
+                Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
+                {
+                    ["CollectionName"] = $"{result.Description} Collection",
+                    ["CollectionUrl"] = result.Url
+                });
+                break;
+
+            case "Item":
+                Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+                {
+                    ["ItemName"] = result.Description,
+                    ["ItemUrl"] = result.Url
+                });
+                break;
+        }
+    }
+
+}

@@ -5,6 +5,7 @@ using SCMM.Steam.Data.Models.Enums;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Store
@@ -16,6 +17,7 @@ namespace SCMM.Steam.Data.Store
             Preferences = new PersistableStringDictionary();
             Roles = new PersistableStringCollection();
             InventoryItems = new Collection<SteamProfileInventoryItem>();
+            InventoryValues = new Collection<SteamProfileInventoryValue>();
             MarketItems = new Collection<SteamProfileMarketItem>();
             AssetDescriptions = new Collection<SteamAssetDescription>();
         }
@@ -23,8 +25,6 @@ namespace SCMM.Steam.Data.Store
         public string SteamId { get; set; }
 
         public string ProfileId { get; set; }
-
-        public string DiscordId { get; set; }
 
         public string Name { get; set; }
 
@@ -52,9 +52,9 @@ namespace SCMM.Steam.Data.Store
 
         public long GamblingOffset { get; set; }
 
-        public SteamVisibilityType Privacy { get; set; }
+        public SteamVisibilityType Privacy { get; set; } = SteamVisibilityType.Unknown;
 
-        public ItemAnalyticsParticipationType ItemAnalyticsParticipation { get; set; }
+        public ItemAnalyticsParticipationType ItemAnalyticsParticipation { get; set; } = ItemAnalyticsParticipationType.Public;
 
         [Required]
         public PersistableStringDictionary Preferences { get; set; }
@@ -77,17 +77,9 @@ namespace SCMM.Steam.Data.Store
 
         [JsonIgnore]
         [NotMapped]
-        public bool IncludeMarketTax
-        {
-            get { return bool.Parse(Preferences.GetOrDefault(nameof(IncludeMarketTax), Boolean.FalseString)); }
-            set { Preferences[nameof(IncludeMarketTax)] = value.ToString(); }
-        }
-
-        [JsonIgnore]
-        [NotMapped]
         public IEnumerable<ItemInfoType> ItemInfo
         {
-            get { return Enum.GetValues<ItemInfoType>().Where(x => !Preferences.ContainsKey(nameof(ItemInfo)) || Preferences[nameof(ItemInfo)].Contains(x.ToString())); }
+            get { return Preferences.ContainsKey(nameof(ItemInfo)) ? Enum.GetValues<ItemInfoType>().Where(x => Preferences[nameof(ItemInfo)].Contains(x.ToString())) : Enum.GetValues<ItemInfoType>(); }
             set { Preferences[nameof(ItemInfo)] = value.Aggregate((ItemInfoType)0, (a, b) => a |= b).ToString(); }
         }
 
@@ -101,16 +93,42 @@ namespace SCMM.Steam.Data.Store
 
         [JsonIgnore]
         [NotMapped]
-        public bool ShowItemDrops
+        public bool ItemIncludeMarketFees
         {
-            get { return bool.Parse(Preferences.GetOrDefault(nameof(ShowItemDrops), Boolean.FalseString)); }
-            set { Preferences[nameof(ShowItemDrops)] = value.ToString(); }
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(ItemIncludeMarketFees), Boolean.TrueString)); }
+            set { Preferences[nameof(ItemIncludeMarketFees)] = value.ToString(); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
+        public bool InventoryShowItemDrops
+        {
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowItemDrops), Boolean.FalseString)); }
+            set { Preferences[nameof(InventoryShowItemDrops)] = value.ToString(); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
+        public bool InventoryShowUnmarketableItems
+        {
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowUnmarketableItems), Boolean.FalseString)); }
+            set { Preferences[nameof(InventoryShowUnmarketableItems)] = value.ToString(); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
+        public InventoryValueMovementDisplayType InventoryValueMovementDisplay
+        {
+            get { return Enum.Parse<InventoryValueMovementDisplayType>(Preferences.GetOrDefault(nameof(InventoryValueMovementDisplay), InventoryValueMovementDisplayType.Price.ToString())); }
+            set { Preferences[nameof(InventoryValueMovementDisplay)] = value.ToString(); }
         }
 
         [Required]
         public PersistableStringCollection Roles { get; set; }
 
         public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
+
+        public ICollection<SteamProfileInventoryValue> InventoryValues { get; set; }
 
         public ICollection<SteamProfileMarketItem> MarketItems { get; set; }
 
@@ -119,7 +137,6 @@ namespace SCMM.Steam.Data.Store
         public void RemoveNonEssentialData()
         {
             ProfileId = null;
-            DiscordId = null;
             ProfileId = null;
             TradeUrl = null;
             LanguageId = null;
@@ -134,6 +151,7 @@ namespace SCMM.Steam.Data.Store
             Preferences?.Clear();
             Roles?.Clear();
             InventoryItems?.Clear();
+            InventoryValues?.Clear();
             MarketItems?.Clear();
         }
     }

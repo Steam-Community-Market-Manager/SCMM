@@ -19,6 +19,14 @@
     overflow: hidden;
 }
 
+.scroll-x {
+    overflow-x: scroll;
+}
+
+.scroll-y {
+    overflow-y: scroll;
+}
+
 .full-width {
     width: 100% !important;
 }
@@ -45,8 +53,30 @@
     text-align: right !important;
 }
 
+.align-top {
+    vertical-align: top !important;
+}
+
+.align-bottom {
+    vertical-align: bottom !important;
+}
+
 .text-line-through {
     text-decoration: line-through
+}
+
+.text-outlined {
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: rgb(51, 51, 51);
+}
+
+.no-select {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none;
 }
 
 .clickable:hover {
@@ -76,6 +106,14 @@
 
 .hover-zoom-extra:hover img {
     transform: scale(1.5) !important;
+}
+
+.hover-zoom-extreme:hover img {
+    transform: scale(3) !important;
+}
+
+.update-notification-icon {
+    font-size: 2rem;
 }
 
 .fade-out {
@@ -136,6 +174,34 @@
 
     50% {
         filter: drop-shadow(0px 0px 16px transparent);
+    }
+
+}
+
+.bell-ring {
+    animation: bell-ring 3s 0s linear infinite;
+}
+
+@keyframes bell-ring {
+
+    0% {
+        transform: none;
+    }
+
+    5%, 15% {
+        transform: rotate(25deg);
+    }
+
+    10%, 20% {
+        transform: rotate(-25deg);
+    }
+
+    25% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
     }
 
 }

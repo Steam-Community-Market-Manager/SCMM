@@ -8,28 +8,55 @@ using System.Text.Json;
 
 namespace SCMM.Steam.Client
 {
-    public class SteamWorkshopDownloaderWebClient
+    // NOTE: steamworkshopdownloader.io no longer serves files
+    //       https://www.reddit.com/r/swd_io/comments/uy55qg/we_are_no_longer_serving_any_files_through_our/
+    
+    // TODO: Use http://steamworkshop.download/ instead?
+
+    public class SteamWorkshopDownloaderWebClient : Worker.Client.WebClient
     {
         private readonly ILogger<SteamWorkshopDownloaderWebClient> _logger;
-        private readonly HttpClientHandler _httpHandler;
-        private readonly string _workshopDownloaderNodeUrl;
 
-        public SteamWorkshopDownloaderWebClient(ILogger<SteamWorkshopDownloaderWebClient> logger, SteamConfiguration configuration)
+        public SteamWorkshopDownloaderWebClient(ILogger<SteamWorkshopDownloaderWebClient> logger)
         {
             _logger = logger;
-            _httpHandler = new HttpClientHandler();
-            _workshopDownloaderNodeUrl = configuration.WorkshopDownloaderNodeUrl;
         }
 
         public async Task<WebFileData> DownloadWorkshopFile(SteamWorkshopDownloaderJsonRequest request)
         {
-            using (var client = new HttpClient(_httpHandler, false))
+            using (var client = BuildHttpClient())
             {
                 try
                 {
+                    var workshopDownloaderUrl = (string)null;
+                    var workshopDownloaderIsOnline = false;
+                    for(var workshopDownloaderIndex = 1; workshopDownloaderIndex <= 10; workshopDownloaderIndex++)
+                    {
+                        try
+                        {
+                            workshopDownloaderUrl = $"https://node{workshopDownloaderIndex.ToString("00")}.steamworkshopdownloader.io/prod";
+                            var steamOfflineResponse = await client.GetAsync($"{workshopDownloaderUrl}/api/download/steamoffline");
+                            steamOfflineResponse.EnsureSuccessStatusCode();
+                            var steamOffline = await steamOfflineResponse.Content.ReadFromJsonAsync<bool>();
+                            if (!steamOffline)
+                            {
+                                workshopDownloaderIsOnline = true;
+                                break;
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogWarning(ex, $"Workshop downloader node #{workshopDownloaderIndex} appears to be offline...");
+                        }
+                    }
+                    if (!workshopDownloaderIsOnline)
+                    {
+                        throw new Exception("No available workshop downloader nodes are online, unable to download file");
+                    }
+                    
                     // Request the file
                     request.AutoDownload = true;
-                    var downloadResponse = await client.PostAsJsonAsync($"{_workshopDownloaderNodeUrl}/api/download/request", request);
+                    var downloadResponse = await client.PostAsJsonAsync($"{workshopDownloaderUrl}/api/download/request", request);
                     if (!downloadResponse.IsSuccessStatusCode)
                     {
                         throw new HttpRequestException($"{downloadResponse.StatusCode}: {downloadResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
@@ -48,8 +75,8 @@ namespace SCMM.Steam.Client
                     }
 
                     // Poll until the file is ready
-                    var downloadIsPrepared = false;
-                    while (!downloadIsPrepared)
+                    var downloadUrl = String.Empty;
+                    while (String.IsNullOrEmpty(downloadUrl))
                     {
                         var statusRequest = new SteamWorkshopDownloaderStatusJsonRequest()
                         {
@@ -58,7 +85,7 @@ namespace SCMM.Steam.Client
                                 downloadId.Uuid
                             }
                         };
-                        var statusResponse = await client.PostAsJsonAsync($"{_workshopDownloaderNodeUrl}/api/download/status", statusRequest);
+                        var statusResponse = await client.PostAsJsonAsync($"{workshopDownloaderUrl}/api/download/status", statusRequest);
                         if (!statusResponse.IsSuccessStatusCode)
                         {
                             throw new HttpRequestException($"{downloadResponse.StatusCode}: {downloadResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
@@ -72,26 +99,30 @@ namespace SCMM.Steam.Client
                             case "dequeued":
                             case "retrieving":
                             case "retrieved":
-                            case "preparing": Thread.Sleep(3000); break; // avoid spamming the server
-                            case "prepared": downloadIsPrepared = true; break;
-                            case "transmitted": downloadIsPrepared = true; break;
-                            default: throw new Exception($"Unexpected status '{downloadStatus?.Status}' {downloadStatus.DownloadError}");
+                            case "preparing": 
+                                Thread.Sleep(3000); 
+                                break; // avoid spamming the server
+                            case "prepared": 
+                            case "transmitted":
+                                downloadUrl = $"https://{downloadStatus.StorageNode}/prod/storage/{downloadStatus.StoragePath}?uuid={downloadId.Uuid}";
+                                break;
+                            default: 
+                                throw new Exception($"Unexpected status '{downloadStatus?.Status}' {downloadStatus.DownloadError}");
                         }
                     }
 
                     // Download the file
-                    var transmitUrl = $"{_workshopDownloaderNodeUrl}/api/download/transmit?uuid={downloadId.Uuid}";
-                    var transmitResponse = await client.GetAsync(transmitUrl);
-                    if (!transmitResponse.IsSuccessStatusCode)
+                    var storageResponse = await client.GetAsync(downloadUrl);
+                    if (!storageResponse.IsSuccessStatusCode)
                     {
-                        throw new HttpRequestException($"{transmitResponse.StatusCode}: {transmitResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
+                        throw new HttpRequestException($"{storageResponse.StatusCode}: {storageResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
                     }
 
                     return new WebFileData()
                     {
-                        Name = transmitResponse.Content.Headers?.ContentDisposition?.FileName,
-                        MimeType = transmitResponse.Content.Headers?.ContentType?.MediaType,
-                        Data = await transmitResponse.Content.ReadAsByteArrayAsync()
+                        Name = storageResponse.Content.Headers?.ContentDisposition?.FileName,
+                        MimeType = storageResponse.Content.Headers?.ContentType?.MediaType,
+                        Data = await storageResponse.Content.ReadAsByteArrayAsync()
                     };
                 }
                 catch (Exception ex)

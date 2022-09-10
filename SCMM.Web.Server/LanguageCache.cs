@@ -45,8 +45,7 @@ namespace SCMM.Web.Server
                 return null;
             }
 
-            Cache.TryGetValue(name.Trim().ToUpper(), out
-            LanguageDetailedDTO value);
+            Cache.TryGetValue(name.Trim().ToUpper(), out LanguageDetailedDTO value);
             return value;
         }
     }

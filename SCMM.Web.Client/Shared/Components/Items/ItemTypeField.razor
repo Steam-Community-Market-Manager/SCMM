@@ -1,0 +1,102 @@
+﻿@using SCMM.Web.Client.Shared.Dialogs.Items
+@using SCMM.Web.Data.Models.UI.Item
+@inherits PersistentComponent
+@inject IDialogService Dialogs
+@inject HttpClient Http
+@inject AppState State
+
+<MudField Label="Item" Disabled="@(ItemTypesGroups == null || !ItemTypesGroups.Any() || State.IsPrerendering)" Variant="@Variant" Margin="@Margin" FullWidth="@FullWidth" Class="@Class">
+    <div class="clickable" @onclick="@ShowItemTypePickerDialog">
+        <div class="d-flex flex-row align-center">
+            @if (ItemType != null)
+            {
+                <img src="/images/app/@(State.AppId)/items/@(ItemType.Id).png" class="my-n2 mr-2" style="height:2em" />
+                <span>@ItemType.Name</span>
+                <MudSpacer />
+                <MudIconButton Icon="fa fa-fw fa-times" Size="MudBlazor.Size.Small" OnClick="@(() => SetItemType(null))" Class="pa-0 ma-0" title="Clear"></MudIconButton>
+            }
+            else
+            {
+                <i class="fa fa-fw fa-tshirt mr-2"></i>
+                <span class="mud-secondary-text">Select an item...</span>
+            }
+        </div>
+    </div>
+</MudField>
+
+@code {
+
+    [Parameter]
+    public string Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public MudBlazor.Variant Variant { get; set; }
+
+    [Parameter]
+    public MudBlazor.Margin Margin { get; set; }
+
+    [Parameter]
+    public bool FullWidth { get; set; }
+
+    [Parameter]
+    public string Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+
+    private IEnumerable<ItemTypeGroupDTO> ItemTypesGroups;
+
+    private ItemTypeDTO ItemType;
+
+    protected override async Task OnLoadStateAsync()
+    {
+        ItemTypesGroups = await RestoreFromStateOrLoad(nameof(ItemTypesGroups), async () =>
+        {
+            return await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemTypeGroupDTO>>($"api/item/types");
+        });
+        ItemType = await RestoreFromStateOrLoad(nameof(ItemType), async () =>
+        {
+            if (ItemTypesGroups != null && !String.IsNullOrEmpty(Value))
+            {
+                return ItemTypesGroups
+                    .SelectMany(x => x.ItemTypes)
+                    .FirstOrDefault(x => String.Equals(x.Name, Value, StringComparison.OrdinalIgnoreCase));
+            }
+            return null;
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(ItemTypesGroups), ItemTypesGroups);
+        PersistToState(nameof(ItemType), ItemType);
+        return Task.CompletedTask;
+    }
+
+    private async Task SetItemType(ItemTypeDTO itemType)
+    {
+        ItemType = itemType;
+        Value = itemType?.Name;
+        StateHasChanged();
+
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task ShowItemTypePickerDialog()
+    {
+        var dialog = Dialogs.Show<ItemTypeSelectionDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemTypesGroups"] = ItemTypesGroups
+        });
+
+        var itemType = await dialog.GetReturnValueAsync<ItemTypeDTO>();
+        if (itemType != null)
+        {
+            await SetItemType(itemType);
+        }
+    }
+
+}

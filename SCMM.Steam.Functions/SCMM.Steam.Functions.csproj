@@ -1,40 +1,61 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
-    <OutputType>Exe</OutputType>
-    <ImplicitUsings>true</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.5.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.6.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.3.0" OutputItemType="Analyzer" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.1.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="4.0.4" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="4.2.1" />
-    <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="4.5.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
-    <ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
-    <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
-    <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
-    <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="host.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="local.settings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-    </None>
-	<Content Update="runtimeconfig.template.json">
-		<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	</Content>
-  </ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+	
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<AzureFunctionsVersion>v4</AzureFunctionsVersion>
+		<OutputType>Exe</OutputType>
+		<ImplicitUsings>true</ImplicitUsings>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Azure.Identity" Version="1.6.1" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.13.1" />
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.8.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.3.0" OutputItemType="Analyzer" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.1.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.4.0" />
+		<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="5.1.0" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
+		<ProjectReference Include="..\SCMM.Azure.ApplicationInsights\SCMM.Azure.ApplicationInsights.csproj" />
+		<ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
+		<ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.Buff.Client\SCMM.Market.Buff.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.CSDeals.Client\SCMM.Market.CSDeals.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.CSTrade.Client\SCMM.Market.CSTrade.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.DMarket.Client\SCMM.Market.DMarket.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.iTradegg.Client\SCMM.Market.iTradegg.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.LootFarm.Client\SCMM.Market.LootFarm.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.RustSkins.Client\SCMM.Market.RustSkins.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.RustTM.Client\SCMM.Market.RustTM.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.SkinBaron.Client\SCMM.Market.SkinBaron.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.Skinport.Client\SCMM.Market.Skinport.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.SkinsMonkey.Client\SCMM.Market.SkinsMonkey.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.SkinSwap.Client\SCMM.Market.SkinSwap.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.SwapGG.Client\SCMM.Market.SwapGG.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.TradeitGG.Client\SCMM.Market.TradeitGG.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
+		<ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
+		<ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />
+		<ProjectReference Include="..\SCMM.SteamCMD\SCMM.SteamCMD.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<None Update="host.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="local.settings.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</None>
+	</ItemGroup>
+	
 </Project>

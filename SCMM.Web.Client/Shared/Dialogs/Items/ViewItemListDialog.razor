@@ -1,0 +1,158 @@
+﻿@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Data.Models.UI.Item
+@inherits ResponsiveDialog
+@inject ILogger<ViewItemListDialog> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject DocumentManager Document
+@inject AppState State
+
+<MudDialog>
+    <TitleContent>
+        <MudGrid>
+            <MudItem xs="12" Class="@($"d-flex flex-wrap {(IsMediaSize(Breakpoint.MdAndUp) ? "pr-12" : null)}")">
+                <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@ListName</MudText>
+                @if (List?.Items?.Any() == true)
+                {
+                    <MudSpacer />
+                    <MudMenu Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
+                             Dense="true" Class="@($"hover-darken mx-4 {(IsMediaSize(Breakpoint.SmAndDown) ? "mr-8" : null)}")" title="Change sort order">
+                        <ActivatorContent>
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">
+                                <i class="fas fa-fw fa-sort-alpha-down" />
+                            </MudText>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
+                            {
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.TimeAccepted), Data.Models.SortDirection.Descending))">Newest</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.TimeAccepted), Data.Models.SortDirection.Ascending))">Oldest</MudMenuItem>
+                            }
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.BuyNowPrice), Data.Models.SortDirection.Ascending))">Lowest Price</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.BuyNowPrice), Data.Models.SortDirection.Descending))">Highest Price</MudMenuItem>
+                            @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
+                            {
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Ascending))">Lowest Subscribers</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Descending))">Highest Subscribers</MudMenuItem>
+                            }
+                            @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
+                            {
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                    <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items" FullWidth="@(IsMediaSize(Breakpoint.SmAndDown))" Class="flex-grow-0 mt-n4"
+                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+                }
+			</MudItem>
+		</MudGrid>
+    </TitleContent>
+    <DialogContent>
+        @if (List?.Items == null)
+        {
+            <Loading Message="Loading item list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+        } 
+        else
+        {
+            <div class="py-4">
+                <MudGrid>
+                    @foreach (var item in GetFilteredAndSortedItems(List.Items))
+                    {
+                        <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                            <ItemDescriptionSummary Item="@item" Highlighted="@(item.Id == HighlightedItemId)" />
+                        </MudItem>
+                    }
+                </MudGrid>
+            </div>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public string ListName { get; set; }
+
+    [Parameter]
+    public string ListUrl { get; set; }
+
+    [Parameter]
+    public ulong HighlightedItemId { get; set; }
+
+    [Parameter]
+    public string SortBy { get; set; } = nameof(ItemDescriptionWithPriceDTO.TimeAccepted);
+
+    [Parameter]
+    public Data.Models.SortDirection SortDirection { get; set; } = Data.Models.SortDirection.Descending;
+
+    private PaginatedResult<ItemDescriptionWithPriceDTO> List { get; set; }
+
+    private string Filter { get; set; }
+
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Large;
+        options.FullWidth = true; // force item images to scale equally
+        options.CloseButton = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            List = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(ListUrl);
+            Dialog.ForceRender();
+            StateHasChanged();
+
+            if (HighlightedItemId > 0)
+            {
+                Document.ScrollElementIntoView("highlighted", TimeSpan.FromSeconds(1));
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the item list");
+            Snackbar.Add($"Unable to load item list. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private void OnSearch(string text)
+    {
+        Filter = text;
+        StateHasChanged();
+    }
+
+    private void SetSortOrder(string sortBy, Data.Models.SortDirection sortDirection)
+    {
+        SortBy = sortBy;
+        SortDirection = sortDirection;
+        StateHasChanged();
+        
+        if (HighlightedItemId > 0)
+        {
+            Document.ScrollElementIntoView("highlighted", TimeSpan.FromSeconds(1));
+        }
+    }
+
+    private IEnumerable<ItemDescriptionWithPriceDTO> GetFilteredAndSortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
+    {
+        if (!String.IsNullOrEmpty(Filter))
+        {
+            items = items.Where(x => 
+                x.Name.Contains(Filter, StringComparison.InvariantCultureIgnoreCase) ||
+                x.ItemType.Contains(Filter, StringComparison.InvariantCultureIgnoreCase)
+            );
+        }
+
+        if (!String.IsNullOrEmpty(SortBy))
+        {
+            items = items.AsQueryable().SortBy(SortBy, SortDirection);
+        }
+
+        return items;
+    }
+}

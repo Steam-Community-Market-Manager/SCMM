@@ -4,15 +4,7 @@ namespace SCMM.Discord.Client.Extensions
 {
     public static class MessageExtensions
     {
-        public static async Task LoadingAsync(this IUserMessage message, string text)
-        {
-            await message.ModifyAsync(x =>
-            {
-                x.Content = text;
-            });
-        }
-
-        public static async Task AddReactionSafeAsync(this IUserMessage message, IEmote emote)
+        public static async Task TryAddReactionAsync(this IUserMessage message, IEmote emote)
         {
             try
             {

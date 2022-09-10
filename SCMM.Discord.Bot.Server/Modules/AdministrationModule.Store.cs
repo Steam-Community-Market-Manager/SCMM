@@ -1,13 +1,15 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Discord.Client;
+using SCMM.Discord.Client.Commands;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
+using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Extensions;
 using System.Globalization;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -17,7 +19,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("set-store-name")]
         public async Task<RuntimeResult> SetStoreNameAsync(string storeId, [Remainder] string storeName)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -25,7 +27,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             if (itemStore != null)
             {
                 itemStore.Name = storeName;
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -37,7 +39,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("add-store-media")]
         public async Task<RuntimeResult> AddStoreMediaAsync(string storeId, params string[] media)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -53,7 +55,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -65,7 +67,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("remove-store-media")]
         public async Task<RuntimeResult> RemoveStoreMediaAsync(string storeId, params string[] media)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -81,7 +83,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -93,7 +95,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("add-store-note")]
         public async Task<RuntimeResult> AddStoreNoteAsync(string storeId, [Remainder] string note)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -105,7 +107,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     note
                 };
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -117,7 +119,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("remove-store-note")]
         public async Task<RuntimeResult> RemoveStoreNoteAsync(string storeId, int index = 0)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -127,7 +129,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 itemStore.Notes = new PersistableStringCollection(itemStore.Notes);
                 itemStore.Notes.Remove(itemStore.Notes.ElementAt(index));
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -137,16 +139,26 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("rebuild-store-item-mosaics")]
-        public async Task<RuntimeResult> RebuildStoreItemMosaicsAsync()
+        public async Task<RuntimeResult> RebuildStoreItemMosaicsAsync(string storeId = null)
         {
-            var itemStores = await _db.SteamItemStores
-                .Where(x => x.ItemsThumbnailId == null)
+            var message = await Context.Message.ReplyAsync("Finding stores...");
+            var itemStoreIds = _steamDb.SteamItemStores.ToList()
+                .Where(x => String.IsNullOrEmpty(storeId) || (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
+                .OrderByDescending(x => x.Start)
+                .Select(x => x.Id)
+                .ToArray();
+
+            var itemStores = await _steamDb.SteamItemStores
+                .Where(x => itemStoreIds.Contains(x.Id))
                 .Where(x => x.Items.Any())
-                .Include(x => x.ItemsThumbnail)
+                .Include(x => x.App)
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
                 .ToArrayAsync();
 
-            var message = await Context.Message.ReplyAsync("Rebuilding store item mosaics...");
+            await message.ModifyAsync(
+                x => x.Content = "Rebuilding store item mosaics..."
+            );
+
             foreach (var itemStore in itemStores)
             {
                 await message.ModifyAsync(
@@ -159,7 +171,6 @@ namespace SCMM.Discord.Bot.Server.Modules
                     .Where(x => x.Description != null)
                     .Select(x => new ImageSource()
                     {
-                        Title = x.Description.Name,
                         ImageUrl = x.Description.IconUrl,
                         ImageData = x.Description.Icon?.Data,
                     })
@@ -169,227 +180,38 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                var thumbnail = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+                var itemsThumbnailImage = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
                 {
                     ImageSources = itemImageSources,
-                    TileSize = 256,
-                    Columns = 3
+                    ImageSize = 128,
+                    ImageColumns = 3
                 });
-                if (thumbnail == null)
+                if (itemsThumbnailImage == null)
                 {
                     continue;
                 }
 
-                var oldThumbnail = itemStore.ItemsThumbnail;
-                if (oldThumbnail != null)
-                {
-                    itemStore.ItemsThumbnail = null;
-                    itemStore.ItemsThumbnailId = null;
-                    _db.FileData.Remove(oldThumbnail);
-                }
+                itemStore.ItemsThumbnailUrl = (
+                    await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
+                    {
+                        Name = $"{itemStore.App.SteamId}-store-items-thumbnail-{Uri.EscapeDataString(itemStore.Start?.Ticks.ToString() ?? itemStore.Name?.ToLower())}",
+                        MimeType = itemsThumbnailImage.MimeType,
+                        Data = itemsThumbnailImage.Data,
+                        ExpiresOn = null, // never
+                        Overwrite = true
+                    })
+                )?.ImageUrl ?? itemStore.ItemsThumbnailUrl;
 
-                itemStore.ItemsThumbnail = new FileData()
-                {
-                    MimeType = thumbnail.MimeType,
-                    Data = thumbnail.Data
-                };
-
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
-                x => x.Content = $"Rebuilt {itemStores.Where(x => x.ItemsThumbnailId != null).Count()}/{itemStores.Length} snapshots item mosaics"
+                x => x.Content = $"Rebuilt {itemStores.Where(x => x.ItemsThumbnailUrl != null).Count()}/{itemStores.Length} snapshots item mosaics"
             );
 
             return CommandResult.Success();
         }
 
-        [Command("rebuild-store-item-rereleases")]
-        public async Task<RuntimeResult> RebuildStoreItemRereleasesAsync()
-        {
-            var items = await _db.SteamStoreItems
-                .Include(x => x.Stores).ThenInclude(x => x.Store)
-                .ToListAsync();
-
-            foreach (var batch in items.Batch(100))
-            {
-                foreach (var item in batch)
-                {
-                    item.RecalculateHasReturnedToStore();
-                }
-
-                await _db.SaveChangesAsync();
-            }
-
-            return CommandResult.Success();
-        }
-
-        /*
-        [Command("rebuild-store-list")]
-        public async Task<RuntimeResult> RebuildStoreListAsync()
-        {
-            var assetDescriptions = await _db.SteamAssetDescriptions
-                .Where(x => x.TimeAccepted != null)
-                .Include(x => x.App)
-                .Include(x => x.StoreItem).ThenInclude(x => x.Stores)
-                .ToListAsync();
-
-            var assetDescriptionStoreGroups = assetDescriptions.GroupBy(x => x.TimeAccepted.Value.Date).OrderBy(x => x.Key);
-            foreach (var assetDescriptionStoreGroup in assetDescriptionStoreGroups.Where(x => x.Any()))
-            {
-                // Ensure the store item exists
-                foreach (var assetDescription in assetDescriptionStoreGroup)
-                {
-                    if (assetDescription.StoreItem == null)
-                    {
-                        _db.SteamStoreItems.Add(
-                            assetDescription.StoreItem = new SteamStoreItem()
-                            {
-                                SteamId = null, // ???
-                                App = assetDescription.App,
-                                Description = assetDescription
-                            }
-                        );
-                    }
-                }
-
-                // Ensure the item store exists
-                var storeStart = assetDescriptionStoreGroup.Key;
-                var store = _db.SteamItemStores.FirstOrDefault(x => x.Start.Date == storeStart) ??
-                            _db.SteamItemStores.Local.FirstOrDefault(x => x.Start.Date == storeStart);
-                if (store == null)
-                {
-                    _db.SteamItemStores.Add(
-                        store = new SteamItemStore()
-                        {
-                            App = assetDescriptionStoreGroup.FirstOrDefault(x => x.App != null)?.App,
-                            Start = storeStart,
-                            End = storeStart.AddDays(7),
-                            IsDraft = true
-                        }
-                    );
-                }
-
-                // Link the store item to the item store (if missing)
-                foreach (var assetDescription in assetDescriptionStoreGroup)
-                {
-                    var storeItemLink = assetDescription.StoreItem.Stores.FirstOrDefault(x => x.Store == store);
-                    if (storeItemLink == null)
-                    {
-                        store.Items.Add(new SteamStoreItemItemStore()
-                        {
-                            Store = store,
-                            Item = assetDescription.StoreItem,
-                            IsDraft = true
-                        });
-                    }
-                }
-            }
-
-            await _db.SaveChangesAsync();
-            return CommandResult.Success();
-        }
-        */
-        /*
-        [Command("import-tgg-stores")]
-        public async Task<RuntimeResult> ImportTGGStoresAsync()
-        {
-            var start = new DateTimeOffset(new DateTime(2017, 01, 01), TimeZoneInfo.Local.BaseUtcOffset);
-            var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == Constants.RustAppId.ToString());
-            var existingStores = await _db.SteamItemStores.ToListAsync();
-
-            // Get all videos by ThatGermanGuy
-            var videos = await _googleClient.ListChannelVideosAsync("UCvCBuwbtKRwM0qMi7rc7CUw", maxResults: null);
-
-            // Adjustment for videos that don't follow the naming convention...
-            var whitelistedVideoIds = new string[] {
-                "AC2OwYiTbio", // Rust Trick or Treat | Halloween 2020 Week 2 Candy Hunter, Little Nightmare, Woodenstein #192
-                "dHjMxTY-UAg", // Rust Top Skins | Complete Sets Week, Tactical, Apoc Knight, Loot Leader #146 (Rust Skin Preview)
-                "9jjo9TMMpnI" // Rust Top Skins | No Mercy Lr, Metal Beast, Doodle, Sun Praiser, & Looter Sets #74 (Rust Skin Picks)
-            };
-            var blacklistedVideoIds = new string[] {
-                "pbLCjiOZw6s", //Rust Skins | Charitable Rust 2019 Skin Contest, Pencils of Promise Charity 
-            };
-
-            // Find store videos following the naming convention
-            var rustStoreVideos = videos
-                .Where(x => Regex.IsMatch(x.Title, @"^.*Rust.*\|", RegexOptions.IgnoreCase))
-                .Where(x => Regex.IsMatch(x.Title, @"^.*Skins.*\|", RegexOptions.IgnoreCase))
-                .Where(x =>
-                    (
-                        x.Title.Contains("Preview", StringComparison.InvariantCultureIgnoreCase) &&
-                        !x.Title.Contains("Top Skins", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                    ||
-                    (
-                        !Regex.IsMatch(x.Title, @"^.*Top.*\|", RegexOptions.IgnoreCase) &&  // Rust Top Skin | Lunar New Year 2020 Edition #77 (Rust Skin Picks)
-                        !Regex.IsMatch(x.Title, @"^.*Picks.*\|", RegexOptions.IgnoreCase) && // Rust Skin Picks | July Week 2 | Cajun & Night Assassin Sets, The Beast & Mimic #2 (Rust Skin Picks)
-                        !x.Title.Contains("Coming", StringComparison.InvariantCultureIgnoreCase) && // Rust What's Coming | Multiple Riders in Ch47 & Sedan, Vehicle Progress, New Hair #119 (Rust Updates)
-                        !x.Title.Contains("Barrel", StringComparison.InvariantCultureIgnoreCase) && // Rust Skins | Unboxing Weapon Barrels and Box! Halloween Loot #4 (Rust Skins & Unboxings)
-                        !x.Title.Contains("Tutorials", StringComparison.InvariantCultureIgnoreCase) && //  Rust | All Red Key Card Monument Puzzles, How to Get Mega Loot (Rust Tutorials)
-                        !x.Title.Contains("Twitch Drops", StringComparison.InvariantCultureIgnoreCase) && // Rust Skins | Twitch Drops March 4th 2021 Round 6 (Rust Twitch Drops)
-                        !x.Title.Contains("Skin Picks", StringComparison.InvariantCultureIgnoreCase) // Rust Skins | Most Wanted 2020 Top Picks #108 (Skin Picks)
-                    )
-                )
-                .Union(videos.Where(x => whitelistedVideoIds.Contains(x.Id)))
-                .Except(videos.Where(x => blacklistedVideoIds.Contains(x.Id)))
-                .OrderBy(x => x.PublishedAt)
-                .ToList();
-
-            var videoList = new StringBuilder();
-            foreach (var video in rustStoreVideos.OrderBy(x => x.PublishedAt))
-            {
-                var nextVideo = rustStoreVideos.Skip(rustStoreVideos.IndexOf(video) + 1).FirstOrDefault();
-                var storeDateText = Regex.Match(video.Title, @"\d{1,2}/\d{1,2}/\d{1,2}").Groups.OfType<Group>().Skip(1).FirstOrDefault()?.Value;
-                var storeDateStart = !string.IsNullOrEmpty(storeDateText)
-                    ? new DateTimeOffset(DateTime.ParseExact(storeDateText, "MM/dd/yy", CultureInfo.InvariantCulture) + new TimeSpan(17, 0, 0), TimeZoneInfo.Utc.BaseUtcOffset)
-                    : video.PublishedAt.Value;
-                var storeDateEnd = (nextVideo != null ? nextVideo.PublishedAt.Value : storeDateStart.AddDays(7));
-                var store = existingStores
-                    .Where(x => storeDateStart.Date == x.Start.Date || x.Media.Serialised.Contains(video.Id))
-                    .OrderBy(x => x.Start)
-                    .FirstOrDefault();
-
-                // Use the earliest start time available
-                //storeDateStart = (store != null && store.Start < storeDateStart ? store.Start : storeDateStart);
-
-                if (store != null)
-                {
-                    // Update store details
-                    if (store.Start != storeDateStart)
-                    {
-                        //store.Start = storeDateStart;
-                    }
-                    if (!store.Media.Contains(video.Id))
-                    {
-                        store.Media.Add(video.Id);
-                    }
-                }
-                else
-                {
-                    // Create new store
-                    var storeName = Regex.Match(video.Title, @"\|\s([^\(]*)").Groups.OfType<Group>().Skip(1).FirstOrDefault()?.Value;
-                    _db.SteamItemStores.Add(
-                        new SteamItemStore()
-                        {
-                            App = app,
-                            Name = storeName,
-                            Start = storeDateStart,
-                            End = storeDateEnd,
-                            Media = new PersistableStringCollection()
-                            {
-                                video.Id
-                            },
-                            IsDraft = true
-                        }
-                    );
-                }
-            }
-
-            await _db.SaveChangesAsync();
-            return CommandResult.Success();
-        }
-        */
         // store.steampowered.com/itemstore/252490/
         // store.steampowered.com/itemstore/252490/?filter=Featured
         // store.steampowered.com/itemstore/252490/browse/
@@ -442,7 +264,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                         )
                     });
 
-                    await _db.SaveChangesAsync();
+                    await _steamDb.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -453,9 +275,95 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             await message.ModifyAsync(
                 x => x.Content = $"Imported {webArchiveSnapshots.Length}/{webArchiveSnapshots.Length} snapshots"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("rebuild-store-item-missing-prices")]
+        public async Task<RuntimeResult> RebuildStoreItemMissingPricesAsync()
+        {
+            var message = await Context.Message.ReplyAsync("Rebuilding missing store item prices...");
+            var currencies = await _steamDb.SteamCurrencies.ToListAsync();
+            var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+
+            var currenciesAndStoreItems = await _steamDb.SteamCurrencies
+                .Select(x => new
+                {
+                    Currency = x,
+                    StoreItemsWithMissingPrices = _steamDb.SteamStoreItemItemStore
+                        .Where(y => y.Price != null)
+                        .Where(y => !String.IsNullOrEmpty(y.Prices.Serialised) && !y.Prices.Serialised.Contains(x.Name))
+                        .Where(y => y.CurrencyId == usdCurrency.Id)
+                        .Select(y => new
+                        {
+                            StoreItemItemStore = y,
+                            ExchangeRate = _steamDb.SteamCurrencyExchangeRates
+                                .Where(z => z.CurrencyId == x.Name)
+                                .Where(z => z.Timestamp < (y.Store.Start != null ? y.Store.Start : y.Item.Description.TimeAccepted))
+                                .OrderByDescending(z => z.Timestamp)
+                                .FirstOrDefault()
+                        })
+                        .ToArray()
+                })
+                .ToListAsync();
+
+            var currenciesWithMissingStorePrices = currenciesAndStoreItems.Where(x => x.StoreItemsWithMissingPrices.Length > 0).ToList();
+            foreach (var currencyWithMissingStorePrices in currenciesWithMissingStorePrices)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Rebuilding {currencyWithMissingStorePrices.Currency.Name}, {currencyWithMissingStorePrices.StoreItemsWithMissingPrices.Length} missing store item prices were found"
+                );
+
+                foreach (var itemExchange in currencyWithMissingStorePrices.StoreItemsWithMissingPrices)
+                {
+                    if (itemExchange.ExchangeRate != null)
+                    {
+                        itemExchange.StoreItemItemStore.Prices = new Steam.Data.Store.Types.PersistablePriceDictionary(itemExchange.StoreItemItemStore.Prices);
+                        itemExchange.StoreItemItemStore.Prices[currencyWithMissingStorePrices.Currency.Name] = EconomyExtensions.SteamPriceRounded(
+                            itemExchange.ExchangeRate.ExchangeRateMultiplier.CalculateExchange(itemExchange.StoreItemItemStore.Price.Value)
+                        );
+
+                        //itemExchange.StoreItem.UpdateLatestPrice();
+                    }
+                    else
+                    {
+                        // Missing exchange rate?!...
+                    }
+                }
+
+                await _steamDb.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Rebuilt {currenciesWithMissingStorePrices.Count} currencies with missing store item prices"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("rebuild-store-item-latest-prices")]
+        public async Task<RuntimeResult> RebuildStoreItemLatestPricesAsync()
+        {
+            var message = await Context.Message.ReplyAsync("Rebuilding latest store item prices...");
+
+            var storeItems = await _steamDb.SteamStoreItemItemStore
+                .Include(x => x.Item)
+                .Include(x => x.Store)
+                .ToListAsync();
+
+            foreach (var storeItem in storeItems)
+            {
+                storeItem.Item.UpdateLatestPrice();
+            }
+
+            await _steamDb.SaveChangesAsync();
+
+            await message.ModifyAsync(
+                x => x.Content = $"Rebuilt {storeItems.Count} store item prices"
             );
 
             return CommandResult.Success();

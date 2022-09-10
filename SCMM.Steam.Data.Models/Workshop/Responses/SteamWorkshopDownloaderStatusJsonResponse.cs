@@ -18,5 +18,17 @@ namespace SCMM.Steam.Data.Models.Workshop.Responses
 
         [JsonPropertyName("downloadError")]
         public string DownloadError { get; set; }
+
+        [JsonPropertyName("bytes_size")]
+        public ulong BytesSize { get; set; }
+
+        [JsonPropertyName("bytes_transmitted")]
+        public ulong BytesTransmitted { get; set; }
+
+        [JsonPropertyName("storageNode")]
+        public string StorageNode { get; set; }
+
+        [JsonPropertyName("storagePath")]
+        public string StoragePath { get; set; }
     }
 }

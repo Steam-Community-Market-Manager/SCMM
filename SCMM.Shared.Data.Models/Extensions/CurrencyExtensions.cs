@@ -6,7 +6,12 @@ namespace SCMM.Shared.Data.Models.Extensions
     {
         public static long CalculateExchange(this decimal exchangeRate, decimal value)
         {
-            return (long)Math.Floor(value * exchangeRate);
+            return (long)Math.Round(value * exchangeRate, 0);
+        }
+
+        public static long CalculateExchange(this decimal exchangeRate, long value)
+        {
+            return (long)Math.Round(((decimal)value) * exchangeRate, 0);
         }
 
         public static long CalculateExchange(this IExchangeableCurrency currency, decimal value)
@@ -14,24 +19,34 @@ namespace SCMM.Shared.Data.Models.Extensions
             return CalculateExchange((currency?.ExchangeRateMultiplier ?? 0), value);
         }
 
+        public static long CalculateExchange(this IExchangeableCurrency currency, long value)
+        {
+            return CalculateExchange((currency?.ExchangeRateMultiplier ?? 0), value);
+        }
+
         public static long CalculateExchange(this IExchangeableCurrency targetCurrency, long value, IExchangeableCurrency sourceCurrency)
         {
-            if (targetCurrency == null || sourceCurrency == null)
+            return CalculateExchange(targetCurrency, value, sourceCurrency?.ExchangeRateMultiplier ?? 0);
+        }
+
+        public static long CalculateExchange(this IExchangeableCurrency targetCurrency, long value, decimal sourceCurrencyExchangeRateMultiplier)
+        {
+            if (targetCurrency == null || sourceCurrencyExchangeRateMultiplier == 0)
             {
                 return 0;
             }
 
             var targetValue = (decimal)value;
-            if (sourceCurrency != targetCurrency)
+            if (sourceCurrencyExchangeRateMultiplier != targetCurrency.ExchangeRateMultiplier)
             {
                 var baseValue = value != 0
-                    ? (value / sourceCurrency.ExchangeRateMultiplier)
+                    ? (value / sourceCurrencyExchangeRateMultiplier)
                     : 0m;
 
                 targetValue = (baseValue * targetCurrency.ExchangeRateMultiplier);
             }
 
-            return (long)Math.Floor(targetValue);
+            return (long)Math.Round(targetValue, 0);
         }
 
         public static decimal ToPrice(this ICurrency currency, long price)

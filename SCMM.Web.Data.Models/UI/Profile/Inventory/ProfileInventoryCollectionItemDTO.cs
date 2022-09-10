@@ -5,7 +5,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
     public class ProfileInventoryCollectionItemDTO : ICanBeFiltered
     {
-        public ItemDescriptionDTO Item { get; set; }
+        public ItemDescriptionWithPriceDTO Item { get; set; }
 
         public bool IsOwned { get; set; }
 

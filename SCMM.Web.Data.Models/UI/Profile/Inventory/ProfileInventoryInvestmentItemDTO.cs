@@ -6,7 +6,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
     public class ProfileInventoryInvestmentItemDTO : ItemDescriptionDTO
     {
-        public Guid Guid { get; set; }
+        public ulong ItemId { get; set; }
 
         public SteamProfileInventoryItemAcquisitionType AcquiredBy { get; set; }
 
@@ -35,8 +35,10 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 
         public int Quantity { get; set; }
 
-        public long? ResellPrice { get; set; }
+        public MarketType SellLaterTo { get; set; }
 
-        public long? ResellTax { get; set; }
+        public long? SellLaterPrice { get; set; }
+
+        public long? SellLaterFee { get; set; }
     }
 }

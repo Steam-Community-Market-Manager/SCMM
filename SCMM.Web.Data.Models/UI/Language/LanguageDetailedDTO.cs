@@ -3,7 +3,5 @@
     public class LanguageDetailedDTO : LanguageDTO
     {
         public Guid Guid { get; set; }
-
-        public string Id { get; set; }
     }
 }

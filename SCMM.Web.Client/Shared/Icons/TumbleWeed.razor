@@ -1,4 +1,4 @@
-﻿<div class="tumble-weed-container ma-4">
+﻿<div class="@($"{(Light ? "tumble-weed-container-light" : "tumble-weed-container")} ma-4")">
     <div class="bounce"></div>
     <div class="pebble1"></div>
     <div class="pebble2"></div>
@@ -6,6 +6,9 @@
 </div>
 
 @code {
+
+    [Parameter]
+    public bool Light { get; set; } = false;
 
     protected override bool ShouldRender() => false;
 

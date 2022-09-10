@@ -1,0 +1,159 @@
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inherits PersistentComponent
+@inject ILogger<AppBarProfileControls> Logger
+@inject IDialogService Dialogs
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+<div class="full-height" @attributes="AdditionalAttributes">
+    <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Class="full-height hover-darken" Disabled="State.IsPrerendering">
+        <ActivatorContent>
+            <div class="d-flex justify-start align-center px-2">
+                @if (InventoryTotals?.MarketValue > 0)
+                {
+                    <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
+                        <div class="d-flex flex-column">
+                            <MudText Typo="@MudBlazor.Typo.caption" Color="@MudBlazor.Color.Secondary" Class="mr-2"><small>Inventory Value</small></MudText>
+                            <MudText Typo="@MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Default" Class="mr-2 mt-n1">
+                                <span title="Current market value of your inventory">@State.Currency?.ToPriceString(InventoryTotals.MarketValue)</span>
+                            </MudText>
+                        </div>
+                    </MudHidden>
+                }
+                <MudAvatar Image="@(State.Profile?.AvatarUrl ?? "/images/steam_default_avatar.png")" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" 
+                           title="@(State.IsAuthenticated ? "Your profile" : "Anonymous user")" />
+            </div>
+        </ActivatorContent>
+        <ChildContent>
+            @if (State.IsAuthenticated)
+            {
+                <div class="mx-4">
+                    <MudText Typo="MudBlazor.Typo.h6" Color="@MudBlazor.Color.Default">@State.Profile.Name</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Secondary">@State.Profile.SteamId</MudText>
+                    <RoleBadges Roles="@State.Profile.Roles" class="my-2" />
+                </div>
+                <MudDivider />
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=items")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-th" ></i>
+                    <span>Item Inventory</span>
+                    @if (InventoryTotals?.Items > 0)
+                    {
+                        <span class="mud-secondary-text"> (@InventoryTotals.Items.ToQuantityString())</span>
+                    }
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=collections")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-tshirt" ></i>
+                    <span>Item Collections</span>
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=market")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-balance-scale-left" ></i>
+                    <span>Market Performance</span>
+                    @if (InventoryTotals?.MarketValue > 0)
+                    {
+                        <span class="mud-secondary-text"> (@State.Currency?.ToPriceString(InventoryTotals.MarketValue))</span>
+                    }
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=investment")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-hand-holding-usd" ></i>
+                    <span>Investment Performance</span>
+                    @if (InventoryTotals?.InvestmentNetReturn > 0)
+                    {
+                        <span class="mud-secondary-text"> (@State.Currency?.ToPriceString(InventoryTotals.InvestmentNetReturn.Value))</span>
+                    }
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=statistics")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-chart-pie" ></i>
+                    <span>Inventory Statistics</span>
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem Href="/settings?panel=general" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-user" ></i>
+                    <span>Profile</span>
+                </MudMenuItem>
+                <MudMenuItem Href="/settings?panel=preferences" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-sliders-h" ></i>
+                    <span>Preferences</span>
+                </MudMenuItem>
+                <MudMenuItem Href="/settings?panel=notifications" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-bell" ></i>
+                    <span>Notifications</span>
+                </MudMenuItem>
+                <MudMenuItem Href="/settings?panel=data" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-database" ></i>
+                    <span>Your Data</span>
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem OnTouch="NavigateToSignOut" OnClick="NavigateToSignOut" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-sign-out-alt" ></i>
+                    <span>Sign out</span>
+                </MudMenuItem>
+            }
+            else
+            {
+                <div class="signin-button mx-4" @onclick="async () => await ShowSignInDialog()">
+                    <img src="/images/sits_01.png" class="mt-2" alt="Sign in through Steam" title="Sign in through Steam" />
+                </div>
+            }
+        </ChildContent>
+    </MudMenu>
+</div>
+
+@code {
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+    
+    private ProfileInventoryTotalsDTO InventoryTotals;
+    
+    protected override async Task OnLoadStateAsync()
+    {
+        InventoryTotals = await RestoreFromStateOrLoad(nameof(InventoryTotals), async () =>
+        {
+            try
+            {
+                return String.IsNullOrEmpty(State.Profile?.SteamId) ? null :
+                    await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
+                        $"api/profile/{State.Profile?.SteamId}/inventory/total"
+                    );
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error refreshing inventory totals for '{State.Profile?.SteamId}'");
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(InventoryTotals), InventoryTotals);
+        return Task.CompletedTask;
+    }
+
+    private async Task ShowSignInDialog()
+    {
+        var result = await Dialogs.Show<SignInDialog>().Result;
+        if (!result.Cancelled && (bool) result.Data == true)
+        {
+            NavigateToSignIn();
+        }
+    }
+    
+    private void NavigateToSettings()
+    {
+        NavigationManager.NavigateTo($"/settings");
+    }
+
+    private void NavigateToSignIn()
+    {
+        ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+    }
+
+    private void NavigateToSignOut()
+    {
+        ExternalNavigationManager.NavigateTo($"/signout?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+    }
+
+}

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -70,23 +71,6 @@ namespace SCMM.Steam.API.Commands
         {
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
 
-            // Does this asset already exist?
-            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.ClassId == request.AssetClassId);
-            if (assetDescription == null)
-            {
-                // Doesn't exist in database, double check that it isn't transient (newly created)
-                assetDescription = _db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId == request.AssetClassId);
-                if (assetDescription == null)
-                {
-                    // Definitally doesn't exist, create it now...
-                    _db.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
-                    {
-                        App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),
-                        ClassId = request.AssetClassId,
-                    });
-                }
-            }
-
             // Get asset class info
             var assetClass = (AssetClassInfoModel)null;
             if (request.AssetClass == null)
@@ -129,7 +113,8 @@ namespace SCMM.Steam.API.Commands
                             request.AssetClass.Descriptions.Select(x => new AssetClassDescriptionModel()
                             {
                                 Type = x.Type,
-                                Value = x.Value
+                                Value = x.Value,
+                                Color = x.Type
                             })
                         )
                     ),
@@ -153,7 +138,7 @@ namespace SCMM.Steam.API.Commands
                             })
                         )
                     ),
-                    ClassId = request.AssetClass.ClassId,
+                    ClassId = request.AssetClass.ClassId
                 };
             }
             if (assetClass == null)
@@ -161,14 +146,27 @@ namespace SCMM.Steam.API.Commands
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, asset was not found");
             }
 
-            // Get item description text from asset class (if available)
-            var itemDescription = assetClass.Descriptions?
-                .Where(x =>
-                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
-                )
-                .Select(x => x.Value)
-                .FirstOrDefault();
+            // Does this asset already exist?
+            var assetDescription = (await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId == assetClass.ClassId)) ??
+                                   (_db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId == assetClass.ClassId));
+            if (assetDescription == null)
+            {
+                // Does a similiarly named item already exist?
+                assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x =>
+                    x.App.SteamId == request.AppId.ToString() &&
+                    x.ClassId == null &&
+                    x.Name == assetClass.Name
+                );
+                if (assetDescription == null)
+                {
+                    // Doesn't exist in database, create it now...
+                    _db.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
+                    {
+                        App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),
+                        ClassId = assetClass.ClassId,
+                    });
+                }
+            }
 
             // Get published file details from Steam (if workshopfileid is available)
             var publishedFile = (PublishedFileDetailsModel)null;
@@ -241,22 +239,21 @@ namespace SCMM.Steam.API.Commands
                         Id = publishedFile.PublishedFileId.ToString()
                     });
                 }
-
-                // Queue a download of the workshop file data for analyse (if missing or changed since our last check)
-                if (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
-                {
-                    await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
-                    {
-                        PublishedFileId = publishedFileId,
-                        Force = publishedFileHasChanged
-                    });
-                }
             }
+
+            var assetClassHasItemDescription = assetClass.Descriptions?
+                .Where(x =>
+                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
+                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
+                )
+                .Select(x => x.Value)
+                .Where(x => !String.IsNullOrEmpty(x))
+                .Any() ?? false;
 
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
             var marketListingPageHtml = (string)null;
             var assetIsMarketable = string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
-            var needsDescription = ((string.IsNullOrEmpty(itemDescription) && string.IsNullOrEmpty(assetDescription.Description)) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
+            var needsDescription = ((!assetClassHasItemDescription && string.IsNullOrEmpty(assetDescription.Description)) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
             var needsNameId = (assetDescription.NameId == null);
             if (assetIsMarketable && (needsDescription || needsNameId))
             {
@@ -272,10 +269,10 @@ namespace SCMM.Steam.API.Commands
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
             if (assetIsRecentlyAccepted && (needsDescription))
             {
-                var storeItems = await _communityClient.GetStorePaginated(new SteamStorePaginatedJsonRequest()
+                var storeItems = await _communityClient.GetStorePaginated(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
                 {
                     AppId = request.AppId.ToString(),
-                    Filter = SteamStorePaginatedJsonRequest.FilterAll,
+                    Filter = SteamItemStoreGetItemDefsPaginatedJsonRequest.FilterAll,
                     SearchText = assetClass.MarketHashName,
                     Count = 1
                 });
@@ -288,7 +285,7 @@ namespace SCMM.Steam.API.Commands
                             ? itemIdMatchGroup[1].Value.Trim()
                             : null;
 
-                        storeItemPageHtml = await _communityClient.GetHtml(new SteamStoreItemPageRequest()
+                        storeItemPageHtml = await _communityClient.GetHtml(new SteamItemStoreDetailPageRequest()
                         {
                             AppId = request.AppId.ToString(),
                             ItemId = itemId,
@@ -309,6 +306,21 @@ namespace SCMM.Steam.API.Commands
                 MarketListingPageHtml = marketListingPageHtml,
                 StoreItemPageHtml = storeItemPageHtml
             });
+
+            // If the asset description is now persistent (not transient)...
+            if (!assetDescription.IsTransient)
+            {
+                // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
+                if (publishedFileId > 0 && (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl)))
+                {
+                    await _serviceBusClient.SendMessageAsync(new DownloadWorkshopFileContentsMessage()
+                    {
+                        AppId = request.AppId,
+                        PublishedFileId = publishedFileId,
+                        Force = publishedFileHasChanged
+                    });
+                }
+            }
 
             return new ImportSteamAssetDescriptionResponse
             {

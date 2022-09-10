@@ -11,6 +11,8 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 
         public long Movement { get; set; }
 
+        public long Value { get; set; }
+
         public long Quantity { get; set; }
 
         [JsonIgnore]

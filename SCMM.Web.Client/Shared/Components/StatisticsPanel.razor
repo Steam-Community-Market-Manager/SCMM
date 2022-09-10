@@ -1,0 +1,58 @@
+﻿
+<MudCard Outlined="true" Class="full-height d-flex flex-column">
+    @if (!String.IsNullOrEmpty(Title) || !String.IsNullOrEmpty(Subtitle))
+    {
+        <MudCardHeader>
+            <CardHeaderContent>
+                <div class="d-flex flex-row justify-space-between">
+                    <div class="Header d-flex flex-column justify-center align-left">
+                        @if (!String.IsNullOrEmpty(Title))
+                        {
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                @if (!String.IsNullOrEmpty(Icon))
+                                {
+                                    <span class="mr-1"><i class="@Icon" /></span>
+                                }
+                                <span>@Title</span>
+                            </MudText>
+                        }
+                        @if (!String.IsNullOrEmpty(Subtitle))
+                        {
+                            <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                <span>@Subtitle</span>
+                            </MudText>
+                        }
+                    </div>
+                    <div class="Actions d-flex flex-row justify-center align-right">
+                        @ActionContent
+                    </div>
+                </div>
+            </CardHeaderContent>
+        </MudCardHeader>
+    }
+    <MudCardContent Class="@($"d-flex flex-column flex-grow-1 relative {(Dense ? "pa-0" : null)}")">
+        @ChildContent
+    </MudCardContent>
+</MudCard>
+
+@code {
+    
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string Subtitle { get; set; }
+    
+    [Parameter]
+    public bool Dense { get; set; }
+    
+    [Parameter]
+    public RenderFragment ActionContent { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    
+}

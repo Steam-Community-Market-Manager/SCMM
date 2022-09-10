@@ -10,7 +10,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 
         public string CreatorAvatarUrl { get; set; }
 
-        public IList<ProfileInventoryCollectionItemDTO> Items { get; set; }
+        public ProfileInventoryCollectionItemDTO[] Items { get; set; }
 
         [JsonIgnore]
         public string[] Filters => Items

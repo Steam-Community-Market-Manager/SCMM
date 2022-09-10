@@ -1,7 +1,10 @@
-﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inherits PersistentComponent
 @inject ILogger<InventoryItemsPanel> Logger
 @inject HttpClient Http
 @inject AppState State
+@inject ExternalNavigationManager ExternalNavigationManager
 
 @if (InventoryItems == null)
 {
@@ -23,45 +26,75 @@ else
     <div class="d-flex flex-wrap flex-row align-start justify-center">
         @foreach (var item in InventoryItems.FilterBy(Filter))
         {
-            @if (item.Quantity > 1)
-            {
-                <MudBadge Color="MudBlazor.Color.Primary" Content="@item.Quantity" Max="Int32.MaxValue" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra">
-                    <InventoryItemSummary Item="@item" />
-                </MudBadge>
-            }
-            else
-            {
-                <InventoryItemSummary Item="@item" />
-            }
+            <div class="item">
+                @if (item.Quantity > 1)
+                {
+                    <MudBadge Color="MudBlazor.Color.Dark" Content="@item.Quantity" Max="9999" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra" BadgeClass="mud-badge-border-inherit">
+                        <InventoryItemSummary SteamId="@SteamId" Item="@item" />
+                    </MudBadge>
+                }
+                else
+                {
+                    <InventoryItemSummary SteamId="@SteamId" Item="@item" />
+                }
+                @if(SelectedInventoryItems != null && State.Is(SteamId))
+                {
+                    <div class="@($"item-multi-select {((SelectedInventoryItems.ContainsKey(item.Id) && SelectedInventoryItems[item.Id] == true) ? "item-selected" : "item-hover-to-select")}")">
+                        <MudCheckBox T="bool" @bind-Checked="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" Disabled="State.IsPrerendering" />
+                    </div>
+                }
+            </div>
         }
     </div>
+    @if (SelectedInventoryItems != null && SelectedInventoryItems.Any(x => x.Value) && State.Is(SteamId))
+    {
+        <div class="multi-select-actions d-flex flex-row justify-center align-center pa-2 mud-appbar">
+            <MudButton OnClick="ClearItemSelection" Variant="Variant.Outlined" Color="Color.Secondary" Class="mx-1" Disabled="State.IsPrerendering">Clear</MudButton>
+            <MudButton OnClick="SellSelectedItemsOnMarket" Variant="Variant.Filled" Color="Color.Success" StartIcon="fa fa-fw fa-hand-holding-usd" Class="mx-1" Disabled="State.IsPrerendering">Multi-sell</MudButton>
+        </div>
+    }
 }
 
 @code {
 
     [Parameter]
     public string SteamId { get; set; }
-    
+
     [Parameter]
     public string Filter { get; set; }
 
-    private IList<ProfileInventoryItemDescriptionDTO> InventoryItems { get; set; }
-    
-    private Exception LoadingError { get; set; }
-    
-    protected override async Task OnInitializedAsync()
+    private IList<ProfileInventoryItemDescriptionDTO> InventoryItems;
+
+    private IDictionary<ulong, bool> SelectedInventoryItems;
+
+    private Exception LoadingError;
+
+    protected override async Task OnLoadStateAsync()
     {
-        await LoadInventoryItems();
+        InventoryItems = await RestoreFromStateOrLoad(nameof(InventoryItems), async () =>
+        {
+            await LoadInventoryItems();
+            return InventoryItems;
+        });
+        SelectedInventoryItems = RestoreFromStateOrDefault(nameof(SelectedInventoryItems), SelectedInventoryItems);
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(InventoryItems), InventoryItems);
+        PersistToState(nameof(SelectedInventoryItems), SelectedInventoryItems);
+        return Task.CompletedTask;
     }
 
     private async Task LoadInventoryItems()
     {
         try
         {
-            Logger.LogInformation("Fetching inventory items...");
+            Logger.LogTrace("Fetching inventory items...");
             InventoryItems = await Http.GetFromJsonWithDefaultsAsync<IList<ProfileInventoryItemDescriptionDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/items"
             );
+            SelectedInventoryItems = InventoryItems.ToDictionary(x => x.Id, x => false);
         }
         catch (Exception ex)
         {
@@ -74,5 +107,22 @@ else
         {
             StateHasChanged();
         }
+    }
+
+    private void ClearItemSelection()
+    {
+        SelectedInventoryItems = InventoryItems?.ToDictionary(x => x.Id, x => false);
+        StateHasChanged();
+    }
+
+    private void SellSelectedItemsOnMarket()
+    {
+        var items = InventoryItems.Where(x => SelectedInventoryItems.Any(y => y.Key == x.Id && y.Value == true));
+        ExternalNavigationManager.NavigateToNewTab(new SteamMarketMultisellPageRequest()
+        {
+            AppId = items.Where(x => x.AppId > 0).FirstOrDefault()?.AppId.ToString(),
+            MarketHashNames = items.Select(x => x.Name).ToArray()
+        });
+        ClearItemSelection();
     }
 }

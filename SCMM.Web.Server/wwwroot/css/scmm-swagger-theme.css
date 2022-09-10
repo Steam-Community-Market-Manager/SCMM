@@ -24,6 +24,11 @@ select option:hover {
 .swagger-ui .info li, .swagger-ui .info p, .swagger-ui .info table {
     color: rgba(255, 255, 255, 0.7);
 }
+.swagger-ui .scheme-container {
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0px !important;
+}
 .swagger-ui .opblock-tag {
     color: #fff;
 }

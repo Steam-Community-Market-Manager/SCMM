@@ -5,35 +5,26 @@
     <ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Version>0.15-alpha</Version>
-    <AssemblyVersion>0.15.0.0</AssemblyVersion>
-    <FileVersion>0.15.0.0</FileVersion>
-    <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="4.5.1" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.20.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="5.1.0" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.25.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
+    <ProjectReference Include="..\SCMM.Azure.ApplicationInsights\SCMM.Azure.ApplicationInsights.csproj" />
     <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Client\SCMM.Discord.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.Data.Store\SCMM.Discord.Data.Store.csproj" />
     <ProjectReference Include="..\SCMM.Fixer.Client\SCMM.Fixer.Client.csproj" />
     <ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
     <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="runtimeconfig.template.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>

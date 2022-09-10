@@ -1,0 +1,64 @@
+﻿@inherits PersistentComponent
+@inject ILogger<AppBarCurrencyControls> Logger
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject AppState State
+@inject HttpClient Http
+
+@if (Currencies != null)
+{
+    <div @attributes="AdditionalAttributes">
+        <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change the currency">
+            <ActivatorContent>
+                <MudButton Size="MudBlazor.Size.Large" Disabled="State.IsPrerendering">@State.CurrencyId</MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                @foreach (var currency in Currencies)
+                {
+                    <MudMenuItem OnTouch="@(() => ChangeCurrency(currency))" OnClick="@(() => ChangeCurrency(currency))" Disabled="@(State.Currency.Id == currency.Id)">
+                        @currency.Name
+                    </MudMenuItem>
+                }
+            </ChildContent>
+        </MudMenu>
+    </div>
+}
+
+@code
+{
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+
+    private CurrencyDetailedDTO[] Currencies;
+
+    protected override async Task OnLoadStateAsync()
+    {
+        Currencies = await RestoreFromStateOrLoad(nameof(Currencies), async () =>
+        {
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading currencies");
+                Snackbar.Add($"Unable to load currency list. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Currencies), Currencies);
+        return Task.CompletedTask;
+    }
+
+    private void ChangeCurrency(CurrencyDetailedDTO currency)
+    {
+        Logger.LogInformation($"Currency was changed to '{currency.Name}'");
+        State.Currency = currency;
+        
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
+    }
+}

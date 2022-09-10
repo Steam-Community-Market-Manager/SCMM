@@ -1,5 +1,8 @@
 ﻿using Microsoft.JSInterop;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Web.Client.Shared.Storage;
+
+namespace SCMM.Web.Server.Shared.Storage;
 
 public class HttpCookieManager : CookieManager
 {
@@ -10,16 +13,16 @@ public class HttpCookieManager : CookieManager
         _accessor = accessor;
     }
 
-    public override async Task<T> GetAsync<T>(string name, T defaultValue = default)
+    public override Task<T> GetAsync<T>(string name, T defaultValue = default)
     {
         var cookie = _accessor.HttpContext.Request.Cookies.FirstOrDefault(x => String.Equals(x.Key, name, StringComparison.InvariantCultureIgnoreCase));
         if (!String.IsNullOrEmpty(cookie.Value))
         {
-            return cookie.Value.As<T>() ?? defaultValue;
+            return Task.FromResult(cookie.Value.As<T>() ?? defaultValue);
         }
         else
         {
-            return defaultValue;
+            return Task.FromResult(defaultValue);
         }
     }
 }

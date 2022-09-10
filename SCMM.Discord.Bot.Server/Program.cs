@@ -5,23 +5,25 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
-using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
+using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Discord.Data.Store;
 using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Redis.Client.Extensions;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web;
-using SCMM.Shared.Web.Extensions;
+using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
@@ -44,31 +46,35 @@ public static class WebApplicationExtensions
     public static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
     {
         builder.Logging.ClearProviders();
-        builder.Logging.AddDebug();
-        builder.Logging.AddConsole();
-        builder.Logging.AddHtmlLogger();
-        builder.Logging.AddApplicationInsights();
-        builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Logging.AddDebug();
+            builder.Logging.AddConsole();
+        }
+        else
+        {
+            builder.Logging.AddApplicationInsights();
+        }
         return builder;
     }
 
     public static WebApplicationBuilder ConfigureAppConfiguration(this WebApplicationBuilder builder)
     {
-        builder.Configuration.AddAzureAppConfiguration(
-            options =>
-            {
-                var connectionString = builder.Configuration.GetConnectionString("AppConfigurationConnection");
-                if (!String.IsNullOrEmpty(connectionString))
+        var appConfigConnectionString = builder.Configuration.GetConnectionString("AppConfigurationConnection");
+        if (!String.IsNullOrEmpty(appConfigConnectionString))
+        {
+            builder.Configuration.AddAzureAppConfiguration(
+                options =>
                 {
-                    options.Connect(builder.Configuration.GetConnectionString("AppConfigurationConnection"))
+                    options.Connect(appConfigConnectionString)
                         .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
                         .Select(KeyFilter.Any, LabelFilter.Null)
                         .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
                         .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
-                }
-            },
-            optional: true
-        );
+                },
+                optional: true
+            );
+        }
 
         return builder;
     }
@@ -77,10 +83,9 @@ public static class WebApplicationExtensions
     {
         // Logging
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-        builder.Services.AddApplicationInsightsTelemetry(options =>
-        {
-            options.InstrumentationKey = builder.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
-        });
+        builder.Services.AddApplicationInsightsTelemetry();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
 
         // Authentication
         builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
@@ -110,21 +115,47 @@ public static class WebApplicationExtensions
                 });
 
         // Database
-        builder.Services.AddDbContext<SteamDbContext>(options =>
+        var discordDbConnectionString = builder.Configuration.GetConnectionString("DiscordDbConnection");
+        if (!String.IsNullOrEmpty(discordDbConnectionString))
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("SteamDbConnection"), sql =>
+            builder.Services.AddDbContextFactory<DiscordDbContext>(options =>
             {
-                //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                sql.EnableRetryOnFailure();
+                options.UseCosmos(discordDbConnectionString, "SCMM", cosmos =>
+                {
+                    cosmos.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Direct);
+                });
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
-            options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
-            options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
-        });
+        }
+        var steamDbConnectionString = builder.Configuration.GetConnectionString("SteamDbConnection");
+        if (!String.IsNullOrEmpty(steamDbConnectionString))
+        {
+            builder.Services.AddDbContext<SteamDbContext>(options =>
+            {
+                options.UseSqlServer(steamDbConnectionString, sql =>
+                {
+                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    sql.EnableRetryOnFailure();
+                });
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
+            });
+        }
 
         // Service bus
-        builder.Services.AddAzureServiceBus(
-            builder.Configuration.GetConnectionString("ServiceBusConnection")
-        );
+        var serviceBusConnectionString = builder.Configuration.GetConnectionString("ServiceBusConnection");
+        if (!String.IsNullOrEmpty(serviceBusConnectionString))
+        {
+            builder.Services.AddAzureServiceBus(serviceBusConnectionString);
+        }
+
+        // Redis cache
+        var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+        if (!String.IsNullOrEmpty(redisConnectionString))
+        {
+            builder.Services.AddRedis(redisConnectionString);
+        }
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());
@@ -137,14 +168,13 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton<FixerWebClient>();
         builder.Services.AddSingleton<AzureAiClient>();
-        builder.Services.AddScoped<SteamWebClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
 
         // Command/query/message handlers
-        builder.Services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-        builder.Services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-        builder.Services.AddMessages(Assembly.GetEntryAssembly());
+        builder.Services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+        builder.Services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+        builder.Services.AddMessages(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
 
         // Services
         builder.Services.AddScoped<SteamService>();
@@ -206,6 +236,8 @@ public static class WebApplicationExtensions
         app.UseAzureServiceBusProcessor();
 
         app.UseDiscordClient();
+
+        app.EnsureDatabaseIsInitialised<DiscordDbContext>();
 
         return app;
     }

@@ -1,19 +1,26 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Discord.Client;
+using SCMM.Discord.Client.Commands;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Store;
+using SteamWebAPI2.Interfaces;
+using SteamWebAPI2.Utilities;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("import-item-definitions")]
-        public async Task<RuntimeResult> ImportAssetDescriptionAsync()
+        [Command("import-rust-item-definitions")]
+        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync()
         {
             var message = await Context.Message.ReplyAsync("Importing latest item definitions...");
             var response = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionsRequest()
@@ -21,7 +28,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 AppId = Constants.RustAppId
             });
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             await message.ModifyAsync(
                 x => x.Content = $"Imported latest item definitions from digest {response.App.ItemDefinitionsDigest} (modified: {response.App.TimeUpdated})"
             );
@@ -29,8 +36,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("import-asset-description")]
-        public async Task<RuntimeResult> ImportAssetDescriptionAsync(params ulong[] classIds)
+        [Command("import-rust-asset-description")]
+        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(params ulong[] classIds)
         {
             var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
             foreach (var classId in classIds)
@@ -45,7 +52,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     AssetClassId = classId
                 });
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
@@ -55,10 +62,246 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
+        [Command("import-csgo-asset-description")]
+        public async Task<RuntimeResult> ImportCSGOAssetDescriptionAsync(params ulong[] classIds)
+        {
+            var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
+            foreach (var classId in classIds)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
+                );
+
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                {
+                    AppId = Constants.CSGOAppId,
+                    AssetClassId = classId
+                });
+
+                await _steamDb.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported {classIds.Length}/{classIds.Length} asset descriptions"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("import-csgo-market-item")]
+        public async Task<RuntimeResult> ImportCSGOMarketItemAsync(params string[] names)
+        {
+            var message = await Context.Message.ReplyAsync("Importing market items...");
+            foreach (var name in names)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing market item '{name}' ({Array.IndexOf(names, name) + 1}/{names.Length})..."
+                );
+
+                var marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
+                {
+                    AppId = Constants.CSGOAppId.ToString(),
+                    MarketHashName = name,
+                });
+
+                var classIdMatchGroup = Regex.Match(marketListingPageHtml, @"\""classid\"":\""([0-9]+)\""").Groups;
+                var classId = (classIdMatchGroup.Count > 1)
+                    ? classIdMatchGroup[1].Value.Trim()
+                    : null;
+
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                {
+                    AppId = Constants.CSGOAppId,
+                    AssetClassId = UInt64.Parse(classId)
+                });
+
+                await _steamDb.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported {names.Length}/{names.Length} asset descriptions"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("import-workshop-files")]
+        public async Task<RuntimeResult> MissingWorkshopFiles(bool deepScan = false)
+        {
+            var message = await Context.Message.ReplyAsync("Importing workshop files from creators...");
+            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamCfg.ApplicationKey);
+            var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
+            
+            var apps = await _steamDb.SteamApps.AsNoTracking()
+                .ToListAsync();
+
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.CreatorId != null)
+                .Select(x => new
+                {
+                    Id = x.Id,
+                    AppId = x.AppId,
+                    CreatorId = x.CreatorId,
+                    WorkshopFileId = x.WorkshopFileId,
+                    ItemName = x.Name,
+                    ItemCollection = x.ItemCollection,
+                    TimeAccepted = x.TimeAccepted
+                })
+                .ToListAsync();
+
+            var creators = assetDescriptions
+                .GroupBy(x => new { x.AppId, x.CreatorId })
+                .Select(x => x.Key)
+                .ToArray();
+
+            // Check all unique accepted creators for missing workshop files
+            foreach (var creator in creators)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing workshop files from creator '{creator.CreatorId}' ({Array.IndexOf(creators.ToArray(), creator) + 1}/{creators.Count()})..."
+                );
+
+                var app = apps.FirstOrDefault(x => x.Id == creator.AppId);
+                var publishedFiles = new Dictionary<ulong, string>();
+                var workshopHtml = (XElement)null;
+                try
+                {
+                    workshopHtml = await _communityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                    {
+                        SteamId = creator.CreatorId.ToString(),
+                        AppId = app.SteamId
+                    });
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                // Get latest workshop file ids
+                var paginingControls = workshopHtml.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value == "workshopBrowsePagingControls");
+                var lastPageLink = paginingControls?.Descendants("a").LastOrDefault(x => x.Attribute("class")?.Value == "pagelink");
+                var pages = (deepScan ? int.Parse(lastPageLink?.Value ?? "1") : 1);
+                for (int page = 1; page <= pages; page++)
+                {
+                    if (page != 1)
+                    {
+                        try
+                        {
+                            workshopHtml = await _communityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                            {
+                                SteamId = creator.CreatorId.ToString(),
+                                AppId = app.SteamId,
+                                Page = page
+                            });
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
+                    }
+
+                    var workshopItems = workshopHtml.Descendants("div").Where(x => x.Attribute("class")?.Value == "workshopItem").ToList();
+                    foreach (var workshopItem in workshopItems)
+                    {
+                        var workshopItemLink = workshopItem.Descendants("a").FirstOrDefault();
+                        var workshopItemTitle = workshopItem.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value?.Contains("workshopItemTitle") == true);
+                        if (workshopItemLink != null && workshopItemTitle != null)
+                        {
+                            publishedFiles[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
+                        }
+                    }
+                }
+                if (!publishedFiles.Any())
+                {
+                    continue;
+                }
+
+                // Get existing workshop files
+                var publishedFileIds = publishedFiles.Select(x => x.Key.ToString());
+                var existingWorkshopFileIds = await _steamDb.SteamWorkshopFiles
+                    .Where(x => publishedFileIds.Contains(x.SteamId))
+                    .Select(x => x.SteamId)
+                    .ToListAsync();
+
+                // Get missing workshop files
+                var missingPublishedFileIds = publishedFileIds.Except(existingWorkshopFileIds).ToArray();
+                if (!missingPublishedFileIds.Any())
+                {
+                    continue;
+                }
+                var missingPublishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(
+                    missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
+                );
+                if (missingPublishedFileDetails?.Data == null)
+                {
+                    continue;
+                }
+
+                // Import missing workshop files
+                foreach (var missingPublishedFile in missingPublishedFileDetails.Data)
+                {
+                    var workshopFile = new SteamWorkshopFile()
+                    {
+                        AppId = app.Id,
+                        CreatorId = creator.CreatorId
+                    };
+
+                    var assetDescription = assetDescriptions.FirstOrDefault(x => x.WorkshopFileId == missingPublishedFile.PublishedFileId);
+                    if (assetDescription != null)
+                    {
+                        workshopFile.DescriptionId = assetDescription.Id;
+                        workshopFile.TimeAccepted = assetDescription.TimeAccepted;
+                        workshopFile.IsAccepted = true;
+                    }
+
+                    // Find existing item collections that this item belongs to
+                    var existingItemCollections = assetDescriptions
+                        .Where(x => x.AppId == creator.AppId && x.CreatorId == creator.CreatorId)
+                        .Where(x => !String.IsNullOrEmpty(x.ItemCollection))
+                        .Select(x => x.ItemCollection)
+                        .Distinct()
+                        .ToArray();
+                    foreach (var existingItemCollection in existingItemCollections.OrderByDescending(x => x.Length))
+                    {
+                        var isCollectionMatch = existingItemCollection
+                            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .All(x => missingPublishedFile.Title.Contains(x));
+                        if (isCollectionMatch)
+                        {
+                            workshopFile.ItemCollection = existingItemCollection;
+                            break;
+                        }
+                    }
+
+                    // Detect new collections
+                    // TODO: This...
+
+                    var updatedWorkshopItem = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamWorkshopFileRequest()
+                    {
+                        WorkshopFile = workshopFile,
+                        PublishedFile = missingPublishedFile
+                    });
+
+                    if (workshopFile.IsTransient)
+                    {
+                        _steamDb.SteamWorkshopFiles.Add(workshopFile);
+                    }
+                }
+
+                await _steamDb.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported workshop files from {creators.Count()}/{creators.Count()} creators"
+            );
+
+            return CommandResult.Success();
+        }
+
         [Command("create-asset-description-collection")]
         public async Task<RuntimeResult> CreateAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
-            var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null);
+            var query = _steamDb.SteamAssetDescriptions.Where(x => x.CreatorId != null);
             foreach (var word in collectionName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 query = query.Where(x => x.Name.Contains(word));
@@ -67,7 +310,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var assetDescriptions = await query.ToListAsync();
             foreach (var assetDescriptionGroup in assetDescriptions.GroupBy(x => x.CreatorId))
             {
-                if (assetDescriptionGroup.Count() > 1)
+                if (assetDescriptionGroup.All(x => (x.ItemCollection?.Length ?? 0) < collectionName.Length))
                 {
                     foreach (var assetDescription in assetDescriptionGroup)
                     {
@@ -76,56 +319,27 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
 
         [Command("delete-asset-description-collection")]
         public async Task<RuntimeResult> DeleteAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => x.ItemCollection == collectionName).ToListAsync();
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions.Where(x => x.ItemCollection == collectionName).ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
                 assetDescription.ItemCollection = null;
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
-        /*
-        [Command("rebuild-asset-description-collections")]
-        public async Task<RuntimeResult> RebuildAssetDescriptionCollectionsAsync()
-        {
-            var assetDescriptions = await _db.SteamAssetDescriptions.ToListAsync();
 
-            // Reset item collections
-            foreach (var assetDescription in assetDescriptions)
-            {
-                assetDescription.ItemCollection = null;
-            }
-            await _db.SaveChangesAsync();
-
-            // Rebuild item collections
-            foreach (var batch in assetDescriptions.Batch(100))
-            {
-                foreach (var assetDescription in batch)
-                {
-                    _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
-                    {
-                        AssetDescription = assetDescription
-                    });
-                }
-
-                await _db.SaveChangesAsync();
-            }
-
-            return CommandResult.Success();
-        }
-        */
         [Command("rebuild-asset-description-accepted-times")]
         public async Task<RuntimeResult> RebuildAssetDescriptionAcceptedTimesAsync()
         {
-            var items = await _db.SteamAssetDescriptions
+            var items = await _steamDb.SteamAssetDescriptions
                 .Select(x => new
                 {
                     AssetDescription = x,
@@ -158,7 +372,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             return CommandResult.Success();
@@ -167,7 +381,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("tag-asset-description")]
         public async Task<RuntimeResult> TagAssetDescriptionsAsync(string tagKey, string tagValue, params ulong[] classIds)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions
+                .Where(x => x.ClassId != null)
+                .Where(x => classIds.Contains(x.ClassId.Value))
+                .ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
                 assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags)
@@ -176,28 +393,31 @@ namespace SCMM.Discord.Bot.Server.Modules
                 };
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
 
         [Command("untag-asset-description")]
         public async Task<RuntimeResult> UntagAssetDescriptionsAsync(string tagKey, params ulong[] classIds)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions
+                .Where(x => x.ClassId != null)
+                .Where(x => classIds.Contains(x.ClassId.Value))
+                .ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
                 assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
                 assetDescription.Tags.Remove(tagKey);
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
 
         [Command("add-asset-description-note")]
         public async Task<RuntimeResult> AddAssetDescriptionNoteAsync(ulong classId, [Remainder] string note)
         {
-            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
+            var assetDescription = await _steamDb.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
             if (assetDescription != null)
             {
                 assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes)
@@ -205,7 +425,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     note
                 };
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -217,13 +437,13 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("remove-asset-description-note")]
         public async Task<RuntimeResult> RemoveAssetDescriptionNoteAsync(ulong classId, int index = 0)
         {
-            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
+            var assetDescription = await _steamDb.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
             if (assetDescription != null)
             {
                 assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes);
                 assetDescription.Notes.Remove(assetDescription.Notes.ElementAt(index));
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -232,19 +452,47 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("reanalyse-asset-description-workshop-files")]
+        [Command("download-workshop-files")]
+        public async Task<RuntimeResult> DownloadAssetDescriptionWorkshopFiles(params ulong[] classIds)
+        {
+            var workshopFiles = await _steamDb.SteamAssetDescriptions
+                .Where(x => x.ClassId != null && (classIds.Length == 0 || classIds.Contains(x.ClassId.Value)))
+                .Where(x => x.WorkshopFileId != null)
+                .Select(x => new
+                {
+                    AppId = x.App.SteamId,
+                    WorkshopFileId = x.WorkshopFileId.Value
+                })
+                .ToListAsync();
+
+            var messages = new List<DownloadWorkshopFileContentsMessage>();
+            foreach (var workshopFile in workshopFiles)
+            {
+                messages.Add(new DownloadWorkshopFileContentsMessage()
+                {
+                    AppId = UInt64.Parse(workshopFile.AppId),
+                    PublishedFileId = workshopFile.WorkshopFileId,
+                    Force = true
+                });
+            }
+
+            await _serviceBusClient.SendMessagesAsync(messages);
+            return CommandResult.Success();
+        }
+
+        [Command("reanalyse-workshop-files")]
         public async Task<RuntimeResult> ReanalyseAssetDescriptionWorkshopFiles(params ulong[] classIds)
         {
-            var workshopFileUrls = await _db.SteamAssetDescriptions
-                .Where(x => classIds.Length == 0 || classIds.Contains(x.ClassId))
+            var workshopFileUrls = await _steamDb.SteamAssetDescriptions
+                .Where(x => x.ClassId != null && (classIds.Length == 0 || classIds.Contains(x.ClassId.Value)))
                 .Where(x => x.WorkshopFileId != null && !string.IsNullOrEmpty(x.WorkshopFileUrl))
                 .Select(x => x.WorkshopFileUrl)
                 .ToListAsync();
 
-            var messages = new List<AnalyseSteamWorkshopFileMessage>();
+            var messages = new List<AnalyseWorkshopFileContentsMessage>();
             foreach (var workshopFileUrl in workshopFileUrls)
             {
-                messages.Add(new AnalyseSteamWorkshopFileMessage()
+                messages.Add(new AnalyseWorkshopFileContentsMessage()
                 {
                     BlobName = workshopFileUrl.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault(),
                     Force = true
@@ -254,6 +502,5 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _serviceBusClient.SendMessagesAsync(messages);
             return CommandResult.Success();
         }
-
     }
 }

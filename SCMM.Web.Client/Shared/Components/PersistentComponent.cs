@@ -5,43 +5,94 @@ namespace SCMM.Web.Client.Shared.Components;
 public abstract class PersistentComponent : ComponentBase, IDisposable
 {
     [Inject]
-    private PersistentComponentState ApplicationState { get; set; }
+    private ILogger<PersistentComponent> Logger { get; set; }
 
-    private PersistingComponentStateSubscription? StateSubscription { get; set; }
+    [Inject]
+    private PersistentComponentState ComponentState { get; set; }
 
-    protected override void OnInitialized()
+    [Inject]
+    private AppState ApplicationState { get; set; }
+
+    private PersistingComponentStateSubscription? _stateSubscription;
+    private bool _disposedValue;
+
+    protected override Task OnInitializedAsync()
     {
-        StateSubscription = ApplicationState?.RegisterOnPersisting(() =>
+        _stateSubscription = ComponentState?.RegisterOnPersisting(OnPersistStateAsync);
+        if (ApplicationState != null)
         {
-            OnPersistState();
-            return Task.CompletedTask;
-        });
-
-        OnLoadState();
+            ApplicationState.PropertyChanged += OnUIStateChanged;
+        }
+        return Task.WhenAll(
+            OnLoadStateAsync(), base.OnInitializedAsync()
+        );
     }
 
-    protected virtual void OnLoadState()
+    private void OnUIStateChanged(object sender, EventArgs e)
     {
+        StateHasChanged();
     }
 
-    protected virtual void OnPersistState()
+    protected virtual Task OnLoadStateAsync()
     {
+        return Task.CompletedTask;
     }
 
-    protected T LoadFromState<T>(string name)
+    protected virtual Task OnPersistStateAsync()
     {
-        T value = default;
-        ApplicationState.TryTakeFromJson(name, out value);
+        return Task.CompletedTask;
+    }
+
+    protected T RestoreFromStateOrDefault<T>(string name, T defaultValue)
+    {
+        return ComponentState.TryTakeFromJson($"{GetType().Name}.{name}", out T value)
+            ? value
+            : defaultValue;
+    }
+
+    protected async Task<T> RestoreFromStateOrLoad<T>(string name, Func<Task<T>> loader)
+    {
+        if (!ComponentState.TryTakeFromJson($"{GetType().Name}.{name}", out T value))
+        {
+            try
+            {
+                value = await loader();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading state data for {name}");
+            }
+        }
         return value;
     }
 
     protected void PersistToState<T>(string name, T value)
     {
-        ApplicationState.PersistAsJson(name, value);
+        ComponentState.PersistAsJson($"{GetType().Name}.{name}", value);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
+        {
+            if (disposing)
+            {
+                _stateSubscription?.Dispose();
+                if (ApplicationState != null)
+                {
+                    ApplicationState.PropertyChanged -= OnUIStateChanged;
+                }
+            }
+
+            _stateSubscription = null;
+            _disposedValue = true;
+        }
     }
 
     public void Dispose()
     {
-        StateSubscription?.Dispose();
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

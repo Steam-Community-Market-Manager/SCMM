@@ -3,6 +3,8 @@ using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.UI;
 
+namespace SCMM.Web.Client.Shared.Navigation;
+
 public class ExternalNavigationManager
 {
     private readonly IJSRuntime _jsRuntime;
@@ -33,10 +35,15 @@ public class ExternalNavigationManager
                 break;
 
             case ItemInfoWebsiteType.External:
+                var interactableItem = (item as ICanBeInteractedWith);
                 var purchasableItem = (item as ICanBePurchased);
                 if (purchasableItem != null && !String.IsNullOrEmpty(purchasableItem.BuyNowUrl))
                 {
                     _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", purchasableItem.BuyNowUrl);
+                }
+                else if (interactableItem != null && interactableItem.Actions.Any(x => !String.IsNullOrEmpty(x.Url)))
+                {
+                    _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", interactableItem.Actions.FirstOrDefault(x => !String.IsNullOrEmpty(x.Url)).Url);
                 }
                 else // TODO: if (item.IsMarketable)
                 {

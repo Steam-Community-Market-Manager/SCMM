@@ -5,22 +5,15 @@
     <ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Version>0.15-alpha</Version>
-    <AssemblyVersion>0.15.0.0</AssemblyVersion>
-    <FileVersion>0.15.0.0</FileVersion>
-    <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Labs" Version="3.3.0" />
+    <PackageReference Include="Discord.Net" Version="3.8.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Data.Models\SCMM.Discord.Data.Models.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
   </ItemGroup>
 

@@ -1,0 +1,15 @@
+﻿
+.twitch-container {
+    position: relative;
+    overflow: hidden;
+    padding-top: 56.25%;
+}
+
+.twitch-container > iframe {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    border: 0;
+    left: 0;
+    top: 0;
+}

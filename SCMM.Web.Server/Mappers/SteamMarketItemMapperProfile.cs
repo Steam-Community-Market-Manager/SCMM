@@ -19,11 +19,14 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
+                .ForMember(x => x.TimeCreated, o => o.MapFrom(p => p.Description.TimeCreated))
                 .ForMember(x => x.TimeAccepted, o => o.MapFrom(p => p.Description.TimeAccepted))
-                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p.Description, p => p.Type))
-                .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetPrice(p => p.Description, p => p.LowestPrice))
-                .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetPrice(p => p.Description, p => p.Url))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.LifetimeSubscriptions));
+                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetBuyPrice(p => p.Description, p => p.MarketType))
+                .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetBuyPrice(p => p.Description, p => p.Price))
+                .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetBuyPrice(p => p.Description, p => p.Url))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.SubscriptionsCurrent))
+                .ForMember(x => x.SupplyTotalEstimated, o => o.MapFrom(p => p.Description.SupplyTotalEstimated))
+                .ForMember(x => x.Actions, o => o.MapFrom(p => p.Description.GetInteractions()));
 
             CreateMap<SteamMarketItemOrder, ItemOrderDTO>()
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Item.Currency));

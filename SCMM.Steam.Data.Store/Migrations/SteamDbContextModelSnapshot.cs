@@ -17,7 +17,7 @@ namespace SCMM.Steam.Data.Store.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0")
+                .HasAnnotation("ProductVersion", "6.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -48,54 +48,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.ToTable("FileData");
                 });
 
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordConfiguration", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("DiscordGuildId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DiscordGuildId");
-
-                    b.ToTable("DiscordConfiguration");
-                });
-
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordGuild", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DiscordId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<byte>("Flags")
-                        .HasColumnType("tinyint");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DiscordId")
-                        .IsUnique();
-
-                    b.ToTable("DiscordGuilds");
-                });
-
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamApp", b =>
                 {
                     b.Property<Guid>("Id")
@@ -105,14 +57,23 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("BackgroundColor")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long>("Features")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("IconLargeUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IconUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ItemDefinitionsDigest")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("MostRecentlyAcceptedWorkshopFileId")
+                        .HasColumnType("decimal(20,0)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -127,6 +88,15 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("SteamId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Subdomain")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SurfaceColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TertiaryColor")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("TimeUpdated")
                         .HasColumnType("datetimeoffset");
@@ -157,7 +127,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("BanReason")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("ClassId")
+                    b.Property<decimal?>("ClassId")
                         .HasColumnType("decimal(20,0)");
 
                     b.Property<decimal?>("CreatorId")
@@ -165,12 +135,6 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<Guid?>("CreatorProfileId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<long?>("CurrentFavourited")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("CurrentSubscriptions")
-                        .HasColumnType("bigint");
 
                     b.Property<decimal?>("CutoutRatio")
                         .HasPrecision(20, 20)
@@ -184,6 +148,12 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<string>("DominantColour")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("FavouritedCurrent")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("FavouritedLifetime")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("ForegroundColour")
                         .HasColumnType("nvarchar(max)");
@@ -202,9 +172,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("bit");
 
                     b.Property<Guid?>("IconId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("IconLargeId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("IconLargeUrl")
@@ -258,12 +225,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("ItemType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("LifetimeFavourited")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("LifetimeSubscriptions")
-                        .HasColumnType("bigint");
-
                     b.Property<int?>("MarketableRestrictionDays")
                         .HasColumnType("int");
 
@@ -279,11 +240,32 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("NameWorkshop")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("PreviewId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("PreviewUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("SubscriptionsCurrent")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SubscriptionsLifetime")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SupplyTotalEstimated")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SupplyTotalInvestorsEstimated")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SupplyTotalInvestorsKnown")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SupplyTotalMarketsKnown")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SupplyTotalOwnersEstimated")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SupplyTotalOwnersKnown")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset?>("TimeAccepted")
                         .HasColumnType("datetimeoffset");
@@ -319,16 +301,13 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.HasIndex("AppId");
 
-                    b.HasIndex("ClassId")
-                        .IsUnique();
-
                     b.HasIndex("CreatorProfileId");
 
                     b.HasIndex("IconId");
 
-                    b.HasIndex("IconLargeId");
-
-                    b.HasIndex("PreviewId");
+                    b.HasIndex("ClassId", "ItemDefinitionId")
+                        .IsUnique()
+                        .HasFilter("[ClassId] IS NOT NULL AND [ItemDefinitionId] IS NOT NULL");
 
                     b.ToTable("SteamAssetDescriptions");
                 });
@@ -426,8 +405,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<bool>("IsDraft")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("ItemsThumbnailId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ItemsThumbnailUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
@@ -436,8 +415,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ItemsThumbnailId");
 
                     b.HasIndex("AppId", "Start", "End", "Name")
                         .IsUnique()
@@ -495,6 +472,24 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<long>("BuyLaterFee")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte>("BuyLaterFrom")
+                        .HasColumnType("tinyint");
+
+                    b.Property<long>("BuyLaterPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("BuyNowFee")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte>("BuyNowFrom")
+                        .HasColumnType("tinyint");
+
+                    b.Property<long>("BuyNowPrice")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("BuyOrderCount")
                         .HasColumnType("int");
 
@@ -503,6 +498,9 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<long>("BuyOrderHighestPrice")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("BuyPricesTotalSupply")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
@@ -518,6 +516,9 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<DateTimeOffset?>("FirstSaleOn")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsBeingManipulated")
+                        .HasColumnType("bit");
 
                     b.Property<long>("Last120hrSales")
                         .HasColumnType("bigint");
@@ -579,11 +580,23 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<long>("LastSaleValue")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("ResellPrice")
+                    b.Property<long>("SellLaterFee")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("ResellTax")
+                    b.Property<long>("SellLaterPrice")
                         .HasColumnType("bigint");
+
+                    b.Property<byte>("SellLaterTo")
+                        .HasColumnType("tinyint");
+
+                    b.Property<long>("SellNowFee")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SellNowPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte>("SellNowTo")
+                        .HasColumnType("tinyint");
 
                     b.Property<int>("SellOrderCount")
                         .HasColumnType("int");
@@ -592,6 +605,15 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long>("SellOrderLowestPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SellPricesTotalSupply")
+                        .HasColumnType("int");
+
+                    b.Property<long>("Stable24hrBuyOrderHighestPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Stable24hrSellOrderLowestPrice")
                         .HasColumnType("bigint");
 
                     b.Property<long>("Stable24hrValue")
@@ -792,9 +814,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid?>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("DiscordId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("DonatorLevel")
                         .HasColumnType("int");
 
@@ -834,10 +853,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CurrencyId");
-
-                    b.HasIndex("DiscordId")
-                        .IsUnique()
-                        .HasFilter("[DiscordId] IS NOT NULL");
 
                     b.HasIndex("LanguageId");
 
@@ -899,6 +914,12 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTimeOffset?>("TradableAndMarketablAfter")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("TradableAndMarketable")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppId");
@@ -914,6 +935,34 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasFilter("[SteamId] IS NOT NULL AND [DescriptionId] IS NOT NULL");
 
                     b.ToTable("SteamProfileInventoryItems");
+                });
+
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfileInventoryValue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Items")
+                        .HasColumnType("int");
+
+                    b.Property<long>("MarketValue")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppId");
+
+                    b.HasIndex("ProfileId", "AppId")
+                        .IsUnique();
+
+                    b.ToTable("SteamProfileInventoryValues");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfileMarketItem", b =>
@@ -979,12 +1028,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<long?>("TotalSalesMax")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("TotalSalesMin")
-                        .HasColumnType("bigint");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AppId");
@@ -1034,32 +1077,127 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.ToTable("SteamStoreItemItemStore");
                 });
 
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordConfiguration", b =>
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamStoreItemTopSellerPosition", b =>
                 {
-                    b.HasOne("SCMM.Steam.Data.Store.DiscordGuild", null)
-                        .WithMany("Configurations")
-                        .HasForeignKey("DiscordGuildId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
-                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "List", b1 =>
-                        {
-                            b1.Property<Guid>("DiscordConfigurationId")
-                                .HasColumnType("uniqueidentifier");
+                    b.Property<Guid?>("DescriptionId")
+                        .HasColumnType("uniqueidentifier");
 
-                            b1.Property<string>("Serialised")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("time");
 
-                            b1.HasKey("DiscordConfigurationId");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-                            b1.ToTable("DiscordConfiguration");
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
 
-                            b1.WithOwner()
-                                .HasForeignKey("DiscordConfigurationId");
-                        });
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Navigation("List")
-                        .IsRequired();
+                    b.Property<int>("Total")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DescriptionId");
+
+                    b.HasIndex("Timestamp", "DescriptionId", "Position", "Total")
+                        .IsUnique()
+                        .HasFilter("[DescriptionId] IS NOT NULL");
+
+                    b.ToTable("SteamStoreItemTopSellerPositions");
+                });
+
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamWorkshopFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("CreatorId")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<Guid?>("CreatorProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("DescriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long?>("FavouritedCurrent")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("FavouritedLifetime")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ItemCollection")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ItemShortName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ItemType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PreviewUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SteamId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<long?>("SubscriptionsCurrent")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SubscriptionsLifetime")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset?>("TimeAccepted")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("TimeCreated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("TimeRefreshed")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("TimeUpdated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("Views")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("VotesDown")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("VotesUp")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppId");
+
+                    b.HasIndex("CreatorProfileId");
+
+                    b.HasIndex("SteamId")
+                        .IsUnique()
+                        .HasFilter("[SteamId] IS NOT NULL");
+
+                    b.ToTable("SteamWorkshopFiles");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamAssetDescription", b =>
@@ -1078,14 +1216,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.HasOne("SCMM.Shared.Data.Store.FileData", "Icon")
                         .WithMany()
                         .HasForeignKey("IconId");
-
-                    b.HasOne("SCMM.Shared.Data.Store.FileData", "IconLarge")
-                        .WithMany()
-                        .HasForeignKey("IconLargeId");
-
-                    b.HasOne("SCMM.Shared.Data.Store.FileData", "Preview")
-                        .WithMany()
-                        .HasForeignKey("PreviewId");
 
                     b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableAssetQuantityDictionary", "BreaksIntoComponents", b1 =>
                         {
@@ -1138,6 +1268,23 @@ namespace SCMM.Steam.Data.Store.Migrations
                                 .HasForeignKey("SteamAssetDescriptionId");
                         });
 
+                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableMediaDictionary", "Previews", b1 =>
+                        {
+                            b1.Property<Guid>("SteamAssetDescriptionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamAssetDescriptionId");
+
+                            b1.ToTable("SteamAssetDescriptions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamAssetDescriptionId");
+                        });
+
                     b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringDictionary", "Tags", b1 =>
                         {
                             b1.Property<Guid>("SteamAssetDescriptionId")
@@ -1172,23 +1319,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                                 .HasForeignKey("SteamAssetDescriptionId");
                         });
 
-                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableMediaDictionary", "Previews", b1 =>
-                        {
-                            b1.Property<Guid>("SteamAssetDescriptionId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Serialised")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SteamAssetDescriptionId");
-
-                            b1.ToTable("SteamAssetDescriptions");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamAssetDescriptionId");
-                        });
-
                     b.Navigation("App");
 
                     b.Navigation("BreaksIntoComponents")
@@ -1204,12 +1334,8 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Navigation("Icon");
 
-                    b.Navigation("IconLarge");
-
                     b.Navigation("Notes")
                         .IsRequired();
-
-                    b.Navigation("Preview");
 
                     b.Navigation("Previews")
                         .IsRequired();
@@ -1221,7 +1347,7 @@ namespace SCMM.Steam.Data.Store.Migrations
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamAssetFilter", b =>
                 {
                     b.HasOne("SCMM.Steam.Data.Store.SteamApp", null)
-                        .WithMany("Filters")
+                        .WithMany("AssetFilters")
                         .HasForeignKey("SteamAppId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -1253,10 +1379,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasForeignKey("AppId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("SCMM.Shared.Data.Store.FileData", "ItemsThumbnail")
-                        .WithMany()
-                        .HasForeignKey("ItemsThumbnailId");
 
                     b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "Media", b1 =>
                         {
@@ -1294,8 +1416,6 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Navigation("App");
 
-                    b.Navigation("ItemsThumbnail");
-
                     b.Navigation("Media")
                         .IsRequired();
 
@@ -1320,6 +1440,23 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasForeignKey("SCMM.Steam.Data.Store.SteamMarketItem", "DescriptionId");
 
                     b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistablePriceCollection", "BuyOrderHighestPriceRolling24hrs", b1 =>
+                        {
+                            b1.Property<Guid>("SteamMarketItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamMarketItemId");
+
+                            b1.ToTable("SteamMarketItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamMarketItemId");
+                        });
+
+                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableMarketPriceDictionary", "BuyPrices", b1 =>
                         {
                             b1.Property<Guid>("SteamMarketItemId")
                                 .HasColumnType("uniqueidentifier");
@@ -1370,9 +1507,29 @@ namespace SCMM.Steam.Data.Store.Migrations
                                 .HasForeignKey("SteamMarketItemId");
                         });
 
+                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableMarketPriceDictionary", "SellPrices", b1 =>
+                        {
+                            b1.Property<Guid>("SteamMarketItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamMarketItemId");
+
+                            b1.ToTable("SteamMarketItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamMarketItemId");
+                        });
+
                     b.Navigation("App");
 
                     b.Navigation("BuyOrderHighestPriceRolling24hrs")
+                        .IsRequired();
+
+                    b.Navigation("BuyPrices")
                         .IsRequired();
 
                     b.Navigation("Currency");
@@ -1383,6 +1540,9 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .IsRequired();
 
                     b.Navigation("SellOrderLowestPriceRolling24hrs")
+                        .IsRequired();
+
+                    b.Navigation("SellPrices")
                         .IsRequired();
                 });
 
@@ -1562,6 +1722,25 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Navigation("Profile");
                 });
 
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfileInventoryValue", b =>
+                {
+                    b.HasOne("SCMM.Steam.Data.Store.SteamApp", "App")
+                        .WithMany()
+                        .HasForeignKey("AppId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SCMM.Steam.Data.Store.SteamProfile", "Profile")
+                        .WithMany("InventoryValues")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("App");
+
+                    b.Navigation("Profile");
+                });
+
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfileMarketItem", b =>
                 {
                     b.HasOne("SCMM.Steam.Data.Store.SteamApp", "App")
@@ -1678,16 +1857,77 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordGuild", b =>
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamStoreItemTopSellerPosition", b =>
                 {
-                    b.Navigation("Configurations");
+                    b.HasOne("SCMM.Steam.Data.Store.SteamAssetDescription", "Description")
+                        .WithMany("StoreItemTopSellerPositions")
+                        .HasForeignKey("DescriptionId");
+
+                    b.Navigation("Description");
+                });
+
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamWorkshopFile", b =>
+                {
+                    b.HasOne("SCMM.Steam.Data.Store.SteamApp", "App")
+                        .WithMany()
+                        .HasForeignKey("AppId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SCMM.Steam.Data.Store.SteamProfile", "CreatorProfile")
+                        .WithMany()
+                        .HasForeignKey("CreatorProfileId");
+
+                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableMediaDictionary", "Previews", b1 =>
+                        {
+                            b1.Property<Guid>("SteamWorkshopFileId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamWorkshopFileId");
+
+                            b1.ToTable("SteamWorkshopFiles");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamWorkshopFileId");
+                        });
+
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringDictionary", "Tags", b1 =>
+                        {
+                            b1.Property<Guid>("SteamWorkshopFileId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamWorkshopFileId");
+
+                            b1.ToTable("SteamWorkshopFiles");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamWorkshopFileId");
+                        });
+
+                    b.Navigation("App");
+
+                    b.Navigation("CreatorProfile");
+
+                    b.Navigation("Previews")
+                        .IsRequired();
+
+                    b.Navigation("Tags")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamApp", b =>
                 {
                     b.Navigation("AssetDescriptions");
 
-                    b.Navigation("Filters");
+                    b.Navigation("AssetFilters");
 
                     b.Navigation("ItemStores");
 
@@ -1703,6 +1943,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Navigation("MarketItem");
 
                     b.Navigation("StoreItem");
+
+                    b.Navigation("StoreItemTopSellerPositions");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamItemStore", b =>
@@ -1728,6 +1970,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Navigation("AssetDescriptions");
 
                     b.Navigation("InventoryItems");
+
+                    b.Navigation("InventoryValues");
 
                     b.Navigation("MarketItems");
                 });

@@ -11,9 +11,15 @@
             <div class="icon clickable hover-zoom hover-zoom-extra" @onclick="@(() => OnItemClicked())">
                 <MudTooltip>
                     <TooltipContent>
-                        <strong>@Item.Name</strong><br/>
+                        <strong>@Item.Name</strong>
+                        <br/>
                         <span>(@Item.ItemType)</span>
-					</TooltipContent>
+                        @if (Item.BuyNowPrice > 0)
+                        {
+                            <br/>
+                            <span>@State.Currency.ToPriceString(Item.BuyNowPrice.Value)</span>
+                        }
+                    </TooltipContent>
                     <ChildContent>
                         <img src="@Item.IconUrl" class="full-width" />
 					</ChildContent>
@@ -28,7 +34,8 @@
                         <span>The collection does not have a @ItemType yet</span>
 					</TooltipContent>
                     <ChildContent>
-                        <img src="@($"/images/rust/items/{ItemType.ToRustItemShortName()}.png")" class="full-width" />
+                        @* TODO: Add support for other apps *@
+                        <img src="@($"/images/app/{State.AppId}/items/{ItemType.ToRustItemShortName()}.png")" class="full-width" />
 					</ChildContent>
 			    </MudTooltip>
             </div>
@@ -43,7 +50,7 @@
 @code {
     
     [Parameter]
-    public ItemDescriptionDTO Item { get; set; }
+    public ItemDescriptionWithPriceDTO Item { get; set; }
     
     [Parameter]
     public string ItemType { get; set; }

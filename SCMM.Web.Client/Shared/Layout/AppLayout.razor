@@ -1,0 +1,104 @@
+﻿@using MudBlazor.Services
+@inherits LayoutComponentBase
+@implements IAsyncDisposable
+@inject IBreakpointService BreakpointService
+@inject NavigationManager NavigationManager
+@inject AppState State
+
+<MudLayout>
+    <MudAppBar Fixed="true" Dense="true" DisableGutters="true" Elevation="4">
+        <MudHidden Breakpoint="MudBlazor.Breakpoint.SmAndDown" Invert="true">
+            <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" Class="ml-2" />
+        </MudHidden>
+        <AppBarAppControls />
+        <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
+            <SearchBar />
+        </MudHidden>
+        @if (State.IsPrerendering)
+        {
+            <MudProgressCircular Indeterminate="true" Size="Size.Small" class="ml-2" />
+        }
+        <MudSpacer />
+        <AppBarCurrencyControls class="d-flex mx-1" />
+        @*<AppBarRuntimeControls class="d-flex mx-1" />*@
+        <AppBarNotificationControls class="d-flex mx-1" />
+        <AppBarProfileControls />
+    </MudAppBar>
+    <MudDrawer @bind-Open="DrawerIsOpen" @bind-Variant="DrawerVariant" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always" Breakpoint="Breakpoint.Md" Elevation="2">
+        <AppNavigationMenu />
+    </MudDrawer>
+    <MudMainContent Style="height:100vh; overflow-y:scroll; overflow-x:hidden;">
+        @Body
+        <AppContentFooter />
+    </MudMainContent>
+</MudLayout>
+
+@code
+{
+    private bool DrawerIsOpen { get; set; } = false;
+
+    private DrawerVariant DrawerVariant { get; set; } = DrawerVariant.Responsive;
+
+    private Guid _breakpointSubscriptionId;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var subscriptionResult = await BreakpointService.Subscribe(
+                (breakpoint) =>
+                {
+                    OnBreakpointChanged(breakpoint);
+                }, 
+                new ResizeOptions
+                {
+                    ReportRate = 250,
+                    NotifyOnBreakpointOnly = true,
+                }
+            );
+
+            _breakpointSubscriptionId = subscriptionResult.SubscriptionId;
+
+            OnBreakpointChanged(subscriptionResult.Breakpoint);
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_breakpointSubscriptionId != Guid.Empty)
+        {
+            await BreakpointService.Unsubscribe(_breakpointSubscriptionId);
+            _breakpointSubscriptionId = Guid.Empty;
+        }
+    }
+
+    protected virtual void OnBreakpointChanged(Breakpoint breakpoint)
+    {
+        if (BreakpointService.IsMediaSize(Breakpoint.MdAndUp, breakpoint))
+        {
+            DrawerVariant = DrawerVariant.Mini;
+            DrawerIsOpen = false;
+        }
+        else
+        {
+            DrawerVariant = DrawerVariant.Responsive;
+            DrawerIsOpen = false;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleDrawer()
+    {
+        DrawerIsOpen = !DrawerIsOpen;
+    }
+
+    private void ViewAboutPage()
+    {
+        NavigationManager.NavigateTo($"/about");
+    }
+    
+}
