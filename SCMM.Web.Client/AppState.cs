@@ -19,8 +19,8 @@ public class AppState : INotifyPropertyChanged
     public const string AppIdKey = "app";
 
     public const RuntimeType DefaultRuntime = RuntimeType.WebAssembly;
-    public const string DefaultLanguage = Constants.SteamLanguageEnglish;
-    public const string DefaultCurrency = Constants.SteamCurrencyUSD;
+    public const string DefaultLanguage = Constants.SteamDefaultLanguage;
+    public const string DefaultCurrency = Constants.SteamDefaultCurrency;
     public const ulong DefaultAppId = Constants.RustAppId;
 
     private readonly ILogger<AppState> _logger;

@@ -35,7 +35,7 @@ namespace SCMM.Steam.API.Queries
             }
             else
             {
-                currency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+                currency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
             }
 
             return new GetCurrencyByNameResponse

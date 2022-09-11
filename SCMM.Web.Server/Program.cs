@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.OpenApi.Models;
+using SCMM.Azure.AI;
+using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
@@ -20,6 +22,7 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.SteamCMD;
 using SCMM.Web.Client.Shared.Storage;
 using SCMM.Web.Server;
 using SCMM.Web.Server.Shared.Storage;
@@ -160,9 +163,12 @@ public static class WebApplicationExtensions
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
+        builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<SteamSession>();
+        builder.Services.AddSingleton<AzureAiClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
+        builder.Services.AddScoped<SteamCmdWrapper>();
 
         // Auto-mapper
         builder.Services.AddAutoMapper(Assembly.GetEntryAssembly());
@@ -334,7 +340,7 @@ public static class WebApplicationExtensions
 
         app.UseHttpsRedirection();
 
-        var allowLoopbackConnectHack = app.Environment.IsDevelopment() ? "wss://localhost:44353" : null;
+        var allowLoopbackConnectHack = app.Environment.IsDevelopment() ? "localhost:* wss://localhost:*" : null;
         app.UseOWASPSecurityHeaders(
             cspScriptSources: "'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.skypack.dev www.googletagmanager.com www.google-analytics.com",
             cspStyleSources: "'self' 'unsafe-inline' cdnjs.cloudflare.com fonts.googleapis.com www.google-analytics.com",

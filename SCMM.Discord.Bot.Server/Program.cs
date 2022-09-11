@@ -1,5 +1,6 @@
 using Azure.Identity;
 using CommandQuery.DependencyInjection;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -18,8 +19,6 @@ using SCMM.Discord.Client.Extensions;
 using SCMM.Discord.Data.Store;
 using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
-using SCMM.Google.Client;
-using SCMM.Google.Client.Extensions;
 using SCMM.Redis.Client.Extensions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
@@ -29,6 +28,7 @@ using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.SteamCMD;
 using System.Reflection;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
@@ -159,17 +159,16 @@ public static class WebApplicationExtensions
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());
-        builder.Services.AddSingleton(x => builder.Configuration.GetGoogleConfiguration());
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
         builder.Services.AddSingleton(x => builder.Configuration.GetFixerConfiguration());
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<DiscordClient>();
-        builder.Services.AddSingleton<GoogleClient>();
         builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton<FixerWebClient>();
         builder.Services.AddSingleton<AzureAiClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
+        builder.Services.AddScoped<SteamCmdWrapper>();
 
         // Command/query/message handlers
         var contactAssemblies = new[]

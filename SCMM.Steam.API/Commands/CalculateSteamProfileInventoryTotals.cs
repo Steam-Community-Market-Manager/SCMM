@@ -57,7 +57,7 @@ namespace SCMM.Steam.API.Commands
             // Load the currency
             var currency = await _db.SteamCurrencies
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.SteamId == request.CurrencyId);
+                .FirstOrDefaultAsync(x => x.SteamId == request.CurrencyId || x.Name == request.CurrencyId);
 
             if (currency == null)
             {

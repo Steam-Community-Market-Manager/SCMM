@@ -34,15 +34,13 @@ namespace SCMM.Steam.API.Commands
     {
         private readonly SteamDbContext _db;
         private readonly SteamCommunityWebClient _communityClient;
-        private readonly SteamService _steamService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileInventory(SteamDbContext db, SteamCommunityWebClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileInventory(SteamDbContext db, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _communityClient = communityClient;
-            _steamService = steamService;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
@@ -56,9 +54,10 @@ namespace SCMM.Steam.API.Commands
             });
 
             // If the profile id does not yet exist, fetch it now
+            var importedProfile = (ImportSteamProfileResponse) null;
             if (!resolvedId.Exists)
             {
-                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+                importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
                 {
                     ProfileId = request.ProfileId
                 });
@@ -79,7 +78,7 @@ namespace SCMM.Steam.API.Commands
                 .FirstOrDefaultAsync();
 
             // If the profile inventory is less than 1 hour old and we aren't forcing an update, just return the current inventory
-            var profile = profileInventory?.Profile ?? resolvedId.Profile;
+            var profile = profileInventory?.Profile ?? importedProfile?.Profile ?? resolvedId?.Profile;
             if (profile != null && profileInventory != null && profileInventory.TotalItems > 0 && DateTime.Now.Subtract(TimeSpan.FromHours(1)) < profileInventory.LastUpdatedOn && request.Force == false)
             {
                 return new ImportSteamProfileInventoryResponse()
