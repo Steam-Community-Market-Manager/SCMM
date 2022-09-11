@@ -4,7 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Discord.API.Messages
 {
     [Queue(Name = "Send-Discord-Message")]
-    public class SendDiscordMessage : IMessage
+    public class SendDiscordMessage : Message
     {
         /// <summary>
         /// If set, this message will be sent to an individual user

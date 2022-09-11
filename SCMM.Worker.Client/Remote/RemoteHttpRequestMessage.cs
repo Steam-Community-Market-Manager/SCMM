@@ -5,7 +5,7 @@ using System.Net;
 namespace SCMM.Worker.Client.Remote;
 
 [Queue(Name = "Remote-Http-Requests")]
-public class RemoteHttpRequestMessage : IMessage
+public class RemoteHttpRequestMessage : Message
 {
     public IDictionary<string, string[]> Headers { get; set; }
 

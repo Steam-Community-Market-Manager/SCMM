@@ -3,7 +3,7 @@ using System.Net;
 
 namespace SCMM.Worker.Client.Remote;
 
-public class RemoteHttpResponseMessage : IMessage
+public class RemoteHttpResponseMessage : Message
 {
     public IDictionary<string, string[]> Headers { get; set; }
 

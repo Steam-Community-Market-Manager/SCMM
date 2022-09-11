@@ -4,7 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Topic(Name = "Workshop-File-Updated")]
-    public class WorkshopFileUpdatedMessage : IMessage
+    public class WorkshopFileUpdatedMessage : Message
     {
         public ulong AppId { get; set; }
 

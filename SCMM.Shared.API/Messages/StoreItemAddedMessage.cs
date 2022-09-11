@@ -4,7 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Topic(Name = "Store-Item-Added")]
-    public class StoreItemAddedMessage : IMessage
+    public class StoreItemAddedMessage : Message
     {
         public ulong AppId { get; set; }
 

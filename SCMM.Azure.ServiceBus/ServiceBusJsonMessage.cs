@@ -7,5 +7,9 @@ internal class ServiceBusJsonMessage<T> : ServiceBusMessage where T : class, IMe
     public ServiceBusJsonMessage(T body) : base(BinaryData.FromObjectAsJson(body))
     {
         ApplicationProperties[IMessage.ApplicationPropertyType] = typeof(T).AssemblyQualifiedName;
+        if (!String.IsNullOrEmpty(body.Id))
+        {
+            MessageId = body.Id;
+        }
     }
 }

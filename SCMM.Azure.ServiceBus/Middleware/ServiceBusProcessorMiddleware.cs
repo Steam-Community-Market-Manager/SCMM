@@ -37,7 +37,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
             var handlerMappings = new Dictionary<Type, Type>();
             var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
             var handlerTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>));
-            var messageTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessage));
+            var messageTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessage)).Where(x => !x.IsAbstract);
             foreach (var handlerType in handlerTypes)
             {
                 var handlerInterfaces = handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>));
@@ -103,12 +103,12 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     var topicExists = await _serviceBusAdministrationClient.TopicExistsAsync(topic.Name.ToLower());
                     if (!topicExists)
                     {
+                        var duplicateDetectionAttribute = messageType.GetCustomAttribute<DuplicateDetectionAttribute>();
                         await _serviceBusAdministrationClient.CreateTopicAsync(new CreateTopicOptions(topic.Name)
                         {
                             MaxSizeInMegabytes = 1024,
-                            RequiresDuplicateDetection = true,
-                            DuplicateDetectionHistoryTimeWindow = TimeSpan.FromDays(1),
-                            DefaultMessageTimeToLive = TimeSpan.FromDays(1),
+                            RequiresDuplicateDetection = duplicateDetectionAttribute != null,
+                            DuplicateDetectionHistoryTimeWindow = TimeSpan.FromMinutes(Math.Max(duplicateDetectionAttribute?.DiscardDuplicatesSentWithinLastMinutes ?? 1, 1))
                         });
                     }
                 }
@@ -119,15 +119,15 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     var queueExists = await _serviceBusAdministrationClient.QueueExistsAsync(queue.Name.ToLower());
                     if (!queueExists)
                     {
+                        var duplicateDetectionAttribute = messageType.GetCustomAttribute<DuplicateDetectionAttribute>();
                         await _serviceBusAdministrationClient.CreateQueueAsync(new CreateQueueOptions(queue.Name)
                         {
                             MaxDeliveryCount = 3,
                             MaxSizeInMegabytes = 1024,
-                            DeadLetteringOnMessageExpiration = true,
-                            RequiresDuplicateDetection = true,
-                            DuplicateDetectionHistoryTimeWindow = TimeSpan.FromDays(1),
-                            DefaultMessageTimeToLive = TimeSpan.FromDays(7),
-                            LockDuration = TimeSpan.FromMinutes(1)
+                            RequiresDuplicateDetection = duplicateDetectionAttribute != null,
+                            DuplicateDetectionHistoryTimeWindow = TimeSpan.FromMinutes(Math.Max(duplicateDetectionAttribute?.DiscardDuplicatesSentWithinLastMinutes ?? 1, 1)),
+                            LockDuration = TimeSpan.FromMinutes(5),
+                            DeadLetteringOnMessageExpiration = true
                         });
                     }
                 }

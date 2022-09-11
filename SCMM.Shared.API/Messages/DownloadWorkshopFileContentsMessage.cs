@@ -4,7 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Queue(Name = "Download-Workshop-File-Contents")]
-    public class DownloadWorkshopFileContentsMessage : IMessage
+    public class DownloadWorkshopFileContentsMessage : Message
     {
         public ulong AppId { get; set; }
 

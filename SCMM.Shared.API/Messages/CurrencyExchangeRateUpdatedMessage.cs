@@ -4,7 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Topic(Name = "Currency-Exchange-Rate-Updated")]
-    public class CurrencyExchangeRateUpdatedMessage : IMessage
+    public class CurrencyExchangeRateUpdatedMessage : Message
     {
         public DateTime Timestamp { get; set; }
 

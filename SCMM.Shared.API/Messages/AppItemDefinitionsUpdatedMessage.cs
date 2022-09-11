@@ -4,7 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Topic(Name = "App-Item-Definitions-Updated")]
-    public class AppItemDefinitionsUpdatedMessage : IMessage
+    public class AppItemDefinitionsUpdatedMessage : Message
     {
         public ulong AppId { get; set; }
 
