@@ -7,11 +7,11 @@ using SCMM.Steam.API.Messages;
 namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class AnalyseWorkshopFileContentsHandler : Worker.Client.WebClient, IMessageHandler<AnalyseWorkshopFileContentsMessage>
+    public class AnalyseWorkshopFileContentsMessageHandler : Worker.Client.WebClient, IMessageHandler<AnalyseWorkshopFileContentsMessage>
     {
         private readonly ICommandProcessor _commandProcessor;
 
-        public AnalyseWorkshopFileContentsHandler(ICommandProcessor commandProcessor)
+        public AnalyseWorkshopFileContentsMessageHandler(ICommandProcessor commandProcessor)
         {
             _commandProcessor = commandProcessor;
         }

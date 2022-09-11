@@ -7,11 +7,11 @@ using SCMM.Steam.API.Commands;
 namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class DownloadWorkshopFileContentsHandler : Worker.Client.WebClient, IMessageHandler<DownloadWorkshopFileContentsMessage>
+    public class DownloadWorkshopFileContentsMessageHandler : Worker.Client.WebClient, IMessageHandler<DownloadWorkshopFileContentsMessage>
     {
         private readonly ICommandProcessor _commandProcessor;
 
-        public DownloadWorkshopFileContentsHandler(ICommandProcessor commandProcessor)
+        public DownloadWorkshopFileContentsMessageHandler(ICommandProcessor commandProcessor)
         {
             _commandProcessor = commandProcessor;
         }

@@ -5,11 +5,11 @@ using SCMM.Steam.API.Messages;
 
 namespace SCMM.Steam.Functions.ServiceBus;
 
-public class AnalyseWorkshopFileContentsHandler
+public class AnalyseWorkshopFileContentsMessageHandler
 {
     private readonly ICommandProcessor _commandProcessor;
 
-    public AnalyseWorkshopFileContentsHandler(ICommandProcessor commandProcessor)
+    public AnalyseWorkshopFileContentsMessageHandler(ICommandProcessor commandProcessor)
     {
         _commandProcessor = commandProcessor;
     }
