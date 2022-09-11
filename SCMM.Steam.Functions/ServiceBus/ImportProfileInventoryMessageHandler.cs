@@ -2,6 +2,7 @@ using CommandQuery;
 using Microsoft.Azure.Functions.Worker;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.Data.Models;
 
 namespace SCMM.Steam.Functions.ServiceBus;
 
