@@ -197,7 +197,11 @@ namespace SCMM.Steam.Data.Store
 
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {
-            BuyPrices = new PersistableMarketPriceDictionary(BuyPrices);
+            // Strip out obsolete prices
+            BuyPrices = new PersistableMarketPriceDictionary(
+                BuyPrices.Where(x => !x.Key.IsObsolete()).ToDictionary(k => k.Key, v => v.Value)
+            );
+
             if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
             {
                 BuyPrices[type] = price.Value;
@@ -270,7 +274,11 @@ namespace SCMM.Steam.Data.Store
 
         public void UpdateSellPrices(MarketType type, PriceWithSupply? price)
         {
-            SellPrices = new PersistableMarketPriceDictionary(SellPrices);
+            // Strip out obsolete prices
+            SellPrices = new PersistableMarketPriceDictionary(
+                SellPrices.Where(x => !x.Key.IsObsolete()).ToDictionary(k => k.Key, v => v.Value)
+            );
+
             if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
             {
                 SellPrices[type] = price.Value;

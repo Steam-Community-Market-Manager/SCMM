@@ -294,7 +294,7 @@ namespace SCMM.Steam.Data.Store
             if (MarketItem != null && MarketItem.Currency != null)
             {
                 var app = (MarketItem.App ?? App);
-                foreach (var marketPrice in MarketItem.BuyPrices)
+                foreach (var marketPrice in MarketItem.BuyPrices.Where(x => !x.Key.IsObsolete()))
                 {
                     var lowestPrice = 0L;
                     if (currency != null)

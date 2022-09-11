@@ -13,5 +13,13 @@ namespace SCMM.Shared.Data.Models.Extensions
                             .GetCustomAttribute<DisplayAttribute>()?
                             .GetName();
         }
+
+        public static bool IsObsolete(this Enum enumValue)
+        {
+            return enumValue.GetType()
+                            .GetMember(enumValue.ToString())
+                            .FirstOrDefault()?
+                            .GetCustomAttribute<ObsoleteAttribute>() != null;
+        }
     }
 }
