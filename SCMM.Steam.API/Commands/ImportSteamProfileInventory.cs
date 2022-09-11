@@ -193,6 +193,8 @@ namespace SCMM.Steam.API.Commands
 
                 // Update last inventory update timestamp
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
+
+                await _db.SaveChangesAsync();
             }
 
             return new ImportSteamProfileInventoryResponse()

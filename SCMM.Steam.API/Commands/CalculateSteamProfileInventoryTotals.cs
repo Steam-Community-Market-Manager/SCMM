@@ -136,6 +136,8 @@ namespace SCMM.Steam.API.Commands
                 inventoryValue.MarketValue = profileInventoryItems
                     .Where(x => x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
                     .Sum(x => x.ItemValue * x.Quantity);
+
+                await _db.SaveChangesAsync();
             }
 
             return new CalculateSteamProfileInventoryTotalsResponse()

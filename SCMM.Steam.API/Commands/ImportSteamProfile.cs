@@ -139,6 +139,7 @@ namespace SCMM.Steam.API.Commands
                     _db.SteamProfiles.Add(profile);
                 }
 
+                await _db.SaveChangesAsync();
             }
             catch (SteamRequestException ex)
             {
