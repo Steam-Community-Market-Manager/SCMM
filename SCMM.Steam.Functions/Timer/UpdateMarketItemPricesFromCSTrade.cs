@@ -1,7 +1,9 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
 using SCMM.Market.CSTrade.Client;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromCSTrade
 {
     private readonly SteamDbContext _db;
     private readonly CSTradeWebClient _csTradeWebClient;
+    private readonly ServiceBusClient _serviceBus;
 
-    public UpdateMarketItemPricesFromCSTrade(SteamDbContext db, CSTradeWebClient csTradeWebClient)
+    public UpdateMarketItemPricesFromCSTrade(SteamDbContext db, CSTradeWebClient csTradeWebClient, ServiceBusClient serviceBus)
     {
         _db = db;
         _csTradeWebClient = csTradeWebClient;
+        _serviceBus = serviceBus;
     }
 
     [Function("Update-Market-Item-Prices-From-CSTrade")]
@@ -83,6 +87,21 @@ public class UpdateMarketItemPricesFromCSTrade
                 }
 
                 _db.SaveChanges();
+
+                var csTradeBots = csTradeAppItems
+                    .Where(x => !String.IsNullOrEmpty(x.Bot))
+                    .Select(x => x.BotId)
+                    .Distinct()
+                    .ToArray();
+                var importTradeBotInventoryMessages = csTradeBots.Select(x => new ImportProfileInventoryMessage()
+                {
+                    AppId = UInt64.Parse(app.SteamId),
+                    ProfileId = x
+                });
+                if (importTradeBotInventoryMessages.Any())
+                {
+                    await _serviceBus.SendMessagesAsync(importTradeBotInventoryMessages);
+                }
             }
             catch (Exception ex)
             {

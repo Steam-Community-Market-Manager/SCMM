@@ -22,5 +22,19 @@ namespace SCMM.Market.DMarket.Client
         [JsonPropertyName("suggestedPrice")]
         public IDictionary<string, string> SuggestedPrice { get; set; }
 
+        [JsonPropertyName("extra")]
+        public ExtraData Extra { get; set; }
+
+        public class ExtraData
+        {
+            [JsonPropertyName("tradable")]
+            public bool Tradable { get; set; }
+
+            [JsonPropertyName("saleRestricted")]
+            public bool SaleRestricted { get; set; }
+
+            [JsonPropertyName("viewAtSteam")]
+            public string ViewAtSteam { get; set; }
+        }
     }
 }

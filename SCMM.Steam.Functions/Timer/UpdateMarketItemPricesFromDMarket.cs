@@ -1,13 +1,15 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
 using SCMM.Market.DMarket.Client;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
-using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromDMarketJob
 {
     private readonly SteamDbContext _db;
     private readonly DMarketWebClient _dMarketWebClient;
+    private readonly ServiceBusClient _serviceBus;
 
-    public UpdateMarketItemPricesFromDMarketJob(SteamDbContext db, DMarketWebClient dMarketWebClient)
+    public UpdateMarketItemPricesFromDMarketJob(SteamDbContext db, DMarketWebClient dMarketWebClient, ServiceBusClient serviceBus)
     {
         _db = db;
         _dMarketWebClient = dMarketWebClient;
+        _serviceBus = serviceBus;
     }
 
     [Function("Update-Market-Item-Prices-From-DMarket")]
@@ -75,7 +79,8 @@ public class UpdateMarketItemPricesFromDMarketJob
                     })
                     .ToListAsync();
 
-                foreach (var dMarketInventoryItemGroup in dMarketItems.GroupBy(x => x.Title))
+                var dMarketItemGroups = dMarketItems.Where(x => x.Extra == null || (x.Extra.Tradable && !x.Extra.SaleRestricted)).GroupBy(x => x.Title);
+                foreach (var dMarketInventoryItemGroup in dMarketItemGroups)
                 {
                     var item = items.FirstOrDefault(x => x.Name == dMarketInventoryItemGroup.Key)?.Item;
                     if (item != null)
@@ -96,6 +101,22 @@ public class UpdateMarketItemPricesFromDMarketJob
                 }
 
                 _db.SaveChanges();
+
+                var dMarketItemHolders = dMarketItems
+                    .Where(x => !String.IsNullOrEmpty(x.Extra?.ViewAtSteam))
+                    .Select(x => Regex.Match(x.Extra.ViewAtSteam, Constants.SteamProfileUrlSteamId64Regex).Groups.OfType<Capture>().LastOrDefault()?.Value)
+                    .Where(x => x != null)
+                    .Distinct()
+                    .ToArray();
+                var importInventoryMessages = dMarketItemHolders.Select(x => new ImportProfileInventoryMessage()
+                {
+                    AppId = UInt64.Parse(app.SteamId),
+                    ProfileId = x
+                });
+                if (importInventoryMessages.Any())
+                {
+                    await _serviceBus.SendMessagesAsync(importInventoryMessages);
+                }
             }
             catch (Exception ex)
             {
