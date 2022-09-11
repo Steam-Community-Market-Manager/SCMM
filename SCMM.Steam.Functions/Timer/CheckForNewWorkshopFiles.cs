@@ -209,23 +209,26 @@ public class CheckForNewWorkshopFiles
                 if (workshopFile.IsTransient)
                 {
                     _steamDb.SteamWorkshopFiles.Add(workshopFile);
-                    await _serviceBus.SendMessageAsync(new WorkshopFilePublishedMessage()
+                    if (workshopFile.TimeCreated != null && (DateTimeOffset.Now - workshopFile.TimeCreated.Value).TotalDays <= 7)
                     {
-                        AppId = UInt64.Parse(app.SteamId),
-                        AppName = app.Name,
-                        AppIconUrl = app.IconUrl,
-                        AppColour = app.PrimaryColor,
-                        CreatorId = workshopFile.CreatorId ?? 0,
-                        CreatorName = workshopFile.CreatorProfile?.Name,
-                        CreatorAvatarUrl = workshopFile.CreatorProfile?.AvatarUrl,
-                        ItemId = UInt64.Parse(workshopFile.SteamId),
-                        ItemType = workshopFile.ItemType,
-                        ItemShortName = workshopFile.ItemShortName,
-                        ItemName = workshopFile.Name,
-                        ItemDescription = workshopFile.Description,
-                        ItemCollection = workshopFile.ItemCollection,
-                        ItemImageUrl = workshopFile.PreviewUrl,
-                    });
+                        await _serviceBus.SendMessageAsync(new WorkshopFilePublishedMessage()
+                        {
+                            AppId = UInt64.Parse(app.SteamId),
+                            AppName = app.Name,
+                            AppIconUrl = app.IconUrl,
+                            AppColour = app.PrimaryColor,
+                            CreatorId = workshopFile.CreatorId ?? 0,
+                            CreatorName = workshopFile.CreatorProfile?.Name,
+                            CreatorAvatarUrl = workshopFile.CreatorProfile?.AvatarUrl,
+                            ItemId = UInt64.Parse(workshopFile.SteamId),
+                            ItemType = workshopFile.ItemType,
+                            ItemShortName = workshopFile.ItemShortName,
+                            ItemName = workshopFile.Name,
+                            ItemDescription = workshopFile.Description,
+                            ItemCollection = workshopFile.ItemCollection,
+                            ItemImageUrl = workshopFile.PreviewUrl,
+                        });
+                    }
                 }
             }
 
