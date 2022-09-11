@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SCMM.Worker.Server": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

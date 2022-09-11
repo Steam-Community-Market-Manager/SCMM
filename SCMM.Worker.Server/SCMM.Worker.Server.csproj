@@ -8,7 +8,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
+    <PackageReference Include="Azure.Identity" Version="1.6.1" />
+	<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="5.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
+	<ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
+	<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
+	<ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
+	<ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
+	<ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />
+	<ProjectReference Include="..\SCMM.SteamCMD\SCMM.SteamCMD.csproj" />
     <ProjectReference Include="..\SCMM.Worker.Client\SCMM.Worker.Client.csproj" />
   </ItemGroup>
 

@@ -60,6 +60,7 @@ public static class HostExtensions
                 logging.AddDebug();
                 logging.AddConsole();
             }
+            else
             {
                 logging.AddApplicationInsights();
             }
@@ -175,13 +176,19 @@ public static class HostExtensions
             services.AddSingleton<TradeitGGWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<SteamWorkshopDownloaderWebClient>();
             services.AddScoped<SteamCmdWrapper>();
 
             // Command/query/message handlers
-            services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-            services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-            services.AddMessages(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            var contactAssemblies = new[]
+            {
+                Assembly.GetEntryAssembly(), 
+                Assembly.Load("SCMM.Shared.API"), 
+                Assembly.Load("SCMM.Discord.API"), 
+                Assembly.Load("SCMM.Steam.API")
+            };
+            services.AddCommands(contactAssemblies);
+            services.AddQueries(contactAssemblies);
+            services.AddMessages(contactAssemblies);
 
             // Services
             services.AddScoped<SteamService>();

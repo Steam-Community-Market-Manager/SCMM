@@ -172,9 +172,16 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamCommunityWebClient>();
 
         // Command/query/message handlers
-        builder.Services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-        builder.Services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-        builder.Services.AddMessages(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+        var contactAssemblies = new[]
+        {
+            Assembly.GetEntryAssembly(),
+            Assembly.Load("SCMM.Shared.API"),
+            Assembly.Load("SCMM.Discord.API"),
+            Assembly.Load("SCMM.Steam.API")
+        };
+        builder.Services.AddCommands(contactAssemblies);
+        builder.Services.AddQueries(contactAssemblies);
+        builder.Services.AddMessages(contactAssemblies);
 
         // Services
         builder.Services.AddScoped<SteamService>();
