@@ -359,7 +359,28 @@ public class CheckForNewStoreItems
             return;
         }
 
-        var broadcastTasks = new List<Task>();
+        var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
+        var broadcastTasks = new List<Task>
+        {
+            _serviceBus.SendMessageAsync(new StoreAddedMessage()
+            {
+                AppId = UInt64.Parse(app.SteamId),
+                AppName = app.Name,
+                AppIconUrl = app.IconUrl,
+                AppColour = app.PrimaryColor,
+                StoreId = store.StoreId(),
+                StoreName = store.StoreName(),
+                Items = newStoreItems.Select(x => new StoreAddedMessage.Item()
+                {
+                    Name = x.Item.Description?.Name,
+                    Currency = defaultCurrency.Name,
+                    Price = x.Price,
+                    PriceDescription = x.Price != null ? defaultCurrency?.ToPriceString(x.Price.Value, dense: true) : null
+                }).ToArray(),
+                ItemsImageUrl = store.ItemsThumbnailUrl
+            })
+        };
+
         foreach (var storeItem in newStoreItems)
         {
             broadcastTasks.Add(

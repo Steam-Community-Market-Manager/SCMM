@@ -6,7 +6,7 @@ namespace SCMM.Shared.API.Messages
     [Topic(Name = "Store-Item-Added")]
     public class StoreItemAddedMessage : Message
     {
-        public override string Id => $"{AppId}/{ItemId}";
+        public override string Id => $"{AppId}/{StoreId}/{ItemId}";
 
         public ulong AppId { get; set; }
 

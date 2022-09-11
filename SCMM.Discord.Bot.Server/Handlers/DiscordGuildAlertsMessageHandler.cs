@@ -20,6 +20,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
         IMessageHandler<MarketItemPriceAllTimeHighReachedMessage>,
         IMessageHandler<MarketItemPriceAllTimeLowReachedMessage>,
         IMessageHandler<MarketItemPriceProfitableDealDetectedMessage>,
+        IMessageHandler<StoreAddedMessage>,
         IMessageHandler<StoreItemAddedMessage>,
         IMessageHandler<StoreMediaAddedMessage>,
         IMessageHandler<WorkshopFilePublishedMessage>,
@@ -140,6 +141,33 @@ namespace SCMM.Discord.Bot.Server.Handlers
         public async Task HandleAsync(MarketItemPriceProfitableDealDetectedMessage marketItem, MessageContext context)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task HandleAsync(StoreAddedMessage store, MessageContext context)
+        {
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guild, channel) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"{store.Items?.Length ?? 0} new item(s) have been added to the {store.AppName} store.");
+
+                var fields = store.Items.ToDictionary(
+                    x => x.Name,
+                    x => x.PriceDescription ?? "N/A"
+                );
+
+                return _client.SendMessageAsync(
+                    guild.Id,
+                    new[] { channel },
+                    title: $"{store.AppName} Store - {store.StoreName}",
+                    url: $"{_configuration.GetWebsiteUrl()}/store/{store.StoreId}",
+                    thumbnailUrl: !String.IsNullOrEmpty(store.AppIconUrl) ? store.AppIconUrl : null,
+                    description: description.ToString(),
+                    fields: fields,
+                    imageUrl: !String.IsNullOrEmpty(store.ItemsImageUrl) ? store.ItemsImageUrl : null,
+                    color: !String.IsNullOrEmpty(store.AppColour) ? (uint?)UInt32.Parse(store.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: true
+                );
+            });
         }
 
         public async Task HandleAsync(StoreItemAddedMessage storeItem, MessageContext context)
