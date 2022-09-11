@@ -568,6 +568,13 @@
             <response code="200">Paginated list of profiles matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfileInventoryTotals">
+            <summary>
+            Get profile inventory total statistics
+            </summary>
+            <response code="200">The totals across all profile inventories.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesHighestValueInventory(System.Int32,System.Int32)">
             <summary>
             List profiles inventory values, sorted by highest value first

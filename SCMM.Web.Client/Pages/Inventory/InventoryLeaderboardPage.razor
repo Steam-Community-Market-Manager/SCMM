@@ -1,7 +1,9 @@
 @page "/inventory"
 @using SCMM.Web.Data.Models.UI.Analytic
 @using SCMM.Web.Data.Models.UI.Statistic
+@inherits PersistentComponent
 @inject ILogger<InventoryLeaderboardPage> Logger
+@inject ISnackbar Snackbar
 @inject AppState State
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
@@ -19,6 +21,16 @@
     {
         <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
             <MudGrid Spacing="4">
+                @if (Totals != null)
+                {
+                    <MudItem xs="12" Class="pb-0">
+                        <MudText Typo="Typo.h6" Class="text-centered">
+                            <span>@Totals.TotalInventories.ToQuantityString() <span class="mud-secondary-text"> inventories tracked, </span></span>
+                            <span><span class="mud-secondary-text"> containing </span> @Totals.TotalItems.ToQuantityString() <span class="mud-secondary-text"> items, </span></span>
+                            <span><span class="mud-secondary-text"> with a total market value of </span> @State.Currency.ToPriceString(Totals.TotalMarketValue) </span>
+                        </MudText>
+                    </MudItem>
+                }
                 <MudItem xs="12" md="6">
                     <StatisticsPanel Icon="fas fa-fw fa-trophy" Title="Highest Valued Inventories" Dense="true">
                         <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
@@ -117,6 +129,31 @@
 
     private string SteamId { get; set; }
 
+    private ProfileInventoryTotalsStatisticDTO Totals { get; set; }
+
+    protected override async Task OnLoadStateAsync()
+    {
+        Totals = await RestoreFromStateOrLoad(nameof(Totals), async () =>
+        {
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsStatisticDTO>($"api/stats/profiles/inventories/totals");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error profile inventory totals");
+                Snackbar.Add($"Unable to load profile inventory totals. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Totals), Totals);
+        return Task.CompletedTask;
+    }
+
     private void ViewProfileInventory(string steamId)
     {
         if (!String.IsNullOrEmpty(steamId))
@@ -124,7 +161,7 @@
             NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(steamId)}");
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<ProfileInventoryValueStatisticDTO>> LoadProfilesHighestValueInventory(ItemsProviderRequest request)
     {
         try
@@ -138,7 +175,7 @@
             throw;
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<ProfileInventoryValueStatisticDTO>> LoadProfilesMostRecentInventory(ItemsProviderRequest request)
     {
         try

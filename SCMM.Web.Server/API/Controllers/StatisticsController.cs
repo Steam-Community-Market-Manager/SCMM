@@ -920,6 +920,40 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get profile inventory total statistics
+        /// </summary>
+        /// <response code="200">The totals across all profile inventories.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("profiles/inventories/totals")]
+        [ProducesResponseType(typeof(ProfileInventoryTotalsStatisticDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProfileInventoryTotals()
+        {
+            var appId = this.App().Guid;
+            var totals = await _db.SteamProfileInventoryValues
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.MarketValue > 0)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .GroupBy(x => true)
+                .Select(x => new
+                {
+                    Inventories = x.Count(),
+                    Items = x.Sum(i => i.Items),
+                    MarketValue = x.Sum(i => i.MarketValue)
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(new ProfileInventoryTotalsStatisticDTO()
+            {
+                TotalInventories = totals.Inventories,
+                TotalItems = totals.Items,
+                TotalMarketValue = this.Currency().CalculateExchange(totals.MarketValue)
+            });
+        }
+
+        /// <summary>
         /// List profiles inventory values, sorted by highest value first
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
