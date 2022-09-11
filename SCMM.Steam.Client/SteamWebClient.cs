@@ -75,7 +75,17 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                return await Get(request);
+                // Add an artifical delay to requests based on the current rate-limit state
+                await _session.WaitForRateLimitDelaysAsync();
+            
+                var response = await Get(request);
+                if (response.IsSuccessStatusCode && _session.IsRateLimited)
+                {
+                    // Success, we're no longer rate limited :)
+                    _session.SetRateLimited(false);
+                }
+
+                return response;
             }
             catch (SteamRequestException ex)
             {
@@ -86,7 +96,6 @@ namespace SCMM.Steam.Client
                 if (ex.IsAuthenticiationRequired && _session != null)
                 {
                     // Login to steam again, get a new auth token, retry the request again
-                    _logger.LogWarning("Steam session authentication is stale, attempting to refresh and try again...");
                     _session.Refresh();
                     return await Get(request);
                 }
@@ -94,7 +103,8 @@ namespace SCMM.Steam.Client
                 // 429: TooManyRequests
                 else if (ex.IsRateLimited)
                 {
-                    _logger.LogWarning("Steam session has been rate limited, need to back off for a while...");
+                    // Back-off requests to avoid getting rate-limited more
+                    _session.SetRateLimited(true);
                 }
 
                 throw;

@@ -21,6 +21,10 @@ namespace SCMM.Steam.Client
 
         public void Refresh()
         {
+            if (_cookies.Count > 0)
+            {
+                _logger.LogWarning("Steam session authentication is stale, attempting to refresh and try again...");
+            }
             if (String.IsNullOrEmpty(_configuration?.Username) || String.IsNullOrEmpty(_configuration?.Password))
             {
                 _logger.LogWarning("Unable to refresh Steam session cookies, no username/password was specified");
@@ -50,11 +54,42 @@ namespace SCMM.Steam.Client
                     {
                         _session.AddCookies(_cookies);
                     }
+
+                    // Reset rate-limit state
+                    RateLimitedSince = null;
+                    RateLimitRequestCount = 0;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Steam login was unsuccessful");
                 }
+            }
+        }
+
+        public void SetRateLimited(bool isRateLimited)
+        {
+            if (isRateLimited)
+            {
+                _logger.LogWarning($"Steam session has entered rate-limit mode after {RateLimitRequestCount} requests");
+                RateLimitedSince = DateTimeOffset.Now;
+            }
+            else
+            {
+                _logger.LogWarning($"Steam session has exited rate-limit mode after {(DateTimeOffset.Now - RateLimitedSince.Value).TotalSeconds} seconds");
+                RateLimitedSince = null;
+                RateLimitRequestCount = 0;
+            }
+        }
+
+        public Task WaitForRateLimitDelaysAsync()
+        {
+            if (RateLimitedSince != null)
+            {
+                return Task.Delay(TimeSpan.FromSeconds(30));
+            }
+            else
+            {
+                return Task.Delay(TimeSpan.FromMilliseconds(100));
             }
         }
 
@@ -75,5 +110,11 @@ namespace SCMM.Steam.Client
         }
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(_session?.SteamLoginSecure);
+
+        public bool IsRateLimited => RateLimitedSince != null;
+
+        public DateTimeOffset? RateLimitedSince { get; set; }
+
+        public int RateLimitRequestCount { get; set; }
     }
 }
