@@ -6,6 +6,8 @@ namespace SCMM.Shared.API.Messages
     [Topic(Name = "Market-Item-Added")]
     public class MarketItemAddedMessage : Message
     {
+        public override string Id => $"{AppId}/{ItemId}";
+
         public ulong AppId { get; set; }
 
         public string AppName { get; set; }

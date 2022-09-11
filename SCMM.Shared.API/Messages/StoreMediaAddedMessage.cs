@@ -6,6 +6,8 @@ namespace SCMM.Shared.API.Messages
     [Topic(Name = "Store-Media-Added")]
     public class StoreMediaAddedMessage : Message
     {
+        public override string Id => $"{AppId}/{ChannelId}/{VideoId}";
+
         public ulong AppId { get; set; }
 
         public string AppName { get; set; }

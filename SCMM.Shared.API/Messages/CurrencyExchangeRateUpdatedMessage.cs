@@ -6,6 +6,8 @@ namespace SCMM.Shared.API.Messages
     [Topic(Name = "Currency-Exchange-Rate-Updated")]
     public class CurrencyExchangeRateUpdatedMessage : Message
     {
+        public override string Id => $"{Currency}/{Timestamp.Ticks}";
+
         public DateTime Timestamp { get; set; }
 
         public string Currency { get; set; }

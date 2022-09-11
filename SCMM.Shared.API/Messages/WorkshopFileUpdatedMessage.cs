@@ -6,6 +6,8 @@ namespace SCMM.Shared.API.Messages
     [Topic(Name = "Workshop-File-Updated")]
     public class WorkshopFileUpdatedMessage : Message
     {
+        public override string Id => $"{AppId}/{ItemId}/{ChangeTimestamp.Ticks}";
+
         public ulong AppId { get; set; }
 
         public string AppName { get; set; }

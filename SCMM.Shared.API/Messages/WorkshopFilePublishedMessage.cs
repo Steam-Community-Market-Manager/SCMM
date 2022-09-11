@@ -6,6 +6,8 @@ namespace SCMM.Shared.API.Messages
     [Topic(Name = "Workshop-File-Published")]
     public class WorkshopFilePublishedMessage : Message
     {
+        public override string Id => $"{AppId}/{ItemId}";
+
         public ulong AppId { get; set; }
 
         public string AppName { get; set; }

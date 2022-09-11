@@ -19,9 +19,9 @@ using SCMM.SteamCMD;
 using System.Reflection;
 
 Console.WriteLine();
-Console.WriteLine("===============");
-Console.WriteLine("| SCMM WORKER |");
-Console.WriteLine("===============");
+Console.WriteLine(" =============== ");
+Console.WriteLine(" | SCMM WORKER | ");
+Console.WriteLine(" =============== ");
 Console.WriteLine();
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
@@ -36,6 +36,8 @@ var hostBuilder = new HostBuilder()
 
 using (var host = hostBuilder.Build())
 {
+    var logger = host.Services.GetRequiredService<ILogger<Program>>();
+
     await host.StartAsync();
 
     var serviceBusProcessor = new ServiceBusProcessorMiddleware(
@@ -47,7 +49,11 @@ using (var host = hostBuilder.Build())
         host.Services.GetRequiredService<MessageHandlerTypeCollection>()
     );
 
-    await host.WaitForShutdownAsync();
+    logger.LogInformation("Service bus processor is ready to handle messages.");
+    await using (serviceBusProcessor)
+    {
+        await host.WaitForShutdownAsync();
+    }
 }
 
 public static class HostExtensions

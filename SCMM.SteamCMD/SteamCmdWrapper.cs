@@ -35,7 +35,7 @@ public class SteamCmdWrapper
             }
             if (String.IsNullOrEmpty(steamCmdPath))
             {
-                throw new Exception($"Workshop file download failed, OS platform is not supported");
+                throw new PlatformNotSupportedException($"Workshop file download failed, OS platform is not supported");
             }
 
             var downloadProcess = Process.Start(new ProcessStartInfo()
@@ -59,13 +59,14 @@ public class SteamCmdWrapper
 
             if (!Directory.Exists(workshopFileBasePath))
             {
-                throw new Exception($"Workshop file download failed, no content was found");
+                _logger.LogWarning("Workshop file cannot be found, it either has been deleted or is private");
+                return null;
             }
 
             ZipFile.CreateFromDirectory(workshopFileBasePath, workshopFileZipPath, CompressionLevel.SmallestSize, includeBaseDirectory: false);
             if (!File.Exists(workshopFileZipPath))
             {
-                throw new Exception($"Workshop file download failed, unable to create file content zip archive");
+                throw new IOException($"Workshop file download failed, unable to create file content zip archive");
             }
 
             return new WebFileData()
