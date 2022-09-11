@@ -1,6 +1,9 @@
 ﻿using SCMM.Worker.Client;
+using System;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace SCMM.Market.TradeitGG.Client
 {
@@ -43,6 +46,36 @@ namespace SCMM.Market.TradeitGG.Client
                     //       Need to add a customer type converter to handle this better but I cbf writing one...
                     return null;
                 }
+            }
+        }
+
+        public async Task<IEnumerable<string>> GetBotAccountsAsync()
+        {
+            using (var client = BuildWebBrowserHttpClient())
+            {
+                var bots = new List<string>();
+                var pageUrls = new[]
+                {
+                    "https://steamcommunity.com/groups/tradeitggbots/members/?p=1&content_only=true",
+                    "https://steamcommunity.com/groups/tradeitggbots/members/?p=2&content_only=true",
+                    "https://steamcommunity.com/groups/tradeitggbots/members/?p=3&content_only=true",
+                    "https://steamcommunity.com/groups/tradeitggbots/members/?p=4&content_only=true"
+                };
+
+                foreach (var pageUrl in pageUrls)
+                {
+                    var response = await client.GetAsync(pageUrl);
+                    response.EnsureSuccessStatusCode();
+
+                    var text = await response.Content.ReadAsStringAsync();
+                    var profiles = Regex.Matches(text, @"\/profiles\/([0-9]+)");
+                    foreach (var profile in profiles.OfType<Match>())
+                    {
+                        bots.Add(profile.Groups[1].Value);
+                    }
+                }
+
+                return bots.Distinct();
             }
         }
     }
