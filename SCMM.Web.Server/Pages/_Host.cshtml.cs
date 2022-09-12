@@ -6,7 +6,7 @@ using SCMM.Web.Data.Models.UI.App;
 
 namespace SCMM.Web.Server.Pages
 {
-    public class IndexModel : PageModel
+    public class HostModel : PageModel
     {
         public AppState AppState { get; private set; }
 
@@ -18,7 +18,7 @@ namespace SCMM.Web.Server.Pages
 
         public string Host { get; private set; }
 
-        public IndexModel(AppState appState)
+        public HostModel(AppState appState)
         {
             AppState = appState;
         }

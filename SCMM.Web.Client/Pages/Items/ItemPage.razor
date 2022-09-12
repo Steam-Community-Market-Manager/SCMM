@@ -12,7 +12,7 @@
 
 <PageContainer Title="@(Item != null ? $"Item - {Item.Name}" : Name)" 
                Description="@(Item?.Description)"
-               ImageUrl="@(Item?.PreviewUrl ?? Item?.IconLargeUrl)">
+               ImageUrl="@(Item?.IconLargeUrl ?? Item?.PreviewUrl)">
 
     @if (Item == null)
     {

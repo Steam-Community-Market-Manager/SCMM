@@ -1,20 +1,11 @@
 ﻿@inject AppState State
 
-@if (!String.IsNullOrEmpty(Title))
-{
-    <PageTitle>@Title</PageTitle>
-    <HeadContent>
-        <meta name="title" property="og:title" content="@Title">
-        @if (!String.IsNullOrEmpty(Description))
-        {
-            <meta name="description" property="og:description" content="@Description">
-        }
-        @if (!String.IsNullOrEmpty(ImageUrl))
-        {
-            <meta name="image" property="og:image" content="@ImageUrl">
-        }
-    </HeadContent>
-}
+<PageTitle>@Title</PageTitle>
+<HeadContent>
+    <meta name="title" property="og:title" content="@Title">
+    <meta name="description" property="og:description" content="@Description">
+    <meta name="image" property="og:image" content="@ImageUrl">
+</HeadContent>
 
 <div class="ma-6" @attributes="AdditionalAttributes">
     @ChildContent
@@ -31,7 +22,7 @@
 
     [Parameter]
     public string Title { get; set; }
-    
+
     [Parameter]
     public string Description { get; set; }
 
@@ -46,5 +37,20 @@
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object> AdditionalAttributes { get; set; }
-    
+
+    protected override void OnParametersSet()
+    {
+        if (String.IsNullOrEmpty(Title))
+        {
+            Title = $"{State.App?.Name ?? State.AppId.ToString()} - Steam Community Market Manager";
+        }
+        if (String.IsNullOrEmpty(Description))
+        {
+            Description = $"Track {State.App?.Name ?? State.AppId.ToString()} skin prices, find cheap deals, check your inventory value, and much more";
+        }
+        if (String.IsNullOrEmpty(ImageUrl))
+        {
+            ImageUrl = $"images/app/{State.AppId}/og.image.png";
+        }
+    }
 }

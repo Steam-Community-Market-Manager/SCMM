@@ -365,7 +365,7 @@ public static class WebApplicationExtensions
             endpoints.MapDefaultControllerRoute();
 
             endpoints.MapBlazorHub();
-            endpoints.MapFallbackToPage("/_Index");
+            endpoints.MapFallbackToPage("/_Host");
         });
 
         app.UseAzureServiceBusProcessor();

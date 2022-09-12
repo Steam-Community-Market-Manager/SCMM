@@ -1,21 +1,15 @@
-﻿@page
-@namespace SCMM.Web.Server.Pages
+﻿@namespace SCMM.Web.Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using Microsoft.AspNetCore.Components.Web
 @using SCMM.Shared.API.Extensions
 @using SCMM.Shared.Web.Extensions
-@using SCMM.Web.Client;
 @using SCMM.Web.Data.Models
+@model HostModel
 @inject IConfiguration Configuration
-@model IndexModel
 @{
-    var runtime = Model.AppState.Runtime;
-    var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssemblyPrerendered);
-    var prerenderMode = (runtime == RuntimeType.Server ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered);
-    if (renderMode == prerenderMode)
-    {
-        Model.AppState.IsPrerendering = true;
-    }
+    var runtime = RuntimeType.WebAssembly;
+    var renderMode = RenderMode.WebAssemblyPrerendered;
+    var prerenderMode = RenderMode.WebAssemblyPrerendered;
 }
 <!DOCTYPE html>
 <html>
@@ -25,15 +19,11 @@
     
     <meta charset="utf-8" />
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
-    <meta name="title" property="og:title" content="@(Model.AppName ?? Model.AppId) - Steam Community Market Manager">
-    <meta name="image" property="og:image" content="@(Configuration.GetDataStoreUrl())/images/app/@(Model.AppId)/og.image.png">
-    <meta name="description" property="og:description" content="Track @(Model.AppName ?? Model.AppId) skin prices, find cheap deals, check your inventory value, and much more">
     <meta name="determiner" property="og:determiner" content="the">
     <meta name="type" property="og:type" content="website">
     <meta name="url" property="og:url" content="https://@(Model.Host)">
     <meta name="site_name" property="og:site_name" content="SCMM">
-    <meta name="keywords" content="Steam, Community, Market, SCM, SCMM, Rust, CSGO, Store, Shop, Skin, Skins, Inventory, Value, Cheap, Cheapest, Price, Prices, Deal, Deals, Sale Sales, History, Statistics, Analytics, Invest, Investment">
-    
+    <meta name="keywords" content="Rust, CSGO, Skins, Store, Inventory, Value, Cheap, Price, Deal, Sale, History, Statistics, Analytics, Investment, Steam, Community, Market, SCMM">
     <base href="/" />
     
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
@@ -56,7 +46,8 @@
 <body class="no-select">
  
     <div id="app">
-        <component type="typeof(App)" render-mode="@renderMode" />
+        
+        @RenderBody()
 
 @if (runtime == RuntimeType.Server)
 {
@@ -122,7 +113,7 @@
                 <pre id="blazor-load-error-details"></pre>
             </p>
         </div>
-        <script type="text/javascript" nonce="@HttpContext.GetNonce()">
+        <script type="text/javascript" nonce="@Context.GetNonce()">
 
             function wasmIsSupported() {
                 try {
@@ -146,7 +137,7 @@
             }
 
         </script>
-        <script type="text/javascript" nonce="@HttpContext.GetNonce()">
+        <script type="text/javascript" nonce="@Context.GetNonce()">
 
             /* Start Blazor and report loading progress back to the UI */
 
@@ -222,7 +213,7 @@ else
     
 @if (runtime == RuntimeType.WebAssembly)
 {
-    <script type="text/javascript" nonce="@HttpContext.GetNonce()">
+    <script type="text/javascript" nonce="@Context.GetNonce()">
 
         /* Unregister old PWA service worker (if present) */
 
@@ -252,7 +243,7 @@ else
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-226353518-1">
     </script>
-    <script type="text/javascript" nonce="@HttpContext.GetNonce()">
+    <script type="text/javascript" nonce="@Context.GetNonce()">
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
