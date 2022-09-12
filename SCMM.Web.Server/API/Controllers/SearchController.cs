@@ -3,6 +3,7 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
@@ -16,14 +17,16 @@ namespace SCMM.Web.Server.API.Controllers
     public class SearchController : ControllerBase
     {
         private readonly ILogger<AppController> _logger;
+        private readonly IConfiguration _configuration;
         private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public SearchController(ILogger<AppController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public SearchController(ILogger<AppController> logger, IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
+            _configuration = configuration;
             _db = db;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
@@ -91,7 +94,7 @@ namespace SCMM.Web.Server.API.Controllers
                 itemTypeResults.Select(x => new SearchResultDTO()
                 {
                     Type = "Type",
-                    IconUrl = $"/images/app/{app.Id}/items/{x.ToRustItemShortName()}.png",
+                    IconUrl = $"{_configuration.GetDataStoreUrl()}/images/app/{app.Id}/items/{x.ToRustItemShortName()}.png",
                     Description = x,
                     Url = $"api/item?type={x}&count=-1"
                 })

@@ -78,7 +78,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             return InteractionResult.Fail(
                 reason: $"Steam profile not found",
                 explaination: $"That Steam profile doesn't exist. Supported options are **Steam ID64**, **Custom URL**, or **Profile URL**. You can easily find your Profile URL by viewing your profile in Steam and copying it from the URL bar.",
-                helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_find_your_profile_id.png"
+                helpImageUrl: $"{_configuration.GetDataStoreUrl()}/images/discord/steam_find_your_profile_id.png"
             );
         }
 
@@ -133,7 +133,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             return InteractionResult.Fail(
                 reason: $"Private inventory",
                 explaination: $"That Steam inventory is **private**. Check your profile privacy to ensure that your inventory is public, then try again.",
-                helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_privacy_public.png"
+                helpImageUrl: $"{_configuration.GetDataStoreUrl()}/images/discord/steam_privacy_public.png"
             );
         }
 

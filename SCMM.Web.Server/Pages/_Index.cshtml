@@ -2,9 +2,11 @@
 @namespace SCMM.Web.Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using Microsoft.AspNetCore.Components.Web
+@using SCMM.Shared.API.Extensions
 @using SCMM.Shared.Web.Extensions
 @using SCMM.Web.Client;
 @using SCMM.Web.Data.Models
+@inject IConfiguration Configuration
 @model IndexModel
 @{
     var runtime = Model.AppState.Runtime;
@@ -24,7 +26,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
     <meta name="title" property="og:title" content="@(Model.AppName ?? Model.AppId) - Steam Community Market Manager">
-    <meta name="image" property="og:image" content="https://@(Model.Host)/images/app/@(Model.AppId)/og.image.png">
+    <meta name="image" property="og:image" content="@(Configuration.GetDataStoreUrl())/images/app/@(Model.AppId)/og.image.png">
     <meta name="description" property="og:description" content="Track @(Model.AppName ?? Model.AppId) skin prices, find cheap deals, check your inventory value, and much more">
     <meta name="determiner" property="og:determiner" content="the">
     <meta name="type" property="og:type" content="website">
@@ -45,8 +47,8 @@
     <link href="/css/scmm.css" rel="stylesheet" />
     <link href="scmm.web.client.styles.css" rel="stylesheet" />
     
-    <link href="/images/app/@(Model.AppId)/og.icon-512.png" rel="icon" type="image/png" />
-    <link href="/images/app/@(Model.AppId)/og.icon-512.png" rel="apple-touch-icon" type="image/png" sizes="512x512" />
+    <link href="@(Configuration.GetDataStoreUrl())/images/app/@(Model.AppId)/og.icon-512.png" rel="icon" type="image/png" />
+    <link href="@(Configuration.GetDataStoreUrl())/images/app/@(Model.AppId)/og.icon-512.png" rel="apple-touch-icon" type="image/png" sizes="512x512" />
     
     <component type="typeof(HeadOutlet)" render-mode="@prerenderMode" />
 
