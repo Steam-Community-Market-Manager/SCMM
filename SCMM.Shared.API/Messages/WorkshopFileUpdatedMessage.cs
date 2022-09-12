@@ -36,6 +36,8 @@ namespace SCMM.Shared.API.Messages
 
         public string ItemImageUrl { get; set; }
 
+        public DateTime ItemTimeAccepted { get; set; }
+
         public DateTime ChangeTimestamp { get; set; }
 
         public string ChangeNote { get; set; }

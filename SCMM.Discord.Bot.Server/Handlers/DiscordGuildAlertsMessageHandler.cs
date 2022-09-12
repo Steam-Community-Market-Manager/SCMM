@@ -5,6 +5,7 @@ using SCMM.Discord.Client;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using System.Globalization;
 using System.Text;
@@ -103,7 +104,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     new[] { channel },
                     authorIconUrl: !String.IsNullOrEmpty(marketItem.CreatorAvatarUrl) ? marketItem.CreatorAvatarUrl : null,
                     authorName: marketItem.CreatorName,
-                    authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
+                    authorUrl: marketItem.CreatorId == null ? null : new SteamProfileMyWorkshopFilesPageRequest()
                     {
                         SteamId = marketItem.CreatorId.ToString(),
                         AppId = marketItem.AppId.ToString()
@@ -145,7 +146,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(StoreAddedMessage store, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreAdded, (guild, channel) =>
             {
                 var description = new StringBuilder();
                 description.Append($"{store.Items?.Length ?? 0} new item(s) have been added to the {store.AppName} store.");
@@ -187,7 +188,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     new[] { channel },
                     authorIconUrl: !String.IsNullOrEmpty(storeItem.CreatorAvatarUrl) ? storeItem.CreatorAvatarUrl : null,
                     authorName: storeItem.CreatorName,
-                    authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
+                    authorUrl: storeItem.CreatorId == null ? null : new SteamProfileMyWorkshopFilesPageRequest()
                     {
                         SteamId = storeItem.CreatorId.ToString(),
                         AppId = storeItem.AppId.ToString()
@@ -213,7 +214,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"New video discussing the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
+                description.Append($"New video has been uploaded that discusses the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
                 
                 // TODO: Check if this is actually a YouTube video first
                 return _client.SendMessageAsync(
@@ -249,7 +250,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     new[] { channel },
                     authorIconUrl: !String.IsNullOrEmpty(workshopFile.CreatorAvatarUrl) ? workshopFile.CreatorAvatarUrl : null,
                     authorName: workshopFile.CreatorName,
-                    authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
+                    authorUrl: workshopFile.CreatorId == 0 ? null : new SteamProfileMyWorkshopFilesPageRequest()
                     {
                         SteamId = workshopFile.CreatorId.ToString(),
                         AppId = workshopFile.AppId.ToString()
@@ -273,20 +274,33 @@ namespace SCMM.Discord.Bot.Server.Handlers
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guild, channel) =>
             {
-                var description = new StringBuilder();
-                description.Append($"This accepted item has been updated in the {workshopFile.AppName} workshop. Depending on the change made, there may be in-game visual changes to the apparence of the item.");
-
-                var fields = new Dictionary<string, string>()
+                var workshopFileChangeNotesPageUrl = new SteamWorkshopFileChangeNotesPageRequest()
                 {
-                    { "Changes", String.IsNullOrEmpty(workshopFile.ChangeNote) ? "Unknown" : workshopFile.ChangeNote }
+                    Id = workshopFile.ItemId.ToString()
                 };
+
+                var description = new StringBuilder();
+                description.AppendLine($"This accepted item has recently been updated in the {workshopFile.AppName} workshop. Depending on the change that was made, there may be in-game visual changes to the apparence of the item.");
+                if ((workshopFile.ChangeTimestamp - workshopFile.ItemTimeAccepted) > TimeSpan.Zero)
+                {
+                    description.AppendLine();
+                    description.AppendLine($"It has been {(workshopFile.ChangeTimestamp - workshopFile.ItemTimeAccepted).ToDurationString(maxGranularity: 1)} since the item was accepted in-game.");
+                }
+                description.AppendLine();
+                description.AppendLine($"[view change notes history]({workshopFileChangeNotesPageUrl})");
+
+                var fields = new Dictionary<string, string>();
+                if (!String.IsNullOrEmpty(workshopFile.ChangeNote))
+                {
+                    fields["Most Recent Change"] = workshopFile.ChangeNote;
+                }
 
                 return _client.SendMessageAsync(
                     guild.Id,
                     new[] { channel },
                     authorIconUrl: !String.IsNullOrEmpty(workshopFile.CreatorAvatarUrl) ? workshopFile.CreatorAvatarUrl : null,
                     authorName: workshopFile.CreatorName,
-                    authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
+                    authorUrl: workshopFile.CreatorId == 0 ? null : new SteamProfileMyWorkshopFilesPageRequest()
                     {
                         SteamId = workshopFile.CreatorId.ToString(),
                         AppId = workshopFile.AppId.ToString()

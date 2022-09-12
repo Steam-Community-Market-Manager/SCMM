@@ -34,6 +34,7 @@ namespace SCMM.Discord.Data.Store
             public const string AlertChannelMarketItemPriceAllTimeHighReached = "Alert-Channel-Market-Item-Price-All-Time-High-Reached";
             public const string AlertChannelMarketItemPriceAllTimeLowReached = "Alert-Channel-Market-Item-Price-All-Time-Low-Reached";
             public const string AlertChannelMarketItemPriceProfitableDealDetected = "Alert-Channel-Market-Item-Price-Profitable-Deal-Detected";
+            public const string AlertChannelStoreAdded = "Alert-Channel-Store-Added";
             public const string AlertChannelStoreItemAdded = "Alert-Channel-Store-Item-Added";
             public const string AlertChannelStoreMediaAdded = "Alert-Channel-Store-Media-Added";
             public const string AlertChannelWorkshopFilePublished = "Alert-Channel-Workshop-File-Published";
@@ -108,6 +109,12 @@ namespace SCMM.Discord.Data.Store
                 },
                 new ConfigurationDefinition()
                 {
+                    Name = AlertChannelStoreAdded,
+                    Description =  "The channel where alerts will be posted when new items are added to the in-game store.",
+                    RequiredFlags = (int) GuildFlags.Alerts
+                },
+                new ConfigurationDefinition()
+                {
                     Name = AlertChannelStoreItemAdded,
                     Description =  "The channel where alerts will be posted when new items are added to the in-game store.",
                     RequiredFlags = (int) GuildFlags.Alerts
@@ -127,7 +134,7 @@ namespace SCMM.Discord.Data.Store
                 new ConfigurationDefinition()
                 {
                     Name = AlertChannelWorkshopFileUpdated,
-                    Description =  "The channel where alerts will be posted when a previously accepted workshop item gets updated in-game.",
+                    Description =  "The channel where alerts will be posted when previously accepted workshop items are updated.",
                     RequiredFlags = (int) GuildFlags.Alerts
                 }
             };

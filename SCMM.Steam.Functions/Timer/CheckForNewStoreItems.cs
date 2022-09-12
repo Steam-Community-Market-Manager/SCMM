@@ -375,7 +375,7 @@ public class CheckForNewStoreItems
                     Name = x.Item.Description?.Name,
                     Currency = defaultCurrency.Name,
                     Price = x.Price,
-                    PriceDescription = x.Price != null ? defaultCurrency?.ToPriceString(x.Price.Value, dense: true) : null
+                    PriceDescription = x.Price != null ? defaultCurrency?.ToPriceString(x.Price.Value) : null
                 }).ToArray(),
                 ItemsImageUrl = store.ItemsThumbnailUrl
             })
