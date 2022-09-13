@@ -87,7 +87,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     imageUrl: !String.IsNullOrEmpty(itemDefinition.ItemImageUrl) ? itemDefinition.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(itemDefinition.AppColour) ? (uint?)UInt32.Parse(itemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: true
+                    crossPost: false
                 );
             });
         }

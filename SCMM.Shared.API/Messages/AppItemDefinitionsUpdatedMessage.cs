@@ -4,6 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Topic(Name = "App-Item-Definitions-Updated")]
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]
     public class AppItemDefinitionsUpdatedMessage : Message
     {
         public override string Id => $"{AppId}/{ItemDefinitionsDigest}";

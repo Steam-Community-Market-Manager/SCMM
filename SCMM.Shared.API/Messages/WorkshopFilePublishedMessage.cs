@@ -4,6 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Topic(Name = "Workshop-File-Published")]
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 60)]
     public class WorkshopFilePublishedMessage : Message
     {
         public override string Id => $"{AppId}/{ItemId}";

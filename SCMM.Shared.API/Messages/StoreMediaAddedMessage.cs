@@ -4,6 +4,7 @@ using SCMM.Azure.ServiceBus.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Topic(Name = "Store-Media-Added")]
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 10080 /* 7 days */)]
     public class StoreMediaAddedMessage : Message
     {
         public override string Id => $"{AppId}/{ChannelId}/{VideoId}";
