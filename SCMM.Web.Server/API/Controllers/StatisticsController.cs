@@ -689,7 +689,6 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsAllTimeHigh([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
-            var sevenDays = TimeSpan.FromDays(7);
             var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
             var appId = this.App().Guid;
             var query = _db.SteamMarketItems

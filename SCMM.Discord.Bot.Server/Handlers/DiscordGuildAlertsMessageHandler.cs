@@ -1,11 +1,13 @@
 ﻿using Discord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.Client;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using System.Globalization;
 using System.Text;
@@ -178,10 +180,12 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 var description = new StringBuilder();
                 description.Append($"New {storeItem.ItemType} can be purchased from the {storeItem.AppName} store.");
 
-                var fields = new Dictionary<string, string>()
+                var fields = new Dictionary<string, string>();
+                var defaultPrice = storeItem.ItemPrices?.FirstOrDefault(x => x.Currency == Steam.Data.Models.Constants.SteamDefaultCurrency);
+                if (defaultPrice != null)
                 {
-                    { "Prices", String.Join(" • ", storeItem.ItemPrices.Select(x => $"`{x.Description} {x.Currency}`")) }
-                };
+                    fields["Price"] = defaultPrice.Description;
+                }
 
                 return _client.SendMessageAsync(
                     guild.Id,
