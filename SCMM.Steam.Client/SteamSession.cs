@@ -56,8 +56,7 @@ namespace SCMM.Steam.Client
                     }
 
                     // Reset rate-limit state
-                    RateLimitedSince = null;
-                    RateLimitRequestCount = 0;
+                    IsRateLimited = false;
                 }
                 catch (Exception ex)
                 {
@@ -68,29 +67,44 @@ namespace SCMM.Steam.Client
 
         public void SetRateLimited(bool isRateLimited)
         {
-            if (isRateLimited)
+            IsRateLimited = isRateLimited;
+            if (IsRateLimited)
             {
-                _logger.LogWarning($"Steam session has entered rate-limit mode after {RateLimitRequestCount} requests");
-                RateLimitedSince = DateTimeOffset.Now;
+                _logger.LogWarning($"Steam session has entered rate-limited mode");
+                LastRateLimitedOn = DateTimeOffset.Now;
             }
             else
             {
-                _logger.LogWarning($"Steam session has exited rate-limit mode after {(DateTimeOffset.Now - RateLimitedSince.Value).TotalSeconds} seconds");
-                RateLimitedSince = null;
-                RateLimitRequestCount = 0;
+                _logger.LogWarning($"Steam session has exited rate-limited mode after {(DateTimeOffset.Now - LastRateLimitedOn.Value).TotalSeconds} seconds");
             }
         }
 
         public Task WaitForRateLimitDelaysAsync()
         {
-            if (RateLimitedSince != null)
+            const double MinimumDelayBetweenConsecutiveRequestsInMilliseconds = 300;
+
+            // If we are rate-limited, back-off requests with a delay
+            if (LastRateLimitedOn != null)
             {
+                // TODO: Refine this delay
                 return Task.Delay(TimeSpan.FromSeconds(30));
             }
-            else
+            
+            /*
+            // TODO: Test and enable this...
+            // Else, ensure that there is minimum delay between consecutive requests to avoid getting rate-limited
+            else if (LastRequestOn != null)
             {
-                return Task.Delay(TimeSpan.FromMilliseconds(100));
+                var timeSinceLastRequest = (DateTimeOffset.Now - LastRequestOn.Value);
+                if (timeSinceLastRequest.TotalMilliseconds < MinimumDelayBetweenConsecutiveRequestsInMilliseconds)
+                {
+                    return Task.Delay(Math.Max(0, (int)(MinimumDelayBetweenConsecutiveRequestsInMilliseconds - timeSinceLastRequest.TotalMilliseconds)));
+                }
             }
+            */
+
+            LastRequestOn = DateTimeOffset.Now;
+            return Task.CompletedTask;
         }
 
         public CookieContainer Cookies
@@ -111,10 +125,11 @@ namespace SCMM.Steam.Client
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(_session?.SteamLoginSecure);
 
-        public bool IsRateLimited => RateLimitedSince != null;
+        public bool IsRateLimited { get; private set; }
 
-        public DateTimeOffset? RateLimitedSince { get; set; }
+        public DateTimeOffset? LastRateLimitedOn { get; private set; }
 
-        public int RateLimitRequestCount { get; set; }
+        public DateTimeOffset? LastRequestOn { get; private set; }
+
     }
 }

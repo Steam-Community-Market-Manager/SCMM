@@ -599,7 +599,7 @@ namespace SCMM.Steam.Data.Store
             else
             {
                 IsBeingManipulated = false;
-                var reason = null;
+                var reason = (string) null;
             }
         }
     }
