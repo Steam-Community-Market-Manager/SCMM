@@ -5,9 +5,9 @@
 
 @if (Invite != null)
 {
-    <div class="discord-invite-container" @attributes="AdditionalAttributes">
-        <MudPaper Outlined="true" Class="pa-4">
-            <div class="d-flex flex-row">
+    <div class="discord-invite-container full-height" @attributes="AdditionalAttributes">
+        <MudPaper Outlined="true" Class="full-height pa-4">
+            <div class="d-flex flex-row full-height">
                 <img src="@($"https://cdn.discordapp.com/icons/{Invite.Guild?.Id}/{Invite.Guild?.Icon}.jpg")" class="flex-grow-0" style="height:4rem"/>
                 <div class="flex-grow-1 px-4">
                     <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@Invite.Guild?.Name</MudText>

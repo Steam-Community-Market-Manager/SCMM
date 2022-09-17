@@ -50,19 +50,10 @@
 
     <MudDivider />
     
-    <MudNavLink OnClick="ShowCommunitiesDialog" Icon="fab fa-fw fa-discord" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Discord Communities</span>
-    </MudNavLink>
-    <MudNavLink Href="https://discord.com/api/oauth2/authorize?client_id=761034518424715264&permissions=18496&scope=bot%20applications.commands" Icon="fas fa-fw fa-robot" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Discord Bot</span>
+    <MudNavLink Href="/help" Icon="fas fa-fw fa-question" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Help Me</span>
     </MudNavLink>
     
-    <MudDivider />
-    
-    <MudNavLink Href="https://discord.gg/WvTBkhtDvn" Icon="fas fa-fw fa-question-circle" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Help & Support</span>
-    </MudNavLink>
-
     <MudDivider />
     
     <MudNavLink Href="/about" Icon="fas fa-fw fa-info-circle" Disabled="@State.IsPrerendering">
@@ -76,11 +67,6 @@
 
 @code {
     
-    private void ShowCommunitiesDialog()
-    {
-        Dialogs.Show<CommunitiesDialog>();
-    }
-
     private void ShowDonationDialog()
     {
         Dialogs.Show<DonateDialog>();

@@ -1,0 +1,97 @@
+﻿@page "/help"
+@inject ILogger<HelpPage> Logger
+
+<PageContainer Title="Help">
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="6" lg="5" xl="3">
+            <MudGrid Spacing="2">
+
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Color="Color.Default">
+                        <span>Help & Support</span>
+                    </MudText>
+                    <MudDivider />
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="mkwp9ZSBXk" /><!-- SCMM -->
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Color="Color.Default">
+                        <span>Rust Communities</span>
+                    </MudText>
+                    <MudDivider />
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
+                        <p>Want to discuss Rust skins and the Steam Community Market with other like minded people? Consider joining these Discord communities.</p>
+                    </MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="3yBcVWygjB" /><!-- Rust Skin Making -->
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="vwRepVrVur" /><!-- RUST RU -->
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="8zdsZ9Qu3a" /><!-- The Rust Exchange -->
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="ecM3FYRJQy" /><!-- OMIGHTY -->
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="MZgQ3966Jb" /><!-- ThatGermanGuy -->
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="CUtPfdwRUP" /><!-- Hedges Marketplace -->
+                </MudItem>
+                <MudItem xs="12">
+                    <DiscordInvite InviteCode="BEYC3Pt462" /><!-- Skin Earningsite Hustlers -->
+                </MudItem>
+
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" md="6" lg="7" xl="9">
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Color="Color.Default">
+                        <span>How to use SCMM</span>
+                    </MudText>
+                    <MudDivider />
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
+                        <p>Want to learn how to make the most out of SCMM functionality? Watch these videos.</p>
+                    </MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" md="12" lg="6" xl="4">
+                            <YouTubeVideo VideoId="BXdcsZDFfik" />
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Color="Color.Default">
+                        <span>Rust Economy</span>
+                    </MudText>
+                    <MudDivider />
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
+                        <p>Want to learn more about the Rust and Steam Community Market economy? Watch these videos.</p>
+                    </MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" md="12" lg="6" xl="4">
+                            <YouTubeVideo VideoId="eZt0Gfq0_IE" /><!-- Rust Economy 101: Rust Store & Skins -->
+                        </MudItem>
+                        <MudItem xs="12" md="12" lg="6" xl="4">
+                            <YouTubeVideo VideoId="CBv8CI0mURU" /><!-- Rust Economy 101: Abnormals and Rust Store Rotation -->
+                        </MudItem>
+                        <MudItem xs="12" md="12" lg="6" xl="4">
+                            <YouTubeVideo VideoId="Jzc6FCfrpSU" /><!-- Rust Economy 101: Christmas Momentum (Long Term Investing Patterns) -->
+                        </MudItem>
+                        <MudItem xs="12" md="12" lg="6" xl="4">
+                            <YouTubeVideo VideoId="z1lJERm7VDk" /><!-- PAY TO WIN Rust Skins Clothing & Armour -->
+                        </MudItem>
+                        <MudItem xs="12" md="12" lg="6" xl="4">
+                            <YouTubeVideo VideoId="PiTPEIkHadE" /><!-- All Rust Glowsight Gun Skins | PAY TO WIN! -->
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+</PageContainer>
