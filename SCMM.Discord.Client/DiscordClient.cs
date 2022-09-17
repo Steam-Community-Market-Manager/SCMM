@@ -266,9 +266,8 @@ namespace SCMM.Discord.Client
             return msg.Id;
         }
 
-        // TODO: Replace channelPatterns with channelIdOrName
         public async Task<ulong> SendMessageAsync(
-            ulong guildId, string[] channelPatterns, string message = null, 
+            ulong guildId, ulong channelId, string message = null, 
             string authorIconUrl = null, string authorName = null, string authorUrl = null, 
             string title = null, string url = null, string thumbnailUrl = null, 
             string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, 
@@ -276,68 +275,47 @@ namespace SCMM.Discord.Client
         {
             WaitUntilClientIsConnected();
 
-            // Find the guilds that match our pattern
             var guild = _client.GetGuild(guildId);
             if (guild == null)
             {
                 throw new Exception($"Unable to find guild (id: {guildId})");
             }
 
-            // Find channels that match our pattern (and that we have permission to post in)
-            channelPatterns = channelPatterns?.Where(x => !String.IsNullOrEmpty(x))?.ToArray();
-            foreach (var channelPattern in channelPatterns)
+            var channel = guild.TextChannels.FirstOrDefault(x => x.Id == channelId);
+            if (channel == null)
             {
-                var channel = guild.TextChannels
-                    .OrderBy(x => x.Name)
-                    .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
-                    .Where(x => string.Equals($"<#{x.Id}>", channelPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, channelPattern))
-                    .FirstOrDefault();
-                if (channel == null)
+                throw new Exception($"Unable to find guild channel (guildId: {guildId}, channelId: {channelId})");
+            }
+
+            var embed = BuildEmbed(
+                authorIconUrl, authorName, authorUrl, title, url, thumbnailUrl, description, fields, fieldsInline, imageUrl, color
+            );
+
+            // Send the message
+            _logger.LogTrace($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
+            var msg = await channel.SendMessageAsync(text: message, embed: embed);
+            if (msg == null)
+            {
+                throw new Exception($"Unable to send message \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
+            }
+                    
+            // React to the message
+            if (reactions?.Any() == true)
+            {
+                foreach (var reaction in reactions)
                 {
-                    continue;
-                }
-
-                try
-                {
-                    var embed = BuildEmbed(
-                        authorIconUrl, authorName, authorUrl, title, url, thumbnailUrl, description, fields, fieldsInline, imageUrl, color
-                    );
-
-                    // Send the message
-                    _logger.LogTrace($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
-                    var msg = await channel.SendMessageAsync(text: message, embed: embed);
-                    if (msg == null)
-                    {
-                        throw new Exception($"Unable to send message \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
-                    }
-
-                    // React to the message
-                    if (reactions?.Any() == true)
-                    {
-                        foreach (var reaction in reactions)
-                        {
-                            await msg.TryAddReactionAsync(new Emoji(reaction));
-                        }
-                    }
-
-                    // Cross-post (publish) the message
-                    if (crossPost)
-                    {
-                        await msg.CrosspostAsync();
-                    }
-
-                    // NOTE: We only want to send one message per guild, so exit after the first one has sent successfully
-                    return msg.Id;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, ex.Message);
-                    continue;
+                    await msg.TryAddReactionAsync(new Emoji(reaction));
                 }
             }
 
-            _logger.LogWarning($"Unable to find any suitable channels to post message (guild: {guild.Name} #{guild.Id}, channel patterns: {String.Join(",", channelPatterns)})");
-            return 0;
+            // Cross-post (publish) the message
+            if (crossPost)
+            {
+                await msg.CrosspostAsync();
+            }
+
+            // NOTE: We only want to send one message per guild, so exit after the first one has sent successfully
+            return msg.Id;
         }
 
         public IDisposable SubscribeToReplies(ulong messageId, Func<IMessage, bool> filter, Func<IMessage, Task> onReply)

@@ -124,8 +124,7 @@ namespace SCMM.Steam.API.Commands
                     var assetDescription = knownAssets.FirstOrDefault(x => x.ClassId == asset.Key.ClassId);
                     if (assetDescription == null)
                     {
-                        // NOTE: Only import new assets from apps we know are ready
-                        // TODO: Remove this check one day
+                        // NOTE: Only import new assets from apps we know
                         if (app.IsActive)
                         {
                             var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()

@@ -1,16 +1,16 @@
 ﻿using Discord;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Web;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.Client;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using DiscordGuild = SCMM.Discord.Data.Store.DiscordGuild;
 
 namespace SCMM.Discord.Bot.Server.Handlers
@@ -42,7 +42,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(AppItemDefinitionsUpdatedMessage appItemDefinition, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"In-game item definitions for {appItemDefinition.AppName} have been updated.");
@@ -53,29 +53,29 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 };
 
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     title: $"{appItemDefinition.AppName} Item Definitions Updated",
                     url: $"{_configuration.GetWebsiteUrl()}/items",
                     thumbnailUrl: !String.IsNullOrEmpty(appItemDefinition.AppIconUrl) ? appItemDefinition.AppIconUrl : null,
                     description: description.ToString(),
                     fields: fields,
                     color: !String.IsNullOrEmpty(appItemDefinition.AppColour) ? (uint?)UInt32.Parse(appItemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: true
+                    crossPost: Debugger.IsAttached == false
                 );
             });
         }
 
         public async Task HandleAsync(ItemDefinitionAddedMessage itemDefinition, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {itemDefinition.ItemType} has been added to the {itemDefinition.AppName} in-game item definitions.");
 
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     authorIconUrl: !String.IsNullOrEmpty(itemDefinition.CreatorAvatarUrl) ? itemDefinition.CreatorAvatarUrl : null,
                     authorName: !String.IsNullOrEmpty(itemDefinition.CreatorName) ? itemDefinition.CreatorName : null,
                     authorUrl: itemDefinition.CreatorId == null ? null : new SteamProfileMyWorkshopFilesPageRequest()
@@ -96,14 +96,14 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemAddedMessage marketItem, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemAdded, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {marketItem.ItemType} has been listed on the {marketItem.AppName} community market.");
                 
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     authorIconUrl: !String.IsNullOrEmpty(marketItem.CreatorAvatarUrl) ? marketItem.CreatorAvatarUrl : null,
                     authorName: marketItem.CreatorName,
                     authorUrl: marketItem.CreatorId == null ? null : new SteamProfileMyWorkshopFilesPageRequest()
@@ -121,7 +121,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     imageUrl: !String.IsNullOrEmpty(marketItem.ItemImageUrl) ? marketItem.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(marketItem.AppColour) ? (uint?)UInt32.Parse(marketItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: true
+                    crossPost: Debugger.IsAttached == false
                 );
             });
         }
@@ -148,7 +148,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(StoreAddedMessage store, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreAdded, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"{store.Items?.Length ?? 0} new item(s) have been added to the {store.AppName} store.");
@@ -159,8 +159,8 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 );
 
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     title: $"{store.AppName} Store - {store.StoreName}",
                     url: $"{_configuration.GetWebsiteUrl()}/store/{store.StoreId}",
                     thumbnailUrl: !String.IsNullOrEmpty(store.AppIconUrl) ? store.AppIconUrl : null,
@@ -168,14 +168,14 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(store.ItemsImageUrl) ? store.ItemsImageUrl : null,
                     color: !String.IsNullOrEmpty(store.AppColour) ? (uint?)UInt32.Parse(store.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: true
+                    crossPost: Debugger.IsAttached == false
                 );
             });
         }
 
         public async Task HandleAsync(StoreItemAddedMessage storeItem, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {storeItem.ItemType} can be purchased from the {storeItem.AppName} store.");
@@ -188,8 +188,8 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 }
 
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     authorIconUrl: !String.IsNullOrEmpty(storeItem.CreatorAvatarUrl) ? storeItem.CreatorAvatarUrl : null,
                     authorName: storeItem.CreatorName,
                     authorUrl: storeItem.CreatorId == null ? null : new SteamProfileMyWorkshopFilesPageRequest()
@@ -208,22 +208,22 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(storeItem.ItemImageUrl) ? storeItem.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(storeItem.AppColour) ? (uint?)UInt32.Parse(storeItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: true
+                    crossPost: Debugger.IsAttached == false
                 );
             });
         }
 
         public async Task HandleAsync(StoreMediaAddedMessage storeMedia, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New video has been uploaded that discusses the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
                 
                 // TODO: Check if this is actually a YouTube video first
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     authorName: storeMedia.ChannelName,
                     authorUrl: $"https://www.youtube.com/channel/{storeMedia.ChannelId}",
                     title: storeMedia.VideoName,
@@ -231,14 +231,14 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     imageUrl: storeMedia.VideoThumbnailUrl,
                     color: new Color(255, 0, 0), // YouTube red
-                    crossPost: true
+                    crossPost: Debugger.IsAttached == false
                 );
             });
         }
 
         public async Task HandleAsync(WorkshopFilePublishedMessage workshopFile, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFilePublished, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFilePublished, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {workshopFile.ItemType} has been submitted to the {workshopFile.AppName} workshop.");
@@ -250,8 +250,8 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 }
 
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     authorIconUrl: !String.IsNullOrEmpty(workshopFile.CreatorAvatarUrl) ? workshopFile.CreatorAvatarUrl : null,
                     authorName: workshopFile.CreatorName,
                     authorUrl: workshopFile.CreatorId == 0 ? null : new SteamProfileMyWorkshopFilesPageRequest()
@@ -269,14 +269,14 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?)UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: true
+                    crossPost: Debugger.IsAttached == false
                 );
             });
         }
 
         public async Task HandleAsync(WorkshopFileUpdatedMessage workshopFile, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guild, channel) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guildId, channelId) =>
             {
                 var workshopFileChangeNotesPageUrl = new SteamWorkshopFileChangeNotesPageRequest()
                 {
@@ -300,8 +300,8 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 }
 
                 return _client.SendMessageAsync(
-                    guild.Id,
-                    new[] { channel },
+                    guildId,
+                    channelId,
                     authorIconUrl: !String.IsNullOrEmpty(workshopFile.CreatorAvatarUrl) ? workshopFile.CreatorAvatarUrl : null,
                     authorName: workshopFile.CreatorName,
                     authorUrl: workshopFile.CreatorId == 0 ? null : new SteamProfileMyWorkshopFilesPageRequest()
@@ -319,12 +319,12 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?) UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: true
+                    crossPost: Debugger.IsAttached == false
                 );
             });
         }
 
-        private async Task SendAlertToGuilds(string alertConfigurationName, Func<DiscordGuild, string, Task> alertCallback)
+        private async Task SendAlertToGuilds(string alertConfigurationName, Func<ulong, ulong, Task> alertCallback)
         {
             var guildsWithAlertsEnabled = await _discordDb.DiscordGuilds.AsNoTracking()
                 .Where(x => (x.Flags & DiscordGuild.GuildFlags.Alerts) != 0)
@@ -335,10 +335,16 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 .ToList();
 
             var alertTasks = new List<Task>();
-            foreach (var guild in guildsToBeAlerted)
+            foreach (var guildToBeAlerted in guildsToBeAlerted)
             {
+                var alertTarget = guildToBeAlerted.Configuration.FirstOrDefault(x => x.Name == alertConfigurationName).Value;
+                var guild = _client.Guilds.FirstOrDefault(x => x.Id == guildToBeAlerted.Id);
+                var channel = guild?.Channels
+                    .Where(x => x.Id.ToString() == alertTarget || string.Equals($"<#{x.Id}>", alertTarget, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, alertTarget))
+                    .FirstOrDefault();
+
                 alertTasks.Add(
-                    alertCallback(guild, guild.Configuration.FirstOrDefault(x => x.Name == alertConfigurationName).Value)
+                    alertCallback(guild.Id, channel.Id)
                 );
             }
 

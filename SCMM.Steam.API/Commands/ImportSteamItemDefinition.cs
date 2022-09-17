@@ -82,8 +82,7 @@ namespace SCMM.Steam.API.Commands
             var itemDefinition = request.ItemDefinition;
             if (request.ItemDefinition == null)
             {
-                // We need to fetch it from Steam...
-                // TODO: This...
+                // TODO: We need to fetch it from Steam...
             }
             if (itemDefinition == null)
             {

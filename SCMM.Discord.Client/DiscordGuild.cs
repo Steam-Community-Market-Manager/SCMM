@@ -14,5 +14,7 @@ namespace SCMM.Discord.Client
         public ulong Id => _guild?.Id ?? 0;
 
         public string Name => _guild?.Name;
+
+        public IEnumerable<DiscordGuildChannel> Channels => _guild?.Channels.Select(x => new DiscordGuildChannel(x));
     }
 }

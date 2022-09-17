@@ -32,11 +32,11 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     color: message.Colour
                 );
             }
-            else
+            else if (message.GuidId > 0 && message.ChannelId > 0)
             {
                 return _client.SendMessageAsync(
-                    guildId: message.GuidId,
-                    channelPatterns: message.ChannelPatterns,
+                    guildId: message.GuidId.Value,
+                    channelId: message.ChannelId.Value,
                     message: message.Message,
                     title: message.Title,
                     description: message.Description,
@@ -47,6 +47,10 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     imageUrl: message.ImageUrl,
                     color: message.Colour
                 );
+            }
+            else
+            {
+                throw new Exception("Unable to send message, either the username or guild/channel must be set");
             }
         }
     }

@@ -197,8 +197,7 @@ public class CheckForNewWorkshopFiles
                     }
                 }
 
-                // Detect new collections
-                // TODO: This...
+                // TODO: Detect new collections
 
                 var updatedWorkshopItem = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamWorkshopFileRequest()
                 {

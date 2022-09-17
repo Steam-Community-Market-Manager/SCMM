@@ -14,13 +14,12 @@ namespace SCMM.Discord.API.Messages
         /// <summary>
         /// If set, this message will be sent to a guild channel
         /// </summary>
-        public ulong GuidId { get; set; }
+        public ulong? GuidId { get; set; }
 
         /// <summary>
-        /// List of regex patterns matching channels ids or names this message should be sent to. 
-        /// The message will be sent once, to the first channel found.
+        /// If set, this message will be sent to a guild channel
         /// </summary>
-        public string[] ChannelPatterns { get; set; }
+        public ulong? ChannelId { get; set; }
 
         public string Message { get; set; }
 
