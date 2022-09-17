@@ -550,5 +550,57 @@ namespace SCMM.Steam.Data.Store
                 (cheapestPrice / (decimal)medianPriceLastWeek) > 2m 
             );
         }
+
+        public void CheckForPriceEvents()
+        {
+            var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
+            var marketAge = (FirstSaleOn != null ? (DateTimeOffset.UtcNow - FirstSaleOn) : TimeSpan.Zero);
+            var cheapestPrice = SellOrderLowestPrice;
+            var medianPriceLastWeek = Last168hrValue;
+            var medianSalesLastWeek = (Last168hrSales > 0 ? (Last168hrSales / 7) : 0);
+
+            // Check if at all-time highest price
+            if ((LastCheckedSalesOn >= lastFewHours && LastCheckedOrdersOn >= lastFewHours) &&
+                (SellOrderCount > 0) &&
+                (AllTimeHighestValue > 0) &&
+                (cheapestPrice - AllTimeHighestValue >= 0))
+            {
+                var ath = Math.Abs(cheapestPrice - AllTimeHighestValue);
+            }
+
+            // Check if at all-time lowest price
+            if ((LastCheckedSalesOn >= lastFewHours && LastCheckedOrdersOn >= lastFewHours) &&
+                (SellOrderCount > 0) &&
+                (AllTimeLowestValue > 0) &&
+                (cheapestPrice - AllTimeLowestValue >= 0))
+            {
+                var atl = Math.Abs(cheapestPrice - AllTimeLowestValue);
+            }
+
+
+            // Check if price spike manipulations
+            if ((marketAge > TimeSpan.FromDays(7)) &&
+                (cheapestPrice > 0 && medianPriceLastWeek > 0) &&
+                (cheapestPrice / (decimal) medianPriceLastWeek) > 2m)
+            {
+                IsBeingManipulated = true;
+                var reson = $"The current price is {cheapestPrice.ToPercentageString(medianPriceLastWeek)}% higher than the median price over the last 7 days";
+            }
+
+            // Check for volume spike manipulations
+            else if ((marketAge > TimeSpan.FromDays(7)) &&
+                (Last24hrSales > 0 && medianSalesLastWeek > 0) &&
+                (Last24hrSales / (decimal)medianSalesLastWeek) > 2m)
+            {
+                IsBeingManipulated = true;
+                var reason = $"The number of sales in the last 24hrs is {cheapestPrice.ToPercentageString(medianSalesLastWeek)}% higher than the median number of sales over the last 7 days";
+            }
+
+            else
+            {
+                IsBeingManipulated = false;
+                var reason = null;
+            }
+        }
     }
 }
