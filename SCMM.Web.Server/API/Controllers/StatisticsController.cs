@@ -977,6 +977,8 @@ namespace SCMM.Web.Server.API.Controllers
                     SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
                     Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
                     AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    IsPrivate = (x.Profile.Privacy != SteamVisibilityType.Public),
+                    IsBot = x.Profile.Roles.Serialised.Contains(Roles.Bot),
                     Items = x.Items,
                     Value = x.MarketValue,
                     LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
@@ -1023,6 +1025,8 @@ namespace SCMM.Web.Server.API.Controllers
                     SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
                     Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
                     AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    IsPrivate = (x.Profile.Privacy != SteamVisibilityType.Public),
+                    IsBot = x.Profile.Roles.Serialised.Contains(Roles.Bot),
                     Items = x.Items,
                     Value = x.MarketValue,
                     LastUpdatedOn = x.Profile.LastUpdatedInventoryOn

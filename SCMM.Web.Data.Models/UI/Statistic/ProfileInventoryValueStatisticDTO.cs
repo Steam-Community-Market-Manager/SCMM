@@ -10,6 +10,10 @@
 
         public string AvatarUrl { get; set; }
 
+        public bool IsPrivate { get; set; }
+
+        public bool IsBot { get; set; }
+
         public int Items { get; set; }
 
         public long Value { get; set; }

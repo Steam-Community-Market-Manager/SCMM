@@ -34,6 +34,20 @@
                             <span>@Profile.ProfileId</span>
                         }
                     </small>
+                    @if (Profile.Privacy != SteamVisibilityType.Public)
+                    {
+                        <small class="no-wrap">
+                            <i class="fas fa-fw fa-lock"></i>
+                            <span> Private </span>
+                        </small>
+                    }
+                    @if (Profile.Roles.Contains(Roles.Bot))
+                    {
+                        <small class="no-wrap">
+                            <i class="fas fa-fw fa-robot"></i>
+                            <span> Bot </span>
+                        </small>
+                    }
                 </MudText>
                 @if (Profile.LastUpdatedInventoryOn != null)
                 {
