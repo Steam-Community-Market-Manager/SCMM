@@ -7,11 +7,11 @@ namespace SCMM.Shared.API.Messages
     [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)] 
     public class ImportProfileInventoryMessage : Message
     {
-        public override string Id => $"{AppId}/{ProfileId}";
-
-        public ulong AppId { get; set; }
+        public override string Id => $"{ProfileId}/{(AppIds?.Length > 0 ? String.Join('+', AppIds) : "*")}";
 
         public string ProfileId { get; set; }
+
+        public string[] AppIds { get; set; }
 
         public bool Force { get; set; }
     }

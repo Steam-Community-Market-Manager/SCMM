@@ -63,7 +63,8 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         // Find the profile
         var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
         {
-            ProfileId = steamId
+            ProfileId = steamId,
+            ImportFriendsListAsync = true
         });
 
         var profile = importedProfile?.Profile;

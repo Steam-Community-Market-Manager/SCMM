@@ -45,7 +45,9 @@ namespace SCMM.Steam.API.Commands
             // Fetch the profile from steam
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
-                ProfileId = steamId
+                ProfileId = steamId,
+                ImportFriendsListAsync = true,
+                ImportInventoryAsync = true
             });
 
             // If this is an already existing profile

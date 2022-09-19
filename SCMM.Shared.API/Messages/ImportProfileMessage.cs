@@ -3,9 +3,9 @@ using SCMM.Azure.ServiceBus.Attributes;
 
 namespace SCMM.Shared.API.Messages
 {
-    [Queue(Name = "Import-Profile-Friends")]
-    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 10080 /* 7 day */)] 
-    public class ImportProfileFriendsMessage : Message
+    [Queue(Name = "Import-Profile")]
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]
+    public class ImportProfileMessage : Message
     {
         public override string Id => $"{ProfileId}";
 

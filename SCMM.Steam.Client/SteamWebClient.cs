@@ -95,9 +95,12 @@ namespace SCMM.Steam.Client
                 // 403: Forbidden
                 if (ex.IsAuthenticiationRequired && _session != null)
                 {
-                    // Login to steam again, get a new auth token, retry the request again
-                    _session.Refresh();
-                    return await Get(request);
+                    // If it has been more than 1hr since we last authenticated, try login to Steam again. This error might just be that our token has expired.
+                    if (_session.LastLoginOn == null || (DateTimeOffset.Now - _session.LastLoginOn.Value) >= TimeSpan.FromMinutes(60))
+                    {
+                        _session.Refresh();
+                        return await Get(request);
+                    }
                 }
                 // Check if the request failed due to rate limiting
                 // 429: TooManyRequests

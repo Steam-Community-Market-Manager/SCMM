@@ -1,6 +1,8 @@
 ﻿using CommandQuery;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
@@ -17,6 +19,16 @@ namespace SCMM.Steam.API.Commands
     public class ImportSteamProfileRequest : ICommand<ImportSteamProfileResponse>
     {
         public string ProfileId { get; set; }
+
+        /// <summary>
+        /// If true, we'll queue a job to import their friends list too
+        /// </summary>
+        public bool ImportFriendsListAsync { get; set; } = false;
+
+        /// <summary>
+        /// If true, we'll queue a job to import their inventory too
+        /// </summary>
+        public bool ImportInventoryAsync { get; set; } = false;
     }
 
     public class ImportSteamProfileResponse
@@ -30,14 +42,16 @@ namespace SCMM.Steam.API.Commands
     public class ImportSteamProfile : ICommandHandler<ImportSteamProfileRequest, ImportSteamProfileResponse>
     {
         private readonly ILogger<ImportSteamProfile> _logger;
+        private readonly ServiceBusClient _serviceBusClient;
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
+        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, ServiceBusClient serviceBusClient, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
         {
             _logger = logger;
+            _serviceBusClient = serviceBusClient;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
@@ -140,6 +154,21 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 await _db.SaveChangesAsync();
+
+                if (request.ImportFriendsListAsync && profile != null && !String.IsNullOrEmpty(profile.SteamId))
+                {
+                    await _serviceBusClient.SendMessageAsync(new ImportProfileFriendsMessage()
+                    {
+                        ProfileId = profile.SteamId
+                    });
+                }
+                if (request.ImportInventoryAsync && profile != null && !String.IsNullOrEmpty(profile.SteamId))
+                {
+                    await _serviceBusClient.SendMessageAsync(new ImportProfileInventoryMessage()
+                    {
+                        ProfileId = profile.SteamId
+                    });
+                }
             }
             catch (SteamRequestException ex)
             {

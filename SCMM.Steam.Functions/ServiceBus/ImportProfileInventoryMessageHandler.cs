@@ -18,16 +18,24 @@ public class ImportProfileInventoryMessageHandler
     [Function("Import-Profile-Inventory")]
     public async Task Run([ServiceBusTrigger("import-profile-inventory", Connection = "ServiceBusConnection")] ImportProfileInventoryMessage message, FunctionContext context)
     {
-        await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
+        var importResult = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
         {
-            AppId = message.AppId.ToString(),
-            ProfileId = message.ProfileId
-        });
-        await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
-        {
-            AppId = message.AppId.ToString(),
             ProfileId = message.ProfileId,
-            CurrencyId = Constants.SteamDefaultCurrency
+            AppIds = message.AppIds
         });
+
+        var appIds = importResult?.Profile?.InventoryItems?.Select(x => x.App?.SteamId)?.Distinct()?.ToArray();
+        if (appIds != null)
+        {
+            foreach (var appId in appIds)
+            {
+                await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
+                {
+                    ProfileId = message.ProfileId,
+                    AppId = appId,
+                    CurrencyId = Constants.SteamDefaultCurrency
+                });
+            }
+        }
     }
 }

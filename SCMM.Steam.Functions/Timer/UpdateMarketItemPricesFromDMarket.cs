@@ -110,8 +110,8 @@ public class UpdateMarketItemPricesFromDMarketJob
                     .ToArray();
                 var importInventoryMessages = dMarketItemHolders.Select(x => new ImportProfileInventoryMessage()
                 {
-                    AppId = UInt64.Parse(app.SteamId),
-                    ProfileId = x
+                    ProfileId = x,
+                    AppIds = new[] { app.SteamId },
                 });
                 if (importInventoryMessages.Any())
                 {

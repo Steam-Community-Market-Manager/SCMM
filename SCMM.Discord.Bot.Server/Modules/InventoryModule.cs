@@ -67,7 +67,8 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         //await message.LoadingAsync("🔍 Finding Steam profile...");
         var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
         {
-            ProfileId = steamId
+            ProfileId = steamId,
+            ImportFriendsListAsync = true
         });
 
         await _steamDb.SaveChangesAsync();
@@ -123,7 +124,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
         {
             ProfileId = profile.Id.ToString(),
-            AppId = Constants.RustAppId.ToString()
+            AppIds = new[] { Constants.RustAppId.ToString() }
         });
 
         await _steamDb.SaveChangesAsync();

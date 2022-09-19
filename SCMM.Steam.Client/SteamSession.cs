@@ -23,7 +23,7 @@ namespace SCMM.Steam.Client
         {
             if (_cookies.Count > 0)
             {
-                _logger.LogWarning("Steam session authentication is stale, attempting to refresh and try again...");
+                _logger.LogWarning("Steam session authentication may be stale, attempting to refresh...");
             }
             if (String.IsNullOrEmpty(_configuration?.Username) || String.IsNullOrEmpty(_configuration?.Password))
             {
@@ -43,20 +43,16 @@ namespace SCMM.Steam.Client
                     {
                         _logger.LogTrace($"Steam login was successful (result: {result})");
                         _session = login.Session;
+                        _session.AddCookies(_cookies);
+
+                        // Reset state
+                        IsRateLimited = false;
+                        LastLoginOn = DateTimeOffset.Now;
                     }
                     else
                     {
                         _logger.LogError($"Steam login was unsuccessful (result: {result})");
                     }
-
-                    // Refresh cookies
-                    if (_session != null)
-                    {
-                        _session.AddCookies(_cookies);
-                    }
-
-                    // Reset rate-limit state
-                    IsRateLimited = false;
                 }
                 catch (Exception ex)
                 {
@@ -86,11 +82,13 @@ namespace SCMM.Steam.Client
             // If we are rate-limited, back-off requests with a delay
             if (LastRateLimitedOn != null)
             {
-                // TODO: Refine this delay
-                return Task.Delay(TimeSpan.FromSeconds(30));
+                // TODO: Do this delay better (using a back-off?)
+                var delay = TimeSpan.FromSeconds(60);
+                _logger.LogWarning($"Steam session is rate-limited, must delay for {delay.TotalSeconds} seconds");
+                return Task.Delay(delay);
             }
             
-            /*
+            
             // TODO: Test and enable this...
             // Else, ensure that there is minimum delay between consecutive requests to avoid getting rate-limited
             else if (LastRequestOn != null)
@@ -98,10 +96,11 @@ namespace SCMM.Steam.Client
                 var timeSinceLastRequest = (DateTimeOffset.Now - LastRequestOn.Value);
                 if (timeSinceLastRequest.TotalMilliseconds < MinimumDelayBetweenConsecutiveRequestsInMilliseconds)
                 {
-                    return Task.Delay(Math.Max(0, (int)(MinimumDelayBetweenConsecutiveRequestsInMilliseconds - timeSinceLastRequest.TotalMilliseconds)));
+                    var delay = TimeSpan.FromMilliseconds(Math.Max(0, (int)(MinimumDelayBetweenConsecutiveRequestsInMilliseconds - timeSinceLastRequest.TotalMilliseconds)));
+                    _logger.LogWarning($"Steam session is throttling, must delay for {delay.TotalSeconds} seconds");
+                    return Task.Delay(delay);
                 }
             }
-            */
 
             LastRequestOn = DateTimeOffset.Now;
             return Task.CompletedTask;
@@ -131,5 +130,6 @@ namespace SCMM.Steam.Client
 
         public DateTimeOffset? LastRequestOn { get; private set; }
 
+        public DateTimeOffset? LastLoginOn { get; private set; }
     }
 }

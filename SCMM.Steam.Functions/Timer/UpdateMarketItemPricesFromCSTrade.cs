@@ -95,8 +95,8 @@ public class UpdateMarketItemPricesFromCSTrade
                     .ToArray();
                 var importTradeBotInventoryMessages = csTradeBots.Select(x => new ImportProfileInventoryMessage()
                 {
-                    AppId = UInt64.Parse(app.SteamId),
-                    ProfileId = x
+                    ProfileId = x,
+                    AppIds = new[] { app.SteamId }
                 });
                 if (importTradeBotInventoryMessages.Any())
                 {

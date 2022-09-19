@@ -17,7 +17,10 @@ namespace SCMM.Steam.API.Commands
     {
         public string ProfileId { get; set; }
 
-        public string AppId { get; set; }
+        /// <summary>
+        /// If specified, only inventories for these apps will be imported. If empty, all (active) apps will be imported.
+        /// </summary>
+        public string[] AppIds { get; set; }
 
         /// <summary>
         /// If true, inventory will always be fetched. If false, inventory is cached for 1 hour.
@@ -89,7 +92,8 @@ namespace SCMM.Steam.API.Commands
 
             // Load the apps
             var apps = await _db.SteamApps
-                .Where(x => String.IsNullOrEmpty(request.AppId) || x.SteamId == request.AppId)
+                .Where(x => request.AppIds == null || request.AppIds.Length == 0 || request.AppIds.Contains(x.SteamId))
+                .Where(x => x.IsActive)
                 .ToListAsync();
             if (!apps.Any())
             {

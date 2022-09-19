@@ -272,7 +272,8 @@ namespace SCMM.Web.Server.API.Controllers
             // Load the profile
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
-                ProfileId = id
+                ProfileId = id,
+                ImportFriendsListAsync = true
             });
 
             await _db.SaveChangesAsync();
@@ -318,7 +319,7 @@ namespace SCMM.Web.Server.API.Controllers
             var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = id,
-                AppId = this.App().Id.ToString(),
+                AppIds = new[] { this.App().Id.ToString() },
                 Force = force
             });
 
@@ -372,7 +373,8 @@ namespace SCMM.Web.Server.API.Controllers
             // Load the profile
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
-                ProfileId = id
+                ProfileId = id,
+                ImportFriendsListAsync = true
             });
 
             await _db.SaveChangesAsync();
@@ -387,7 +389,7 @@ namespace SCMM.Web.Server.API.Controllers
             var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString(),
-                AppId = this.App().Id.ToString(),
+                AppIds = new[] { this.App().Id.ToString() },
                 Force = force
             });
 
