@@ -313,7 +313,7 @@ namespace SCMM.Steam.API.Commands
                 // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
                 if (publishedFileId > 0 && (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl)))
                 {
-                    await _serviceBusClient.SendMessageAsync(new DownloadWorkshopFileContentsMessage()
+                    await _serviceBusClient.SendMessageAsync(new ImportWorkshopFileContentsMessage()
                     {
                         AppId = request.AppId,
                         PublishedFileId = publishedFileId,

@@ -1,13 +1,13 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
 
-namespace SCMM.Shared.API.Messages
+namespace SCMM.Shared.API.Events
 {
-    [Topic(Name = "Workshop-File-Updated")]
+    [Topic(Name = "Workshop-File-Published")]
     [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 60)]
-    public class WorkshopFileUpdatedMessage : Message
+    public class WorkshopFilePublishedMessage : Message
     {
-        public override string Id => $"{AppId}/{ItemId}/{ChangeTimestamp.Ticks}";
+        public override string Id => $"{AppId}/{ItemId}";
 
         public ulong AppId { get; set; }
 
@@ -36,12 +36,5 @@ namespace SCMM.Shared.API.Messages
         public string ItemCollection { get; set; }
 
         public string ItemImageUrl { get; set; }
-
-        public DateTime ItemTimeAccepted { get; set; }
-
-        public DateTime ChangeTimestamp { get; set; }
-
-        public string ChangeNote { get; set; }
-
     }
 }

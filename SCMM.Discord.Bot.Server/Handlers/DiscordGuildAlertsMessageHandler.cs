@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.Client;
 using SCMM.Discord.Data.Store;
+using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using System.Diagnostics;
@@ -61,7 +61,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     fields: fields,
                     color: !String.IsNullOrEmpty(appItemDefinition.AppColour) ? (uint?)UInt32.Parse(appItemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: Debugger.IsAttached == false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
@@ -121,7 +121,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     imageUrl: !String.IsNullOrEmpty(marketItem.ItemImageUrl) ? marketItem.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(marketItem.AppColour) ? (uint?)UInt32.Parse(marketItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: Debugger.IsAttached == false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
@@ -168,7 +168,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(store.ItemsImageUrl) ? store.ItemsImageUrl : null,
                     color: !String.IsNullOrEmpty(store.AppColour) ? (uint?)UInt32.Parse(store.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: Debugger.IsAttached == false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
@@ -208,7 +208,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(storeItem.ItemImageUrl) ? storeItem.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(storeItem.AppColour) ? (uint?)UInt32.Parse(storeItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: Debugger.IsAttached == false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
@@ -231,7 +231,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     imageUrl: storeMedia.VideoThumbnailUrl,
                     color: new Color(255, 0, 0), // YouTube red
-                    crossPost: Debugger.IsAttached == false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
@@ -269,7 +269,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?)UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: Debugger.IsAttached == false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
@@ -319,7 +319,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?) UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: Debugger.IsAttached == false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }

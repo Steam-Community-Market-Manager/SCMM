@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client.Commands;
+using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
@@ -464,10 +465,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                 })
                 .ToListAsync();
 
-            var messages = new List<DownloadWorkshopFileContentsMessage>();
+            var messages = new List<ImportWorkshopFileContentsMessage>();
             foreach (var workshopFile in workshopFiles)
             {
-                messages.Add(new DownloadWorkshopFileContentsMessage()
+                messages.Add(new ImportWorkshopFileContentsMessage()
                 {
                     AppId = UInt64.Parse(workshopFile.AppId),
                     PublishedFileId = workshopFile.WorkshopFileId,

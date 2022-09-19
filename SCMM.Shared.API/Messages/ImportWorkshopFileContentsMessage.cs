@@ -3,9 +3,9 @@ using SCMM.Azure.ServiceBus.Attributes;
 
 namespace SCMM.Shared.API.Messages
 {
-    [Queue(Name = "Download-Workshop-File-Contents")]
+    [Queue(Name = "Import-Workshop-File-Contents")]
     [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]
-    public class DownloadWorkshopFileContentsMessage : Message
+    public class ImportWorkshopFileContentsMessage : Message
     {
         public override string Id => $"{AppId}/{PublishedFileId}";
 

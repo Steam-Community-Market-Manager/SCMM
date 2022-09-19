@@ -1,11 +1,11 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
 
-namespace SCMM.Shared.API.Messages
+namespace SCMM.Shared.API.Events
 {
-    [Topic(Name = "Workshop-File-Published")]
-    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 60)]
-    public class WorkshopFilePublishedMessage : Message
+    [Topic(Name = "Market-Item-Added")]
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]
+    public class MarketItemAddedMessage : Message
     {
         public override string Id => $"{AppId}/{ItemId}";
 
@@ -17,7 +17,7 @@ namespace SCMM.Shared.API.Messages
 
         public string AppColour { get; set; }
 
-        public ulong CreatorId { get; set; }
+        public ulong? CreatorId { get; set; }
 
         public string CreatorName { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
 
-namespace SCMM.Shared.API.Messages
+namespace SCMM.Shared.API.Events
 {
     [Topic(Name = "Currency-Exchange-Rate-Updated")]
     [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 60)]

@@ -1,6 +1,6 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
-using SCMM.Shared.API.Messages;
+using SCMM.Shared.API.Events;
 
 namespace SCMM.Web.Server.Handlers
 {

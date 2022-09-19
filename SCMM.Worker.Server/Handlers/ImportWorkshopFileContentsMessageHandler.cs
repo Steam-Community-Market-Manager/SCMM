@@ -7,16 +7,16 @@ using SCMM.Steam.API.Commands;
 namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class DownloadWorkshopFileContentsMessageHandler : Worker.Client.WebClient, IMessageHandler<DownloadWorkshopFileContentsMessage>
+    public class ImportWorkshopFileContentsMessageHandler : Worker.Client.WebClient, IMessageHandler<ImportWorkshopFileContentsMessage>
     {
         private readonly ICommandProcessor _commandProcessor;
 
-        public DownloadWorkshopFileContentsMessageHandler(ICommandProcessor commandProcessor)
+        public ImportWorkshopFileContentsMessageHandler(ICommandProcessor commandProcessor)
         {
             _commandProcessor = commandProcessor;
         }
 
-        public async Task HandleAsync(DownloadWorkshopFileContentsMessage message, MessageContext context)
+        public async Task HandleAsync(ImportWorkshopFileContentsMessage message, MessageContext context)
         {
             await _commandProcessor.ProcessWithResultAsync(new ImportSteamWorkshopFileToBlobStorageRequest()
             {

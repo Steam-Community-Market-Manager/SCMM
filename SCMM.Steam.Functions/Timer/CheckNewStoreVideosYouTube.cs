@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
 using SCMM.Google.Client;
-using SCMM.Shared.API.Messages;
+using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
