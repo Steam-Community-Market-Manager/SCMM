@@ -32,5 +32,7 @@ namespace SCMM.Web.Data.Models.UI.Analytic
         public long DiscountAmount => Math.Abs(ReferemcePrice - (BuyPrice + BuyFee));
 
         public bool IsBeingManipulated { get; set; }
+
+        public string ManipulationReason { get; set; }
     }
 }

@@ -190,10 +190,21 @@ namespace SCMM.Steam.Data.Store
         // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
+        // How long since a price alert was last sent
+        public DateTimeOffset? LastPriceAlertOn { get; set; }
+
+        // How long since a manipulation alert was last sent
+        public DateTimeOffset? LastManipulationAlertOn { get; set; }
+
         /// <summary>
         /// If true, price is likely being manipulated right now
         /// </summary>
         public bool IsBeingManipulated { get; set; }
+
+        /// <summary>
+        /// The justification as to why "IsBeingManipulated" is set
+        /// </summary>
+        public string ManipulationReason { get; set; }
 
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {

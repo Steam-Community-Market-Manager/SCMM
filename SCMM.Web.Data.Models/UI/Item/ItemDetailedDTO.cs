@@ -197,6 +197,8 @@ namespace SCMM.Web.Data.Models.UI.Item
         
         public bool IsBeingManipulated { get; set; }
 
+        public string ManipulationReason { get; set; }
+
         #endregion
 
         #region Prices

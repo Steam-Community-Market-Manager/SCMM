@@ -176,7 +176,8 @@ namespace SCMM.Web.Server.API.Controllers
                         SellTo = MarketType.SteamCommunityMarket,
                         SellPrice = this.Currency().CalculateExchange(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice, x.Currency),
                         SellFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice), x.Currency) : 0),
-                        IsBeingManipulated = x.IsBeingManipulated
+                        IsBeingManipulated = x.IsBeingManipulated,
+                        ManipulationReason = x.ManipulationReason
                     })
                 );
             }
@@ -198,7 +199,8 @@ namespace SCMM.Web.Server.API.Controllers
                         BuyOrderHighestPrice = x.BuyOrderHighestPrice,
                         SellOrderLowestPrice = x.SellOrderLowestPrice,
                         Prices = x.BuyPrices,
-                        IsBeingManipulated = x.IsBeingManipulated
+                        IsBeingManipulated = x.IsBeingManipulated,
+                        ManipulationReason = x.ManipulationReason
                     })
                     .ToList()
                     .Select(x => new MarketItemFlipAnalyticDTO()
@@ -228,7 +230,8 @@ namespace SCMM.Web.Server.API.Controllers
                             (includeFees ? EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) : 0),
                             x.CurrencyExchangeRateMultiplier
                         ),
-                        IsBeingManipulated = x.IsBeingManipulated
+                        IsBeingManipulated = x.IsBeingManipulated,
+                        ManipulationReason = x.ManipulationReason
                     })
                     .AsQueryable()
                     .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.SellPrice > 0)
@@ -286,7 +289,8 @@ namespace SCMM.Web.Server.API.Controllers
                         BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                         ReferenceFrom = MarketType.SteamCommunityMarket,
                         ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
-                        IsBeingManipulated = x.IsBeingManipulated
+                        IsBeingManipulated = x.IsBeingManipulated,
+                        ManipulationReason = x.ManipulationReason
                     })
                 );
             }
@@ -307,7 +311,8 @@ namespace SCMM.Web.Server.API.Controllers
                         CurrencyExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
                         SellOrderLowestPrice = x.SellOrderLowestPrice,
                         Prices = x.BuyPrices,
-                        IsBeingManipulated = x.IsBeingManipulated
+                        IsBeingManipulated = x.IsBeingManipulated,
+                        ManipulationReason = x.ManipulationReason
                     })
                     .ToList()
                     .Select(x => new MarketItemListingAnalyticDTO()
@@ -330,7 +335,8 @@ namespace SCMM.Web.Server.API.Controllers
                         ),
                         ReferenceFrom = MarketType.SteamCommunityMarket,
                         ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.CurrencyExchangeRateMultiplier),
-                        IsBeingManipulated = x.IsBeingManipulated
+                        IsBeingManipulated = x.IsBeingManipulated,
+                        ManipulationReason = x.ManipulationReason
                     })
                     .AsQueryable()
                     .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) <= x.ReferemcePrice)
