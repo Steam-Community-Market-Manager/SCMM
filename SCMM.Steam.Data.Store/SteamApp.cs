@@ -16,6 +16,7 @@ namespace SCMM.Steam.Data.Store
             MarketItems = new Collection<SteamMarketItem>();
             StoreItems = new Collection<SteamStoreItem>();
             ItemStores = new Collection<SteamItemStore>();
+            ItemDefinitionArchives = new Collection<SteamItemDefinitionsArchive>();
         }
 
         [NotMapped]
@@ -61,6 +62,8 @@ namespace SCMM.Steam.Data.Store
         public ICollection<SteamStoreItem> StoreItems { get; set; }
 
         public ICollection<SteamItemStore> ItemStores { get; set; }
+
+        public ICollection<SteamItemDefinitionsArchive> ItemDefinitionArchives { get; set; }
 
         public bool IsActive { get; set; }
     }

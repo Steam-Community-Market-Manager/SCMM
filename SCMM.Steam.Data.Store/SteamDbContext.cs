@@ -67,9 +67,17 @@ namespace SCMM.Steam.Data.Store
                 .HasMany(x => x.ItemStores)
                 .WithOne(x => x.App)
                 .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<SteamApp>()
+                .HasMany(x => x.ItemDefinitionArchives)
+                .WithOne(x => x.App)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<SteamAssetFilter>()
                 .OwnsOne(x => x.Options);
+
+            builder.Entity<SteamItemDefinitionsArchive>()
+                .HasIndex(x => x.Digest)
+                .IsUnique(true);
 
             builder.Entity<SteamAssetDescription>()
                 .HasIndex(x => new { x.ClassId, x.ItemDefinitionId })
