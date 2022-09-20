@@ -37,7 +37,7 @@ public class CheckForNewMarketItems
     }
 
     [Function("Check-New-Market-Items")]
-    public async Task Run([TimerTrigger("0 2 * * * *")] /* every hour, 2 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 3 * * * *")] /* every hour, 3 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-Market-Items");
 

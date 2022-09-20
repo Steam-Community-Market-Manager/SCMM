@@ -12,23 +12,23 @@ using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class CheckNewStoreVideosYouTube
+public class CheckForNewStoreVideosYouTube
 {
     private readonly SteamDbContext _db;
     private readonly GoogleClient _googleClient;
-    private readonly CheckNewStoreVideosConfiguration _configuration;
+    private readonly CheckForNewStoreVideosConfiguration _configuration;
     private readonly ServiceBusClient _serviceBus;
 
-    public CheckNewStoreVideosYouTube(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient, ServiceBusClient serviceBus)
+    public CheckForNewStoreVideosYouTube(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient, ServiceBusClient serviceBus)
     {
         _db = db;
         _googleClient = googleClient;
-        _configuration = configuration.GetSection("StoreVideos").Get<CheckNewStoreVideosConfiguration>();
+        _configuration = configuration.GetSection("StoreVideos").Get<CheckForNewStoreVideosConfiguration>();
         _serviceBus = serviceBus;
     }
 
     [Function("Check-New-Store-Videos-YouTube")]
-    public async Task Run([TimerTrigger("0 5 * * * *")] /* every hour, 5mins past */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 5 * * * *")] /* every hour, 5 minutes past */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-Store-Videos-YouTube");
 
@@ -52,7 +52,7 @@ public class CheckNewStoreVideosYouTube
             foreach (var itemStore in activeItemStores)
             {
                 var media = new List<YouTubeVideo>();
-                foreach (var channel in _configuration.Channels.Where(x => x.Type == CheckNewStoreVideosConfiguration.ChannelType.YouTube))
+                foreach (var channel in _configuration.Channels.Where(x => x.Type == CheckForNewStoreVideosConfiguration.ChannelType.YouTube))
                 {
                     try
                     {

@@ -1,7 +1,7 @@
 ﻿
 namespace SCMM.Steam.Functions.Timer;
 
-public class CheckNewStoreVideosConfiguration
+public class CheckForNewStoreVideosConfiguration
 {
     public ChannelExpression[] Channels { get; set; }
 
