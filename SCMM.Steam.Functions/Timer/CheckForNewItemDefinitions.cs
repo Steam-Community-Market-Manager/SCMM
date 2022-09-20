@@ -169,7 +169,7 @@ public class CheckForNewItemDefinitions
                     ItemName = newAssetDescription.Name,
                     ItemDescription = newAssetDescription.Description,
                     ItemCollection = newAssetDescription.ItemCollection,
-                    ItemImageUrl = newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
+                    ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
                 })
             );
         }

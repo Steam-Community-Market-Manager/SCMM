@@ -324,7 +324,7 @@ namespace SCMM.Steam.API.Commands
                                         ItemName = assetDescription.Name,
                                         ItemDescription = assetDescription.Description,
                                         ItemCollection = assetDescription.ItemCollection,
-                                        ItemImageUrl = assetDescription.IconLargeUrl ?? assetDescription.IconUrl,
+                                        ItemImageUrl = assetDescription.PreviewUrl ?? assetDescription.IconLargeUrl ?? assetDescription.IconUrl,
                                         ItemTimeAccepted = assetDescription.TimeAccepted?.UtcDateTime ?? timestamp,
                                         ChangeTimestamp = assetDescription.TimeUpdated?.UtcDateTime ?? timestamp,
                                         ChangeNote = description

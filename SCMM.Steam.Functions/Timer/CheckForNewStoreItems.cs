@@ -401,7 +401,7 @@ public class CheckForNewStoreItems
                     ItemName = storeItem.Item.Description?.Name,
                     ItemDescription = storeItem.Item.Description?.Description,
                     ItemCollection = storeItem.Item.Description?.ItemCollection,
-                    ItemImageUrl = storeItem.Item.Description?.IconLargeUrl ?? storeItem.Item.Description?.IconUrl,
+                    ItemImageUrl = storeItem.Item.Description?.PreviewUrl ?? storeItem.Item.Description?.IconLargeUrl ?? storeItem.Item.Description?.IconUrl,
                     ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
                     { 
                         Currency = x.Key,

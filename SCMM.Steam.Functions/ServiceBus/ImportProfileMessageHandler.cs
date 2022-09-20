@@ -14,7 +14,7 @@ public class ImportProfileMessageHandler
         _commandProcessor = commandProcessor;
     }
 
-    [Function("Import-Profile-Inventory")]
+    [Function("Import-Profile")]
     public async Task Run([ServiceBusTrigger("import-profile", Connection = "ServiceBusConnection")] ImportProfileMessage message, FunctionContext context)
     {
         await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()

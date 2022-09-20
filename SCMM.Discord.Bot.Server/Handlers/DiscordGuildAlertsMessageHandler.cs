@@ -7,7 +7,6 @@ using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -68,7 +67,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(ItemDefinitionAddedMessage itemDefinition, MessageContext context)
         {
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guildId, channelId) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsItemAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {itemDefinition.ItemType} has been added to the {itemDefinition.AppName} in-game item definitions.");

@@ -29,6 +29,7 @@ namespace SCMM.Discord.Data.Store
             public const string Currency = "Currency";
 
             public const string AlertChannelAppItemDefinitionsUpdated = "Alert-Channel-App-Item-Definitions-Updated";
+            public const string AlertChannelAppItemDefinitionsItemAdded = "Alert-Channel-App-Item-Definitions-Item-Added";
             public const string AlertChannelMarketItemAdded = "Alert-Channel-Market-Item-Added";
             public const string AlertChannelMarketItemManipulationDetected = "Alert-Channel-Market-Item-Manipulation-Detected";
             public const string AlertChannelMarketItemPriceAllTimeHighReached = "Alert-Channel-Market-Item-Price-All-Time-High-Reached";
@@ -74,6 +75,12 @@ namespace SCMM.Discord.Data.Store
                 new ConfigurationDefinition()
                 {
                     Name = AlertChannelAppItemDefinitionsUpdated,
+                    Description =  "The channel where alerts will be posted when the in-game item definitions are updated.",
+                    RequiredFlags = (int) GuildFlags.Alerts
+                },
+                new ConfigurationDefinition()
+                {
+                    Name = AlertChannelAppItemDefinitionsItemAdded,
                     Description =  "The channel where alerts will be posted when new items are added to the game files.",
                     RequiredFlags = (int) GuildFlags.Alerts
                 },
