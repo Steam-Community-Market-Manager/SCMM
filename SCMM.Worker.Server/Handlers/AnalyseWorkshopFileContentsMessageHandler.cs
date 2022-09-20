@@ -7,7 +7,7 @@ using SCMM.Steam.API.Messages;
 namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class AnalyseWorkshopFileContentsMessageHandler : Worker.Client.WebClient, IMessageHandler<AnalyseWorkshopFileContentsMessage>
+    public class AnalyseWorkshopFileContentsMessageHandler : IMessageHandler<AnalyseWorkshopFileContentsMessage>
     {
         private readonly ICommandProcessor _commandProcessor;
 

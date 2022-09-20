@@ -7,7 +7,7 @@ using SCMM.Steam.API.Commands;
 namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class ImportWorkshopFileContentsMessageHandler : Worker.Client.WebClient, IMessageHandler<ImportWorkshopFileContentsMessage>
+    public class ImportWorkshopFileContentsMessageHandler : IMessageHandler<ImportWorkshopFileContentsMessage>
     {
         private readonly ICommandProcessor _commandProcessor;
 

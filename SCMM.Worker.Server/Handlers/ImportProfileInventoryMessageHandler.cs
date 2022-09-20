@@ -8,7 +8,7 @@ using SCMM.Steam.Data.Models;
 namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class ImportProfileInventoryMessageHandler : Worker.Client.WebClient, IMessageHandler<ImportProfileInventoryMessage>
+    public class ImportProfileInventoryMessageHandler : IMessageHandler<ImportProfileInventoryMessage>
     {
         private readonly ICommandProcessor _commandProcessor;
 

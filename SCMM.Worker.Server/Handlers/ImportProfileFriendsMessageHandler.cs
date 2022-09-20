@@ -7,7 +7,7 @@ using SCMM.Steam.API.Commands;
 namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class ImportProfileFriendsMessageHandler : Worker.Client.WebClient, IMessageHandler<ImportProfileFriendsMessage>
+    public class ImportProfileFriendsMessageHandler : IMessageHandler<ImportProfileFriendsMessage>
     {
         private readonly ICommandProcessor _commandProcessor;
 
