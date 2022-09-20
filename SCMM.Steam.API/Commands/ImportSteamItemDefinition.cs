@@ -100,7 +100,7 @@ namespace SCMM.Steam.API.Commands
             if (!assetDescription.IsTransient)
             {
                 // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
-                if (assetDescription.WorkshopFileId > 0 && string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
+                if (assetDescription.WorkshopFileId > 0 && string.IsNullOrEmpty(assetDescription.WorkshopFileUrl) && !assetDescription.WorkshopFileIsUnavailable)
                 {
                     await _serviceBusClient.SendMessageAsync(new ImportWorkshopFileContentsMessage()
                     {

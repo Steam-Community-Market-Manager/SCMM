@@ -42,6 +42,11 @@ namespace SCMM.Steam.Data.Store
 
         public string WorkshopFileUrl { get; set; }
 
+        /// <summary>
+        /// If true, the workshop file content is no longer available
+        /// </summary>
+        public bool WorkshopFileIsUnavailable { get; set; }
+        
         public ulong? CreatorId { get; set; }
 
         public Guid? CreatorProfileId { get; set; }

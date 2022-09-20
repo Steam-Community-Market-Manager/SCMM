@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Core;
+using Azure.Storage.Blobs;
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -66,6 +67,7 @@ namespace SCMM.Steam.API.Commands
                 else
                 {
                     _logger.LogWarning($"Download was skipped, workshop is known to be unavailable");
+                    await UpdateAssetDescriptionsWorkshopFileAsUnavilable(request.PublishedFileId);
                     return null;
                 }
             }
@@ -88,6 +90,7 @@ namespace SCMM.Steam.API.Commands
                 if (publishedFileData?.Data == null)
                 {
                     // This file likely has been removed from steam, tag it as missing so we don't try again in the future
+                    _logger.LogWarning("Workshop file cannot be downloaded, will ignore next time");
                     await blobMissing.UploadAsync(
                         new BinaryData(new byte[0])
                     );
@@ -95,7 +98,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         { Constants.BlobMetadataPublishedFileId, request.PublishedFileId.ToString() }
                     });
-                    _logger.LogWarning("Workshop file cannot be downloaded, will ignore next time");
+                    await UpdateAssetDescriptionsWorkshopFileAsUnavilable(request.PublishedFileId);
                     return null;
                 }
                 else
@@ -123,27 +126,10 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Update all asset descriptions that reference this workshop file with the blob url
-            var workshopFileUrl = new Uri($"{_workshopFilesStorageUrl}{blob.Uri.AbsolutePath}").ToString();
-            var assetDescriptions = new List<SteamAssetDescription>();
-            var assetDescriptionCheckStarted = DateTimeOffset.UtcNow;
-            do
-            {
-                // NOTE: It is possible that the asset doesn't yet exist (i.e. it's still transient)
-                // TODO: This is a lazy fix, just wait up to 1min for it to be saved before giving up
-                Thread.Sleep(TimeSpan.FromSeconds(10));
-                assetDescriptions = await _steamDb.SteamAssetDescriptions
-                    .Where(x => x.WorkshopFileId == request.PublishedFileId)
-                    .Where(x => x.WorkshopFileUrl != workshopFileUrl)
-                    .ToListAsync();
-
-            } while (!assetDescriptions.Any() && (DateTimeOffset.UtcNow - assetDescriptionCheckStarted) <= _maxTimeToWaitForAsset);
-            foreach (var assetDescription in assetDescriptions)
-            {
-                _logger.LogInformation($"Asset description workshop data url updated for '{assetDescription.Name}' ({assetDescription.ClassId})");
-                assetDescription.WorkshopFileUrl = workshopFileUrl;
-            }
-
-            await _steamDb.SaveChangesAsync();
+            await UpdateAssetDescriptionsWorkshopFileAsAvilable(
+                request.PublishedFileId,
+                new Uri($"{_workshopFilesStorageUrl}{blob.Uri.AbsolutePath}").ToString()
+            );
 
             // Queue analyse of the workfshop file
             await _serviceBus.SendMessageAsync(new AnalyseWorkshopFileContentsMessage()
@@ -156,6 +142,47 @@ namespace SCMM.Steam.API.Commands
             {
                 FileUrl = blob.Uri.ToString()
             };
+        }
+
+        private async Task UpdateAssetDescriptionsWorkshopFileAsAvilable(ulong publishedFileId, string workshopFileUrl)
+        {
+            var assetDescriptions = new List<SteamAssetDescription>();
+            var assetDescriptionCheckStarted = DateTimeOffset.UtcNow;
+            do
+            {
+                // NOTE: It is possible that the asset doesn't yet exist (i.e. it's still transient)
+                // TODO: This is a lazy fix, just wait up to 1min for it to be saved before giving up
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+                assetDescriptions = await _steamDb.SteamAssetDescriptions
+                    .Where(x => x.WorkshopFileId == publishedFileId)
+                    .Where(x => x.WorkshopFileUrl != workshopFileUrl)
+                    .ToListAsync();
+
+            } while (!assetDescriptions.Any() && (DateTimeOffset.UtcNow - assetDescriptionCheckStarted) <= _maxTimeToWaitForAsset);
+            foreach (var assetDescription in assetDescriptions)
+            {
+                _logger.LogInformation($"Asset description workshop data url updated for '{assetDescription.Name}' ({assetDescription.ClassId})");
+                assetDescription.WorkshopFileUrl = workshopFileUrl;
+                assetDescription.WorkshopFileIsUnavailable = false;
+            }
+
+            await _steamDb.SaveChangesAsync();
+        }
+
+        private async Task UpdateAssetDescriptionsWorkshopFileAsUnavilable(ulong publishedFileId)
+        {
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions
+                    .Where(x => x.WorkshopFileId == publishedFileId)
+                    .Where(x => String.IsNullOrEmpty(x.WorkshopFileUrl) && !x.WorkshopFileIsUnavailable)
+                    .ToListAsync();
+
+            foreach (var assetDescription in assetDescriptions)
+            {
+                _logger.LogInformation($"Asset description workshop data is permanently unavailable for '{assetDescription.Name}' ({assetDescription.ClassId})");
+                assetDescription.WorkshopFileIsUnavailable = true;
+            }
+
+            await _steamDb.SaveChangesAsync();
         }
     }
 }
