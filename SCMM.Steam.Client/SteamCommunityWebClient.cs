@@ -7,6 +7,10 @@ using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
 {
+    /// <summary>
+    /// Client for https://steamcommunity.com/
+    /// Some requests require a valid Steam session cookie
+    /// </summary>
     public class SteamCommunityWebClient : SteamWebClient
     {
         public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, SteamSession session)

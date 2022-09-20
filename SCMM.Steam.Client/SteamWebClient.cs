@@ -75,11 +75,16 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                // Add an artifical delay to requests based on the current rate-limit state
-                await _session.WaitForRateLimitDelaysAsync();
-            
+                if (_session != null)
+                {
+                    // Add an artifical delay to requests based on the current rate-limit state
+                    await _session.WaitForRateLimitDelaysAsync();
+                }
+
+                // Zhu Li, do the thing...
                 var response = await Get(request);
-                if (response.IsSuccessStatusCode && _session.IsRateLimited)
+
+                if (_session != null && _session.IsRateLimited && response.IsSuccessStatusCode)
                 {
                     // Success, we're no longer rate limited :)
                     _session.SetRateLimited(false);
@@ -104,7 +109,7 @@ namespace SCMM.Steam.Client
                 }
                 // Check if the request failed due to rate limiting
                 // 429: TooManyRequests
-                else if (ex.IsRateLimited)
+                else if (ex.IsRateLimited && _session != null)
                 {
                     // Back-off requests to avoid getting rate-limited more
                     _session.SetRateLimited(true);

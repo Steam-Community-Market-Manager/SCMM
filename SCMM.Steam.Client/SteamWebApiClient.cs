@@ -11,12 +11,16 @@ using System.Text.Json;
 
 namespace SCMM.Steam.Client
 {
+    /// <summary>
+    /// Client for https://api.steampowered.com/
+    /// Most requests require an API 'Key' parameter. No session cookie required.
+    /// </summary>
     public class SteamWebApiClient : SteamWebClient
     {
         private readonly SteamConfiguration _configuration;
 
-        public SteamWebApiClient(ILogger<SteamWebApiClient> logger, SteamSession session, SteamConfiguration configuration)
-            : base(logger, session)
+        public SteamWebApiClient(ILogger<SteamWebApiClient> logger, SteamConfiguration configuration)
+            : base(logger, null)
         {
             _configuration = configuration;
         }
