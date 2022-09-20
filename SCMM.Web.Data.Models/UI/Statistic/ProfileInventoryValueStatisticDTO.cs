@@ -12,6 +12,8 @@
 
         public bool IsPrivate { get; set; }
 
+        public bool IsBanned { get; set; }
+
         public bool IsBot { get; set; }
 
         public int Items { get; set; }

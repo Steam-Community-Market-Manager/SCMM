@@ -45,9 +45,16 @@
                                                     <div class="d-flex flex-column">
                                                         <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
                                                         <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                            @if (profile.IsBanned)
+                                                            {
+                                                                <span class="no-wrap mud-error-text">
+                                                                    <i class="fas fa-fw fa-ban"></i>
+                                                                    <span> Banned </span>
+                                                                </span>
+                                                            }
                                                             @if (profile.IsPrivate)
                                                             {
-                                                                <span class="no-wrap">
+                                                                <span class="no-wrap mud-warning-text">
                                                                     <i class="fas fa-fw fa-lock"></i>
                                                                     <span> Private </span>
                                                                 </span>
@@ -108,9 +115,16 @@
                                                     <div class="d-flex flex-column">
                                                         <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
                                                         <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                            @if (profile.IsBanned)
+                                                            {
+                                                                <span class="no-wrap mud-error-text">
+                                                                    <i class="fas fa-fw fa-ban"></i>
+                                                                    <span> Banned </span>
+                                                                </span>
+                                                            }
                                                             @if (profile.IsPrivate)
                                                             {
-                                                                <span class="no-wrap">
+                                                                <span class="no-wrap mud-warning-text">
                                                                     <i class="fas fa-fw fa-lock"></i>
                                                                     <span> Private </span>
                                                                 </span>

@@ -34,9 +34,16 @@
                             <span>@Profile.ProfileId</span>
                         }
                     </small>
+                    @if (Profile.IsTradeBanned)
+                    {
+                        <small class="no-wrap mud-error-text">
+                            <i class="fas fa-fw fa-ban"></i>
+                            <span> Banned </span>
+                        </small>
+                    }
                     @if (Profile.Privacy != SteamVisibilityType.Public)
                     {
-                        <small class="no-wrap">
+                        <small class="no-wrap mud-warning-text">
                             <i class="fas fa-fw fa-lock"></i>
                             <span> Private </span>
                         </small>

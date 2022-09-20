@@ -46,6 +46,8 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
 
+        public DateTimeOffset? LastUpdatedOn { get; set; }
+
         public DateTimeOffset? LastSignedInOn { get; set; }
 
         public int DonatorLevel { get; set; }
@@ -53,6 +55,8 @@ namespace SCMM.Steam.Data.Store
         public long GamblingOffset { get; set; }
 
         public SteamVisibilityType Privacy { get; set; } = SteamVisibilityType.Unknown;
+
+        public bool IsTradeBanned { get; set; }
 
         public ItemAnalyticsParticipationType ItemAnalyticsParticipation { get; set; } = ItemAnalyticsParticipationType.Public;
 

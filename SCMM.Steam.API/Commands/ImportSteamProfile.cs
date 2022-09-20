@@ -29,6 +29,11 @@ namespace SCMM.Steam.API.Commands
         /// If true, we'll queue a job to import their inventory too
         /// </summary>
         public bool ImportInventoryAsync { get; set; } = false;
+
+        /// <summary>
+        /// If true, profile will always be fetched. If false, profile is cached for 1 day.
+        /// </summary>
+        public bool Force { get; set; } = false;
     }
 
     public class ImportSteamProfileResponse
@@ -69,6 +74,15 @@ namespace SCMM.Steam.API.Commands
 
             try
             {
+                // If the profile is less than 1 day old and we aren't forcing an update, just return the current profile
+                if (resolvedId?.Profile?.LastUpdatedOn != null && (DateTimeOffset.Now - resolvedId.Profile.LastUpdatedOn.Value) <= TimeSpan.FromDays(1) && request.Force == false)
+                {
+                    return new ImportSteamProfileResponse()
+                    {
+                        Profile = resolvedId?.Profile
+                    };
+                }
+
                 // If we know the exact steam id, fetch using the Steam API
                 if (resolvedId?.SteamId64 != null)
                 {
@@ -77,13 +91,13 @@ namespace SCMM.Steam.API.Commands
                     var steamId = resolvedId.SteamId64.Value;
                     var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
                     var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                    var response = await steamUser.GetPlayerSummaryAsync(steamId);
-                    if (response?.Data == null)
+                    var playerSummaryResponse = await steamUser.GetPlayerSummaryAsync(steamId);
+                    if (playerSummaryResponse?.Data == null)
                     {
                         throw new ArgumentException(nameof(request), "SteamID is invalid, or profile no longer exists");
                     }
 
-                    var profileId = response.Data.ProfileUrl;
+                    var profileId = playerSummaryResponse.Data.ProfileUrl;
                     if (string.IsNullOrEmpty(profileId))
                     {
                         throw new ArgumentException(nameof(request), "ProfileID is invalid");
@@ -105,9 +119,19 @@ namespace SCMM.Steam.API.Commands
 
                     profile.SteamId = steamId.ToString();
                     profile.ProfileId = profileId;
-                    profile.Name = response.Data.Nickname?.Trim();
-                    profile.AvatarUrl = response.Data.AvatarMediumUrl;
-                    profile.AvatarLargeUrl = response.Data.AvatarFullUrl;
+                    profile.Name = playerSummaryResponse.Data.Nickname?.Trim();
+                    profile.AvatarUrl = playerSummaryResponse.Data.AvatarMediumUrl;
+                    profile.AvatarLargeUrl = playerSummaryResponse.Data.AvatarFullUrl;
+
+                    var playerBanResponse = await steamUser.GetPlayerBansAsync(steamId);
+                    var playerBan = playerBanResponse?.Data?.FirstOrDefault(x => x.SteamId == steamId.ToString());
+                    if (playerBan != null)
+                    {
+                        profile.IsTradeBanned = (
+                            !String.IsNullOrEmpty(playerBan.EconomyBan) && 
+                            !String.Equals(playerBan.EconomyBan, "none", StringComparison.InvariantCultureIgnoreCase)
+                        );
+                    }
                 }
 
                 // Else, if we know the custom profile id, fetch using the legacy XML API
@@ -149,6 +173,10 @@ namespace SCMM.Steam.API.Commands
                     profile.Name = response.SteamID.Trim();
                     profile.AvatarUrl = response.AvatarMedium;
                     profile.AvatarLargeUrl = response.AvatarFull;
+                    profile.IsTradeBanned = (
+                        !String.IsNullOrEmpty(response.TradeBanState) && 
+                        !String.Equals(response.TradeBanState, "none", StringComparison.InvariantCultureIgnoreCase)
+                    );
                 }
 
                 // Save the new profile to the datbase
@@ -156,6 +184,8 @@ namespace SCMM.Steam.API.Commands
                 {
                     _db.SteamProfiles.Add(profile);
                 }
+
+                profile.LastUpdatedOn = DateTimeOffset.Now;
 
                 await _db.SaveChangesAsync();
 
