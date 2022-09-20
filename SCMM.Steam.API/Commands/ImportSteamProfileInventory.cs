@@ -1,5 +1,6 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
@@ -35,13 +36,15 @@ namespace SCMM.Steam.API.Commands
 
     public class ImportSteamProfileInventory : ICommandHandler<ImportSteamProfileInventoryRequest, ImportSteamProfileInventoryResponse>
     {
+        private readonly ILogger<ImportSteamProfileInventory> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileInventory(SteamDbContext db, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileInventory(ILogger<ImportSteamProfileInventory>  logger, SteamDbContext db, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
+            _logger = logger;
             _db = db;
             _communityClient = communityClient;
             _commandProcessor = commandProcessor;
@@ -103,6 +106,8 @@ namespace SCMM.Steam.API.Commands
             // Fetch the profiles inventory for each of the apps we monitor
             foreach (var app in apps)
             {
+                _logger.LogInformation($"Importing inventory of '{resolvedId.CustomUrl}' from Steam (appId: {app.SteamId})");
+
                 var steamInventoryItems = await FetchInventoryRecursive(profile, app);
                 if (steamInventoryItems == null || profile.Privacy == SteamVisibilityType.Private)
                 {

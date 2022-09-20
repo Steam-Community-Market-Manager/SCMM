@@ -65,6 +65,10 @@ public static class HostExtensions
             logging.ClearProviders();
             logging.AddDebug();
             logging.AddConsole();
+            logging.SetMinimumLevel(LogLevel.Information);
+            logging.AddFilter("Microsoft", level => level >= LogLevel.Warning);
+            logging.AddFilter("Microsoft.Hosting.Lifetime", level => level >= LogLevel.Warning);
+            logging.AddFilter("Microsoft.EntityFrameworkCore.Database", level => level >= LogLevel.Warning);
         });
     }
 

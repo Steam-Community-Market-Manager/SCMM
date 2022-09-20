@@ -66,6 +66,8 @@ namespace SCMM.Steam.API.Commands
 
             try
             {
+                _logger.LogInformation($"Importing friends of '{resolvedId.SteamId64}' from Steam");
+
                 var steamId = resolvedId.SteamId64.Value;
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
                 var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
