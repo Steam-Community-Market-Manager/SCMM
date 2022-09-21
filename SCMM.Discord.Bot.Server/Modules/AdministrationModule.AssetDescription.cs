@@ -33,6 +33,20 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
+        [Command("import-rust-item-definitions-and-parse-changes")]
+        public async Task<RuntimeResult> ImportAndParseRustAssetDescriptionAsync(string digest)
+        {
+            await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
+            {
+                AppId = Constants.RustAppId.ToString(),
+                ItemDefinitionsDigest = digest,
+                ParseChanges = true
+            });
+
+            await _steamDb.SaveChangesAsync();
+            return CommandResult.Success();
+        }
+
         [Command("import-rust-asset-description")]
         public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(params ulong[] classIds)
         {

@@ -76,6 +76,7 @@ public class CheckForNewAppItemDefinitions
                     {
                         AppId = app.SteamId,
                         ItemDefinitionsDigest = itemDefsDigest,
+                        ParseChanges = true
                     });
                 }
             }

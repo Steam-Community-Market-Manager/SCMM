@@ -12,5 +12,7 @@ namespace SCMM.Shared.API.Messages
         public string AppId { get; set; }
 
         public string ItemDefinitionsDigest { get; set; }
+
+        public bool ParseChanges { get; set; }
     }
 }

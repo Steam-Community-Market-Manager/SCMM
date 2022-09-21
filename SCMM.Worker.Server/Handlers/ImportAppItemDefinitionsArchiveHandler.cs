@@ -21,7 +21,8 @@ namespace SCMM.Worker.Server.Handlers
             await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
             {
                 AppId = message.AppId,
-                ItemDefinitionsDigest = message.ItemDefinitionsDigest
+                ItemDefinitionsDigest = message.ItemDefinitionsDigest,
+                ParseChanges = message.ParseChanges
             });
         }
     }

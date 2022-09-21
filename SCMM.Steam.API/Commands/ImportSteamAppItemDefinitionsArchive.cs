@@ -30,6 +30,11 @@ namespace SCMM.Steam.API.Commands
         public string AppId { get; set; }
 
         public string ItemDefinitionsDigest { get; set; }
+
+        /// <summary>
+        /// If true, item definition will be parsed (for asset descriptions, store items, and market items)
+        /// </summary>
+        public bool ParseChanges { get; set; } = false;
     }
 
     public class ImportSteamAppItemDefinitionsArchive : ICommandHandler<ImportSteamAppItemDefinitionsArchiveRequest>
@@ -90,31 +95,42 @@ namespace SCMM.Steam.API.Commands
                 await _steamDb.SaveChangesAsync();
             }
 
-            // TODO: Filter this properly
-            var itemDefinitions = itemDefinitionsArchive
-                .Where(x => x.Name != "DELETED" && x.Type != "generator")
-                .ToArray();
+            if (request.ParseChanges)
+            {
+                // TODO: Filter this properly
+                var itemDefinitions = itemDefinitionsArchive
+                    .Where(x => x.Name != "DELETED" && x.Type != "generator")
+                    .ToArray();
 
-            var currencies = await _steamDb.SteamCurrencies.ToArrayAsync();
-            var assetDescriptions = await _steamDb.SteamAssetDescriptions
-                .Include(x => x.App)
-                .Include(x => x.CreatorProfile)
-                .Include(x => x.StoreItem)
-                .Include(x => x.MarketItem)
-                .Where(x => x.AppId == app.Id)
-                .ToListAsync();
+                var currencies = await _steamDb.SteamCurrencies.ToArrayAsync();
+                var assetDescriptions = await _steamDb.SteamAssetDescriptions
+                    .Include(x => x.App)
+                    .Include(x => x.CreatorProfile)
+                    .Include(x => x.StoreItem)
+                    .Include(x => x.MarketItem)
+                    .Where(x => x.AppId == app.Id)
+                    .ToListAsync();
 
-            // Parse all item definition changes in the archive
-            await LinkAssetDescriptionsToItemDefinitionsFromArchive(app, itemDefinitions, assetDescriptions);
-            await AddNewAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
-            await _steamDb.SaveChangesAsync();
-            await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
-            await _steamDb.SaveChangesAsync();
-            await AddOrUpdateMarketItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
-            await _steamDb.SaveChangesAsync();
+                // Parse all item definition changes in the archive
+                _logger.LogInformation($"Parsing item definitions for missing ids (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                await LinkAssetDescriptionsToItemDefinitionsFromArchive(app, itemDefinitions, assetDescriptions);
 
-            await UpdateExistingAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
-            await _steamDb.SaveChangesAsync();
+                _logger.LogInformation($"Parsing item definitions for new asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                await AddNewAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
+                await _steamDb.SaveChangesAsync();
+
+                _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                await _steamDb.SaveChangesAsync();
+
+                _logger.LogInformation($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                await AddOrUpdateMarketItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                await _steamDb.SaveChangesAsync();
+
+                _logger.LogInformation($"Parsing item definitions for updated asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                await UpdateExistingAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
+                await _steamDb.SaveChangesAsync();
+            }
         }
 
         private async Task LinkAssetDescriptionsToItemDefinitionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
