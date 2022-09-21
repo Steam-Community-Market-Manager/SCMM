@@ -12,6 +12,7 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
 using SCMM.Steam.Data.Store;
@@ -89,7 +90,7 @@ namespace SCMM.Steam.API.Commands
                     App = app,
                     Digest = request.ItemDefinitionsDigest,
                     ItemDefinitions = JsonSerializer.Serialize(itemDefinitionsArchive.ToArray()),
-                    TimePublished = DateTimeOffset.Now
+                    TimePublished = itemDefinitionsArchive.Max(x => x.Modified.SteamTimestampToDateTimeOffset())
                 });
 
                 await _steamDb.SaveChangesAsync();
@@ -158,21 +159,21 @@ namespace SCMM.Steam.API.Commands
 
         private async Task AddNewAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
-            var newItemDefinitions = itemDefinitions
+            var newItems = itemDefinitions
                 .Where(x => !assetDescriptions.Any(y => y.ItemDefinitionId == x.ItemDefId))
                 .OrderBy(x => x.Name)
                 .ToArray();
 
-            foreach (var itemDefinition in newItemDefinitions)
+            foreach (var newItem in newItems)
             {
                 // Add the new asset description
-                _logger.LogInformation($"A new item definition was found! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
+                _logger.LogInformation($"A new item definition was found! (appId: {app.SteamId}, itemId: {newItem.ItemDefId}, name: '{newItem.Name}')");
                 var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionRequest()
                 {
                     AppId = UInt64.Parse(app.SteamId),
-                    ItemDefinitionId = itemDefinition.ItemDefId,
-                    ItemDefinitionName = itemDefinition.Name,
-                    ItemDefinition = itemDefinition
+                    ItemDefinitionId = newItem.ItemDefId,
+                    ItemDefinitionName = newItem.Name,
+                    ItemDefinition = newItem
                 });
                 var newAssetDescription = importedAssetDescription?.AssetDescription;
                 if (newAssetDescription != null)
@@ -202,21 +203,23 @@ namespace SCMM.Steam.API.Commands
 
         private async Task UpdateExistingAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
-            var items = itemDefinitions
+            var updatedItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
                 {
                     ItemDefinition = x,
                     AssetDescription = y
                 })
+                .Where(x => x.AssetDescription != null && x.ItemDefinition != null)
+                .Where(x => x.AssetDescription.TimeRefreshed == null || x.AssetDescription.TimeRefreshed < x.ItemDefinition.Modified.SteamTimestampToDateTimeOffset())
                 .OrderBy(x => x.ItemDefinition.Name)
                 .ToArray();
 
-            foreach (var item in items.Where(x => x.AssetDescription != null && x.ItemDefinition != null))
+            foreach (var updatedItem in updatedItems)
             {
                 await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
                 {
-                    AssetDescription = item.AssetDescription,
-                    AssetItemDefinition = item.ItemDefinition,
+                    AssetDescription = updatedItem.AssetDescription,
+                    AssetItemDefinition = updatedItem.ItemDefinition,
                     SkipItemCollectionCheck = true
                 });
             }
@@ -479,17 +482,18 @@ namespace SCMM.Steam.API.Commands
                     HasBecomeUnmarketable = (!x.Marketable && y.IsMarketable),
                     HasBecomeMarketable = (x.Marketable && !y.IsMarketable)
                 })
+                .Where(x => x.AssetDescription != null)
                 .OrderBy(x => x.ItemDefinition.Name)
                 .ToArray();
 
             // Update all market items that are no longer available
-            foreach (var newUnmarketableItem in marketItems.Where(x => x.HasBecomeUnmarketable && x.AssetDescription != null))
+            foreach (var newUnmarketableItem in marketItems.Where(x => x.HasBecomeUnmarketable))
             {
                 // TODO: Handle this?
             }
 
             // Add all newly added market items
-            foreach (var newMarketableItem in marketItems.Where(x => x.HasBecomeMarketable && x.AssetDescription != null))
+            foreach (var newMarketableItem in marketItems.Where(x => x.HasBecomeMarketable))
             {
                 try
                 {
