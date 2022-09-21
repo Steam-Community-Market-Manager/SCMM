@@ -37,8 +37,6 @@ namespace SCMM.Steam.API.Commands
         private readonly string _workshopFilesStorageConnectionString;
         private readonly string _workshopFilesStorageUrl;
 
-        private readonly TimeSpan _maxTimeToWaitForAsset = TimeSpan.FromMinutes(1);
-
         public ImportSteamWorkshopFileToBlobStorage(ILogger<ImportSteamWorkshopFileToBlobStorage> logger, IConfiguration configuration, SteamDbContext steamDb, SteamCmdWrapper steamCmd, ServiceBusClient serviceBus)
         {
             _logger = logger;
@@ -148,17 +146,21 @@ namespace SCMM.Steam.API.Commands
         {
             var assetDescriptions = new List<SteamAssetDescription>();
             var assetDescriptionCheckStarted = DateTimeOffset.UtcNow;
+            var maxTimeToWaitForAsset = TimeSpan.FromMinutes(1);
+
             do
             {
                 // NOTE: It is possible that the asset doesn't yet exist (i.e. it's still transient)
                 // TODO: This is a lazy fix, just wait up to 1min for it to be saved before giving up
-                Thread.Sleep(TimeSpan.FromSeconds(10));
                 assetDescriptions = await _steamDb.SteamAssetDescriptions
                     .Where(x => x.WorkshopFileId == publishedFileId)
-                    .Where(x => x.WorkshopFileUrl != workshopFileUrl)
                     .ToListAsync();
+                if (!assetDescriptions.Any())
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                }
+            } while (!assetDescriptions.Any() && (DateTimeOffset.UtcNow - assetDescriptionCheckStarted) <= maxTimeToWaitForAsset);
 
-            } while (!assetDescriptions.Any() && (DateTimeOffset.UtcNow - assetDescriptionCheckStarted) <= _maxTimeToWaitForAsset);
             foreach (var assetDescription in assetDescriptions)
             {
                 _logger.LogInformation($"Asset description workshop data url updated for '{assetDescription.Name}' ({assetDescription.ClassId})");
