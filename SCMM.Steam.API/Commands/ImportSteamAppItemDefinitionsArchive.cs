@@ -258,11 +258,11 @@ namespace SCMM.Steam.API.Commands
                         .ToListAsync();
 
                     // If all items in a store are no longer available, the store is no longer active
-                    foreach (var activeItemStore in activeItemStores)
+                    foreach (var activeItemStore in activeItemStores.ToArray())
                     {
                         if (activeItemStore.Items.All(x => !x.Item.IsAvailable))
                         {
-                            _logger.LogError($"An item store is now unavailable, no [available] items remaining (appId: {app.SteamId}, storeId: {activeItemStore.StoreId()})");
+                            _logger.LogInformation($"An item store is now unavailable, no [available] items remaining (appId: {app.SteamId}, storeId: {activeItemStore.StoreId()})");
                             activeItemStore.End = DateTimeOffset.UtcNow;
                             activeItemStores.Remove(activeItemStore);
                         }
@@ -280,7 +280,7 @@ namespace SCMM.Steam.API.Commands
                                 AppId = app.Id,
                                 Name = "General"
                             });
-                            _logger.LogError($"A new permanent item store was added (appId: {app.SteamId}, storeId: {permanentItemStore.StoreId()})");
+                            _logger.LogInformation($"A new permanent item store was added (appId: {app.SteamId}, storeId: {permanentItemStore.StoreId()})");
                         }
                     }
 
@@ -297,7 +297,7 @@ namespace SCMM.Steam.API.Commands
                                 AppId = app.Id,
                                 Start = DateTimeOffset.UtcNow
                             });
-                            _logger.LogError($"A new limited item store was added (appId: {app.SteamId}, storeId: {limitedItemStore.StoreId()})");
+                            _logger.LogInformation($"A new limited item store was added (appId: {app.SteamId}, storeId: {limitedItemStore.StoreId()})");
                         }
                     }
                 }
@@ -310,11 +310,11 @@ namespace SCMM.Steam.API.Commands
                     var storeType = addedStoreItem.AssetDescription.IsPermanent ? "permanent" : "limited";
                     var store = addedStoreItem.AssetDescription.IsPermanent ? permanentItemStore : limitedItemStore;
                     
-                    _logger.LogInformation($"An new item has been added to the {storeType} item store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
+                    _logger.LogInformation($"A new item has been added to the {storeType} item store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
                     
                     var storeItemAsset = assetPricesResponse?.Data?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
                     var storeItemPrices = storeItemAsset?.Prices?.ToDictionary();
-                    var storeItem = await AddOrUpdateStoreItemAndMarkAsAvailable(app, storeItemAsset, defaultCurrency, DateTimeOffset.Now);
+                    var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailable(app, assetDescription, storeItemAsset, defaultCurrency, DateTimeOffset.Now);
                     if (storeItem == null)
                     {
                         continue;
@@ -340,7 +340,17 @@ namespace SCMM.Steam.API.Commands
                     // Update the store items "latest price"
                     storeItem.UpdateLatestPrice();
 
-                    newStoreItems.Add(storeItem);
+                    // Reimport the asset description to get the latest item info
+                    if (assetDescription.ClassId > 0)
+                    {
+                        await _steamDb.SaveChangesAsync();
+                        await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                        {
+                            AppId = UInt64.Parse(app.SteamId),
+                            AssetClassId = assetDescription.ClassId.Value
+                        });
+                    }
+
                     await _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
                     {
                         AppId = UInt64.Parse(app.SteamId),
@@ -367,6 +377,8 @@ namespace SCMM.Steam.API.Commands
                             Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value, dense: true)
                         }).ToArray()
                     });
+
+                    newStoreItems.Add(storeItem);
                 }
 
                 var newPermanentStoreItems = newStoreItems.Where(x => x.Description.IsPermanent).ToArray();
@@ -374,7 +386,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     await RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(app, permanentItemStore, newPermanentStoreItems, defaultCurrency);
                 }
-                var newLimitedStoreItems = newStoreItems.Where(x => !x.Description.IsPermanent).ToArray(); ;
+                var newLimitedStoreItems = newStoreItems.Where(x => !x.Description.IsPermanent).ToArray();
                 if (limitedItemStore != null && newLimitedStoreItems.Any())
                 {
                     await RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(app, limitedItemStore, newLimitedStoreItems, defaultCurrency);
@@ -382,55 +394,25 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        /// <remarks>
-        /// TODO: Refactor this
-        /// </remarks>
-        private async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeChecked)
+        private async Task<SteamStoreItem> CreateOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamAssetDescription assetDescription, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeChecked)
         {
-            // Find the item by it's store id or asset class id (which ever exists first)
-            var dbItem = (
-                await _steamDb.SteamStoreItems
-                    .Include(x => x.Stores).ThenInclude(x => x.Store)
-                    .Include(x => x.Description)
-                    .Include(x => x.Description.App)
-                    .Include(x => x.Description.CreatorProfile)
-                    .Where(x => x.AppId == app.Id)
-                    .FirstOrDefaultAsync(x => x.SteamId == asset.Name) ??
-                await _steamDb.SteamStoreItems
-                    .Include(x => x.Stores).ThenInclude(x => x.Store)
-                    .Include(x => x.Description)
-                    .Include(x => x.Description.App)
-                    .Include(x => x.Description.CreatorProfile)
-                    .Where(x => x.AppId == app.Id)
-                    .FirstOrDefaultAsync(x => x.Description.ClassId == asset.ClassId)
-            );
-
-            // Find the item asset description, or import it if missing
-            var assetDescription = (dbItem?.Description ??
-                await _steamDb.SteamAssetDescriptions
-                    .Include(x => x.App)
-                    .Include(x => x.CreatorProfile)
-                    .FirstOrDefaultAsync(x => x.AppId == app.Id && x.ClassId == asset.ClassId)
-            );
-            if (assetDescription == null)
+            if (assetDescription.ClassId == null && asset.ClassId > 0)
             {
-                var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-                {
-                    AppId = ulong.Parse(app.SteamId),
-                    AssetClassId = asset.ClassId
-                });
-                assetDescription = importAssetDescription.AssetDescription;
-                if (assetDescription == null)
-                {
-                    // The asset description for this item doesn't exist, bail...
-                    return null;
-                }
+                assetDescription.ClassId = asset.ClassId;
             }
 
+            // Reload store item from database (if it exists) to ensure we load all store instances this item appears in
+            var storeItem = await _steamDb.SteamStoreItems
+                .Include(x => x.Stores).ThenInclude(x => x.Store)
+                .Include(x => x.Description)
+                .Include(x => x.Description.App)
+                .Include(x => x.Description.CreatorProfile)
+                .FirstOrDefaultAsync(x => x.AppId == app.Id && x.Description.ClassId == asset.ClassId);
+
             // If the store item doesn't exist yet, create it now
-            if (dbItem == null)
+            if (storeItem == null)
             {
-                app.StoreItems.Add(dbItem = new SteamStoreItem()
+                app.StoreItems.Add(storeItem = assetDescription.StoreItem = new SteamStoreItem()
                 {
                     App = app,
                     AppId = app.Id,
@@ -439,7 +421,7 @@ namespace SCMM.Steam.API.Commands
                 });
 
                 var prices = asset.Prices.ToDictionary();
-                dbItem.UpdatePrice(
+                storeItem.UpdatePrice(
                     currency,
                     prices.FirstOrDefault(x => x.Key == currency?.Name).Value,
                     new PersistablePriceDictionary(prices)
@@ -466,9 +448,9 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Mark the store item as available
-            dbItem.SteamId = asset.Name;
-            dbItem.IsAvailable = true;
-            return dbItem;
+            storeItem.SteamId = asset.Name;
+            storeItem.IsAvailable = true;
+            return storeItem;
         }
 
         private async Task AddOrUpdateMarketItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
@@ -497,14 +479,13 @@ namespace SCMM.Steam.API.Commands
                 {
                     var itemDefinition = newMarketableItem.ItemDefinition;
                     var assetDescription = newMarketableItem.AssetDescription;
-                    var marketItem = assetDescription.MarketItem;
-
+                    
                     _logger.LogInformation($"An new item has been become marketable! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
 
                     // Double check that this asset description can currently be listed on the Steam community market
                     var marketPriceOverviewResponse = await _steamCommunityClient.GetMarketPriceOverview(new SteamMarketPriceOverviewJsonRequest()
                     {
-                        AppId = assetDescription.App.SteamId,
+                        AppId = app.SteamId,
                         MarketHashName = assetDescription.NameHash,
                         NoRender = true
                     });
@@ -516,14 +497,29 @@ namespace SCMM.Steam.API.Commands
 
                     // Add a new market item for this asset description
                     var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
-                    app.MarketItems.Add(assetDescription.MarketItem = marketItem = new SteamMarketItem()
+                    var marketItem = assetDescription.MarketItem;
+                    if (marketItem == null)
                     {
-                        SteamId = assetDescription.NameId?.ToString(),
-                        AppId = app.Id,
-                        App = app,
-                        Description = assetDescription,
-                        Currency = defaultCurrency,
-                    });
+                        app.MarketItems.Add(marketItem = assetDescription.MarketItem = new SteamMarketItem()
+                        {
+                            SteamId = assetDescription.NameId?.ToString(),
+                            AppId = app.Id,
+                            App = app,
+                            Description = assetDescription,
+                            Currency = defaultCurrency,
+                        });
+                    }
+
+                    // Reimport the asset description to get the latest item info-- specifically, the Steam community market "name id"
+                    if (assetDescription.ClassId > 0)
+                    {
+                        await _steamDb.SaveChangesAsync();
+                        var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                        {
+                            AppId = UInt64.Parse(app.SteamId),
+                            AssetClassId = assetDescription.ClassId.Value
+                        });
+                    }
 
                     await _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
                     {
@@ -543,18 +539,6 @@ namespace SCMM.Steam.API.Commands
                         ItemIconUrl = marketItem.Description?.IconUrl ?? marketItem.Description?.IconLargeUrl,
                         ItemImageUrl = marketItem.Description?.PreviewUrl ?? marketItem.Description?.IconLargeUrl ?? marketItem.Description?.IconUrl,
                     });
-
-                    // Reimport the asset description to import the Steam community market listing details (e.g. "name id")
-                    if (assetDescription.ClassId > 0)
-                    {
-                        // TODO: Queue this in the background via service bus
-                        await _steamDb.SaveChangesAsync();
-                        var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-                        {
-                            AppId = UInt64.Parse(app.SteamId),
-                            AssetClassId = assetDescription.ClassId.Value
-                        });
-                    }
                 }
                 catch (SteamRequestException ex)
                 {

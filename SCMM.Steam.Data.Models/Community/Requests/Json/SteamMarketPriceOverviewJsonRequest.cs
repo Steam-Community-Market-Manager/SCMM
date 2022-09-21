@@ -13,7 +13,7 @@
         public bool NoRender { get; set; } = true;
 
         public override Uri Uri => new Uri(
-            $"{Constants.SteamCommunityUrl}/market/priceoverview?appid={Uri.EscapeDataString(AppId)}&market_hash_name={Uri.EscapeDataString(MarketHashName)}&language={Language}&currency={Uri.EscapeDataString(CurrencyId)}&norender={(NoRender ? "1" : "0")}"
+            $"{Constants.SteamCommunityUrl}/market/priceoverview?appid={Uri.EscapeDataString(AppId ?? String.Empty)}&market_hash_name={Uri.EscapeDataString(MarketHashName ?? String.Empty)}&language={Uri.EscapeDataString(Language ?? String.Empty)}&currency={Uri.EscapeDataString(CurrencyId ?? String.Empty)}&norender={(NoRender ? "1" : "0")}"
         );
     }
 }
