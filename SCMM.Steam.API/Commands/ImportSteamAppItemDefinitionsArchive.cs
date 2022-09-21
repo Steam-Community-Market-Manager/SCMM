@@ -5,6 +5,7 @@ using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.API.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
@@ -118,7 +119,10 @@ namespace SCMM.Steam.API.Commands
 
         private async Task LinkAssetDescriptionsToItemDefinitionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
-            var assetDescriptionsWithMissingItemDefinitionId = assetDescriptions.Where(x => x.ItemDefinitionId == null).ToArray();
+            var assetDescriptionsWithMissingItemDefinitionId = assetDescriptions
+                .Where(x => x.ItemDefinitionId == null)
+                .ToArray();
+
             foreach (var assetDescription in assetDescriptionsWithMissingItemDefinitionId)
             {
                 // It is possible that asset descriptions are added without an item id, so link them to the item definitions when possible
@@ -138,7 +142,11 @@ namespace SCMM.Steam.API.Commands
 
         private async Task AddNewAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
-            var newItemDefinitions = itemDefinitions.Where(x => !assetDescriptions.Any(y => y.ItemDefinitionId == x.ItemDefId)).ToArray();
+            var newItemDefinitions = itemDefinitions
+                .Where(x => !assetDescriptions.Any(y => y.ItemDefinitionId == x.ItemDefId))
+                .OrderBy(x => x.Name)
+                .ToArray();
+
             foreach (var itemDefinition in newItemDefinitions)
             {
                 // Add the new asset description
@@ -184,6 +192,7 @@ namespace SCMM.Steam.API.Commands
                     ItemDefinition = x,
                     AssetDescription = y
                 })
+                .OrderBy(x => x.ItemDefinition.Name)
                 .ToArray();
 
             foreach (var item in items.Where(x => x.AssetDescription != null && x.ItemDefinition != null))
@@ -207,6 +216,7 @@ namespace SCMM.Steam.API.Commands
                     HasBeenRemovedFromStore = (String.IsNullOrEmpty(x.PriceCategory) && (y.StoreItem?.IsAvailable == true)),
                     HasBeenAddedToStore = (!String.IsNullOrEmpty(x.PriceCategory) && (y.StoreItem?.IsAvailable != true))
                 })
+                .OrderBy(x => x.ItemDefinition.Name)
                 .ToArray();
 
             // Update all store items that are no longer available
@@ -220,14 +230,10 @@ namespace SCMM.Steam.API.Commands
             var addedStoreItems = storeItems.Where(x => x.HasBeenAddedToStore);
             if (addedStoreItems.Any())
             {
-                foreach (var addedStoreItem in addedStoreItems)
-                {
-                    _logger.LogInformation($"An new item has been added to the store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
-                }
-
                 // Get the latest asset description prices
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                 var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
+                var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
                 var assetPricesResponse = await steamEconomy.GetAssetPricesAsync(uint.Parse(app.SteamId));
                 if (assetPricesResponse?.Data?.Success != true)
                 {
@@ -236,192 +242,149 @@ namespace SCMM.Steam.API.Commands
 
                 // TODO: Validate that new store items are present in asset price list, else loop and retry
 
-                // Does this app have item stores? check and add the items to the appropriate store instance
+                var permanentItemStore = (SteamItemStore) null;
+                var limitedItemStore = (SteamItemStore)null;
+
+                // If the app uses a permanent or limited item store, check that they are still available (or create new ones)
                 if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
                 {
-                    await AddNewItemsToItemStore(app, assetPricesResponse, currencies);
-                }
+                    // Load all of our [active] stores
+                    var activeItemStores = await _steamDb.SteamItemStores
+                        .Where(x => x.AppId == app.Id)
+                        .Where(x => x.End == null)
+                        .OrderByDescending(x => x.Start)
+                        .Include(x => x.Items).ThenInclude(x => x.Item)
+                        .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+                        .ToListAsync();
 
-                // Else, this app doesn't have item stores, but still check for and add any missing items
-                else
-                {
-                    foreach (var addedStoreItem in storeItems.Where(x => x.HasBeenAddedToStore))
+                    // If all items in a store are no longer available, the store is no longer active
+                    foreach (var activeItemStore in activeItemStores)
                     {
-                        // TODO: Handle this...
-                    }
-                }
-            }
-            
-        }
-
-        private async Task AddNewItemsToItemStore(SteamApp app, ISteamWebResponse<AssetPriceResultModel> assetPrices, IEnumerable<SteamCurrency> currencies)
-        {
-            // We want to compare the Steam item store with our most recent store
-            var theirStoreItemIds = assetPrices.Data.Assets
-                .Select(x => x.Name)
-                .OrderBy(x => x)
-                .Distinct()
-                .ToList();
-            var ourStoreItemIds = _steamDb.SteamItemStores
-                .Where(x => x.AppId == app.Id)
-                .Where(x => x.End == null)
-                .OrderByDescending(x => x.Start)
-                .SelectMany(x => x.Items.Where(i => i.Item.IsAvailable).Select(i => i.Item.SteamId))
-                .Distinct()
-                .ToList();
-
-            // If both stores contain the same items, then there is no need to update anything
-            var storesAreTheSame = ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)) && ourStoreItemIds.All(x => theirStoreItemIds.Contains(x));
-            if (storesAreTheSame)
-            {
-                return;
-            }
-
-            _logger.LogInformation($"A store change was detected! (appId: {app.SteamId})");
-
-            // If we got here, then then item store has changed (either added or removed items)
-            // Load all of our active stores and their items
-            var activeItemStores = _steamDb.SteamItemStores
-                .Where(x => x.AppId == app.Id)
-                .Where(x => x.End == null)
-                .OrderByDescending(x => x.Start)
-                .Include(x => x.Items).ThenInclude(x => x.Item)
-                .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-                .ToList();
-            var limitedItemsWereRemoved = false;
-            foreach (var itemStore in activeItemStores.ToList())
-            {
-                var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
-                var missingStoreItemIds = thisStoreItemIds.Where(x => !theirStoreItemIds.Contains(x));
-                if (missingStoreItemIds.Any())
-                {
-                    foreach (var missingStoreItemId in missingStoreItemIds)
-                    {
-                        var missingStoreItem = itemStore.Items.FirstOrDefault(x => x.Item.SteamId == missingStoreItemId);
-                        if (missingStoreItem != null)
+                        if (activeItemStore.Items.All(x => !x.Item.IsAvailable))
                         {
-                            missingStoreItem.Item.IsAvailable = false;
-                            if (!missingStoreItem.Item.Description.IsPermanent)
+                            _logger.LogError($"An item store is now unavailable, no [available] items remaining (appId: {app.SteamId}, storeId: {activeItemStore.StoreId()})");
+                            activeItemStore.End = DateTimeOffset.UtcNow;
+                            activeItemStores.Remove(activeItemStore);
+                        }
+                    }
+
+                    // Ensure that an active "permanent" item store exists
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent))
+                    {
+                        permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
+                        if (permanentItemStore == null)
+                        {
+                            _steamDb.SteamItemStores.Add(permanentItemStore = new SteamItemStore()
                             {
-                                limitedItemsWereRemoved = true;
-                            }
+                                App = app,
+                                AppId = app.Id,
+                                Name = "General"
+                            });
+                            _logger.LogError($"A new permanent item store was added (appId: {app.SteamId}, storeId: {permanentItemStore.StoreId()})");
+                        }
+                    }
+
+                    // Ensure that an active "limited" item store exists
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    {
+                        // If any items in the limited store are no longer available, rotate it (i.e. create a new limited store)
+                        limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);
+                        if (limitedItemStore == null || limitedItemStore.Items.Any(x => !x.Item.IsAvailable))
+                        {
+                            _steamDb.SteamItemStores.Add(limitedItemStore = new SteamItemStore()
+                            {
+                                App = app,
+                                AppId = app.Id,
+                                Start = DateTimeOffset.UtcNow
+                            });
+                            _logger.LogError($"A new limited item store was added (appId: {app.SteamId}, storeId: {limitedItemStore.StoreId()})");
                         }
                     }
                 }
-                if (itemStore.Start != null && itemStore.Items.Any(x => !x.Item.IsAvailable) && limitedItemsWereRemoved)
-                {
-                    itemStore.End = DateTimeOffset.UtcNow;
-                    activeItemStores.Remove(itemStore);
-                }
-            }
 
-            // Ensure that an active "general" and "limited" item store exists
-            var permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
-            if (permanentItemStore == null && app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent))
-            {
-                permanentItemStore = new SteamItemStore()
+                var newStoreItems = new List<SteamStoreItem>();
+                foreach (var addedStoreItem in addedStoreItems)
                 {
-                    App = app,
-                    AppId = app.Id,
-                    Name = "General"
-                };
-            }
-            var limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);
-            if ((limitedItemStore == null || limitedItemsWereRemoved) && app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
-            {
-                limitedItemStore = new SteamItemStore()
-                {
-                    App = app,
-                    AppId = app.Id,
-                    Start = DateTimeOffset.UtcNow
-                };
-            }
-
-            // Check if there are any new items to be added to the stores
-            var newPermanentStoreItems = new List<SteamStoreItemItemStore>();
-            var newLimitedStoreItems = new List<SteamStoreItemItemStore>();
-            var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
-            foreach (var asset in assetPrices.Data.Assets)
-            {
-                // Ensure that the item is available in the database (create them if missing)
-                var storeItem = await AddOrUpdateStoreItemAndMarkAsAvailable(
-                    app, asset, usdCurrency, DateTimeOffset.Now
-                );
-                if (storeItem == null)
-                {
-                    continue;
-                }
-
-                // Ensure that the item is linked to the store
-                var itemStore = (storeItem.Description.IsPermanent || !app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating)) ? permanentItemStore : limitedItemStore;
-                if (!storeItem.Stores.Any(x => x.StoreId == itemStore.Id) && itemStore != null)
-                {
-                    var prices = ParseStoreItemPriceTable(asset.Prices);
-                    var storeItemLink = new SteamStoreItemItemStore()
+                    var itemDefinition = addedStoreItem.ItemDefinition;
+                    var assetDescription = addedStoreItem.AssetDescription;
+                    var storeType = addedStoreItem.AssetDescription.IsPermanent ? "permanent" : "limited";
+                    var store = addedStoreItem.AssetDescription.IsPermanent ? permanentItemStore : limitedItemStore;
+                    
+                    _logger.LogInformation($"An new item has been added to the {storeType} item store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
+                    
+                    var storeItemAsset = assetPricesResponse?.Data?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
+                    var storeItemPrices = storeItemAsset?.Prices?.ToDictionary();
+                    var storeItem = await AddOrUpdateStoreItemAndMarkAsAvailable(app, storeItemAsset, defaultCurrency, DateTimeOffset.Now);
+                    if (storeItem == null)
                     {
-                        Store = itemStore,
-                        Item = storeItem,
-                        Currency = usdCurrency,
-                        CurrencyId = usdCurrency.Id,
-                        Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
-                        Prices = new PersistablePriceDictionary(prices),
-                        IsPriceVerified = true
-                    };
-                    storeItem.Stores.Add(storeItemLink);
-                    itemStore.Items.Add(storeItemLink);
-                    if (itemStore == permanentItemStore)
-                    {
-                        newPermanentStoreItems.Add(storeItemLink);
+                        continue;
                     }
-                    else if (itemStore == limitedItemStore)
+
+                    // Ensure that the item is linked to the store (if any)
+                    if (store != null && !storeItem.Stores.Any(x => x.StoreId == store.Id))
                     {
-                        newLimitedStoreItems.Add(storeItemLink);
+                        var storeItemLink = new SteamStoreItemItemStore()
+                        {
+                            Store = store,
+                            Item = storeItem,
+                            Currency = defaultCurrency,
+                            CurrencyId = defaultCurrency.Id,
+                            Price = storeItemPrices?.FirstOrDefault(x => x.Key == defaultCurrency.Name).Value,
+                            Prices = (storeItemPrices != null ? new PersistablePriceDictionary(storeItemPrices) : new PersistablePriceDictionary()),
+                            IsPriceVerified = true
+                        };
+                        storeItem.Stores.Add(storeItemLink);
+                        store.Items.Add(storeItemLink);
                     }
+
+                    // Update the store items "latest price"
+                    storeItem.UpdateLatestPrice();
+
+                    newStoreItems.Add(storeItem);
+                    await _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
+                    {
+                        AppId = UInt64.Parse(app.SteamId),
+                        AppName = app.Name,
+                        AppIconUrl = app.IconUrl,
+                        AppColour = app.PrimaryColor,
+                        StoreId = store?.StoreId(),
+                        StoreName = store?.StoreName(),
+                        CreatorId = storeItem.Description?.CreatorId,
+                        CreatorName = storeItem.Description?.CreatorProfile?.Name,
+                        CreatorAvatarUrl = storeItem.Description?.CreatorProfile?.AvatarUrl,
+                        ItemId = UInt64.Parse(storeItem.SteamId),
+                        ItemType = storeItem.Description?.ItemType,
+                        ItemShortName = storeItem.Description?.ItemShortName,
+                        ItemName = storeItem.Description?.Name,
+                        ItemDescription = storeItem.Description?.Description,
+                        ItemCollection = storeItem.Description?.ItemCollection,
+                        ItemIconUrl = storeItem.Description?.IconUrl ?? storeItem.Description?.IconLargeUrl,
+                        ItemImageUrl = storeItem.Description?.PreviewUrl ?? storeItem.Description?.IconLargeUrl ?? storeItem.Description?.IconUrl,
+                        ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
+                        {
+                            Currency = x.Key,
+                            Value = x.Value,
+                            Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value, dense: true)
+                        }).ToArray()
+                    });
                 }
 
-                // Update the store items "latest price"
-                storeItem.UpdateLatestPrice();
-            }
-
-            // Regenerate store thumbnails (if items have changed)
-            if (newPermanentStoreItems.Any() && permanentItemStore != null)
-            {
-                if (permanentItemStore.IsTransient)
+                var newPermanentStoreItems = newStoreItems.Where(x => x.Description.IsPermanent).ToArray();
+                if (permanentItemStore != null && newPermanentStoreItems.Any())
                 {
-                    _steamDb.SteamItemStores.Add(permanentItemStore);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(app, permanentItemStore, newPermanentStoreItems, defaultCurrency);
                 }
-                if (permanentItemStore.Items.Any())
+                var newLimitedStoreItems = newStoreItems.Where(x => !x.Description.IsPermanent).ToArray(); ;
+                if (limitedItemStore != null && newLimitedStoreItems.Any())
                 {
-                    await RegenerateStoreItemsThumbnailImage(app, permanentItemStore);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(app, limitedItemStore, newLimitedStoreItems, defaultCurrency);
                 }
-            }
-            if (newLimitedStoreItems.Any() && limitedItemStore != null)
-            {
-                if (limitedItemStore.IsTransient)
-                {
-                    _steamDb.SteamItemStores.Add(limitedItemStore);
-                }
-                if (limitedItemStore.Items.Any())
-                {
-                    await RegenerateStoreItemsThumbnailImage(app, limitedItemStore);
-                }
-            }
-
-            await _steamDb.SaveChangesAsync();
-
-            // Send out a broadcast about any "new" items that weren't already in our store
-            if (newPermanentStoreItems.Any())
-            {
-                _logger.LogInformation($"{newPermanentStoreItems.Count} new permanent store items have been added!");
-                await BroadcastStoreItemAddedMessages(app, permanentItemStore, newPermanentStoreItems, currencies);
-            }
-            if (newLimitedStoreItems.Any())
-            {
-                _logger.LogInformation($"{newLimitedStoreItems.Count} new limited store items have been added!");
-                await BroadcastStoreItemAddedMessages(app, limitedItemStore, newLimitedStoreItems, currencies);
             }
         }
 
+        /// <remarks>
+        /// TODO: Refactor this
+        /// </remarks>
         private async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeChecked)
         {
             // Find the item by it's store id or asset class id (which ever exists first)
@@ -475,7 +438,7 @@ namespace SCMM.Steam.API.Commands
                     DescriptionId = assetDescription.Id
                 });
 
-                var prices = ParseStoreItemPriceTable(asset.Prices);
+                var prices = asset.Prices.ToDictionary();
                 dbItem.UpdatePrice(
                     currency,
                     prices.FirstOrDefault(x => x.Key == currency?.Name).Value,
@@ -508,124 +471,6 @@ namespace SCMM.Steam.API.Commands
             return dbItem;
         }
 
-        private IDictionary<string, long> ParseStoreItemPriceTable(AssetPricesModel prices)
-        {
-            return prices.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(
-                    k => k.Name,
-                    prop => (long)((uint)prop.GetValue(prices, null))
-                );
-        }
-
-        private async Task<string> RegenerateStoreItemsThumbnailImage(SteamApp app, SteamItemStore store)
-        {
-            try
-            {
-                var itemImageSources = store.Items
-                    .Select(x => x.Item)
-                    .Where(x => x?.Description != null)
-                    .Select(x => new ImageSource()
-                    {
-                        ImageUrl = x.Description.IconUrl,
-                        ImageData = x.Description.Icon?.Data,
-                    })
-                    .ToList();
-
-                var thumbnailImage = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
-                {
-                    ImageSources = itemImageSources,
-                    ImageSize = 128,
-                    ImageColumns = 3
-                });
-
-                if (thumbnailImage != null)
-                {
-                    store.ItemsThumbnailUrl = (
-                        await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
-                        {
-                            Name = $"{app.SteamId}-store-items-thumbnail-{Uri.EscapeDataString(store.Start?.Ticks.ToString() ?? store.Name?.ToLower())}",
-                            MimeType = thumbnailImage.MimeType,
-                            Data = thumbnailImage.Data,
-                            ExpiresOn = null, // never
-                            Overwrite = true
-                        })
-                    )?.ImageUrl ?? store.ItemsThumbnailUrl;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to generate store item thumbnail image");
-            }
-
-            return store.ItemsThumbnailUrl;
-        }
-
-        private async Task BroadcastStoreItemAddedMessages(SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
-        {
-            newStoreItems = newStoreItems?.OrderBy(x => x.Item?.Description?.Name);
-            if (newStoreItems?.Any() != true)
-            {
-                return;
-            }
-
-            var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
-            var broadcastTasks = new List<Task>
-        {
-            _serviceBus.SendMessageAsync(new StoreAddedMessage()
-            {
-                AppId = UInt64.Parse(app.SteamId),
-                AppName = app.Name,
-                AppIconUrl = app.IconUrl,
-                AppColour = app.PrimaryColor,
-                StoreId = store.StoreId(),
-                StoreName = store.StoreName(),
-                Items = newStoreItems.Select(x => new StoreAddedMessage.Item()
-                {
-                    Name = x.Item.Description?.Name,
-                    Currency = defaultCurrency.Name,
-                    Price = x.Price,
-                    PriceDescription = x.Price != null ? defaultCurrency?.ToPriceString(x.Price.Value) : null
-                }).ToArray(),
-                ItemsImageUrl = store.ItemsThumbnailUrl
-            })
-        };
-
-            foreach (var storeItem in newStoreItems)
-            {
-                broadcastTasks.Add(
-                    _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
-                    {
-                        AppId = UInt64.Parse(app.SteamId),
-                        AppName = app.Name,
-                        AppIconUrl = app.IconUrl,
-                        AppColour = app.PrimaryColor,
-                        StoreId = store.StoreId(),
-                        StoreName = store.StoreName(),
-                        CreatorId = storeItem.Item.Description?.CreatorId,
-                        CreatorName = storeItem.Item.Description?.CreatorProfile?.Name,
-                        CreatorAvatarUrl = storeItem.Item.Description?.CreatorProfile?.AvatarUrl,
-                        ItemId = UInt64.Parse(storeItem.Item.SteamId),
-                        ItemType = storeItem.Item.Description?.ItemType,
-                        ItemShortName = storeItem.Item.Description?.ItemShortName,
-                        ItemName = storeItem.Item.Description?.Name,
-                        ItemDescription = storeItem.Item.Description?.Description,
-                        ItemCollection = storeItem.Item.Description?.ItemCollection,
-                        ItemIconUrl = storeItem.Item.Description?.IconUrl ?? storeItem.Item.Description?.IconLargeUrl,
-                        ItemImageUrl = storeItem.Item.Description?.PreviewUrl ?? storeItem.Item.Description?.IconLargeUrl ?? storeItem.Item.Description?.IconUrl,
-                        ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
-                        {
-                            Currency = x.Key,
-                            Value = x.Value,
-                            Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value, dense: true)
-                        }).ToArray()
-                    })
-                );
-            }
-
-            await Task.WhenAll(broadcastTasks);
-        }
-
         private async Task AddOrUpdateMarketItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
         {
             var marketItems = itemDefinitions
@@ -636,6 +481,7 @@ namespace SCMM.Steam.API.Commands
                     HasBecomeUnmarketable = (!x.Marketable && y.IsMarketable),
                     HasBecomeMarketable = (x.Marketable && !y.IsMarketable)
                 })
+                .OrderBy(x => x.ItemDefinition.Name)
                 .ToArray();
 
             // Update all market items that are no longer available
@@ -722,6 +568,69 @@ namespace SCMM.Steam.API.Commands
                         throw;
                     }
                 }
+            }
+        }
+
+        private async Task RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newItems, SteamCurrency currency)
+        {
+            try
+            {
+                // Regenerate store items thumbnail image
+                var itemImageSources = store.Items
+                    .Select(x => x.Item)
+                    .Where(x => x?.Description != null)
+                    .Select(x => new ImageSource()
+                    {
+                        ImageUrl = x.Description.IconUrl,
+                        ImageData = x.Description.Icon?.Data,
+                    })
+                    .ToList();
+
+                var thumbnailImage = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+                {
+                    ImageSources = itemImageSources,
+                    ImageSize = 128,
+                    ImageColumns = 3
+                });
+
+                if (thumbnailImage != null)
+                {
+                    store.ItemsThumbnailUrl = (
+                        await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
+                        {
+                            Name = $"{app.SteamId}-store-items-thumbnail-{Uri.EscapeDataString(store.Start?.Ticks.ToString() ?? store.Name?.ToLower())}",
+                            MimeType = thumbnailImage.MimeType,
+                            Data = thumbnailImage.Data,
+                            ExpiresOn = null, // never
+                            Overwrite = true
+                        })
+                    )?.ImageUrl ?? store.ItemsThumbnailUrl;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to generate store item thumbnail image (appId: {app.SteamId}, storeId: {store.StoreId()})");
+            }
+
+            if (newItems.Any())
+            {
+                await _serviceBus.SendMessageAsync(new StoreAddedMessage()
+                {
+                    AppId = UInt64.Parse(app.SteamId),
+                    AppName = app.Name,
+                    AppIconUrl = app.IconUrl,
+                    AppColour = app.PrimaryColor,
+                    StoreId = store.StoreId(),
+                    StoreName = store.StoreName(),
+                    Items = newItems.Select(x => new StoreAddedMessage.Item()
+                    {
+                        Name = x.Description?.Name,
+                        Currency = currency.Name,
+                        Price = x.Price,
+                        PriceDescription = x.Price != null ? currency?.ToPriceString(x.Price.Value) : null
+                    }).ToArray(),
+                    ItemsImageUrl = store.ItemsThumbnailUrl
+                });
             }
         }
     }

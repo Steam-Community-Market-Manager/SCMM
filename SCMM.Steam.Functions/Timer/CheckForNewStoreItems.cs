@@ -9,6 +9,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
@@ -188,7 +189,7 @@ public class CheckForNewStoreItems
             var itemStore = (storeItem.Description.IsPermanent || !app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating)) ? permanentItemStore : limitedItemStore;
             if (!storeItem.Stores.Any(x => x.StoreId == itemStore.Id) && itemStore != null)
             {
-                var prices = _steamService.ParseStoreItemPriceTable(asset.Prices);
+                var prices = asset.Prices.ToDictionary();
                 var storeItemLink = new SteamStoreItemItemStore()
                 {
                     Store = itemStore,

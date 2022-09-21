@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
@@ -88,7 +89,7 @@ namespace SCMM.Steam.API
                     DescriptionId = assetDescription.Id
                 });
 
-                var prices = ParseStoreItemPriceTable(asset.Prices);
+                var prices = asset.Prices.ToDictionary();
                 dbItem.UpdatePrice(
                     currency,
                     prices.FirstOrDefault(x => x.Key == currency?.Name).Value,
@@ -221,16 +222,6 @@ namespace SCMM.Steam.API
             item.RecalculateSales(itemSales);
 
             return item;
-        }
-
-        public IDictionary<string, long> ParseStoreItemPriceTable(AssetPricesModel prices)
-        {
-            return prices.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(
-                    k => k.Name,
-                    prop => (long)((uint)prop.GetValue(prices, null))
-                );
         }
 
         private T[] ParseMarketItemOrdersFromGraph<T>(string[][] orderGraph)
