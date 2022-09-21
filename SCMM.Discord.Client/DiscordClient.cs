@@ -386,23 +386,38 @@ namespace SCMM.Discord.Client
 
                 var embed = new EmbedBuilder()
                     .WithTitle(title)
-                    .WithUrl(url)
-                    .WithThumbnailUrl(thumbnailUrl)
+                    .WithUrl(SafeUrl(url))
+                    .WithThumbnailUrl(SafeUrl(thumbnailUrl))
                     .WithDescription(description)
                     .WithFields(fieldBuilders)
-                    .WithImageUrl(imageUrl)
+                    .WithImageUrl(SafeUrl(imageUrl))
                     .WithColor((color != null ? color.Value : Color.Default))
-                    .WithFooter(x => x.Text = _websiteUrl);
+                    .WithFooter(x => x.Text = SafeUrl(_websiteUrl));
 
                 if (!String.IsNullOrEmpty(authorName))
                 {
-                    embed.WithAuthor(authorName, authorIconUrl, authorUrl);
+                    embed.WithAuthor(authorName, SafeUrl(authorIconUrl), SafeUrl(authorUrl));
                 }
 
                 return embed.Build();
             }
 
             return null;
+        }
+
+        private string SafeUrl(string url)
+        {
+            // Discord throws "INVALID_URL" errors if unescape characters or query strings are present
+            if (String.IsNullOrEmpty(url))
+            {
+                return null;
+            }
+            var urlBuilder = new UriBuilder(url)
+            {
+                Query = String.Empty 
+            };
+
+            return urlBuilder.ToString();
         }
 
         public IEnumerable<DiscordShard> Shards => _client.Shards.Select(x => new DiscordShard(x));
