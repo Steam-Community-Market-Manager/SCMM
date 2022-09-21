@@ -189,9 +189,6 @@ public static class HostExtensions
             services.AddCommands(contactAssemblies);
             services.AddQueries(contactAssemblies);
             services.AddMessages(contactAssemblies);
-
-            // Services
-            services.AddScoped<SteamService>();
         });
     }
 }

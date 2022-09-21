@@ -6,11 +6,13 @@ using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.API;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
@@ -22,17 +24,15 @@ public class CheckForNewMarketItems
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
-    private readonly SteamService _steamService;
     private readonly ServiceBusClient _serviceBus;
 
-    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService, ServiceBusClient serviceBus)
+    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, ServiceBusClient serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
         _steamDb = steamDb;
         _steamCommunityWebClient = steamCommunityWebClient;
-        _steamService = steamService;
         _serviceBus = serviceBus;
     }
 
@@ -60,20 +60,16 @@ public class CheckForNewMarketItems
             return;
         }
 
-        // TODO: Check up to 5 times with a 1min delay between each attempt
-
         logger.LogTrace($"Checking for new market items (assets: {assetDescriptions.Count})");
         var newMarketItems = new List<SteamMarketItem>();
-        foreach (var assetDescription in assetDescriptions)
+        foreach (var assetDescription in assetDescriptions.OrderBy(x => x.Name))
         {
             try
             {
-                // TODO: Find a better way to deal with Steam's rate limiting.
-                Thread.Sleep(3000);
-
+                var app = assetDescription.App;
                 var marketPriceOverviewRequest = new SteamMarketPriceOverviewJsonRequest()
                 {
-                    AppId = assetDescription.App.SteamId,
+                    AppId = app.SteamId,
                     MarketHashName = assetDescription.NameHash,
                     Language = Constants.SteamDefaultLanguage,
                     CurrencyId = usdCurrency.SteamId,
@@ -83,10 +79,28 @@ public class CheckForNewMarketItems
                 var marketPriceOverviewResponse = await _steamCommunityWebClient.GetMarketPriceOverview(marketPriceOverviewRequest);
                 if (marketPriceOverviewResponse?.Success == true)
                 {
-                    var newMarketItem = await _steamService.AddOrUpdateMarketItem(assetDescription.App, usdCurrency, marketPriceOverviewResponse, assetDescription);
+                    var newMarketItem = await AddOrUpdateMarketItem(app, usdCurrency, marketPriceOverviewResponse, assetDescription);
                     if (newMarketItem != null)
                     {
-                        newMarketItems.Add(newMarketItem);
+                        logger.LogTrace($"New market item found (appId: {app.SteamId}, classId: {assetDescription.ClassId}, name: '{assetDescription.Name}')");
+                        await _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
+                        {
+                            AppId = UInt64.Parse(app.SteamId),
+                            AppName = app.Name,
+                            AppIconUrl = app.IconUrl,
+                            AppColour = app.PrimaryColor,
+                            CreatorId = newMarketItem.Description?.CreatorId,
+                            CreatorName = newMarketItem.Description?.CreatorProfile?.Name,
+                            CreatorAvatarUrl = newMarketItem.Description?.CreatorProfile?.AvatarUrl,
+                            ItemId = UInt64.Parse(newMarketItem.SteamId),
+                            ItemType = newMarketItem.Description?.ItemType,
+                            ItemShortName = newMarketItem.Description?.ItemShortName,
+                            ItemName = newMarketItem.Description?.Name,
+                            ItemDescription = newMarketItem.Description?.Description,
+                            ItemCollection = newMarketItem.Description?.ItemCollection,
+                            ItemIconUrl = newMarketItem.Description?.IconUrl ?? newMarketItem.Description?.IconLargeUrl,
+                            ItemImageUrl = newMarketItem.Description?.PreviewUrl ?? newMarketItem.Description?.IconLargeUrl ?? newMarketItem.Description?.IconUrl,
+                        });
                     }
                 }
             }
@@ -104,52 +118,49 @@ public class CheckForNewMarketItems
             }
         }
 
-        if (newMarketItems.Any())
-        {
-            logger.LogInformation($"New market items detected!");
-            _steamDb.SaveChanges();
-        }
-
-        var newMarketItemGroups = newMarketItems.GroupBy(x => x.App).Where(x => x.Key.IsActive);
-        foreach (var newMarketItemGroup in newMarketItemGroups)
-        {
-            await BroadcastMarketItemAddedMessages(logger, newMarketItemGroup.Key, newMarketItemGroup.ToArray());
-        }
+        _steamDb.SaveChanges();
     }
 
-    private async Task BroadcastMarketItemAddedMessages(ILogger logger, SteamApp app, IEnumerable<SteamMarketItem> newMarketItems)
+    private async Task<SteamMarketItem> AddOrUpdateMarketItem(SteamApp app, SteamCurrency currency, SteamMarketPriceOverviewJsonResponse marketPriceOverview, SteamAssetDescription asset)
     {
-        newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name)?.ToArray();
-        if (newMarketItems?.Any() != true)
+        var dbItem = await _steamDb.SteamMarketItems
+            .Include(x => x.App)
+            .Include(x => x.Currency)
+            .Include(x => x.Description)
+            .Where(x => x.AppId == app.Id)
+            .FirstOrDefaultAsync(x => x.Description.ClassId == asset.ClassId);
+
+        if (dbItem != null)
         {
-            return;
+            return dbItem;
         }
 
-        var broadcastTasks = new List<Task>();
-        foreach (var marketItem in newMarketItems)
+        if (asset.ClassId == null)
         {
-            broadcastTasks.Add(
-                _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
-                {
-                    AppId = UInt64.Parse(app.SteamId),
-                    AppName = app.Name,
-                    AppIconUrl = app.IconUrl,
-                    AppColour = app.PrimaryColor,
-                    CreatorId = marketItem.Description?.CreatorId,
-                    CreatorName = marketItem.Description?.CreatorProfile?.Name,
-                    CreatorAvatarUrl = marketItem.Description?.CreatorProfile?.AvatarUrl,
-                    ItemId = UInt64.Parse(marketItem.SteamId),
-                    ItemType = marketItem.Description?.ItemType,
-                    ItemShortName = marketItem.Description?.ItemShortName,
-                    ItemName = marketItem.Description?.Name,
-                    ItemDescription = marketItem.Description?.Description,
-                    ItemCollection = marketItem.Description?.ItemCollection,
-                    ItemIconUrl = marketItem.Description?.IconUrl ?? marketItem.Description?.IconLargeUrl,
-                    ItemImageUrl = marketItem.Description?.PreviewUrl ?? marketItem.Description?.IconLargeUrl ?? marketItem.Description?.IconUrl,
-                })
-            );
+            return null;
         }
 
-        await Task.WhenAll(broadcastTasks);
+        var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+        {
+            AppId = ulong.Parse(app.SteamId),
+            AssetClassId = asset.ClassId.Value
+        });
+        var assetDescription = importAssetDescription.AssetDescription;
+        if (assetDescription == null || assetDescription.NameId == null)
+        {
+            return null;
+        }
+
+        app.MarketItems.Add(dbItem = new SteamMarketItem()
+        {
+            SteamId = assetDescription.NameId?.ToString(),
+            AppId = app.Id,
+            Description = assetDescription,
+            Currency = currency,
+            SellOrderCount = marketPriceOverview.Volume.SteamQuantityValueAsInt(),
+            SellOrderLowestPrice = marketPriceOverview.LowestPrice.SteamPriceAsInt()
+        });
+
+        return dbItem;
     }
 }

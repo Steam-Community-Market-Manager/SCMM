@@ -186,7 +186,6 @@ public static class WebApplicationExtensions
         builder.Services.AddMessages(contactAssemblies);
 
         // Services
-        builder.Services.AddScoped<SteamService>();
         builder.Services.AddScoped<LanguageCache>();
         builder.Services.AddScoped<CurrencyCache>();
         builder.Services.AddScoped<AppCache>();

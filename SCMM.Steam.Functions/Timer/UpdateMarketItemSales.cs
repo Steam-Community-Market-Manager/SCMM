@@ -1,11 +1,15 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using System.Globalization;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -13,13 +17,11 @@ public class UpdateMarketItemSales
 {
     private readonly SteamDbContext _db;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
-    private readonly SteamService _steamService;
 
-    public UpdateMarketItemSales(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public UpdateMarketItemSales(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
-        _steamService = steamService;
     }
 
     [Function("Update-Market-Item-Sales")]
@@ -65,7 +67,7 @@ public class UpdateMarketItemSales
 
                 // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
                 // TODO: Find/buy a Steam account that is locked to USD for better accuracy
-                await _steamService.UpdateMarketItemSalesHistory(item, response, nzdCurrency);
+                await UpdateMarketItemSalesHistory(item, response, nzdCurrency);
                 await _db.SaveChangesAsync();
             }
             catch (SteamRequestException ex)
@@ -85,5 +87,62 @@ public class UpdateMarketItemSales
         }
 
         logger.LogTrace($"Updated market item sales information (id: {id})");
+    }
+
+    private async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, SteamMarketPriceHistoryJsonResponse sales, SteamCurrency salesCurrency = null)
+    {
+        if (item == null || sales?.Success != true)
+        {
+            return item;
+        }
+
+        // Lazy-load sales history if missing, required for recalculation
+        if (item.SalesHistory?.Any() != true)
+        {
+            item = await _db.SteamMarketItems
+                .Include(x => x.SalesHistory)
+                .SingleOrDefaultAsync(x => x.Id == item.Id);
+        }
+
+        // If the sales are not already in our items currency, exchange them now
+        var itemSales = ParseMarketItemSalesFromGraph(sales.Prices, item.LastCheckedSalesOn);
+        if (itemSales != null && salesCurrency != null && salesCurrency.Id != item.CurrencyId)
+        {
+            foreach (var sale in itemSales)
+            {
+                sale.MedianPrice = item.Currency.CalculateExchange(sale.MedianPrice, salesCurrency);
+            }
+        }
+
+        item.LastCheckedSalesOn = DateTimeOffset.Now;
+        item.RecalculateSales(itemSales);
+
+        return item;
+    }
+
+    private SteamMarketItemSale[] ParseMarketItemSalesFromGraph(string[][] salesGraph, DateTimeOffset? ignoreSalesBefore = null)
+    {
+        var sales = new List<SteamMarketItemSale>();
+        if (salesGraph == null)
+        {
+            return sales.ToArray();
+        }
+
+        var totalQuantity = 0;
+        for (var i = 0; i < salesGraph.Length; i++)
+        {
+            var timeStamp = DateTime.ParseExact(salesGraph[i][0], "MMM dd yyyy HH: z", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            var medianPrice = salesGraph[i][1].SteamPriceAsInt();
+            var quantity = salesGraph[i][2].SteamQuantityValueAsInt();
+            sales.Add(new SteamMarketItemSale()
+            {
+                Timestamp = timeStamp,
+                MedianPrice = medianPrice,
+                Quantity = quantity,
+            });
+            totalQuantity += quantity;
+        }
+
+        return sales.ToArray();
     }
 }

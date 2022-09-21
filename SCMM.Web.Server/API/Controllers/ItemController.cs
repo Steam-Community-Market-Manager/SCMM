@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
-using SCMM.Steam.API;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.Extensions;
@@ -28,16 +26,13 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        private readonly SteamService _steam;
-
-        public ItemController(ILogger<ItemController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam)
+        public ItemController(ILogger<ItemController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _mapper = mapper;
-            _steam = steam;
         }
 
         /// <summary>

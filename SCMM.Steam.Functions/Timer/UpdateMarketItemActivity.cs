@@ -16,13 +16,11 @@ public class UpdateMarketItemActivity
 {
     private readonly SteamDbContext _db;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
-    private readonly SteamService _steamService;
 
-    public UpdateMarketItemActivity(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public UpdateMarketItemActivity(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
-        _steamService = steamService;
     }
 
     // TODO: This needs to be more efficent, too spammy

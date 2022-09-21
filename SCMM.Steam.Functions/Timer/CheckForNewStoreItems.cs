@@ -7,7 +7,6 @@ using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Extensions;
 using SCMM.Steam.API.Queries;
@@ -19,6 +18,7 @@ using SCMM.Steam.Data.Store.Types;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
+using System.Globalization;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -28,16 +28,14 @@ public class CheckForNewStoreItems
     private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly SteamService _steamService;
     private readonly ServiceBusClient _serviceBus;
 
-    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamService steamService, ServiceBusClient serviceBus)
+    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, ServiceBusClient serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
         _steamDb = steamDb;
-        _steamService = steamService;
         _serviceBus = serviceBus;
     }
 
@@ -177,7 +175,7 @@ public class CheckForNewStoreItems
         foreach (var asset in assetPrices.Data.Assets)
         {
             // Ensure that the item is available in the database (create them if missing)
-            var storeItem = await _steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
+            var storeItem = await AddOrUpdateStoreItemAndMarkAsAvailable(
                 app, asset, usdCurrency, DateTimeOffset.Now
             );
             if (storeItem == null)
@@ -283,7 +281,7 @@ public class CheckForNewStoreItems
         foreach (var asset in missingAssets)
         {
             // Ensure that the item is available in the database (create them if missing)
-            var storeItem = await _steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
+            var storeItem = await AddOrUpdateStoreItemAndMarkAsAvailable(
                 app, asset, usdCurrency, DateTimeOffset.Now
             );
             if (storeItem == null)
@@ -307,6 +305,92 @@ public class CheckForNewStoreItems
             logger.LogInformation($"{newStoreItems.Count} new store items added!");
             //await BroadcastNewStoreItemsNotification(logger, app, null, newStoreItems, currencies);
         }
+    }
+
+    private async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeChecked)
+    {
+        // Find the item by it's store id or asset class id (which ever exists first)
+        var dbItem = (
+            await _steamDb.SteamStoreItems
+                .Include(x => x.Stores).ThenInclude(x => x.Store)
+                .Include(x => x.Description)
+                .Include(x => x.Description.App)
+                .Include(x => x.Description.CreatorProfile)
+                .Where(x => x.AppId == app.Id)
+                .FirstOrDefaultAsync(x => x.SteamId == asset.Name) ??
+            await _steamDb.SteamStoreItems
+                .Include(x => x.Stores).ThenInclude(x => x.Store)
+                .Include(x => x.Description)
+                .Include(x => x.Description.App)
+                .Include(x => x.Description.CreatorProfile)
+                .Where(x => x.AppId == app.Id)
+                .FirstOrDefaultAsync(x => x.Description.ClassId == asset.ClassId)
+        );
+
+        // Find the item asset description, or import it if missing
+        var assetDescription = (dbItem?.Description ??
+            await _steamDb.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.CreatorProfile)
+                .FirstOrDefaultAsync(x => x.AppId == app.Id && x.ClassId == asset.ClassId)
+        );
+        if (assetDescription == null)
+        {
+            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+            {
+                AppId = ulong.Parse(app.SteamId),
+                AssetClassId = asset.ClassId
+            });
+            assetDescription = importAssetDescription.AssetDescription;
+            if (assetDescription == null)
+            {
+                // The asset description for this item doesn't exist, bail...
+                return null;
+            }
+        }
+
+        // If the store item doesn't exist yet, create it now
+        if (dbItem == null)
+        {
+            app.StoreItems.Add(dbItem = new SteamStoreItem()
+            {
+                App = app,
+                AppId = app.Id,
+                Description = assetDescription,
+                DescriptionId = assetDescription.Id
+            });
+
+            var prices = asset.Prices.ToDictionary();
+            dbItem.UpdatePrice(
+                currency,
+                prices.FirstOrDefault(x => x.Key == currency?.Name).Value,
+                new PersistablePriceDictionary(prices)
+            );
+        }
+
+        // If the asset item is not yet accepted, accept it now
+        assetDescription.IsAccepted = true;
+        if (assetDescription.TimeAccepted == null)
+        {
+            if (!String.IsNullOrEmpty(asset.Date))
+            {
+                DateTimeOffset storeDate;
+                if (DateTimeOffset.TryParseExact(asset.Date, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate) ||
+                    DateTimeOffset.TryParseExact(asset.Date, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+                {
+                    assetDescription.TimeAccepted = storeDate;
+                }
+            }
+            else
+            {
+                assetDescription.TimeAccepted = timeChecked;
+            }
+        }
+
+        // Mark the store item as available
+        dbItem.SteamId = asset.Name;
+        dbItem.IsAvailable = true;
+        return dbItem;
     }
 
     private async Task<string> RegenerateStoreItemsThumbnailImage(ILogger logger, SteamApp app, SteamItemStore store)

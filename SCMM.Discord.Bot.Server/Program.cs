@@ -181,9 +181,6 @@ public static class WebApplicationExtensions
         builder.Services.AddQueries(contactAssemblies);
         builder.Services.AddMessages(contactAssemblies);
 
-        // Services
-        builder.Services.AddScoped<SteamService>();
-
         // Controllers
         builder.Services
             .AddControllersWithViews(options =>
