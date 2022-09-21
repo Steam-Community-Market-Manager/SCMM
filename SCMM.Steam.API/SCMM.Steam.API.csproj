@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Azure.Identity" Version="1.6.1" />
+	<PackageReference Include="Azure.Identity" Version="1.7.0" />
 	<PackageReference Include="Azure.Storage.Blobs" Version="12.13.1" />
     <PackageReference Include="CommandQuery" Version="1.0.0" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
