@@ -353,4 +353,5 @@ MigrationBackup/
 **/*.Development.json
 
 # Azure Functions localsettings file
-local.settings.json
+**/*local.settings.json
+**/launchSettings.json
