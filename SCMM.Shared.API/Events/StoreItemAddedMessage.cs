@@ -39,6 +39,8 @@ namespace SCMM.Shared.API.Events
 
         public string ItemCollection { get; set; }
 
+        public string ItemIconUrl { get; set; }
+
         public string ItemImageUrl { get; set; }
 
         public Price[] ItemPrices { get; set; }

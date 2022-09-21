@@ -392,7 +392,7 @@ namespace SCMM.Discord.Client
                     .WithFields(fieldBuilders)
                     .WithImageUrl(SafeUrl(imageUrl))
                     .WithColor((color != null ? color.Value : Color.Default))
-                    .WithFooter(x => x.Text = SafeUrl(_websiteUrl));
+                    .WithFooter(x => x.Text = _websiteUrl);
 
                 if (!String.IsNullOrEmpty(authorName))
                 {

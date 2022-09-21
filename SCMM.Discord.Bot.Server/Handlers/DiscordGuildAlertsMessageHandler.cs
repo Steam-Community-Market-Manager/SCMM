@@ -44,13 +44,9 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
-                description.Append($"In-game item definitions for {appItemDefinition.AppName} have been updated.");
-
-                var fields = new Dictionary<string, string>()
-                {
-                    { "Digest", $"```{appItemDefinition.ItemDefinitionsDigest}```" }
-                };
-
+                description.AppendLine($"In-game item definitions for {appItemDefinition.AppName} have been updated.");
+                description.AppendLine($"```{appItemDefinition.ItemDefinitionsDigest}```");
+                
                 return _client.SendMessageAsync(
                     guildId,
                     channelId,
@@ -58,7 +54,6 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     url: $"{_configuration.GetWebsiteUrl()}/items",
                     thumbnailUrl: !String.IsNullOrEmpty(appItemDefinition.AppIconUrl) ? appItemDefinition.AppIconUrl : null,
                     description: description.ToString(),
-                    fields: fields,
                     color: !String.IsNullOrEmpty(appItemDefinition.AppColour) ? (uint?)UInt32.Parse(appItemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
                     crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
@@ -84,11 +79,12 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     },
                     title: itemDefinition.ItemName,
                     url: $"{_configuration.GetWebsiteUrl()}/item/{itemDefinition.ItemName}",
-                    thumbnailUrl: !String.IsNullOrEmpty(itemDefinition.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{itemDefinition.AppId}/items/{itemDefinition.ItemShortName}.png" : null,
+                    thumbnailUrl: !String.IsNullOrEmpty(itemDefinition.ItemIconUrl) ? itemDefinition.ItemIconUrl : 
+                                  !String.IsNullOrEmpty(itemDefinition.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{itemDefinition.AppId}/items/{itemDefinition.ItemShortName}.png" : null,
                     description: description.ToString(),
                     imageUrl: !String.IsNullOrEmpty(itemDefinition.ItemImageUrl) ? itemDefinition.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(itemDefinition.AppColour) ? (uint?)UInt32.Parse(itemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: false
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
@@ -116,7 +112,8 @@ namespace SCMM.Discord.Bot.Server.Handlers
                         AppId = marketItem.AppId.ToString(),
                         MarketHashName = marketItem.ItemName
                     },
-                    thumbnailUrl: !String.IsNullOrEmpty(marketItem.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{marketItem.ItemShortName}.png" : null,
+                    thumbnailUrl: !String.IsNullOrEmpty(marketItem.ItemIconUrl) ? marketItem.ItemIconUrl :
+                                  !String.IsNullOrEmpty(marketItem.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{marketItem.ItemShortName}.png" : null,
                     description: description.ToString(),
                     imageUrl: !String.IsNullOrEmpty(marketItem.ItemImageUrl) ? marketItem.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(marketItem.AppColour) ? (uint?)UInt32.Parse(marketItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
@@ -176,15 +173,15 @@ namespace SCMM.Discord.Bot.Server.Handlers
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guildId, channelId) =>
             {
-                var description = new StringBuilder();
-                description.Append($"New {storeItem.ItemType} can be purchased from the {storeItem.AppName} store.");
-
-                var fields = new Dictionary<string, string>();
+                var title = new StringBuilder(storeItem.ItemName);
                 var defaultPrice = storeItem.ItemPrices?.FirstOrDefault(x => x.Currency == Steam.Data.Models.Constants.SteamDefaultCurrency);
                 if (defaultPrice != null)
                 {
-                    fields["Price"] = defaultPrice.Description;
+                    title.Append($" - {(defaultPrice.Description ?? "N/A")}");
                 }
+
+                var description = new StringBuilder();
+                description.Append($"New {storeItem.ItemType} can be purchased from the {storeItem.AppName} store.");
 
                 return _client.SendMessageAsync(
                     guildId,
@@ -196,15 +193,15 @@ namespace SCMM.Discord.Bot.Server.Handlers
                         SteamId = storeItem.CreatorId.ToString(),
                         AppId = storeItem.AppId.ToString()
                     },
-                    title: storeItem.ItemName,
+                    title: title.ToString(),
                     url: new SteamItemStoreDetailPageRequest()
                     {
                         AppId = storeItem.AppId.ToString(),
                         ItemId = storeItem.ItemId.ToString()
                     },
-                    thumbnailUrl: !String.IsNullOrEmpty(storeItem.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{storeItem.AppId}/items/{storeItem.ItemShortName}.png" : null,
+                    thumbnailUrl: !String.IsNullOrEmpty(storeItem.ItemIconUrl) ? storeItem.ItemIconUrl :
+                                  !String.IsNullOrEmpty(storeItem.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{storeItem.AppId}/items/{storeItem.ItemShortName}.png" : null,
                     description: description.ToString(),
-                    fields: fields,
                     imageUrl: !String.IsNullOrEmpty(storeItem.ItemImageUrl) ? storeItem.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(storeItem.AppColour) ? (uint?)UInt32.Parse(storeItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
                     crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
@@ -263,7 +260,8 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     {
                         Id = workshopFile.ItemId.ToString()
                     },
-                    thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
+                    thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemIconUrl) ? workshopFile.ItemIconUrl :
+                                  !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
                     description: description.ToString(),
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
@@ -313,7 +311,8 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     {
                         Id = workshopFile.ItemId.ToString()
                     },
-                    thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
+                    thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemIconUrl) ? workshopFile.ItemIconUrl :
+                                  !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
                     description: description.ToString(),
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,

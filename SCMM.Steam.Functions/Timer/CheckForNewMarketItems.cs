@@ -144,6 +144,7 @@ public class CheckForNewMarketItems
                     ItemName = marketItem.Description?.Name,
                     ItemDescription = marketItem.Description?.Description,
                     ItemCollection = marketItem.Description?.ItemCollection,
+                    ItemIconUrl = marketItem.Description?.IconUrl ?? marketItem.Description?.IconLargeUrl,
                     ItemImageUrl = marketItem.Description?.PreviewUrl ?? marketItem.Description?.IconLargeUrl ?? marketItem.Description?.IconUrl,
                 })
             );

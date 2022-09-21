@@ -169,6 +169,7 @@ namespace SCMM.Steam.API.Commands
                         ItemName = newAssetDescription.Name,
                         ItemDescription = newAssetDescription.Description,
                         ItemCollection = newAssetDescription.ItemCollection,
+                        ItemIconUrl = newAssetDescription.IconUrl ?? newAssetDescription.IconLargeUrl,
                         ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
                     });
                 }
@@ -610,6 +611,7 @@ namespace SCMM.Steam.API.Commands
                         ItemName = storeItem.Item.Description?.Name,
                         ItemDescription = storeItem.Item.Description?.Description,
                         ItemCollection = storeItem.Item.Description?.ItemCollection,
+                        ItemIconUrl = storeItem.Item.Description?.IconUrl ?? storeItem.Item.Description?.IconLargeUrl,
                         ItemImageUrl = storeItem.Item.Description?.PreviewUrl ?? storeItem.Item.Description?.IconLargeUrl ?? storeItem.Item.Description?.IconUrl,
                         ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
                         {
@@ -692,6 +694,7 @@ namespace SCMM.Steam.API.Commands
                         ItemName = marketItem.Description?.Name,
                         ItemDescription = marketItem.Description?.Description,
                         ItemCollection = marketItem.Description?.ItemCollection,
+                        ItemIconUrl = marketItem.Description?.IconUrl ?? marketItem.Description?.IconLargeUrl,
                         ItemImageUrl = marketItem.Description?.PreviewUrl ?? marketItem.Description?.IconLargeUrl ?? marketItem.Description?.IconUrl,
                     });
 
