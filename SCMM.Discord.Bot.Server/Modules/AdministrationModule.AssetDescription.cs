@@ -21,19 +21,15 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule
     {
         [Command("import-rust-item-definitions")]
-        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync()
+        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(string digest)
         {
-            var message = await Context.Message.ReplyAsync("Importing latest item definitions...");
-            var response = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionsRequest()
+            await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
             {
-                AppId = Constants.RustAppId
+                AppId = Constants.RustAppId.ToString(),
+                ItemDefinitionsDigest = digest
             });
 
             await _steamDb.SaveChangesAsync();
-            await message.ModifyAsync(
-                x => x.Content = $"Imported latest item definitions from digest {response.App.ItemDefinitionsDigest} (modified: {response.App.TimeUpdated})"
-            );
-
             return CommandResult.Success();
         }
 

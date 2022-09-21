@@ -45,6 +45,11 @@ namespace SCMM.Steam.API.Commands
         public string MarketListingPageHtml { get; set; }
 
         public XElement StoreItemPageHtml { get; set; }
+
+        /// <summary>
+        /// If true, the item collection name check will be skipped
+        /// </summary>
+        public bool SkipItemCollectionCheck { get; set; } = false;
     }
 
     public class UpdateSteamAssetDescriptionResponse
@@ -588,7 +593,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Parse asset item collection (if missing and is a user created item)
-                    if (string.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.CreatorId != null)
+                    if (string.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.CreatorId != null && !request.SkipItemCollectionCheck)
                     {
                         // Find existing item collections we fit in to (if any)
                         var existingItemCollections = await _db.SteamAssetDescriptions

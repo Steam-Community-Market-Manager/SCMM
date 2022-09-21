@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Messages;
-using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
@@ -59,15 +58,8 @@ namespace SCMM.Steam.API.Commands
         public async Task<ImportSteamItemDefinitionResponse> HandleAsync(ImportSteamItemDefinitionRequest request)
         {
             // Does this asset already exist?
-            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x =>
-                x.App.SteamId == request.AppId.ToString() &&
-                (
-                    (x.ItemDefinitionId > 0 && request.ItemDefinitionId > 0 && x.ItemDefinitionId == request.ItemDefinitionId) ||
-                    (!String.IsNullOrEmpty(x.NameHash) && !String.IsNullOrEmpty(request.ItemDefinitionName) && x.NameHash == request.ItemDefinitionName) ||
-                    (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(request.ItemDefinitionName) && x.Name == request.ItemDefinitionName) ||
-                    (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(request.ItemDefinitionName) && x.Name == request.ItemDefinitionName)
-                )
-            );
+            var assetDescription = (await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ItemDefinitionId == request.ItemDefinitionId)) ??
+                                   (_db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ItemDefinitionId == request.ItemDefinitionId));
             if (assetDescription == null)
             {
                 // Doesn't exist in database, create it now...
@@ -93,7 +85,7 @@ namespace SCMM.Steam.API.Commands
             var updateAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
             {
                 AssetDescription = assetDescription,
-                AssetItemDefinition = itemDefinition,
+                AssetItemDefinition = itemDefinition
             });
 
             // If the asset description is now persistent (not transient)...

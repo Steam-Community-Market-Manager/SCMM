@@ -68,22 +68,31 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Get the app
-            var app = _steamDb.SteamApps.FirstOrDefault(x => x.SteamId == request.AppId);
+            var app = await _steamDb.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId);
             if (app == null)
             {
                 return;
             }
 
             // Add the item definitions archive to the app (if missing)
-            app.ItemDefinitionArchives.Add(new SteamItemDefinitionsArchive()
+            var itemDefinitionsArchiveAlreadyExists = await _steamDb.SteamItemDefinitionsArchive.AnyAsync(x => x.AppId == app.Id && x.Digest == request.ItemDefinitionsDigest);
+            if (!itemDefinitionsArchiveAlreadyExists)
             {
-                App = app,
-                Digest = request.ItemDefinitionsDigest,
-                ItemDefinitions = JsonSerializer.Serialize(itemDefinitionsArchive.ToArray()),
-                TimePublished = DateTimeOffset.Now
-            });
+                _steamDb.SteamItemDefinitionsArchive.Add(new SteamItemDefinitionsArchive()
+                {
+                    App = app,
+                    Digest = request.ItemDefinitionsDigest,
+                    ItemDefinitions = JsonSerializer.Serialize(itemDefinitionsArchive.ToArray()),
+                    TimePublished = DateTimeOffset.Now
+                });
 
-            await _steamDb.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
+            }
+
+            // TODO: Filter this properly
+            var itemDefinitions = itemDefinitionsArchive
+                .Where(x => x.Name != "DELETED" && x.Type != "generator")
+                .ToArray();
 
             var currencies = await _steamDb.SteamCurrencies.ToArrayAsync();
             var assetDescriptions = await _steamDb.SteamAssetDescriptions
@@ -95,75 +104,99 @@ namespace SCMM.Steam.API.Commands
                 .ToListAsync();
 
             // Parse all item definition changes in the archive
-            await AddOrUpdateAssetDescriptionsFromArchive(app, itemDefinitionsArchive, assetDescriptions);
+            await LinkAssetDescriptionsToItemDefinitionsFromArchive(app, itemDefinitions, assetDescriptions);
+            await AddNewAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
             await _steamDb.SaveChangesAsync();
-            await AddNewStoreItemsFromArchive(app, itemDefinitionsArchive, assetDescriptions, currencies);
+            await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
             await _steamDb.SaveChangesAsync();
-            await AddNewMarketItemsFromArchive(app, itemDefinitionsArchive, assetDescriptions, currencies);
+            await AddOrUpdateMarketItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+            await _steamDb.SaveChangesAsync();
+
+            await UpdateExistingAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
             await _steamDb.SaveChangesAsync();
         }
 
-        private async Task AddOrUpdateAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
+        private async Task LinkAssetDescriptionsToItemDefinitionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
-            // TODO: Filter this properly
-            var fileredItemDefinitions = itemDefinitions
-                .Where(x => x.Name != "DELETED" && x.Type != "generator");
-
-            foreach (var itemDefinition in fileredItemDefinitions)
+            var assetDescriptionsWithMissingItemDefinitionId = assetDescriptions.Where(x => x.ItemDefinitionId == null).ToArray();
+            foreach (var assetDescription in assetDescriptionsWithMissingItemDefinitionId)
             {
-                var assetDescription = assetDescriptions.FirstOrDefault(x =>
-                    (x.ItemDefinitionId > 0 && itemDefinition.ItemDefId > 0 && x.ItemDefinitionId == itemDefinition.ItemDefId) ||
-                    (x.WorkshopFileId > 0 && itemDefinition.WorkshopId > 0 && x.WorkshopFileId == itemDefinition.WorkshopId) ||
-                    (!String.IsNullOrEmpty(x.NameHash) && !String.IsNullOrEmpty(itemDefinition.MarketHashName) && x.NameHash == itemDefinition.MarketHashName) ||
-                    (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(itemDefinition.MarketName) && x.Name == itemDefinition.MarketName) ||
-                    (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(itemDefinition.Name) && x.Name == itemDefinition.Name)
+                // It is possible that asset descriptions are added without an item id, so link them to the item definitions when possible
+                var itemDefinition = itemDefinitions.FirstOrDefault(x =>
+                    (assetDescription.ItemDefinitionId > 0 && x.ItemDefId > 0 && assetDescription.ItemDefinitionId == x.ItemDefId) ||
+                    (assetDescription.WorkshopFileId > 0 && x.WorkshopId > 0 && assetDescription.WorkshopFileId == x.WorkshopId) ||
+                    (!String.IsNullOrEmpty(assetDescription.NameHash) && !String.IsNullOrEmpty(x.MarketHashName) && assetDescription.NameHash == x.MarketHashName) ||
+                    (!String.IsNullOrEmpty(assetDescription.Name) && !String.IsNullOrEmpty(x.MarketName) && assetDescription.Name == x.MarketName) ||
+                    (!String.IsNullOrEmpty(assetDescription.Name) && !String.IsNullOrEmpty(x.Name) && assetDescription.Name == x.Name)
                 );
-                if (assetDescription == null)
+                if (itemDefinition != null)
                 {
-                    // Add the new asset description
-                    var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionRequest()
+                    assetDescription.ItemDefinitionId = itemDefinition.ItemDefId;
+                }
+            }
+        }
+
+        private async Task AddNewAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
+        {
+            var newItemDefinitions = itemDefinitions.Where(x => !assetDescriptions.Any(y => y.ItemDefinitionId == x.ItemDefId)).ToArray();
+            foreach (var itemDefinition in newItemDefinitions)
+            {
+                // Add the new asset description
+                _logger.LogInformation($"A new item definition was found! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
+                var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionRequest()
+                {
+                    AppId = UInt64.Parse(app.SteamId),
+                    ItemDefinitionId = itemDefinition.ItemDefId,
+                    ItemDefinitionName = itemDefinition.Name,
+                    ItemDefinition = itemDefinition
+                });
+                var newAssetDescription = importedAssetDescription?.AssetDescription;
+                if (newAssetDescription != null)
+                {
+                    assetDescriptions.Add(newAssetDescription);
+                    await _serviceBus.SendMessageAsync(new ItemDefinitionAddedMessage()
                     {
                         AppId = UInt64.Parse(app.SteamId),
-                        ItemDefinitionId = itemDefinition.ItemDefId,
-                        ItemDefinitionName = itemDefinition.Name,
-                        ItemDefinition = itemDefinition
-                    });
-                    var newAssetDescription = importedAssetDescription?.AssetDescription;
-                    if (newAssetDescription != null)
-                    {
-                        assetDescriptions.Add(newAssetDescription);
-                        await _serviceBus.SendMessageAsync(new ItemDefinitionAddedMessage()
-                        {
-                            AppId = UInt64.Parse(app.SteamId),
-                            AppName = app.Name,
-                            AppIconUrl = app.IconUrl,
-                            AppColour = app.PrimaryColor,
-                            CreatorId = newAssetDescription.CreatorId,
-                            CreatorName = newAssetDescription.CreatorProfile?.Name,
-                            CreatorAvatarUrl = newAssetDescription.CreatorProfile?.AvatarUrl,
-                            ItemId = newAssetDescription.ItemDefinitionId ?? 0,
-                            ItemType = newAssetDescription.ItemType,
-                            ItemShortName = newAssetDescription.ItemShortName,
-                            ItemName = newAssetDescription.Name,
-                            ItemDescription = newAssetDescription.Description,
-                            ItemCollection = newAssetDescription.ItemCollection,
-                            ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
-                        });
-                    }
-                }
-                else
-                {
-                    // Update the existing asset description
-                    var updatedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
-                    {
-                        AssetDescription = assetDescription,
-                        AssetItemDefinition = itemDefinition
+                        AppName = app.Name,
+                        AppIconUrl = app.IconUrl,
+                        AppColour = app.PrimaryColor,
+                        CreatorId = newAssetDescription.CreatorId,
+                        CreatorName = newAssetDescription.CreatorProfile?.Name,
+                        CreatorAvatarUrl = newAssetDescription.CreatorProfile?.AvatarUrl,
+                        ItemId = newAssetDescription.ItemDefinitionId ?? 0,
+                        ItemType = newAssetDescription.ItemType,
+                        ItemShortName = newAssetDescription.ItemShortName,
+                        ItemName = newAssetDescription.Name,
+                        ItemDescription = newAssetDescription.Description,
+                        ItemCollection = newAssetDescription.ItemCollection,
+                        ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
                     });
                 }
             }
         }
 
-        private async Task AddNewStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
+        private async Task UpdateExistingAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
+        {
+            var items = itemDefinitions
+                .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
+                {
+                    ItemDefinition = x,
+                    AssetDescription = y
+                })
+                .ToArray();
+
+            foreach (var item in items.Where(x => x.AssetDescription != null && x.ItemDefinition != null))
+            {
+                await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+                {
+                    AssetDescription = item.AssetDescription,
+                    AssetItemDefinition = item.ItemDefinition,
+                    SkipItemCollectionCheck = true
+                });
+            }
+        }
+
+        private async Task AddOrUpdateStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
         {
             var storeItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
@@ -175,34 +208,49 @@ namespace SCMM.Steam.API.Commands
                 })
                 .ToArray();
 
-            // Get the latest asset description prices
-            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
-            var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
-            var assetPricesResponse = await steamEconomy.GetAssetPricesAsync(uint.Parse(app.SteamId));
-            if (assetPricesResponse?.Data?.Success != true)
+            // Update all store items that are no longer available
+            foreach (var removedStoreItem in storeItems.Where(x => x.HasBeenRemovedFromStore && x.AssetDescription?.StoreItem != null))
             {
-                _logger.LogError($"Failed to get asset prices (appId: {app.SteamId})");
+                _logger.LogInformation($"An item has been removed from the store! (appId: {app.SteamId}, itemId: {removedStoreItem.ItemDefinition.ItemDefId}, name: '{removedStoreItem.ItemDefinition.Name}')");
+                removedStoreItem.AssetDescription.StoreItem.IsAvailable = false;
             }
 
-            // Does this app have item stores? check and add the items to the appropriate store instance
-            if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+            // Add all newly added store items
+            var addedStoreItems = storeItems.Where(x => x.HasBeenAddedToStore);
+            if (addedStoreItems.Any())
             {
-                await AddNewItemsToItemStore(app, assetPricesResponse, currencies);
-            }
-
-            // Else, this app doesn't have item stores, but still check for and add any missing items
-            else
-            {
-                foreach (var removedStoreItem in storeItems.Where(x => x.HasBeenRemovedFromStore))
+                foreach (var addedStoreItem in addedStoreItems)
                 {
-                    // TODO: Handle this...
+                    _logger.LogInformation($"An new item has been added to the store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
                 }
 
-                foreach (var addedStoreItem in storeItems.Where(x => x.HasBeenAddedToStore))
+                // Get the latest asset description prices
+                var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
+                var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
+                var assetPricesResponse = await steamEconomy.GetAssetPricesAsync(uint.Parse(app.SteamId));
+                if (assetPricesResponse?.Data?.Success != true)
                 {
-                    // TODO: Handle this...
+                    _logger.LogError($"Failed to get store asset prices (appId: {app.SteamId})");
+                }
+
+                // TODO: Validate that new store items are present in asset price list, else loop and retry
+
+                // Does this app have item stores? check and add the items to the appropriate store instance
+                if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                {
+                    await AddNewItemsToItemStore(app, assetPricesResponse, currencies);
+                }
+
+                // Else, this app doesn't have item stores, but still check for and add any missing items
+                else
+                {
+                    foreach (var addedStoreItem in storeItems.Where(x => x.HasBeenAddedToStore))
+                    {
+                        // TODO: Handle this...
+                    }
                 }
             }
+            
         }
 
         private async Task AddNewItemsToItemStore(SteamApp app, ISteamWebResponse<AssetPriceResultModel> assetPrices, IEnumerable<SteamCurrency> currencies)
@@ -576,7 +624,7 @@ namespace SCMM.Steam.API.Commands
             await Task.WhenAll(broadcastTasks);
         }
 
-        private async Task AddNewMarketItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
+        private async Task AddOrUpdateMarketItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
         {
             var marketItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
@@ -588,12 +636,22 @@ namespace SCMM.Steam.API.Commands
                 })
                 .ToArray();
 
+            // Update all market items that are no longer available
+            foreach (var newUnmarketableItem in marketItems.Where(x => x.HasBecomeUnmarketable && x.AssetDescription != null))
+            {
+                // TODO: Handle this?
+            }
+
+            // Add all newly added market items
             foreach (var newMarketableItem in marketItems.Where(x => x.HasBecomeMarketable && x.AssetDescription != null))
             {
                 try
                 {
+                    var itemDefinition = newMarketableItem.ItemDefinition;
                     var assetDescription = newMarketableItem.AssetDescription;
                     var marketItem = assetDescription.MarketItem;
+
+                    _logger.LogInformation($"An new item has been become marketable! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
 
                     // Double check that this asset description can currently be listed on the Steam community market
                     var marketPriceOverviewResponse = await _steamCommunityClient.GetMarketPriceOverview(new SteamMarketPriceOverviewJsonRequest()
@@ -654,19 +712,13 @@ namespace SCMM.Steam.API.Commands
                     if (ex.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
                         // This means the item cannot be listed on the Steam community market yet, ignore for now...
-                        _logger.LogWarning($"Item definition (id: {newMarketableItem.ItemDefinition.ItemDefId}, name: '{newMarketableItem.ItemDefinition.Name}') is marketable, but SCM is not allowing market listings yet");
+                        _logger.LogWarning($"Item definition claims item is now marketable, but SCM is not allowing market listings yet (appId: {app.SteamId}, itemId: {newMarketableItem.ItemDefinition.ItemDefId}, name: '{newMarketableItem.ItemDefinition.Name}')");
                     }
                     else
                     {
                         throw;
                     }
                 }
-
-            }
-
-            foreach (var newUnmarketableItem in marketItems.Where(x => x.HasBecomeUnmarketable && x.AssetDescription != null))
-            {
-                // TODO: Handle this...
             }
         }
     }
