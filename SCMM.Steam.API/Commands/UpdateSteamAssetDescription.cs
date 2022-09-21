@@ -310,9 +310,9 @@ namespace SCMM.Steam.API.Commands
                                 {
                                     description = assetDescription.Changes[timestamp];
                                 }
-                                assetDescription.Changes[timestamp] = (description ?? string.Empty).FirstCharToUpper();
                                 if (!assetDescription.Changes.ContainsKey(timestamp))
                                 {
+                                    assetDescription.Changes[timestamp] = (description ?? string.Empty).FirstCharToUpper();
                                     app = app ?? await _db.SteamApps.AsNoTracking().FirstOrDefaultAsync(x => x.SteamId == (appId ?? 0).ToString());
                                     await _serviceBus.SendMessageAsync(new WorkshopFileUpdatedMessage()
                                     {
