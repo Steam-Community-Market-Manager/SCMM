@@ -405,17 +405,20 @@ namespace SCMM.Discord.Client
             return null;
         }
 
-        private string SafeUrl(string url)
+        /// <summary>
+        /// Format the URL nicely so that Discord doesn't throw a "INVALID_URL" error
+        /// </summary>
+        private string SafeUrl(string url, bool truncateQueryString = false)
         {
-            // Discord throws "INVALID_URL" errors if unescape characters or query strings are present
             if (String.IsNullOrEmpty(url))
             {
                 return null;
             }
-            var urlBuilder = new UriBuilder(url)
+            var urlBuilder = new UriBuilder(url);
+            if (truncateQueryString)
             {
-                Query = String.Empty 
-            };
+                urlBuilder.Query = String.Empty;
+            }
 
             return urlBuilder.ToString();
         }
