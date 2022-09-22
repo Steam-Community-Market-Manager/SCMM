@@ -9,6 +9,7 @@ using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using System.Reflection;
 using System.Text.Json;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace SCMM.Azure.ServiceBus.Middleware
 {
@@ -159,25 +160,37 @@ namespace SCMM.Azure.ServiceBus.Middleware
         private async Task StartMessageProcessorsAsync(IDictionary<Type, Type> handlerMappings)
         {
             var processors = new List<ServiceBusProcessor>();
-            foreach (var handlerMapping in handlerMappings)
+            using (var scope = _scopeFactory.CreateScope())
             {
-                var handlerInterface = handlerMapping.Key;
-                var handlerType = handlerMapping.Value;
-                var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
-                if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)))
+                foreach (var handlerMapping in handlerMappings)
                 {
-                    continue; // this is not a valid message handler
+                    var handlerInterface = handlerMapping.Key;
+                    var handlerType = handlerMapping.Value;
+                    var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
+                    if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)))
+                    {
+                        throw new Exception($"Unable to start message processor for {messageType}, not a valid message type");
+                    }
+
+                    // Check that the handler is able to be instantiated and will be able to handle messages
+                    // It is common for this to fail if handler dependencies are correctly registered
+                    var handlerInterfaceType = typeof(IMessageHandler<>).MakeGenericType(messageType);
+                    var handlerInstance = scope.ServiceProvider.GetService(handlerInterfaceType);
+                    if (handlerInstance == null)
+                    {
+                        throw new Exception($"Unable to start message processor for {messageType}, the handler ({handlerType}) cannot be instantiated");
+                    }
+
+                    var processor = _serviceBusClient.CreateProcessor(messageType, new ServiceBusProcessorOptions()
+                    {
+                        PrefetchCount = handlerType.GetCustomAttribute<PrefetchAttribute>()?.PrefetchCount ?? 0,
+                        MaxConcurrentCalls = handlerType.GetCustomAttribute<ConcurrencyAttribute>()?.MaxConcurrentCalls ?? 1
+                    });
+
+                    processor.ProcessMessageAsync += ProcessMessageAsync;
+                    processor.ProcessErrorAsync += ProcessErrorAsync;
+                    processors.Add(processor);
                 }
-
-                var processor = _serviceBusClient.CreateProcessor(messageType, new ServiceBusProcessorOptions()
-                {
-                    PrefetchCount = handlerType.GetCustomAttribute<PrefetchAttribute>()?.PrefetchCount ?? 0,
-                    MaxConcurrentCalls = handlerType.GetCustomAttribute<ConcurrencyAttribute>()?.MaxConcurrentCalls ?? 1
-                });
-
-                processor.ProcessMessageAsync += ProcessMessageAsync;
-                processor.ProcessErrorAsync += ProcessErrorAsync;
-                processors.Add(processor);
             }
 
             await Task.WhenAll(processors.Select(x => x.StartProcessingAsync()));
