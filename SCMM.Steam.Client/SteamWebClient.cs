@@ -139,6 +139,13 @@ namespace SCMM.Steam.Client
             }
         }
 
+        private async Task<string> GetString<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var response = await GetWithRetry(request);
+            return await response.Content.ReadAsStringAsync();
+        }
+
         private async Task<string> GetStringCached<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
@@ -158,8 +165,7 @@ namespace SCMM.Steam.Client
             else
             {
                 // Cache miss, try get the request from the originating server
-                var response = await GetWithRetry(request);
-                content = await response.Content.ReadAsStringAsync();
+                content = await GetString(request);
 
                 // Cache the response for next time (if any)
                 if (!String.IsNullOrEmpty(content))
@@ -171,8 +177,7 @@ namespace SCMM.Steam.Client
                 }
             }
 
-            // Steam has been known to sometimes put a null character at the end of the response :\
-            return content?.Trim('\0'); 
+            return content;
         }
 
         public async Task<WebFileData> GetBinary<TRequest>(TRequest request)
@@ -187,16 +192,21 @@ namespace SCMM.Steam.Client
             };
         }
 
-        public async Task<string> GetText<TRequest>(TRequest request)
+        public async Task<string> GetText<TRequest>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
-            return await GetStringCached(request);
+            var text = useCache
+                ? await GetStringCached(request)
+                : await GetString(request);
+
+            // Steam has been known to sometimes put a null character at the end of the response, trim it
+            return text?.Trim('\0');
         }
 
-        public async Task<XElement> GetHtml<TRequest>(TRequest request)
+        public async Task<XElement> GetHtml<TRequest>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
-            var html = await GetText(request);
+            var html = await GetText(request, useCache);
             if (string.IsNullOrEmpty(html))
             {
                 return default;
@@ -215,10 +225,10 @@ namespace SCMM.Steam.Client
             return XElement.Parse(sanitisedHtml.ToString());
         }
 
-        public async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request)
+        public async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
-            var xml = await GetText(request);
+            var xml = await GetText(request, useCache);
             if (string.IsNullOrEmpty(xml))
             {
                 return default;
@@ -252,10 +262,10 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request)
+        public async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
-            var json = await GetText(request);
+            var json = await GetText(request, useCache);
             if (string.IsNullOrEmpty(json))
             {
                 return default;

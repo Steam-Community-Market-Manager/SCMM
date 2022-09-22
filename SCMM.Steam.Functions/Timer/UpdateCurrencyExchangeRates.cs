@@ -83,9 +83,6 @@ public class UpdateCurrencyExchangeRates
         var updatedCurrencies = new List<SteamCurrency>();
         foreach (var currency in currencies.OrderByDescending(x => x.Name == usdCurrency.Name))
         {
-            // TODO: Find a better way to deal with Steam's rate limiting.
-            Thread.Sleep(3000);
-
             var response = await _steamCommunityWebClient.GetMarketPriceOverview(
                 new SteamMarketPriceOverviewJsonRequest()
                 {

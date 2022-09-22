@@ -8,6 +8,7 @@ using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
 using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Responses.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Responses.IPublishedFileService;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace SCMM.Steam.Client
@@ -28,10 +29,10 @@ namespace SCMM.Steam.Client
 
         #region Game Inventory
 
-        public async Task<GetItemDefArchiveJsonResponse> GameInventoryGetItemDefArchive(GetItemDefArchiveJsonRequest request)
+        public async Task<GetItemDefArchiveJsonResponse> GameInventoryGetItemDefArchive(GetItemDefArchiveJsonRequest request, bool useCache = false)
         {
             request.Key ??= _configuration?.ApplicationKey;
-            var response = await GetJson<GetItemDefArchiveJsonRequest, GetItemDefArchiveJsonResponse>(request);
+            var response = await GetJson<GetItemDefArchiveJsonRequest, GetItemDefArchiveJsonResponse>(request, useCache);
             return response;
         }
 
@@ -39,10 +40,10 @@ namespace SCMM.Steam.Client
 
         #region Inventory Service
 
-        public async Task<GetItemDefMetaJsonResponse> InventoryServiceGetItemDefMeta(GetItemDefMetaJsonRequest request)
+        public async Task<GetItemDefMetaJsonResponse> InventoryServiceGetItemDefMeta(GetItemDefMetaJsonRequest request, bool useCache = false)
         {
             request.Key ??= _configuration?.ApplicationKey;
-            var response = await GetJson<GetItemDefMetaJsonRequest, SteamResponse<GetItemDefMetaJsonResponse>>(request);
+            var response = await GetJson<GetItemDefMetaJsonRequest, SteamResponse<GetItemDefMetaJsonResponse>>(request, useCache);
             return response?.Response;
         }
 
@@ -68,10 +69,10 @@ namespace SCMM.Steam.Client
 
         #region Published File Service
 
-        public async Task<QueryFilesJsonResponse> PublishedFileServiceQueryFiles(QueryFilesJsonRequest request)
+        public async Task<QueryFilesJsonResponse> PublishedFileServiceQueryFiles(QueryFilesJsonRequest request, bool useCache = false)
         {
             request.Key ??= _configuration?.ApplicationKey;
-            var response = await GetJson<QueryFilesJsonRequest, SteamResponse<QueryFilesJsonResponse>>(request);
+            var response = await GetJson<QueryFilesJsonRequest, SteamResponse<QueryFilesJsonResponse>>(request, useCache);
             return response?.Response;
         }
 

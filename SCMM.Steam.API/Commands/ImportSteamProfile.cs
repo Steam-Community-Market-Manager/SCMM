@@ -140,11 +140,14 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogInformation($"Importing profile '{resolvedId.CustomUrl}' from Steam");
 
                     var profileId = resolvedId.CustomUrl;
-                    var response = await _communityClient.GetProfileById(new SteamProfileByIdPageRequest()
-                    {
-                        ProfileId = profileId,
-                        Xml = true
-                    });
+                    var response = await _communityClient.GetProfileById(
+                        new SteamProfileByIdPageRequest()
+                        {
+                            ProfileId = profileId,
+                            Xml = true
+                        }, 
+                        useCache: !request.Force
+                    );
                     if (response == null)
                     {
                         throw new ArgumentException(nameof(request), "ProfileID is invalid, or profile no longer exists");
