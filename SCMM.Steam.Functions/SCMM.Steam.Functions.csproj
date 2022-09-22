@@ -18,6 +18,7 @@
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.7.0" />
 		<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.9" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="5.1.0" />
 	</ItemGroup>
 	
@@ -40,7 +41,6 @@
 		<ProjectReference Include="..\SCMM.Market.SkinSwap.Client\SCMM.Market.SkinSwap.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SwapGG.Client\SCMM.Market.SwapGG.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.TradeitGG.Client\SCMM.Market.TradeitGG.Client.csproj" />
-		<ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />

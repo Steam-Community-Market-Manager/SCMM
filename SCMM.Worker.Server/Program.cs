@@ -118,6 +118,16 @@ public static class HostExtensions
                 services.AddAzureServiceBus(serviceBusConnectionString);
             }
 
+            // Redis cache
+            var redisConnectionString = Environment.GetEnvironmentVariable("RedisConnection");
+            if (!String.IsNullOrEmpty(redisConnectionString))
+            {
+                services.AddStackExchangeRedisCache(options =>
+                {
+                    options.Configuration = redisConnectionString;
+                });
+            }
+
             // 3rd party clients
             services.AddSingleton((services) =>
             {

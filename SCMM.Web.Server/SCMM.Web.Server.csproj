@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.9" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="5.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
@@ -33,8 +34,8 @@
     <ProjectReference Include="..\SCMM.Azure.ApplicationInsights\SCMM.Azure.ApplicationInsights.csproj" />
     <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
     <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
-    <ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
     <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
     <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
     <ProjectReference Include="..\SCMM.Web.Client\SCMM.Web.Client.csproj" />

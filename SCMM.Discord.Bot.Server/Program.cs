@@ -18,12 +18,10 @@ using SCMM.Discord.Client.Extensions;
 using SCMM.Discord.Data.Store;
 using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
-using SCMM.Redis.Client.Extensions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Middleware;
-using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -153,7 +151,10 @@ public static class WebApplicationExtensions
         var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
         if (!String.IsNullOrEmpty(redisConnectionString))
         {
-            builder.Services.AddRedis(redisConnectionString);
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnectionString;
+            });
         }
 
         // 3rd party clients

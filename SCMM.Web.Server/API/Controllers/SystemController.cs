@@ -3,8 +3,9 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using SCMM.Discord.Data.Models;
-using SCMM.Redis.Client;
+using SCMM.Shared.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.System;
@@ -18,12 +19,12 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<SystemController> _logger;
         private readonly SteamDbContext _db;
-        private readonly RedisConnection _cache;
+        private readonly IDistributedCache _cache;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public SystemController(ILogger<SystemController> logger, SteamDbContext db, RedisConnection cache, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public SystemController(ILogger<SystemController> logger, SteamDbContext db, IDistributedCache cache, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
@@ -98,7 +99,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetLatestSystemUpdateMessages()
         {
-            var latestSystemUpdates = await _cache.GetAsync<TextMessage[]>(Constants.LatestSystemUpdatesCacheKey);
+            var latestSystemUpdates = await _cache.GetJsonAsync<TextMessage[]>(Constants.LatestSystemUpdatesCacheKey);
             if (latestSystemUpdates == null)
             {
                 return NotFound("No recent system changes found");

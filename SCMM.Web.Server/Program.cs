@@ -12,12 +12,10 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
-using SCMM.Redis.Client.Extensions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Web.Formatters;
 using SCMM.Shared.Web.Middleware;
-using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -158,7 +156,10 @@ public static class WebApplicationExtensions
         var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
         if (!String.IsNullOrEmpty(redisConnectionString))
         {
-            builder.Services.AddRedis(redisConnectionString);
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnectionString;
+            });
         }
 
         // 3rd party clients

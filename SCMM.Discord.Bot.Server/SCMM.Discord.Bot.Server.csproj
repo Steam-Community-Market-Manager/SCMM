@@ -9,6 +9,7 @@
     <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="5.1.0" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.25.3" />
   </ItemGroup>
@@ -20,7 +21,6 @@
     <ProjectReference Include="..\SCMM.Discord.Client\SCMM.Discord.Client.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Data.Store\SCMM.Discord.Data.Store.csproj" />
     <ProjectReference Include="..\SCMM.Fixer.Client\SCMM.Fixer.Client.csproj" />
-    <ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
     <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
     <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />

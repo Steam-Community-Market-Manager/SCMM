@@ -1,9 +1,10 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using SCMM.Discord.Client;
 using SCMM.Discord.Data.Models;
 using SCMM.Discord.Data.Store;
-using SCMM.Redis.Client;
+using SCMM.Shared.Client.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using DiscordConfiguration = SCMM.Discord.Client.DiscordConfiguration;
@@ -18,11 +19,11 @@ namespace SCMM.Discord.Bot.Server.Middleware
         private readonly IDbContextFactory<DiscordDbContext> _discordDbFactory;
         private readonly DiscordClient _client;
         private readonly DiscordConfiguration _configuration;
-        private readonly RedisConnection _cache;
+        private readonly IDistributedCache _cache;
         private readonly Timer _statusUpdateTimer;
         private DateTimeOffset _statusNextStoreUpdate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
 
-        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<DiscordDbContext> discordDbFactory, DiscordConfiguration discordConfiguration, DiscordClient discordClient, RedisConnection cache)
+        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<DiscordDbContext> discordDbFactory, DiscordConfiguration discordConfiguration, DiscordClient discordClient, IDistributedCache cache)
         {
             _next = next;
             _logger = logger;
@@ -126,7 +127,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 Timestamp = m.Timestamp
             });
 
-            await _cache.SetAsync(
+            await _cache.SetJsonAsync(
                 SCMM.Steam.Data.Models.Constants.LatestSystemUpdatesCacheKey,
                 latestSystemChanges.ToArray()
             );

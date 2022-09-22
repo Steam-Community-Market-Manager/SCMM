@@ -36,7 +36,6 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
 using System.Reflection;
-using SCMM.Redis.Client.Extensions;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -125,7 +124,10 @@ public static class HostExtensions
             var redisConnectionString = Environment.GetEnvironmentVariable("RedisConnection");
             if (!String.IsNullOrEmpty(redisConnectionString))
             {
-                services.AddRedis(redisConnectionString);
+                services.AddStackExchangeRedisCache(options =>
+                {
+                    options.Configuration = redisConnectionString;
+                });
             }
 
             // 3rd party clients
