@@ -80,14 +80,13 @@ namespace SCMM.Steam.Client
             const double MinimumDelayBetweenConsecutiveRequestsInMilliseconds = 300;
 
             // If we are rate-limited, back-off requests with a delay
-            if (LastRateLimitedOn != null)
+            if (IsRateLimited && LastRateLimitedOn != null)
             {
                 // TODO: Do this delay better (using a back-off?)
-                var delay = TimeSpan.FromSeconds(60);
+                var delay = TimeSpan.FromSeconds(30);
                 _logger.LogWarning($"Steam session is rate-limited, must delay for {delay.TotalSeconds} seconds");
                 return Task.Delay(delay);
             }
-            
             
             // TODO: Test and enable this...
             // Else, ensure that there is minimum delay between consecutive requests to avoid getting rate-limited

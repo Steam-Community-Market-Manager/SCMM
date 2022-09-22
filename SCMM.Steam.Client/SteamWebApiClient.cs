@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
@@ -19,8 +20,8 @@ namespace SCMM.Steam.Client
     {
         private readonly SteamConfiguration _configuration;
 
-        public SteamWebApiClient(ILogger<SteamWebApiClient> logger, SteamConfiguration configuration)
-            : base(logger, null)
+        public SteamWebApiClient(ILogger<SteamWebApiClient> logger, IDistributedCache cache, SteamConfiguration configuration)
+            : base(logger, cache)
         {
             _configuration = configuration;
         }

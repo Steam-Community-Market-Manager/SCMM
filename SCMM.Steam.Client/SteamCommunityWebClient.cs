@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
@@ -13,8 +14,8 @@ namespace SCMM.Steam.Client
     /// </summary>
     public class SteamCommunityWebClient : SteamWebClient
     {
-        public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, SteamSession session)
-            : base(logger, session)
+        public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session)
+            : base(logger, cache, session)
         {
         }
 
