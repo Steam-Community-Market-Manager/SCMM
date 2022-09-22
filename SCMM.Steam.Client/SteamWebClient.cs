@@ -150,7 +150,7 @@ namespace SCMM.Steam.Client
             where TRequest : SteamRequest
         {
             var content = (string)null;
-            var cacheKey = $"http-requests:{request.Uri.Authority}{request.Uri.AbsolutePath.Replace('/', ':')}";
+            var cacheKey = $"http-requests:{request.Uri.Authority}:{request.Uri.AbsolutePath.Trim('/').Replace('/', ':')}";
             if (!String.IsNullOrEmpty(request.Uri.Query))
             {
                 cacheKey += $":{request.Uri.Query}";

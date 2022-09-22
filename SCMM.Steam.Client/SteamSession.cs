@@ -78,13 +78,13 @@ namespace SCMM.Steam.Client
         public Task WaitForRateLimitDelaysAsync()
         {
             const double MinimumDelayBetweenConsecutiveRequestsInMilliseconds = 300;
-
+            
             // If we are rate-limited, back-off requests with a delay
             if (IsRateLimited && LastRateLimitedOn != null)
             {
                 // TODO: Do this delay better (using a back-off?)
                 var delay = TimeSpan.FromSeconds(30);
-                _logger.LogWarning($"Steam session is rate-limited, must delay for {delay.TotalSeconds} seconds");
+                _logger.LogWarning($"Steam session is rate-limited, delaying for {delay.TotalSeconds} seconds");
                 return Task.Delay(delay);
             }
             
@@ -96,7 +96,7 @@ namespace SCMM.Steam.Client
                 if (timeSinceLastRequest.TotalMilliseconds < MinimumDelayBetweenConsecutiveRequestsInMilliseconds)
                 {
                     var delay = TimeSpan.FromMilliseconds(Math.Max(0, (int)(MinimumDelayBetweenConsecutiveRequestsInMilliseconds - timeSinceLastRequest.TotalMilliseconds)));
-                    _logger.LogWarning($"Steam session is throttling, must delay for {delay.TotalSeconds} seconds");
+                    _logger.LogWarning($"Steam session is throttling, delaying for {delay.TotalSeconds} seconds");
                     return Task.Delay(delay);
                 }
             }

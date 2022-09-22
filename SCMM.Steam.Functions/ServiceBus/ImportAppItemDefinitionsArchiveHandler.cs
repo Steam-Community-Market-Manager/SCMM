@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Commands;
 
-namespace SCMM.Worker.Server.Handlers;
+namespace SCMM.Steam.Functions.ServiceBus;
 
 public class ImportAppItemDefinitionsArchiveHandler
 {

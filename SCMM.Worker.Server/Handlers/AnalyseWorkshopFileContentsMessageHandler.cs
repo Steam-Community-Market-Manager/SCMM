@@ -1,8 +1,8 @@
 ﻿using CommandQuery;
 using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Commands;
-using SCMM.Steam.API.Messages;
 
 namespace SCMM.Worker.Server.Handlers
 {

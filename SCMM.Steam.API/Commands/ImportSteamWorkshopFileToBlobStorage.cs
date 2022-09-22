@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Extensions;
-using SCMM.Steam.API.Messages;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;

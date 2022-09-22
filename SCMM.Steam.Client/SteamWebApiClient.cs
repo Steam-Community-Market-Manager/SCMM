@@ -5,10 +5,11 @@ using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamUser;
 using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Responses.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Responses.IPublishedFileService;
-using System.Runtime.CompilerServices;
+using SCMM.Steam.Data.Models.WebApi.Responses.ISteamUser;
 using System.Text.Json;
 
 namespace SCMM.Steam.Client
@@ -74,6 +75,24 @@ namespace SCMM.Steam.Client
             request.Key ??= _configuration?.ApplicationKey;
             var response = await GetJson<QueryFilesJsonRequest, SteamResponse<QueryFilesJsonResponse>>(request, useCache);
             return response?.Response;
+        }
+
+        #endregion
+
+        #region Steam User
+
+        public async Task<GetPlayerSummariesJsonResponse> SteamUserGetPlayerSummaries(GetPlayerSummariesJsonRequest request, bool useCache = true)
+        {
+            request.Key ??= _configuration?.ApplicationKey;
+            var response = await GetJson<GetPlayerSummariesJsonRequest, SteamResponse<GetPlayerSummariesJsonResponse>>(request, useCache);
+            return response?.Response;
+        }
+
+        public async Task<GetPlayerBansJsonResponse> SteamUserGetPlayerBans(GetPlayerBansJsonRequest request, bool useCache = true)
+        {
+            request.Key ??= _configuration?.ApplicationKey;
+            var response = await GetJson<GetPlayerBansJsonRequest, GetPlayerBansJsonResponse>(request, useCache);
+            return response;
         }
 
         #endregion

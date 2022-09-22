@@ -7,7 +7,6 @@ using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
-using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Store;

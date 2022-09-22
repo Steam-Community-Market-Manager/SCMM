@@ -1,7 +1,7 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
 
-namespace SCMM.Steam.API.Messages
+namespace SCMM.Shared.API.Messages
 {
     [Queue(Name = "Analyse-Workshop-File-Contents")]
     [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]

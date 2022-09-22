@@ -1,17 +1,14 @@
 ﻿using CommandQuery;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
-using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamUser;
 using SCMM.Steam.Data.Store;
-using SteamWebAPI2.Interfaces;
-using SteamWebAPI2.Utilities;
 using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.API.Commands
@@ -49,16 +46,16 @@ namespace SCMM.Steam.API.Commands
         private readonly ILogger<ImportSteamProfile> _logger;
         private readonly ServiceBusClient _serviceBusClient;
         private readonly SteamDbContext _db;
-        private readonly SteamConfiguration _cfg;
+        private readonly SteamWebApiClient _apiClient;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, ServiceBusClient serviceBusClient, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
+        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, ServiceBusClient serviceBusClient, SteamDbContext db, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _serviceBusClient = serviceBusClient;
             _db = db;
-            _cfg = cfg?.GetSteamConfiguration();
+            _apiClient = apiClient;
             _communityClient = communityClient;
             _queryProcessor = queryProcessor;
         }
@@ -88,16 +85,21 @@ namespace SCMM.Steam.API.Commands
                 {
                     _logger.LogInformation($"Importing profile '{resolvedId.SteamId64}' from Steam");
 
-                    var steamId = resolvedId.SteamId64.Value;
-                    var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
-                    var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                    var playerSummaryResponse = await steamUser.GetPlayerSummaryAsync(steamId);
-                    if (playerSummaryResponse?.Data == null)
+                    var steamId = resolvedId.SteamId64.Value.ToString();
+                    var playerSummaryResponse = await _apiClient.SteamUserGetPlayerSummaries(
+                        new GetPlayerSummariesJsonRequest()
+                        {
+                            SteamIds = new[] { steamId } 
+                        },
+                        useCache: !request.Force
+                    );
+                    var playerSummary = playerSummaryResponse?.Players?.FirstOrDefault(x => x.SteamId == steamId);
+                    if (playerSummary == null)
                     {
                         throw new ArgumentException(nameof(request), "SteamID is invalid, or profile no longer exists");
                     }
 
-                    var profileId = playerSummaryResponse.Data.ProfileUrl;
+                    var profileId = playerSummary.ProfileUrl;
                     if (string.IsNullOrEmpty(profileId))
                     {
                         throw new ArgumentException(nameof(request), "ProfileID is invalid");
@@ -114,17 +116,23 @@ namespace SCMM.Steam.API.Commands
 
                     profile = resolvedId.Profile ?? new SteamProfile()
                     {
-                        SteamId = steamId.ToString()
+                        SteamId = steamId
                     };
 
-                    profile.SteamId = steamId.ToString();
+                    profile.SteamId = steamId;
                     profile.ProfileId = profileId;
-                    profile.Name = playerSummaryResponse.Data.Nickname?.Trim();
-                    profile.AvatarUrl = playerSummaryResponse.Data.AvatarMediumUrl;
-                    profile.AvatarLargeUrl = playerSummaryResponse.Data.AvatarFullUrl;
+                    profile.Name = playerSummary.PersonaName?.Trim();
+                    profile.AvatarUrl = playerSummary.AvatarMediumUrl;
+                    profile.AvatarLargeUrl = playerSummary.AvatarFullUrl;
 
-                    var playerBanResponse = await steamUser.GetPlayerBansAsync(steamId);
-                    var playerBan = playerBanResponse?.Data?.FirstOrDefault(x => x.SteamId == steamId.ToString());
+                    var playerBanResponse = await _apiClient.SteamUserGetPlayerBans(
+                        new GetPlayerBansJsonRequest()
+                        {
+                            SteamIds = new[] { steamId }
+                        },
+                        useCache: !request.Force
+                    );
+                    var playerBan = playerBanResponse?.Players?.FirstOrDefault(x => x.SteamId == steamId);
                     if (playerBan != null)
                     {
                         profile.IsTradeBanned = (
