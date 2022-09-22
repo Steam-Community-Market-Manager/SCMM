@@ -120,7 +120,7 @@ namespace SCMM.Steam.Client
 
                 // Check if the request failed due to rate limiting
                 // 429: TooManyRequests
-                else if (_session != null)
+                if (_session != null)
                 {
                     if (!_session.IsRateLimited && ex.IsRateLimited)
                     {
