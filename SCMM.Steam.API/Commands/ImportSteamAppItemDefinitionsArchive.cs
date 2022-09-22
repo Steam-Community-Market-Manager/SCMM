@@ -393,7 +393,7 @@ namespace SCMM.Steam.API.Commands
                         {
                             Currency = x.Key,
                             Value = x.Value,
-                            Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value, dense: true)
+                            Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value)
                         }).ToArray()
                     });
 
