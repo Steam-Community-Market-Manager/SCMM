@@ -6,7 +6,9 @@ using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Client.Extensions;
+using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
@@ -35,15 +37,17 @@ namespace SCMM.Steam.API.Commands
         private readonly ILogger<ImportSteamProfileFriends> _logger;
         private readonly ServiceBusClient _serviceBusClient;
         private readonly SteamDbContext _db;
+        private readonly SteamCommunityWebClient _communityClient;
         private readonly SteamConfiguration _cfg;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, ServiceBusClient serviceBusClient, SteamDbContext db, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, ServiceBusClient serviceBusClient, SteamDbContext db, SteamCommunityWebClient communityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _serviceBusClient = serviceBusClient;
             _db = db;
+            _communityClient = communityClient;
             _cfg = cfg?.GetSteamConfiguration();
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
@@ -89,36 +93,53 @@ namespace SCMM.Steam.API.Commands
                     .Except(existingFriendSteamIds)
                     .ToArray();
 
-                // Only import friends that own one of the apps we track
-                // TODO: Reconsider this, we might find more inventories if we check everybody
-                var apps = await _db.SteamApps.AsNoTracking().Where(x => x.IsActive).Select(x => x.SteamId).ToListAsync();
-                var missingFriendSteamIdsWithPublicAppInventories = new List<string>();
-                var playerService = steamWebInterfaceFactory.CreateSteamWebInterface<PlayerService>();
+                var apps = await _db.SteamApps.AsNoTracking()
+                    .Where(x => x.IsActive)
+                    .Select(x => x.SteamId)
+                    .ToListAsync();
+
                 foreach (var missingFriendSteamId in missingFriendSteamIds)
                 {
-                    var ownedApps = await playerService.GetOwnedGamesAsync(
-                        UInt64.Parse(missingFriendSteamId),
-                        appIdsToFilter: apps.Select(x => UInt32.Parse(x)).ToArray()
-                    );
-                    if (ownedApps?.Data != null && ownedApps?.Data?.OwnedGames?.Any(x => apps.Contains(x.AppId.ToString())) == true)
+                    try
                     {
-                        missingFriendSteamIdsWithPublicAppInventories.Add(missingFriendSteamId);
-                    }
-                }
-
-                if (missingFriendSteamIdsWithPublicAppInventories.Any())
-                {
-                    await _serviceBusClient.SendMessagesAsync(
-                        missingFriendSteamIdsWithPublicAppInventories.Select(x => new ImportProfileMessage()
+                        foreach (var app in apps)
                         {
-                            ProfileId = x.ToString()
-                        })
-                    );
+                            // Only import profiles that have a public inventory containing items from at least one of our active apps
+                            var inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
+                            {
+                                AppId = app,
+                                SteamId = missingFriendSteamId,
+                                StartAssetId = null,
+                                Count = SteamInventoryPaginatedJsonRequest.MaxPageSize,
+                                NoRender = true
+                            });
+                            if (inventory?.Assets?.Any() == true)
+                            {
+                                // Inventory found, import this profile
+                                await _serviceBusClient.SendMessageAsync(new ImportProfileMessage()
+                                {
+                                    ProfileId = missingFriendSteamId.ToString()
+                                });
+                                break;
+                            }
+                        }
+                    }
+                    catch (SteamRequestException ex)
+                    {
+                        if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden || ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            // Inventory is probably private, skip them...
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
             catch (HttpRequestException ex)
             {
-                if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden || ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     _logger.LogWarning(ex, $"Failed to get friend list, unauthorised, probably private");
                 }

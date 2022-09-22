@@ -246,7 +246,7 @@ namespace SCMM.Steam.API.Commands
             }
             catch (SteamRequestException ex)
             {
-                if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden || ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     profile.Privacy = SteamVisibilityType.Private;
                     return null;

@@ -993,6 +993,8 @@ namespace SCMM.Web.Server.API.Controllers
                         return BadRequest(ex.Message);
                     case HttpStatusCode.Forbidden:
                         return Unauthorized("Forbidden, please check that your Steam API Key is correct and the items you are combining all belong to you.");
+                    case HttpStatusCode.Unauthorized:
+                        return Unauthorized("Unauthorized, please check that your Steam API Key is correct and the items you are combining all belong to you.");
                     default: throw;
                 }
             }
@@ -1085,6 +1087,8 @@ namespace SCMM.Web.Server.API.Controllers
                         return BadRequest(ex.Message);
                     case HttpStatusCode.Forbidden:
                         return Unauthorized("Forbidden, please check that your Steam API Key is correct and the item you are splitting belong to you.");
+                    case HttpStatusCode.Unauthorized:
+                        return Unauthorized("Unauthorized, please check that your Steam API Key is correct and the item you are splitting belong to you.");
                     default: throw;
                 }
             }
