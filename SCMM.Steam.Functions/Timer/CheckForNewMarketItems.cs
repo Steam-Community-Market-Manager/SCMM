@@ -37,7 +37,7 @@ public class CheckForNewMarketItems
     }
 
     [Function("Check-New-Market-Items")]
-    public async Task Run([TimerTrigger("0 0-15 12 * * *")] /* every minute, between 12:00 PM and 12:15 PM */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0-15 0 * * *")] /* every minute, between 12:00 AM and 12:15 AM */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-Market-Items");
 
