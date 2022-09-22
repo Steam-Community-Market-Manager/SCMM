@@ -122,16 +122,23 @@ namespace SCMM.Steam.Client
                 // 429: TooManyRequests
                 if (_session != null)
                 {
-                    if (!_session.IsRateLimited && ex.IsRateLimited)
+                    if (ex.IsRateLimited)
                     {
                         // We are now rate limited, try again soon
-                        _session.SetRateLimited(true);
+                        if (!_session.IsRateLimited)
+                        {
+                            _session.SetRateLimited(true);
+                        }
+
                         return await GetWithRetry(request, attemptCount++);
                     }
-                    else if (_session.IsRateLimited && !ex.IsRateLimited)
+                    else
                     {
                         // We are no longer rate limited
-                        _session.SetRateLimited(false);
+                        if (_session.IsRateLimited)
+                        {
+                            _session.SetRateLimited(false);
+                        }
                     }
                 }
 
