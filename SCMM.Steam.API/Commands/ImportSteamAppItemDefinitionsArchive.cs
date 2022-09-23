@@ -120,13 +120,18 @@ namespace SCMM.Steam.API.Commands
                 await AddNewAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
                 await _steamDb.SaveChangesAsync();
 
-                _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
-                await _steamDb.SaveChangesAsync();
-
-                _logger.LogInformation($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                await AddOrUpdateMarketItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
-                await _steamDb.SaveChangesAsync();
+                // Only parse store and market item changes if this archive is the most current app archive.
+                // This stops the store from regressing when re-importing old archives
+                if (app.ItemDefinitionsDigest == request.ItemDefinitionsDigest)
+                {
+                    _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                    await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                    await _steamDb.SaveChangesAsync();
+                
+                    _logger.LogInformation($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                    await AddOrUpdateMarketItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                    await _steamDb.SaveChangesAsync();
+                }
 
                 _logger.LogInformation($"Parsing item definitions for updated asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                 await UpdateExistingAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
@@ -480,7 +485,8 @@ namespace SCMM.Steam.API.Commands
                     ItemDefinition = x,
                     AssetDescription = y,
                     HasBecomeUnmarketable = (!x.Marketable && y.IsMarketable),
-                    HasBecomeMarketable = (x.Marketable && !y.IsMarketable)
+                    HasBecomeMarketable = (x.Marketable && !y.IsMarketable),
+                    IsMissingMarketInfo = (x.Marketable && (y.IsMarketable || y.MarketableRestrictionDays > 0) && (y.MarketItem == null || y.NameId == null) && !String.IsNullOrEmpty(y.NameHash) && !y.IsSpecialDrop && !y.IsTwitchDrop && y.IsAccepted)
                 })
                 .Where(x => x.AssetDescription != null)
                 .OrderBy(x => x.ItemDefinition.Name)
@@ -493,14 +499,17 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Add all newly added market items
-            foreach (var newMarketableItem in marketItems.Where(x => x.HasBecomeMarketable))
+            foreach (var newMarketableItem in marketItems.Where(x => x.HasBecomeMarketable || x.IsMissingMarketInfo))
             {
                 try
                 {
                     var itemDefinition = newMarketableItem.ItemDefinition;
                     var assetDescription = newMarketableItem.AssetDescription;
                     
-                    _logger.LogInformation($"An new item has been become marketable! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
+                    if (newMarketableItem.HasBecomeMarketable)
+                    {
+                        _logger.LogInformation($"An new item has been become marketable! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
+                    }
 
                     // Double check that this asset description can currently be listed on the Steam community market
                     var marketPriceOverviewResponse = await _steamCommunityClient.GetMarketPriceOverview(new SteamMarketPriceOverviewJsonRequest()
@@ -513,6 +522,17 @@ namespace SCMM.Steam.API.Commands
                     if (marketPriceOverviewResponse?.Success != true)
                     {
                         continue;
+                    }
+
+                    // Reimport the asset description to get the latest item info-- specifically, the Steam community market "name id"
+                    if (assetDescription.ClassId > 0)
+                    {
+                        await _steamDb.SaveChangesAsync();
+                        var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                        {
+                            AppId = UInt64.Parse(app.SteamId),
+                            AssetClassId = assetDescription.ClassId.Value
+                        });
                     }
 
                     // Add a new market item for this asset description
@@ -530,47 +550,32 @@ namespace SCMM.Steam.API.Commands
                         });
                     }
 
-                    // Reimport the asset description to get the latest item info-- specifically, the Steam community market "name id"
-                    if (assetDescription.ClassId > 0)
+                    if (newMarketableItem.HasBecomeMarketable)
                     {
-                        await _steamDb.SaveChangesAsync();
-                        var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                        await _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
                         {
                             AppId = UInt64.Parse(app.SteamId),
-                            AssetClassId = assetDescription.ClassId.Value
+                            AppName = app.Name,
+                            AppIconUrl = app.IconUrl,
+                            AppColour = app.PrimaryColor,
+                            CreatorId = marketItem.Description?.CreatorId,
+                            CreatorName = marketItem.Description?.CreatorProfile?.Name,
+                            CreatorAvatarUrl = marketItem.Description?.CreatorProfile?.AvatarUrl,
+                            ItemId = (!String.IsNullOrEmpty(marketItem.SteamId) ? UInt64.Parse(marketItem.SteamId) : (marketItem.Description.ClassId ?? 0)),
+                            ItemType = marketItem.Description?.ItemType,
+                            ItemShortName = marketItem.Description?.ItemShortName,
+                            ItemName = marketItem.Description?.Name,
+                            ItemDescription = marketItem.Description?.Description,
+                            ItemCollection = marketItem.Description?.ItemCollection,
+                            ItemIconUrl = marketItem.Description?.IconUrl ?? marketItem.Description?.IconLargeUrl,
+                            ItemImageUrl = marketItem.Description?.PreviewUrl ?? marketItem.Description?.IconLargeUrl ?? marketItem.Description?.IconUrl,
                         });
                     }
-
-                    await _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
-                    {
-                        AppId = UInt64.Parse(app.SteamId),
-                        AppName = app.Name,
-                        AppIconUrl = app.IconUrl,
-                        AppColour = app.PrimaryColor,
-                        CreatorId = marketItem.Description?.CreatorId,
-                        CreatorName = marketItem.Description?.CreatorProfile?.Name,
-                        CreatorAvatarUrl = marketItem.Description?.CreatorProfile?.AvatarUrl,
-                        ItemId = UInt64.Parse(marketItem.SteamId),
-                        ItemType = marketItem.Description?.ItemType,
-                        ItemShortName = marketItem.Description?.ItemShortName,
-                        ItemName = marketItem.Description?.Name,
-                        ItemDescription = marketItem.Description?.Description,
-                        ItemCollection = marketItem.Description?.ItemCollection,
-                        ItemIconUrl = marketItem.Description?.IconUrl ?? marketItem.Description?.IconLargeUrl,
-                        ItemImageUrl = marketItem.Description?.PreviewUrl ?? marketItem.Description?.IconLargeUrl ?? marketItem.Description?.IconUrl,
-                    });
                 }
                 catch (SteamRequestException ex)
                 {
-                    if (ex.StatusCode == System.Net.HttpStatusCode.InternalServerError)
-                    {
-                        // This means the item cannot be listed on the Steam community market yet, ignore for now...
-                        _logger.LogWarning($"Item definition claims item is now marketable, but SCM is not allowing market listings yet (appId: {app.SteamId}, itemId: {newMarketableItem.ItemDefinition.ItemDefId}, name: '{newMarketableItem.ItemDefinition.Name}')");
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    // This means the item cannot be listed on the Steam community market yet, ignore for now...
+                    _logger.LogWarning(ex, $"Item definition claims item is now marketable, but SCM is not allowing market listings yet (appId: {app.SteamId}, itemId: {newMarketableItem.ItemDefinition.ItemDefId}, name: '{newMarketableItem.ItemDefinition.Name}')");
                 }
             }
         }

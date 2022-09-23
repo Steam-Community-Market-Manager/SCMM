@@ -438,6 +438,10 @@ namespace SCMM.Steam.API.Commands
                 if (!string.IsNullOrEmpty(itemNameId))
                 {
                     assetDescription.NameId = ulong.Parse(itemNameId);
+                    if (assetDescription.MarketItem != null && String.IsNullOrEmpty(assetDescription.MarketItem.SteamId))
+                    {
+                        assetDescription.MarketItem.SteamId = itemNameId;
+                    }
                 }
             }
 
