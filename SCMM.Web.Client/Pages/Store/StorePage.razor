@@ -234,13 +234,9 @@ else if (StoreList.Any())
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-shopping-cart mud-secondary-text"></i>
                                                     <span>
-                                                        <span>@item.SupplyTotalEstimated.Value.ToQuantityString()+</span>
-                                                        <span class="mud-secondary-text"> estimated sales </span>
+                                                        <MudLink @onclick="@(() => ShowItemEstimatedSupplyDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.SupplyTotalEstimated.Value.ToQuantityString()+ estimated sales</MudLink>
+                                                        <span class="mud-secondary-text"> from the store</span>
                                                     </span>
-                                                    <span>
-                                                        <i class="fas fa-fw fa-question-circle" title="Steam doesn't disclose exact sales figures, this is just an estimate. See the store analytics & insights for more details." />
-                                                    </span>
-                                                    <span class="mud-secondary-text"> from the store</span>
                                                 </MudText>
                                             }
                                             @if (item.Subscriptions > 0)
@@ -248,7 +244,8 @@ else if (StoreList.Any())
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-user mud-secondary-text"></i>
                                                     <span>
-                                                        <span>@item.Subscriptions.Value.ToQuantityString() <span class="mud-secondary-text">current</span> workshop subscribers</span>
+                                                        <MudLink @onclick="@(() => ShowItemEstimatedSupplyDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.Subscriptions.Value.ToQuantityString() subscribers</MudLink>  
+                                                        <span class="mud-secondary-text"> from the workshop</span>
                                                     </span>
                                                 </MudText>
                                             }
@@ -259,7 +256,7 @@ else if (StoreList.Any())
                                                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                         <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
                                                         <span>
-                                                            <span>@item.MarketDemand24hrs.Value.ToQuantityString() demand</span>
+                                                            <MudLink @onclick="@(() => ViewItemMarketPage(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketDemand24hrs.Value.ToQuantityString() demand</MudLink>
                                                             <span class="mud-secondary-text"> from the market (last 24hrs)</span>
                                                         </span>
                                                     </MudText>
@@ -269,7 +266,7 @@ else if (StoreList.Any())
                                                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                             <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
                                                             <span>
-                                                                <span>@item.MarketSupply.Value.ToQuantityString() supply</span>
+                                                                <MudLink @onclick="@(() => ViewItemMarketPage(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketSupply.Value.ToQuantityString() supply</MudLink>
                                                                 <span class="mud-secondary-text"> on the market</span>
                                                             </span>
                                                         </MudText>
@@ -678,6 +675,18 @@ else
             MarketHashName = item.Name
         });
     }
+    
+    private void ViewItemMarketPage(StoreItemDetailsDTO item)
+    {
+        if (item.IsMarketable)
+        {
+            ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
+            {
+                AppId = item.AppId.ToString(),
+                MarketHashName = item.Name
+            });
+        }
+    }
 
     private void ViewItemWorkshopPage(StoreItemDetailsDTO item)
     {
@@ -712,7 +721,7 @@ else
         Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
         {
             ["ItemName"] = item.Name,
-            ["ItemUrl"] = $"/api/item/{item.AssetDescriptionId}",
+            ["ItemUrl"] = $"/api/item/{item.AssetDescriptionId}"
         });
     }
 
@@ -733,6 +742,15 @@ else
         Dialogs.Show<ViewStoreListDialog>(null, parameters: new DialogParameters()
         {
             ["List"] = stores
+        });
+    }
+    
+    private void ShowItemEstimatedSupplyDialog(StoreItemDetailsDTO item)
+    {
+        Dialogs.Show<ViewItemEstimatedSupplyDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemName"] = item.Name,
+            ["ItemUrl"] = $"/api/item/{item.AssetDescriptionId}"
         });
     }
 

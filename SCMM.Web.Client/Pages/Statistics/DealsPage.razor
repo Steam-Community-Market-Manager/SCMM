@@ -63,7 +63,7 @@
                                                 <MudText Typo="Typo.body2">@item.Name</MudText>
                                                 @if (item.IsBeingManipulated)
                                                 {
-                                                    <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-wheelchair" Text="Manipulated" title="@item.ManipulationReason" Class="ml-2" />
+                                                    <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-exclamation-triangle" Text="Price Manipulation" title="@($"It is suspected that this items price is being manipulated on the market because {item.ManipulationReason.FirstCharToLower()}")" Class="ml-2" />
                                                 }
                                             </div>
                                         </td>
@@ -183,7 +183,7 @@
                                                 <MudText Typo="Typo.body2">@item.Name</MudText>
                                                 @if (item.IsBeingManipulated)
                                                 {
-                                                    <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-wheelchair" Text="Manipulated" title="@item.ManipulationReason" Class="ml-2" />
+                                                    <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-exclamation-triangle" Text="Price Manipulation" title="@($"It is suspected that this items price is being manipulated on the market because {item.ManipulationReason.FirstCharToLower()}")" Class="ml-2" />
                                                 }
                                             </div>
                                         </td>

@@ -1,0 +1,206 @@
+﻿@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Data.Models.UI.Item
+@using Syncfusion.Blazor.Charts
+@using System.Reflection
+@inherits ResponsiveDialog
+@inject ILogger<ViewItemEstimatedSupplyDialog> Logger
+@inject ISnackbar Snackbar
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6">@ItemName Estimated Supply</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (Item == null)
+        {
+            <Loading Message="Loading item supply details..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+        } 
+        else
+        {
+            <div class="d-flex flex-column">
+                <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Class="mb-4 mud-alert-outlined-warning">
+                    <span><strong>Steam doesn't disclose exact sales figures, this is just an estimate</strong> to roughly guage item supply. How is this calculated? Steam users <MudLink Href="https://partner.steamgames.com/doc/features/workshop/implementation#item_subscription" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">subscribe to workshop files</MudLink> when they purchase items from the store. Using this, we can determine the approximate number of unique users that purchased at least one copy of the item.</span>
+                    <span>We also periodically scan Steam inventories to identify actual stock held. Because only a small fraction of all Steam accounts are scanned, these estimates should be taken with a grain of salt.</span>
+                </MudAlert>
+                @if (ItemSupplyDistributionChartData?.Any() == true)
+                {
+                    <div>
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="px-4 text-centered">
+                            @if (((Item.SupplyTotalOwnersEstimated ?? 0) + (Item.SupplyTotalInvestorsEstimated ?? 0)) > ((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)))
+                            {
+                                <span>We estimate there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, of which <strong>@(((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)).ToQuantityString())</strong> are currently known and tracked by SCMM.</span>
+                            }
+                            else
+                            {
+                                <span>We known that there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, through supply channels known and tracked by SCMM.</span>
+                            }
+                            <span> Our database is not comprehensive and there are always more copies that we don't know about. </span>
+                        </MudText>
+                        <SfAccumulationChart ID="MarketItemDistribution" Theme="Syncfusion.Blazor.Theme.FluentDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" EnableSmartLabels="true">
+                            <AccumulationChartSeriesCollection>
+                                <AccumulationChartSeries DataSource="@ItemSupplyDistributionChartData" XName="Name" YName="Value" PointColorMapping="Fill" Radius="80%" StartAngle="315" EndAngle="315" InnerRadius="0%">
+                                    <AccumulationChartAnimation Enable="false" />
+                                    <AccumulationDataLabelSettings Name="Label" Visible="false" />
+                                </AccumulationChartSeries>
+                            </AccumulationChartSeriesCollection>
+                            <AccumulationChartTooltipSettings Enable="true" />
+                            <AccumulationChartLegendSettings Visible="true" Position="LegendPosition.Bottom" />
+                        </SfAccumulationChart>
+                    </div>
+                }
+                @if (Item.IsTradable && ItemHolders?.Any() == true)
+                {
+                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="text-centered">
+                        <span>Top 30 inventories holding this item</span>
+                    </MudText>
+                    <div class="d-flex flex-wrap justify-center align-center pa-4">
+                        @foreach (var itemHolder in ItemHolders)
+                        {
+                            <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@($"{(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)} mb-4")">
+                                <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} has {itemHolder.Items} of these items")" RootClass="mx-2">
+                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="9999" Overlap="true" Bordered="true" Origin="Origin.BottomCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
+                                        <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="rounded-pill mr-1" style="width:3rem; height:3rem;" />
+                                    </MudBadge>
+                                </MudTooltip>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public string ItemName { get; set; }
+
+    [Parameter]
+    public string ItemUrl { get; set; }
+
+    private ItemDetailedDTO Item { get; set; }
+
+    private IEnumerable<object> ItemSupplyDistributionChartData;
+
+    private IEnumerable<ItemHoldingUserDTO> ItemHolders;
+
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Medium;
+        options.FullWidth = true;
+        options.CloseButton = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>(ItemUrl);
+            Dialog.ForceRender();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the item details");
+            Snackbar.Add($"Unable to load item details. {ex.Message}", MudBlazor.Severity.Error);
+        }
+        if (Item != null)
+        {
+            RebuildItemSupplyDistributionChartData();
+        }
+        if (Item != null)
+        {
+            try
+            {
+                ItemHolders = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemHoldingUserDTO>>($"api/item/{Item.Id}/topHolders?max=30");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading the item holders list");
+                Snackbar.Add($"Unable to load item holders list. {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private void ViewProfileInventory(string steamId)
+    {
+        if (!String.IsNullOrEmpty(steamId))
+        {
+            ExternalNavigationManager.NavigateToNewTab($"/inventory/{Uri.EscapeDataString(steamId)}");
+        }
+    }
+
+    private void RebuildItemSupplyDistributionChartData()
+    {
+        var itemSupplyDistribution = new List<ChartData>();
+
+        var outstandingEstimatedUniqueOwnerSupply = Math.Max((Item.SupplyTotalOwnersEstimated ?? 0) - (Item.SupplyTotalOwnersKnown ?? 0), 0);
+        if (outstandingEstimatedUniqueOwnerSupply > 0)
+        {
+            itemSupplyDistribution.Add(new ChartData() 
+            {
+                Name = $"Unknown subscribers to this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
+                Value = (double) outstandingEstimatedUniqueOwnerSupply
+            });
+        }
+        if (Item.SupplyTotalOwnersKnown > 0)
+        {
+            itemSupplyDistribution.Add(new ChartData() 
+            {
+                Name = $"User currently hold this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
+                Value = (double) Item.SupplyTotalOwnersKnown.Value
+            });
+        }
+        
+        var outstandingEstimatedInvestorsSupply = Math.Max((Item.SupplyTotalInvestorsEstimated ?? 0) - (Item.SupplyTotalInvestorsKnown ?? 0), 0);
+        if (outstandingEstimatedInvestorsSupply > 0)
+        {
+            itemSupplyDistribution.Add(new ChartData() 
+            {
+                Name = $"Possible duplicate inventory stock held of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
+                Value = (double) outstandingEstimatedInvestorsSupply
+            });
+        }
+        if (Item.SupplyTotalInvestorsKnown > 0)
+        {
+            itemSupplyDistribution.Add(new ChartData() 
+            {
+                Name = $"Duplicate inventory stock held of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
+                Value = (double) Item.SupplyTotalInvestorsKnown.Value
+            });
+        }
+        
+        if (Item.BuyPrices?.Any() == true)
+        {
+            foreach (var market in Item.BuyPrices.Where(x => x.IsAvailable && x.Supply > 0))
+            {
+                itemSupplyDistribution.Add(new ChartData() 
+                {
+                    Name = $"{market.MarketType.GetDisplayName()} ({market.Supply.Value.ToQuantityString()})",
+                    Value = (double) market.Supply.Value
+                });
+            }
+        }
+
+        ItemSupplyDistributionChartData = itemSupplyDistribution
+            .OrderByDescending(x => x.Value)
+            .ToList();
+    }
+
+    private class ChartData
+    {
+        public string Name { get; set; }
+
+        public double Value { get; set; }
+
+        public string Label => $"{Name} ({((long)Value).ToQuantityString()})";
+
+        public string Fill { get; set; }
+    }
+}
