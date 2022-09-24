@@ -79,8 +79,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     },
                     title: itemDefinition.ItemName,
                     url: $"{_configuration.GetWebsiteUrl()}/item/{itemDefinition.ItemName}",
-                    thumbnailUrl: !String.IsNullOrEmpty(itemDefinition.ItemIconUrl) ? itemDefinition.ItemIconUrl : 
-                                  !String.IsNullOrEmpty(itemDefinition.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{itemDefinition.AppId}/items/{itemDefinition.ItemShortName}.png" : null,
+                    thumbnailUrl: !String.IsNullOrEmpty(itemDefinition.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{itemDefinition.AppId}/items/{itemDefinition.ItemShortName}.png" : null,
                     description: description.ToString(),
                     imageUrl: !String.IsNullOrEmpty(itemDefinition.ItemImageUrl) ? itemDefinition.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(itemDefinition.AppColour) ? (uint?)UInt32.Parse(itemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
@@ -173,15 +172,9 @@ namespace SCMM.Discord.Bot.Server.Handlers
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guildId, channelId) =>
             {
-                var title = new StringBuilder(storeItem.ItemName);
-                var defaultPrice = storeItem.ItemPrices?.FirstOrDefault(x => x.Currency == Steam.Data.Models.Constants.SteamDefaultCurrency);
-                if (defaultPrice != null)
-                {
-                    title.Append($" - {(defaultPrice.Description ?? "N/A")}");
-                }
-
                 var description = new StringBuilder();
-                description.Append($"New {storeItem.ItemType} can be purchased from the {storeItem.AppName} store.");
+                var defaultPrice = storeItem.ItemPrices?.FirstOrDefault(x => x.Currency == Steam.Data.Models.Constants.SteamDefaultCurrency);
+                description.Append($"New {storeItem.ItemType} can be purchased from the {storeItem.AppName} store for **{defaultPrice?.Description}**.");
 
                 return _client.SendMessageAsync(
                     guildId,
@@ -193,7 +186,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                         SteamId = storeItem.CreatorId.ToString(),
                         AppId = storeItem.AppId.ToString()
                     },
-                    title: title.ToString(),
+                    title: storeItem.ItemName,
                     url: new SteamItemStoreDetailPageRequest()
                     {
                         AppId = storeItem.AppId.ToString(),
