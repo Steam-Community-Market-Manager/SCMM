@@ -76,18 +76,26 @@
             <MudItem xs="12" sm="6" lg="12">
                 <MudPaper Outlined="true" Class="pa-4 full-height">
 
-                    <div>
-                        <MudText Typo="MudBlazor.Typo.h6" Class="mt-n1" Style="@($"color: {Item.ForegroundColour}")">@Item.Name</MudText>
-                        @if (!String.IsNullOrEmpty(Item.ItemType))
+                    <div class="d-flex justify-start align-center">
+                        @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
                         {
-                            <MudText Typo="MudBlazor.Typo.subtitle1" Class="mt-n2" Color="MudBlazor.Color.Secondary">@Item.ItemType</MudText>
+                            <MudTooltip Text="@($"View more items created by {Item.CreatorName}")">
+                                <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="clickable mr-4" @onclick="@(() => ShowCreatorItemsDialog())" />
+                            </MudTooltip>
                         }
+                        <div>
+                            <MudText Typo="MudBlazor.Typo.h6" Class="mt-n1" Style="@($"color: {Item.ForegroundColour}")">@Item.Name</MudText>
+                            @if (!String.IsNullOrEmpty(Item.ItemType))
+                            {
+                                <MudText Typo="MudBlazor.Typo.subtitle1" Class="mt-n2" Color="MudBlazor.Color.Secondary">@Item.ItemType</MudText>
+                            }
+                        </div>
                     </div>
                     
                     @if (!String.IsNullOrEmpty(Item.Description))
                     {
                         <div class="mt-3">
-                            <MudText Typo="MudBlazor.Typo.body2" GutterBottom>
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                                 <MarkdownView Content="@Item.Description" />
                             </MudText>
                         </div>
@@ -97,7 +105,7 @@
                         @foreach (var note in Item.Notes)
                         {
                             <div class="mt-3">
-                                <MudText Typo="MudBlazor.Typo.body2" GutterBottom>
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                                     <MarkdownView Content="@note" />
 								</MudText>
                             </div>
@@ -152,7 +160,7 @@
                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                     <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
                                     <span>
-                                        <span>@Item.MarketSellOrderCount.Value.ToQuantityString() supply</span>
+                                        <MudLink @onclick="@(() => ViewMarketPage())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.MarketSellOrderCount.Value.ToQuantityString() supply</MudLink>
                                         <span class="mud-secondary-text"> on the market</span>
                                     </span>
                                 </MudText>
@@ -162,7 +170,7 @@
                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                     <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
                                     <span>
-                                        <span>@Item.Market24hrSales.Value.ToQuantityString() demand</span>
+                                        <MudLink @onclick="@(() => ViewMarketPage())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.Market24hrSales.Value.ToQuantityString() demand</MudLink>
                                         <span class="mud-secondary-text"> from the market (last 24hrs)</span>
                                     </span>
                                 </MudText>
@@ -293,7 +301,13 @@
                       
                     </div>
 
-                    <div class="mt-3">
+                    <div class="d-flex flex-wrap flex-row align-center mt-3">
+                        @if (Item.IsBeingManipulated == true)
+                        {
+                            <MudTooltip Text="@($"It is suspected that this items price is being manipulated on the market because {Item.ManipulationReason.FirstCharToLower()}")">
+                                <MudChip Size="MudBlazor.Size.Small" Text="Price Manipulation" Icon="fas fa-fw fa-exclamation-triangle mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Class="mud-chip-outlined" />
+                            </MudTooltip>
+                        }
                         @if (Item.IsBanned == true)
                         {
                             <MudTooltip Text="@($"This item has been trade and market banned due to {Item.BanReason.FirstCharToLower()}")">
@@ -446,74 +460,34 @@
                         }
                     </div>
                     
-				</MudPaper>
-			</MudItem>
-            
-            <MudHidden Breakpoint="Breakpoint.MdAndDown">
-
-                <MudItem xs="12">
-                    @*
-                    @if (Item.Tags.Any(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)))
+                    @if (Item.Tags.Any())
                     {
-                        <div class="quote-box text-centered pa-2 mb-2">
-                            @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)).Take(1))
+                        <div class="d-flex flex-wrap flex-row align-center mt-3">
+                            @if (!String.IsNullOrEmpty(Item.DominantColour))
                             {
-                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Dark">
-                                    <span>Looks like a</span>
-                                    <span>@tag.Value.FirstCharToLower().TrimStart('a', ' ')</span>
-                                </MudText>
+                                <MudTooltip Text="The accent colour of this item">
+                                    <MudChip Size="MudBlazor.Size.Small" Text="@Item.DominantColour" Icon="fas fa-fw fa-tint"
+                                             Variant="MudBlazor.Variant.Text" Class="mud-chip-outlined" Style="@($"background-color: {Item.DominantColour}; color: white")" />
+                                </MudTooltip>
+                            }
+                            @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
+                            {
+                                <MudTooltip Text="@($"Beep Boop! I think this item looks like a {@tag.Value.FirstCharToLower()}")">
+                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Icon="fas fa-fw fa-robot" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                </MudTooltip>
+                            }
+                            @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
+                            {
+                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value?.ToLower()" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             }
 				        </div>
                     }
-                    *@
-                    <MudPaper Outlined="true" Class="py-2 px-3">
-                        <div class="d-flex flex-row align-center">
-                            @*
-                            <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" Class="my-1" />
-                            *@
-                            <div class="ml-5">
-                                @if (!String.IsNullOrEmpty(Item.DominantColour))
-                                {
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@Item.DominantColour" Variant="MudBlazor.Variant.Text" Icon="fas fa-fw fa-tint" 
-                                                Class="mud-chip-outlined" Style="@($"background-color: {Item.DominantColour}; color: white")" />
-                                }
-                                @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
-                                {
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
-                                }
-                                @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
-                                {
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
-                                }
-						    </div>
-                        </div>
-				    </MudPaper>
-			    </MudItem>
+
+                </MudPaper>
+            </MudItem>
             
-                @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
-                {
-                    <MudItem xs="12">
-                        <MudPaper Outlined="true" Class=" full-height py-2 px-3">
-                            <div class="d-flex flex-row">
-                                <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="my-1" />
-                                <div class="ml-3">
-                                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@Item.CreatorName</MudText>
-                                    <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                        @if (Item.CreatorId != Item.AppId)
-                                        {
-                                            <span>• </span>
-                                            <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ViewCreatorWorkshopPage())" Disabled="State.IsPrerendering">View Steam Workshop</MudLink>
-                                            <br />
-                                        }
-                                        <span>• </span>
-                                        <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ShowCreatorItemsDialog())" Disabled="State.IsPrerendering">View more items from this creator</MudLink>
-								    </MudText>
-						        </div>
-                            </div>
-				        </MudPaper>
-			        </MudItem>
-                }
-            
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+
                 @if (Item.Stores?.Count() > 1)
                 {
                     <MudItem xs="12">
@@ -595,6 +569,7 @@
                 </MudItem>
             }
             
+            @*
             @if (!Item.IsAvailableOnMarket)
             {
                 <MudItem xs="12">
@@ -618,6 +593,7 @@
                     }
                 </MudItem>
             }
+            *@
 
             @if(Item.BuyPrices?.Any(x => x.MarketType == MarketType.SteamStore || x.IsAvailable) == true)
             {   
@@ -690,11 +666,29 @@
 				    </MudPaper>
                 </MudItem>
             }
- 
+
+            @if (Item.IsTradable && ItemHolders?.Any() == true)
+            {
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-2 pt-4 pb-6 d-flex scroll-x">
+                        @foreach (var itemHolder in ItemHolders)
+                        {
+                            <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)">
+                                <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} has {itemHolder.Items} of these items")" RootClass="mx-2">
+                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="9999" Overlap="true" Bordered="true" Origin="Origin.BottomCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
+                                        <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="rounded-pill mr-1" style="width:3rem; height:3rem;" />
+                                    </MudBadge>
+                                </MudTooltip>
+                            </div>
+                        }
+                    </MudPaper>
+                </MudItem>
+            }
+
             @if (Item.SupplyTotalEstimated > 0 && ItemSupplyDistributionChartData?.Any() == true)
             {
                 <MudItem xs="12" xl="@((Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null || Item.MarketSellOrderCount > 0 || Item.MarketBuyOrderCount > 0) ? 6 : 12)">
-                    <MudPaper Outlined="true" Class="text-centered full-height">
+                    <MudPaper Outlined="true" Class="text-centered full-height" Style="min-height:20vh">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 text-centered">
                             <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ estimated total supply</span>
                         </MudText>
@@ -707,7 +701,7 @@
                             {
                                 <span>We known that there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, through supply channels known and tracked by SCMM.</span>
                             }
-                            <span> Our database is not comprehensive and there are always more copies that we don't know about. This information should be used a general indication of supply only. </span>
+                            <span> Our database is not comprehensive and there are always more copies that we don't know about. </span>
                         </MudText>
                         <SfAccumulationChart ID="MarketItemDistribution" Theme="Syncfusion.Blazor.Theme.FluentDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" EnableSmartLabels="true">
                             <AccumulationChartSeriesCollection>
@@ -834,24 +828,6 @@
                 </MudItem>
             }
             
-            @if (Item.IsTradable && ItemHolders?.Any() == true)
-            {
-                <MudItem xs="12">
-                    <MudPaper Outlined="true" Class="pa-2 pt-4 d-flex scroll-x">
-                        @foreach (var itemHolder in ItemHolders)
-                        {
-                            <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)">
-                                <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} owns {itemHolder.Items} of these items")" RootClass="mx-2">
-                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="9999" Overlap="true" Bordered="true" Origin="Origin.TopCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
-                                        <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:3rem; height:3rem;" />
-                                    </MudBadge>
-                                </MudTooltip>
-                            </div>
-                        }
-                    </MudPaper>
-		        </MudItem>
-            }
-            
             @if(Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
             {
                 <MudItem xs="12">
@@ -891,25 +867,6 @@
                             }
                             else
                             {
-                                <style>
-                                    #SalesHistory_Series_1_TrendLine_0 {
-                                        stroke-dasharray: 10px 10px;
-                                        stroke-linejoin: round;
-                                        stroke-linecap: round;
-                                        -webkit-animation: dash 1s linear infinite;
-                                        animation: dash 1s linear infinite;
-                                    }
-                                    @@-webkit-keyframes dash {
-                                        100% {
-                                            stroke-dashoffset: -20px;
-                                        }
-                                    }
-                                    @@keyframes dash {
-                                        100% {
-                                            stroke-dashoffset: -20px;
-                                        }
-                                    }
-                                </style>
                                 <SfChart ID="SalesHistory" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
                                     <ChartArea>
                                         <ChartAreaBorder Width="0"></ChartAreaBorder>
@@ -931,13 +888,6 @@
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                         <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketItemSalesChartData" YAxisName="PriceAxis" Name="Median Price" XName="Date" YName="Median" Volume="Volume" High="High" Low="Low" Open="Open" Close="Close"
                                                                               Fill="#388e3c" BearFillColor="#2ecd71" BullFillColor="#e74c3d" Type="@(MarketItemSalesMaxDays >= 1 && MarketItemSalesMaxDays <= 30 ? ChartSeriesType.Candle : ChartSeriesType.Line)">
-                                            @if (MarketItemSalesAnnotations)
-                                            {
-                                                <ChartTrendlines>
-                                                    <ChartTrendline Type="TrendlineTypes.Polynomial" Width="3" Name="Median Price Trend" Fill="#ffffff" EnableTooltip="true">
-                                                    </ChartTrendline>
-                                                </ChartTrendlines>
-                                            }
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                     </ChartSeriesCollection>
                                     <ChartAnnotations>
@@ -1289,7 +1239,16 @@
             $"/store/{storeId}"
         );
     }
-    
+
+    private void ViewMarketPage()
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest()
+        {
+            AppId = Item.AppId.ToString(),
+            MarketHashName = Item.Name
+        });
+    }
+
     private void ViewItemWorkshopPage()
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamWorkshopFileDetailsPageRequest() 
