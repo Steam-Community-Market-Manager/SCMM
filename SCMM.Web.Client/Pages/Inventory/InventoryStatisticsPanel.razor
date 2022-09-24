@@ -79,7 +79,7 @@
             {
                 Name = $"{x.Name} {(x.Quantity > 1 ? $"({x.Quantity})" : String.Empty)}",
                 Value = (x.BuyNowPrice ?? 0) * x.Quantity,
-                Color = x.DominantColour ?? x.ForegroundColour
+                Color = x.IconAccentColour ?? x.ForegroundColour
             }).ToList();
         }
         catch (Exception ex)

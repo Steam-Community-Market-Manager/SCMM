@@ -13,6 +13,7 @@ using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Drawing;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -47,7 +48,8 @@ namespace SCMM.Steam.API.Commands
             var glowRatio = (decimal?)null;
             var hasCutout = (bool?)null;
             var cutoutRatio = (decimal?)null;
-            var dominantColour = (string)null;
+            var accentColour = (string)null;
+            var dominantColours = (string[])null;
             var tags = new Dictionary<string, string>();
 
             // Get the workshop file from blob storage
@@ -82,11 +84,29 @@ namespace SCMM.Steam.API.Commands
                             var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
                             if (!string.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
                             {
-                                dominantColour = $"#{iconAnalysis.Color.AccentColor}";
+                                accentColour = $"#{iconAnalysis.Color.AccentColor}";
+
+                                var allColours = new[] { accentColour };
+                                var colourTags = new Dictionary<string, string>();
+                                foreach(var colour in allColours)
+                                {
+                                    var colourMatch = ColourName.FindClosestMatch(colour);
+                                    if (colourMatch != null)
+                                    {
+                                        colourTags[colourMatch.Value.Colour] = colourMatch.Value.ColourName;
+                                        colourTags[colourMatch.Value.Shade] = colourMatch.Value.ShadeName;
+                                    }
+                                }
+                                tags.AddRange(
+                                    colourTags.DistinctBy(x => x.Value).ToDictionary(
+                                        x => $"{Constants.AssetTagAiColour}.{x.Key}",
+                                        x => x.Value
+                                    )
+                                );
                             }
                             else
                             {
-                                _logger.LogWarning("Icon analyse failed to identify the dominant colour");
+                                _logger.LogWarning("Icon analyse failed to identify the accent colour");
                             }
                             if (iconAnalysis?.Description?.Captions?.Any() == true)
                             {
@@ -227,7 +247,11 @@ namespace SCMM.Steam.API.Commands
             _logger.LogDebug($"glowRatio = {glowRatio}");
             _logger.LogDebug($"hasCutout = {hasCutout}");
             _logger.LogDebug($"cutoutRatio = {cutoutRatio}");
-            _logger.LogDebug($"dominantColour = {dominantColour}");
+            _logger.LogDebug($"accentColour = {accentColour}");
+            if (dominantColours != null)
+            {
+                _logger.LogDebug($"dominantColors = {String.Join(", ", dominantColours)}");
+            }
             foreach (var tag in tags)
             {
                 _logger.LogDebug($"{tag.Key} = {tag.Value}");
@@ -257,15 +281,19 @@ namespace SCMM.Steam.API.Commands
                 {
                     assetDescription.CutoutRatio = cutoutRatio;
                 }
-                if (dominantColour != null)
+                if (accentColour != null)
                 {
-                    assetDescription.DominantColour = dominantColour;
+                    assetDescription.IconAccentColour = accentColour;
+                }
+                if (dominantColours != null)
+                {
+                    assetDescription.IconDominantColours = new PersistableStringCollection(dominantColours);
                 }
                 if (tags.Any())
                 {
                     assetDescription.Tags = new PersistableStringDictionary(
                         assetDescription.Tags
-                            .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.AssetTagAiCaption) || x.Key.StartsWith(Constants.AssetTagAiTag)))
+                            .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.AssetTagAiColour) || x.Key.StartsWith(Constants.AssetTagAiCaption) || x.Key.StartsWith(Constants.AssetTagAiTag)))
                             .ToDictionary(x => x.Key, x => x.Value)
                     );
                     foreach (var tag in tags)

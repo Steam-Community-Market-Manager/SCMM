@@ -4,9 +4,9 @@
     {
         public string Name { get; set; }
 
-        public string IconUrl { get; set; }
+        public string IconAccentColour { get; set; }
 
-        public string DominantColour { get; set; }
+        public string IconUrl { get; set; }
 
         public int Position { get; set; }
 

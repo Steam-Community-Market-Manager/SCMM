@@ -173,7 +173,7 @@
         }
         if (Item.HasGlow == true)
         {
-            if (!String.IsNullOrEmpty(Item.DominantColour))
+            if (!String.IsNullOrEmpty(Item.IconAccentColour))
             {
                  classes.Add("glow-transparent");
             }
@@ -191,9 +191,9 @@
         var styles = new List<string>();
         if (Item.HasGlow == true)
         {
-            if (!String.IsNullOrEmpty(Item.DominantColour))
+            if (!String.IsNullOrEmpty(Item.IconAccentColour))
             {
-                styles.Add($"filter: drop-shadow(0px 0px 16px {Item.DominantColour})");
+                styles.Add($"filter: drop-shadow(0px 0px 16px {Item.IconAccentColour})");
             }
         }
 

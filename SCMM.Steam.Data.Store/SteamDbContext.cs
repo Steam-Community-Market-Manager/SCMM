@@ -90,6 +90,8 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
             builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.IconDominantColours);
+            builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.Icon);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Previews);

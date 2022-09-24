@@ -21,6 +21,7 @@ namespace SCMM.Steam.Data.Store
             Notes = new PersistableStringCollection();
             Changes = new PersistableChangeNotesDictionary();
             Tags = new PersistableStringDictionary();
+            IconDominantColours = new PersistableStringCollection();
             Previews = new PersistableMediaDictionary();
             CraftingComponents = new PersistableAssetQuantityDictionary();
             BreaksIntoComponents = new PersistableAssetQuantityDictionary();
@@ -112,11 +113,6 @@ namespace SCMM.Steam.Data.Store
         public decimal? CutoutRatio { get; set; }
 
         /// <summary>
-        /// The most dominant colour of the item
-        /// </summary>
-        public string DominantColour { get; set; }
-
-        /// <summary>
         /// Steam item type background colour
         /// </summary>
         public string BackgroundColour { get; set; }
@@ -125,6 +121,16 @@ namespace SCMM.Steam.Data.Store
         /// Steam item type foreground colour
         /// </summary>
         public string ForegroundColour { get; set; }
+
+        /// <summary>
+        /// The best fitting accent colour of the item image
+        /// </summary>
+        public string IconAccentColour { get; set; }
+
+        /// <summary>
+        /// List of all dominant colours contained within the item icon
+        /// </summary>
+        public PersistableStringCollection IconDominantColours { get; set; }
 
         public string IconUrl { get; set; }
 

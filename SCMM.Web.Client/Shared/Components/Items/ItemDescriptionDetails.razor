@@ -5,6 +5,7 @@
 @using SCMM.Web.Client.Shared.Dialogs.Items
 @using Syncfusion.Blazor.Charts
 @using System.Reflection
+@using System.Text.RegularExpressions
 @inherits PersistentComponent
 @inject ILogger<ItemDescriptionDetails> Logger
 @inject IDialogService Dialogs
@@ -463,16 +464,16 @@
                     @if (Item.Tags.Any())
                     {
                         <div class="d-flex flex-wrap flex-row align-center">
-                            @if (!String.IsNullOrEmpty(Item.DominantColour))
+                            @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiColour)))
                             {
-                                <MudTooltip Text="The accent colour of this item">
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@Item.DominantColour" Icon="fas fa-fw fa-tint"
-                                             Variant="MudBlazor.Variant.Text" Class="mud-chip-outlined" Style="@($"background-color: {Item.DominantColour}; color: white")" />
+                                <MudTooltip Text="@($"This item contains the colour '{@tag.Value.ToLower()}''")">
+                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Icon="fas fa-fw fa-tint" Variant="MudBlazor.Variant.Text" Class="mud-chip-outlined" 
+                                             Style="@($"background-color: #{Regex.Match(tag.Key, SCMM.Steam.Data.Models.Constants.AssetTagAiColourHexRegex, RegexOptions.IgnoreCase).Groups.OfType<Capture>().LastOrDefault()?.Value}; color: white")" />
                                 </MudTooltip>
                             }
                             @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
                             {
-                                <MudTooltip Text="@($"Beep Boop! I think this item looks like a {@tag.Value.FirstCharToLower()}")">
+                                <MudTooltip Text="@($"This item reminds me of '{@tag.Value.ToLower()}'")">
                                     <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Icon="fas fa-fw fa-robot" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                                 </MudTooltip>
                             }
@@ -1328,7 +1329,7 @@
     {
         if (Item.HasGlow == true)
         {
-            if (!String.IsNullOrEmpty(Item.DominantColour))
+            if (!String.IsNullOrEmpty(Item.IconAccentColour))
             {
                 return $"glow-transparent";
             }
@@ -1344,9 +1345,9 @@
     {
         if (Item.HasGlow == true)
         {
-            if (!String.IsNullOrEmpty(Item.DominantColour))
+            if (!String.IsNullOrEmpty(Item.IconAccentColour))
             {
-                return $"filter: drop-shadow(0px 0px 16px {Item.DominantColour});";
+                return $"filter: drop-shadow(0px 0px 16px {Item.IconAccentColour});";
             }
         }
         return null;

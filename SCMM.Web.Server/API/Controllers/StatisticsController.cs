@@ -575,7 +575,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Name = x.Description.Name,
                     IconUrl = x.Description.IconUrl,
-                    DominantColour = x.Description.DominantColour,
+                    IconAccentColour = x.Description.IconAccentColour,
                     Timestamp = x.Timestamp,
                     Position = x.Position,
                     Total = x.Total,
@@ -584,12 +584,12 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(
-                topSellerPositions.GroupBy(x => new { x.Name, x.IconUrl, x.DominantColour }).Select(
+                topSellerPositions.GroupBy(x => new { x.Name, x.IconUrl, x.IconAccentColour }).Select(
                     x => new StoreTopSellerItemDTO
                     {
                         Name = x.Key.Name,
                         IconUrl = x.Key.IconUrl,
-                        DominantColour = x.Key.DominantColour,
+                        IconAccentColour = x.Key.IconAccentColour,
                         Position = x.FirstOrDefault(x => x.IsActive)?.Position ?? 0,
                         PositionChanges = x.Select(p => new StoreTopSellerPositionChartPointDTO
                         {

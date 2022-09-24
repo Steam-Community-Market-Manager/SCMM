@@ -12,7 +12,7 @@
 
         public bool? HasGlow { get; set; }
 
-        public string DominantColour { get; set; }
+        public string IconAccentColour { get; set; }
 
         public string BackgroundColour { get; }
 

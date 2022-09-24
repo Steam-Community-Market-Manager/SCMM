@@ -94,6 +94,8 @@
         public const string AssetTagAi = "ai";
         public const string AssetTagAiTag = "ai.tag";
         public const string AssetTagAiCaption = "ai.caption";
+        public const string AssetTagAiColour = "ai.colour";
+        public const string AssetTagAiColourHexRegex = @"ai\.colour\.([0-9A-F]+)";
 
         public const string LatestSystemUpdatesCacheKey = "latest-system-updates";
 

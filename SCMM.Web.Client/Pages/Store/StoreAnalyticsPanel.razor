@@ -62,7 +62,7 @@
                                                     <div class="d-flex">
                                                         <div class="d-flex flex-row justify-start align-center">
                                                             <img src="@topSeller.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                                            <MudText Typo="Typo.body1" Style="@($"color: {topSeller.DominantColour}")">@topSeller.Name</MudText>
+                                                            <MudText Typo="Typo.body1" Style="@($"color: {topSeller.IconAccentColour}")">@topSeller.Name</MudText>
                                                         </div>
                                                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Style="@GetItemTopSellerStyles(topSeller.Position)">
                                                             <i class="fas fa-fw fa-trophy ml-2 mr-1"/>
@@ -87,7 +87,7 @@
                                             <ChartSeriesCollection>
                                                 @foreach(var topSeller in TopSellers)
                                                 {
-                                                    <Syncfusion.Blazor.Charts.ChartSeries DataSource="@topSeller.PositionChanges" Name="@topSeller.Name" XName="Timestamp" YName="Position" Fill="@(topSeller.DominantColour)" Type="ChartSeriesType.Line" LegendShape="LegendShape.Circle">
+                                                    <Syncfusion.Blazor.Charts.ChartSeries DataSource="@topSeller.PositionChanges" Name="@topSeller.Name" XName="Timestamp" YName="Position" Fill="@(topSeller.IconAccentColour)" Type="ChartSeriesType.Line" LegendShape="LegendShape.Circle">
                                                         <ChartMarker Visible="true" Shape="ChartShape.Image" ImageUrl="@topSeller.IconUrl" Width="24" Height="24" /> 
                                                     </Syncfusion.Blazor.Charts.ChartSeries>
                                                 }

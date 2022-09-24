@@ -784,7 +784,7 @@ else
         }
         if (item.HasGlow == true)
         {
-            if (!String.IsNullOrEmpty(item.DominantColour))
+            if (!String.IsNullOrEmpty(item.IconAccentColour))
             {
                 result += " glow-transparent";
             }
@@ -801,9 +801,9 @@ else
     {
         if (item.HasGlow == true)
         {
-            if (!String.IsNullOrEmpty(item.DominantColour))
+            if (!String.IsNullOrEmpty(item.IconAccentColour))
             {
-                return $"filter: drop-shadow(0px 0px 16px {item.DominantColour});";
+                return $"filter: drop-shadow(0px 0px 16px {item.IconAccentColour});";
             }
         }
         return null;

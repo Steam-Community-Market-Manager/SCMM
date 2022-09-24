@@ -61,11 +61,13 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public decimal? CutoutRatio { get; set; }
 
-        public string DominantColour { get; set; }
-
         public string BackgroundColour { get; set; }
 
         public string ForegroundColour { get; set; }
+
+        public string IconAccentColour { get; set; }
+
+        public string[] IconDominantColours { get; set; }
 
         public string IconUrl { get; set; }
 
