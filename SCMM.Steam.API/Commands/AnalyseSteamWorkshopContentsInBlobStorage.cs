@@ -139,7 +139,8 @@ namespace SCMM.Steam.API.Commands
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogWarning(ex, $"Failed to analyse icon: {iconFile.Name}. {ex.Message}");
+                            _logger.LogError(ex, $"Failed to analyse icon: {iconFile.Name}. {ex.Message}");
+                            throw;
                         }
                     }
                     else
