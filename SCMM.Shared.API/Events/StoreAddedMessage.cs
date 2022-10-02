@@ -7,7 +7,7 @@ namespace SCMM.Shared.API.Events
     [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 10080 /* 7 days */)]
     public class StoreAddedMessage : Message
     {
-        public override string Id => $"{AppId}/{StoreId}";
+        public override string Id => $"{AppId}/{StoreId}+{String.Join('+', (Items ?? new Item[0]).Select(x => x.Id))}";
 
         public ulong AppId { get; set; }
 
@@ -27,6 +27,8 @@ namespace SCMM.Shared.API.Events
 
         public class Item
         {
+            public ulong Id { get; set; }
+
             public string Name { get; set; }
 
             public string Currency { get; set; }

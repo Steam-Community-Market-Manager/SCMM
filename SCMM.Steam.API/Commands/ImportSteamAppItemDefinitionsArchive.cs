@@ -633,6 +633,7 @@ namespace SCMM.Steam.API.Commands
                     StoreName = store.StoreName(),
                     Items = newItems.Select(x => new StoreAddedMessage.Item()
                     {
+                        Id = (x.Description.ClassId ?? 0),
                         Name = x.Description?.Name,
                         Currency = currency.Name,
                         Price = x.Price,
