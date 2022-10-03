@@ -136,9 +136,6 @@ namespace SCMM.Steam.API.Commands
                         }
                     }
                 }
-
-                profile.LastUpdatedFriendsOn = DateTimeOffset.UtcNow;
-                await _db.SaveChangesAsync();
             }
             catch (HttpRequestException ex)
             {
@@ -150,6 +147,12 @@ namespace SCMM.Steam.API.Commands
                 {
                     throw;
                 }
+            }
+
+            if (profile != null)
+            {
+                profile.LastUpdatedFriendsOn = DateTimeOffset.UtcNow;
+                await _db.SaveChangesAsync();
             }
 
             return new ImportSteamProfileFriendsResponse
