@@ -1,6 +1,8 @@
 ﻿using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client.Commands;
+using SCMM.Shared.Data.Models;
+using SCMM.Steam.API.Commands;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -99,6 +101,52 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 return CommandResult.Fail("Unable to find a profile");
             }
+        }
+
+        [Command("scan-bot-friends")]
+        public async Task<RuntimeResult> ScanBotFriendsAsync()
+        {
+            var bots = await _steamDb.SteamProfiles
+                .Where(x => x.Roles.Serialised.Contains(Roles.Bot))
+                .Where(x => x.LastUpdatedFriendsOn == null)
+                .OrderBy(x => x.LastUpdatedFriendsOn)
+                .ToListAsync();
+
+            var message = await Context.Channel.SendMessageAsync($"Checking bot friends...");
+            foreach (var bot in bots)
+            {
+                await message.ModifyAsync(x => x.Content = $"Checking {bot.Name} ({bot.SteamId}) ({bots.IndexOf(bot) + 1}/{bots.Count})...");
+                await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileFriendsRequest()
+                {
+                    ProfileId = bot.SteamId
+                });
+            }
+
+            await message.ModifyAsync(x => x.Content = $"Checked {bots.Count} bot profiles");
+            return CommandResult.Success();
+        }
+
+        [Command("scan-whale-friends")]
+        public async Task<RuntimeResult> ScanWhaleFriendsAsync()
+        {
+            var bots = await _steamDb.SteamProfiles
+                .Where(x => x.Roles.Serialised.Contains(Roles.Whale))
+                .Where(x => x.LastUpdatedFriendsOn == null)
+                .OrderBy(x => x.LastUpdatedFriendsOn)
+                .ToListAsync();
+
+            var message = await Context.Channel.SendMessageAsync($"Checking whale friends...");
+            foreach (var bot in bots)
+            {
+                await message.ModifyAsync(x => x.Content = $"Checking {bot.Name} ({bot.SteamId}) ({bots.IndexOf(bot) + 1}/{bots.Count})...");
+                await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileFriendsRequest()
+                {
+                    ProfileId = bot.SteamId
+                });
+            }
+
+            await message.ModifyAsync(x => x.Content = $"Checked {bots.Count} whale profiles");
+            return CommandResult.Success();
         }
     }
 }
