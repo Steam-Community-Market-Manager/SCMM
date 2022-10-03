@@ -136,6 +136,9 @@ namespace SCMM.Steam.API.Commands
                         }
                     }
                 }
+
+                profile.LastUpdatedFriendsOn = DateTimeOffset.UtcNow;
+                await _db.SaveChangesAsync();
             }
             catch (HttpRequestException ex)
             {

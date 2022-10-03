@@ -46,6 +46,8 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
 
+        public DateTimeOffset? LastUpdatedFriendsOn { get; set; }
+
         public DateTimeOffset? LastUpdatedOn { get; set; }
 
         public DateTimeOffset? LastSignedInOn { get; set; }
@@ -147,6 +149,7 @@ namespace SCMM.Steam.Data.Store
             CurrencyId = null;
             LastViewedInventoryOn = null;
             LastUpdatedInventoryOn = null;
+            LastUpdatedFriendsOn = null;
             LastSignedInOn = null;
             DonatorLevel = 0;
             GamblingOffset = 0;
