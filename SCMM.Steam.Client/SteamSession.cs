@@ -83,7 +83,7 @@ namespace SCMM.Steam.Client
             if (IsRateLimited && LastRateLimitedOn != null)
             {
                 // TODO: Do this delay better (using a back-off?)
-                var delay = TimeSpan.FromSeconds(30);
+                var delay = TimeSpan.FromSeconds(15);
                 _logger.LogWarning($"Steam session is rate-limited, delaying for {delay.TotalSeconds} seconds");
                 return Task.Delay(delay);
             }

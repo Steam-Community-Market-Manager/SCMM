@@ -179,7 +179,7 @@ namespace SCMM.Steam.Client
                 {
                     _ = _cache.SetAsync(cacheKey, Encoding.Unicode.GetBytes(content), new DistributedCacheEntryOptions()
                     {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
                     });
                 }
             }
