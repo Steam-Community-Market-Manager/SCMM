@@ -1,6 +1,8 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
@@ -112,11 +114,11 @@ namespace SCMM.Steam.API.Commands
                 ? (int)Math.Round((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount * 100, 0) > 50
                 : false;
 
-            // Update last inventory value snapshot
-            // NOTE: Don't use currency conversion, keep it in system currency
+            // Update profile statistics
             var profile = resolvedId.Profile;
-            if (profile != null & !String.IsNullOrEmpty(request.AppId))
+            if (profile != null && !String.IsNullOrEmpty(request.AppId))
             {
+                // Update last inventory value snapshot
                 var inventoryValue = await _db.SteamProfileInventoryValues
                     .Where(x => x.ProfileId == resolvedId.ProfileId)
                     .Where(x => x.App.SteamId == request.AppId)
@@ -131,11 +133,30 @@ namespace SCMM.Steam.API.Commands
                         }
                     );
                 }
-                inventoryValue.Items = profileInventoryItems
-                    .Sum(x => x.Quantity);
-                inventoryValue.MarketValue = profileInventoryItems
-                    .Where(x => x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => x.ItemValue * x.Quantity);
+
+                // NOTE: Don't use currency conversion, keep it in system currency
+                inventoryValue.Items = profileInventoryItems.Sum(x => x.Quantity);
+                inventoryValue.MarketValue = profileInventoryItems.Sum(x => x.ItemValue * x.Quantity);
+
+                // Update "whale" role status
+                const int WhaleInventoryItemCount = 5000;
+                const int WhaleInventoryMarketValueUsd = 1000000; // $10,000.00
+                if ((inventoryValue.Items >= WhaleInventoryItemCount) || (inventoryValue.MarketValue >= WhaleInventoryMarketValueUsd))
+                {
+                    if (!profile.Roles.Contains(Roles.Whale))
+                    {
+                        profile.Roles = new PersistableStringCollection(profile.Roles);
+                        profile.Roles.Add(Roles.Whale);
+                    }
+                }
+                else
+                {
+                    if (profile.Roles.Contains(Roles.Whale))
+                    {
+                        profile.Roles = new PersistableStringCollection(profile.Roles);
+                        profile.Roles.Remove(Roles.Whale);
+                    }
+                }
 
                 await _db.SaveChangesAsync();
             }

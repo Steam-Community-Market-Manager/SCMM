@@ -37,22 +37,22 @@
                     @if (Profile.IsTradeBanned)
                     {
                         <small class="no-wrap mud-error-text">
-                            <i class="fas fa-fw fa-ban"></i>
-                            <span> Banned </span>
+                            <i class="fas fa-fw fa-ban ml-1"></i>
+                            <span>Banned</span>
                         </small>
                     }
                     @if (Profile.Privacy != SteamVisibilityType.Public)
                     {
                         <small class="no-wrap mud-warning-text">
-                            <i class="fas fa-fw fa-lock"></i>
-                            <span> Private </span>
+                            <i class="fas fa-fw fa-lock ml-1"></i>
+                            <span>Private</span>
                         </small>
                     }
                     @if (Profile.Roles.Contains(Roles.Bot))
                     {
                         <small class="no-wrap">
-                            <i class="fas fa-fw fa-robot"></i>
-                            <span> Bot </span>
+                            <i class="fas fa-fw fa-robot ml-1"></i>
+                            <span>Bot</span>
                         </small>
                     }
                 </MudText>
