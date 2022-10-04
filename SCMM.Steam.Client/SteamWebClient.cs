@@ -111,18 +111,14 @@ namespace SCMM.Steam.Client
             }
             catch (SteamRequestException ex)
             {
-                // Check if the request might have failed due to missing or expired authentication
-                // 400: BadRequest
-                // 401: Unauthorized
-                // 403: Forbidden
-                if (_session != null && ex.IsAuthenticiationRequired)
+                // Check if the request failed due to a temporary or network related error
+                // 408: RequestTimeout
+                // 504: GatewayTimeout
+                // 502: BadGateway
+                if (ex.IsTemporaryError)
                 {
-                    // If it has been more than 10 minutes since we last authenticated, try login to Steam again. This error might just be that our token has expired.
-                    if (_session.LastLoginOn == null || (DateTimeOffset.Now - _session.LastLoginOn.Value) >= TimeSpan.FromMinutes(10))
-                    {
-                        _session.Refresh();
-                        return await GetWithRetry(request, (retryAttempt + 1));
-                    }
+                    _logger.LogWarning($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
+                    return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
                 // Check if the request failed due to rate limiting
@@ -136,13 +132,27 @@ namespace SCMM.Steam.Client
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
-                // 408: RequestTimeout
-                // 504: GatewayTimeout
-                // 502: BadGateway
-                if (ex.IsTemporaryError)
+                // Check if the request failed due to missing proxy authentication
+                // 429: TooManyRequests
+                if (ex.IsProxyAuthenticationRequired)
                 {
-                    _logger.LogWarning($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
+                    // Disable the current web proxy and rotate to the next proxy if possible
+                    DisableWebProxy(request?.Uri);
                     return await GetWithRetry(request, (retryAttempt + 1));
+                }
+
+                // Check if the request might have failed due to missing or expired Steam authentication
+                // 400: BadRequest
+                // 401: Unauthorized
+                // 403: Forbidden
+                if (ex.IsSteamAuthenticationRequired && _session != null)
+                {
+                    // If it has been more than 10 minutes since we last authenticated, try login to Steam again. This error might just be that our token has expired.
+                    if (_session.LastLoginOn == null || (DateTimeOffset.Now - _session.LastLoginOn.Value) >= TimeSpan.FromMinutes(10))
+                    {
+                        _session.Refresh();
+                        return await GetWithRetry(request, (retryAttempt + 1));
+                    }
                 }
 
                 // Legitimate error, bubble the error up to the caller

@@ -19,7 +19,8 @@ public class WebClient : IDisposable
         {
             UseCookies = (cookieContainer != null),
             CookieContainer = (cookieContainer ?? new CookieContainer()),
-            Proxy = webProxy
+            Proxy = webProxy,
+            PreAuthenticate = (webProxy != null)
         };
     }
 
@@ -81,6 +82,11 @@ public class WebClient : IDisposable
     public void RotateWebProxy(Uri address, TimeSpan cooldown)
     {
         (_webProxy as IRotatingWebProxy)?.RotateProxy(address, cooldown);
+    }
+
+    public void DisableWebProxy(Uri address)
+    {
+        (_webProxy as IRotatingWebProxy)?.DisableProxy(address);
     }
 
     protected virtual void Dispose(bool disposing)

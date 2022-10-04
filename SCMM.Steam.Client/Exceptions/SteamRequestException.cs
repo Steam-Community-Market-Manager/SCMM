@@ -40,7 +40,11 @@ namespace SCMM.Steam.Client.Exceptions
             StatusCode == HttpStatusCode.TooManyRequests
         );
 
-        public bool IsAuthenticiationRequired => (
+        public bool IsProxyAuthenticationRequired => (
+            StatusCode == HttpStatusCode.ProxyAuthenticationRequired
+        );
+
+        public bool IsSteamAuthenticationRequired => (
             StatusCode == HttpStatusCode.BadRequest ||
             StatusCode == HttpStatusCode.Unauthorized ||
             StatusCode == HttpStatusCode.Forbidden

@@ -28,7 +28,8 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
                         Domain = x.Domain,
                         UserName = x.Username,
                         Password = x.Password
-                    }
+                    },
+                    IsEnabled = x.IsEnabled
                 })
             );
         }
@@ -41,6 +42,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     {
         var now = DateTime.UtcNow;
         return _proxies
+            .Where(x => x.IsEnabled)
             .OrderBy(x => (x.GetHostCooldown(address) - now))
             .ThenBy(x => x.Priority)
             .FirstOrDefault();
@@ -54,6 +56,16 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             proxy.IncrementHostCooldown(address, cooldown);
             var newProxy = GetNextAvailableProxy(address);
             _logger.LogWarning($"'{address?.Host}' has entered a {cooldown.TotalSeconds}s cooldown on '{proxy?.Address?.Host ?? "default"}' proxy. Requests will now rotate to '{newProxy?.Address?.Host ?? "default"}' proxy.");
+        }
+    }
+
+    public void DisableProxy(Uri address)
+    {
+        var proxy = GetNextAvailableProxy(address);
+        if (proxy != null)
+        {
+            proxy.IsEnabled = false;
+            _logger.LogWarning($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled");
         }
     }
 
@@ -87,7 +99,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             throw new ArgumentNullException(nameof(uri));
         }
 
-        var proxy = _proxies.FirstOrDefault(x => x.Address == uri);
+        var proxy = _proxies.FirstOrDefault(x => x.IsEnabled && x.Address == uri);
         return proxy?.Credentials;
     }
 
@@ -98,7 +110,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             throw new ArgumentNullException(nameof(host));
         }
 
-        var proxy = _proxies.FirstOrDefault(x => x.Address?.Host == host && x.Address?.Port == port);
+        var proxy = _proxies.FirstOrDefault(x => x.IsEnabled && x.Address?.Host == host && x.Address?.Port == port);
         return proxy?.Credentials;
     }
 
@@ -118,6 +130,8 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         public Uri Address { get; set; }
 
         public NetworkCredential Credentials { get; set; }
+
+        public bool IsEnabled { get; set; } = true;
 
         public IDictionary<string, DateTime> Cooldowns { get; private set; } = new Dictionary<string, DateTime>();
 
