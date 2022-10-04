@@ -18,21 +18,32 @@ namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("import-rust-item-definitions")]
-        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(string digest)
+        [Command("import-rust-item-definitions-archives")]
+        public async Task<RuntimeResult> ImportRustItemDefinitionsArchivesAsync(params string[] digests)
         {
-            await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
+            var message = await Context.Message.ReplyAsync("Importing item definitions archives...");
+            foreach (var digest in digests)
             {
-                AppId = Constants.RustAppId.ToString(),
-                ItemDefinitionsDigest = digest
-            });
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing item definitions archive {digest} ({Array.IndexOf(digests, digest) + 1}/{digests.Length})..."
+                );
+                await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
+                {
+                    AppId = Constants.RustAppId.ToString(),
+                    ItemDefinitionsDigest = digest
+                });
+            }
 
             await _steamDb.SaveChangesAsync();
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported {digests.Length}/{digests.Length} item definitions archives"
+            );
             return CommandResult.Success();
         }
 
-        [Command("import-rust-item-definitions-and-parse-changes")]
-        public async Task<RuntimeResult> ImportAndParseRustAssetDescriptionAsync(string digest)
+        [Command("import-rust-item-definitions-archive-and-parse-changes")]
+        public async Task<RuntimeResult> ImportAndParseRustItemDefinitionsArchiveAsync(string digest)
         {
             await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
             {
