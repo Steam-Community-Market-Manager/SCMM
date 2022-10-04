@@ -1,6 +1,4 @@
-﻿using SCMM.Azure.ServiceBus;
-using SCMM.Worker.Client.Remote;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.WebSockets;
 
@@ -12,25 +10,14 @@ public class WebClient : IDisposable
     private readonly HttpMessageHandler _httpHandler;
     private bool _disposedValue;
 
-    public WebClient(CookieContainer cookieContainer = null, ServiceBusClient serviceBusClient = null)
+    public WebClient(CookieContainer cookieContainer = null)
     {
         _cookieContainer = cookieContainer;
-        if (serviceBusClient != null)
+        _httpHandler = new HttpClientHandler()
         {
-            _httpHandler = new DistributedHttpClientHandler(serviceBusClient)
-            {
-                UseCookies = (cookieContainer != null),
-                CookieContainer = (cookieContainer ?? new CookieContainer())
-            };
-        }
-        else
-        {
-            _httpHandler = new HttpClientHandler()
-            {
-                UseCookies = (cookieContainer != null),
-                CookieContainer = (cookieContainer ?? new CookieContainer())
-            };
-        }
+            UseCookies = (cookieContainer != null),
+            CookieContainer = (cookieContainer ?? new CookieContainer())
+        };
     }
 
     protected HttpClient BuildWebBrowserHttpClient(Uri referer = null)
