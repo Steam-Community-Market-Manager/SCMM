@@ -30,6 +30,12 @@ namespace SCMM.Steam.Client.Exceptions
 
         public HttpStatusCode? StatusCode { get; set; }
 
+        public bool IsTemporaryError => (
+            StatusCode == HttpStatusCode.RequestTimeout ||
+            StatusCode == HttpStatusCode.GatewayTimeout ||
+            StatusCode == HttpStatusCode.BadGateway
+        );
+
         public bool IsRateLimited => (
             StatusCode == HttpStatusCode.TooManyRequests
         );

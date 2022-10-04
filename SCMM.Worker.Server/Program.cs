@@ -16,6 +16,9 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
+using SCMM.Worker.Client;
+using SCMM.Worker.Client.Configuration;
+using System.Net;
 using System.Reflection;
 
 Console.WriteLine();
@@ -65,7 +68,7 @@ public static class HostExtensions
             logging.ClearProviders();
             logging.AddDebug();
             logging.AddConsole();
-            logging.SetMinimumLevel(LogLevel.Information);
+            logging.SetMinimumLevel(LogLevel.Debug);
             logging.AddFilter("Microsoft", level => level >= LogLevel.Warning);
             logging.AddFilter("Microsoft.Hosting.Lifetime", level => level >= LogLevel.Warning);
             logging.AddFilter("Microsoft.EntityFrameworkCore.Database", level => level >= LogLevel.Warning);
@@ -127,6 +130,14 @@ public static class HostExtensions
                     options.Configuration = redisConnectionString;
                 });
             }
+
+            // Web proxies
+            services.AddSingleton<IWebProxy, RotatingWebProxy>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetWebProxyConfiguration();
+            });
 
             // 3rd party clients
             services.AddSingleton((services) =>

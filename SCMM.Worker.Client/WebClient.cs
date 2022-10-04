@@ -7,16 +7,19 @@ namespace SCMM.Worker.Client;
 public class WebClient : IDisposable
 {
     private readonly CookieContainer _cookieContainer;
+    private readonly IWebProxy _webProxy;
     private readonly HttpMessageHandler _httpHandler;
     private bool _disposedValue;
 
-    public WebClient(CookieContainer cookieContainer = null)
+    public WebClient(CookieContainer cookieContainer = null, IWebProxy webProxy = null)
     {
         _cookieContainer = cookieContainer;
+        _webProxy = webProxy;
         _httpHandler = new HttpClientHandler()
         {
             UseCookies = (cookieContainer != null),
-            CookieContainer = (cookieContainer ?? new CookieContainer())
+            CookieContainer = (cookieContainer ?? new CookieContainer()),
+            Proxy = webProxy
         };
     }
 
@@ -73,6 +76,11 @@ public class WebClient : IDisposable
         }
 
         return webSocketClient;
+    }
+
+    public void RotateWebProxy(Uri address, TimeSpan cooldown)
+    {
+        (_webProxy as IRotatingWebProxy)?.RotateProxy(address, cooldown);
     }
 
     protected virtual void Dispose(bool disposing)

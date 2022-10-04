@@ -24,6 +24,9 @@ using SCMM.SteamCMD;
 using SCMM.Web.Client.Shared.Storage;
 using SCMM.Web.Server;
 using SCMM.Web.Server.Shared.Storage;
+using SCMM.Worker.Client.Configuration;
+using SCMM.Worker.Client;
+using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 
@@ -161,6 +164,14 @@ public static class WebApplicationExtensions
                 options.Configuration = redisConnectionString;
             });
         }
+
+        // Web proxies
+        builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
+        builder.Services.AddSingleton((services) =>
+        {
+            var configuration = services.GetService<IConfiguration>();
+            return configuration.GetWebProxyConfiguration();
+        });
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());

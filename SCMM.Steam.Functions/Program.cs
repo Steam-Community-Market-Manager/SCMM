@@ -36,6 +36,9 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
 using System.Reflection;
+using SCMM.Worker.Client.Configuration;
+using SCMM.Worker.Client;
+using System.Net;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -129,6 +132,14 @@ public static class HostExtensions
                     options.Configuration = redisConnectionString;
                 });
             }
+
+            // Web proxies
+            services.AddSingleton<IWebProxy, RotatingWebProxy>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetWebProxyConfiguration();
+            });
 
             // 3rd party clients
             services.AddSingleton((services) =>

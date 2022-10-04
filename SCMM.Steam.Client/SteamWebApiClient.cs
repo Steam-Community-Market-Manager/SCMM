@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Responses.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Responses.IPublishedFileService;
 using SCMM.Steam.Data.Models.WebApi.Responses.ISteamUser;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Steam.Client
@@ -22,8 +23,8 @@ namespace SCMM.Steam.Client
     {
         private readonly SteamConfiguration _configuration;
 
-        public SteamWebApiClient(ILogger<SteamWebApiClient> logger, IDistributedCache cache, SteamConfiguration configuration)
-            : base(logger, cache)
+        public SteamWebApiClient(ILogger<SteamWebApiClient> logger, IDistributedCache cache, IWebProxy proxy, SteamConfiguration configuration)
+            : base(logger, cache, proxy: proxy)
         {
             _configuration = configuration;
         }

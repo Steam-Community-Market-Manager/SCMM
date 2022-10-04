@@ -8,6 +8,7 @@ using SCMM.Steam.Data.Models.Community.Responses.Xml;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -20,7 +21,7 @@ namespace SCMM.Steam.Client
         private readonly IDistributedCache _cache;
         private readonly SteamSession _session;
 
-        public SteamWebClient(ILogger<SteamWebClient> logger, IDistributedCache cache, SteamSession session = null) : base(cookieContainer: session?.Cookies)
+        public SteamWebClient(ILogger<SteamWebClient> logger, IDistributedCache cache, SteamSession session = null, IWebProxy proxy = null) : base(cookieContainer: session?.Cookies, proxy)
         {
             _logger = logger;
             _cache = cache;
@@ -66,41 +67,47 @@ namespace SCMM.Steam.Client
 
                     return response;
                 }
+                catch (HttpRequestException ex)
+                {
+                    var statusCode = ex.StatusCode ?? 0;
+                    if (statusCode == 0)
+                    {
+                        var extractedStatusCode = Regex.Match(ex.Message, @"status code '([0-9]{3})'").Groups.OfType<Capture>().LastOrDefault()?.Value;
+                        if (!String.IsNullOrEmpty(extractedStatusCode))
+                        {
+                            Enum.TryParse<HttpStatusCode>(extractedStatusCode, true, out statusCode);
+                        }
+                    }
+
+                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", statusCode, ex);
+                }
                 catch (Exception ex)
                 {
-                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
+                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", null, ex);
                 }
             }
         }
 
-        private async Task<HttpResponseMessage> GetWithRetry<TRequest>(TRequest request, int attemptCount = 1)
+        private async Task<HttpResponseMessage> GetWithRetry<TRequest>(TRequest request, int retryAttempt = 0)
             where TRequest : SteamRequest
         {
             try
             {
-                // Retry up to three times, then give up
-                if (attemptCount >= 3)
+                // Retry up to five times, then give up
+                if (retryAttempt >= 5)
                 {
-                    throw new SteamRequestException($"Request failed after {attemptCount} attempts");
+                    throw new SteamRequestException($"Request failed after {retryAttempt} attempts");
                 }
-
-                // Check if we need to add an delay to requests to stay within the rate-limit targets
-                if (_session != null)
+                // Use a back-off delay between retry attempts to avoid further rate-limiting
+                if (retryAttempt > 1)
                 {
-                    // Add an artifical delay to requests based on the current rate-limit state
-                    await _session.WaitForRateLimitDelaysAsync();
+                    var delay = TimeSpan.FromSeconds(Math.Pow(3, retryAttempt));
+                    _logger.LogWarning($"Request is delaying for {delay.TotalSeconds} seconds (retry attempt: {retryAttempt})");
+                    await Task.Delay(delay);
                 }
 
                 // Zhu Li, do the thing...
-                var response = await Get(request);
-
-                // Check if we are no longer rate limited
-                if (_session != null && _session.IsRateLimited && response.StatusCode != HttpStatusCode.TooManyRequests)
-                {
-                    _session.SetRateLimited(false);
-                }
-
-                return response;
+                return await Get(request);
             }
             catch (SteamRequestException ex)
             {
@@ -114,34 +121,31 @@ namespace SCMM.Steam.Client
                     if (_session.LastLoginOn == null || (DateTimeOffset.Now - _session.LastLoginOn.Value) >= TimeSpan.FromMinutes(10))
                     {
                         _session.Refresh();
-                        return await GetWithRetry(request, attemptCount++);
+                        return await GetWithRetry(request, (retryAttempt + 1));
                     }
                 }
 
                 // Check if the request failed due to rate limiting
                 // 429: TooManyRequests
-                if (_session != null)
+                if (ex.IsRateLimited)
                 {
-                    if (ex.IsRateLimited)
-                    {
-                        // We are now rate limited, try again soon
-                        if (!_session.IsRateLimited)
-                        {
-                            _session.SetRateLimited(true);
-                        }
-
-                        return await GetWithRetry(request, attemptCount++);
-                    }
-                    else
-                    {
-                        // We are no longer rate limited
-                        if (_session.IsRateLimited)
-                        {
-                            _session.SetRateLimited(false);
-                        }
-                    }
+                    // Add a cooldown to the current web proxy and rotate to the next proxy if possible
+                    // Observed Steam rate-limits from testing:
+                    //  - 20 requests within 20 seconds, resets after 60 seconds
+                    RotateWebProxy(request?.Uri, cooldown: TimeSpan.FromSeconds(60));
+                    return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
+                // 408: RequestTimeout
+                // 504: GatewayTimeout
+                // 502: BadGateway
+                if (ex.IsTemporaryError)
+                {
+                    _logger.LogWarning($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
+                    return await GetWithRetry(request, (retryAttempt + 1));
+                }
+
+                // Legitimate error, bubble the error up to the caller
                 throw;
             }
         }

@@ -4,6 +4,7 @@ using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
+using System.Net;
 using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
@@ -14,8 +15,8 @@ namespace SCMM.Steam.Client
     /// </summary>
     public class SteamCommunityWebClient : SteamWebClient
     {
-        public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session)
-            : base(logger, cache, session)
+        public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
+            : base(logger, cache, session: session, proxy: proxy)
         {
         }
 
