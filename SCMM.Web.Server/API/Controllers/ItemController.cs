@@ -13,6 +13,10 @@ using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Server.Extensions;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Web.Data.Models.UI.Store;
+using SCMM.Web.Client;
+using SCMM.Steam.Data.Models.WebApi.Models;
+using System.Text.Json;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -557,6 +561,70 @@ namespace SCMM.Web.Server.API.Controllers
                 AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this)?.ToArray(),
                 UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this)?.ToArray()
             });
+        }
+
+        /// <summary>
+        /// List all known item definition archives
+        /// </summary>
+        /// <returns>List of item definition archives</returns>
+        /// <response code="200">List of known item definition archives.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("definitionArchives")]
+        [ProducesResponseType(typeof(IEnumerable<ItemDefinitionArchiveIdentifierDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemDefinitionArchives()
+        {
+            var appId = this.App().Guid;
+            
+            var itemDefinitionArchives = await _db.SteamItemDefinitionsArchive.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .OrderByDescending(x => x.TimePublished)
+                .Select(x => new ItemDefinitionArchiveIdentifierDTO()
+                {
+                    Id = x.Id.ToString(),
+                    Digest = x.Digest,
+                    Timestamp = x.TimePublished
+                })
+                .OrderByDescending(x => x.Timestamp)
+                .ToListAsync();
+            
+            return Ok(itemDefinitionArchives);
+        }
+
+        /// <summary>
+        /// Get item definition archive contents
+        /// </summary>
+        /// <param name="digest">The digest of the item definition archive to get</param>
+        /// <param name="raw">If true, the raw archive content is returned as a string. If false, the archive is returned as a list of  <see cref="ItemDefinition"/> </param>
+        /// <returns>The item definition archive contents</returns>
+        /// <response code="200">The item definition archive contents.</response>
+        /// <response code="404">If the item definition archive doesn't exist.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("definitionArchive/{digest}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ItemDefinition[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemDefinitionArchive([FromRoute] string digest, [FromQuery] bool raw = false)
+        {
+            var appId = this.App().Guid;
+
+            var itemDefinitionArchive = await _db.SteamItemDefinitionsArchive.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.Digest == digest)
+                .OrderByDescending(x => x.TimePublished)
+                .Select(x => x.ItemDefinitions)
+                .FirstOrDefaultAsync();
+            if (String.IsNullOrEmpty(itemDefinitionArchive))
+            {
+                return NotFound("Item definition archive with that digest does not exist");
+            }
+
+            return Ok(raw 
+                ? itemDefinitionArchive
+                : JsonSerializer.Deserialize<ItemDefinition[]>(itemDefinitionArchive) 
+            );
         }
 
         /// <summary>

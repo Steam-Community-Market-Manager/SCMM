@@ -1,0 +1,137 @@
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
+@page "/items/definitionArchives"
+@page "/items/definitionArchive/{Digest}"
+@inherits PersistentComponent
+@inject ILogger<ItemDefinitionArchivesPage> Logger
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+@if (ItemDefinitionArchivesList == null)
+{
+    @if (LoadException == null)
+    {
+        <Loading Message="Loading item definition archives list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+    }
+    else
+    {
+        <Alert Exception="@LoadException" />
+    }
+}
+else if (ItemDefinitionArchivesList.Any())
+{
+    <PageContainer Title="Item Definition Archives">
+        <MudExpansionPanels MultiExpansion="true">
+            @foreach (var itemDefinitionArchive in ItemDefinitionArchivesList)
+            {
+                <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))">
+                    <TitleContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="MudBlazor.Typo.body1">
+                                <i class="fas fa-fw fa-archive mr-1"></i>
+                                <span>@itemDefinitionArchive.Digest</span>
+                            </MudText>
+                            @if (itemDefinitionArchive.Timestamp != null)
+                            {
+                                <MudText Typo="MudBlazor.Typo.body2" Color="Color.Secondary" Class="mx-4">@((DateTimeOffset.Now - itemDefinitionArchive.Timestamp.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</MudText>
+                            }
+                        </div>
+                        </TitleContent>
+                    <ChildContent>
+                        @if (!ItemDefinitionArchives.ContainsKey(itemDefinitionArchive.Digest))
+                        {
+                            <Loading Message="Loading item definition archive..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+                        }
+                        else
+                        {
+                            <p>@ItemDefinitionArchives[itemDefinitionArchive.Digest]</p>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+    </PageContainer>
+}
+else
+{
+    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+        <TumbleWeed Light="true" />
+        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">empty, check back later</MudText>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string Digest { get; set; }
+
+    private ItemDefinitionArchiveIdentifierDTO[] ItemDefinitionArchivesList;
+
+    private IDictionary<string, string> ItemDefinitionArchives;
+
+    private Exception LoadException;
+
+    private string test { get; set; }
+
+    protected override async Task OnLoadStateAsync()
+    {
+        ItemDefinitionArchives = RestoreFromStateOrDefault(nameof(ItemDefinitionArchives), new Dictionary<string, string>());
+        ItemDefinitionArchivesList = await RestoreFromStateOrLoad(nameof(ItemDefinitionArchivesList), async () =>
+        {
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<ItemDefinitionArchiveIdentifierDTO[]>($"api/item/definitionArchives");
+            }
+            catch (Exception ex)
+            {
+                LoadException = ex;
+                Logger.LogError(ex, $"Error loading the item definition archives list");
+                Snackbar.Add($"Unable to load item definition archives list. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(ItemDefinitionArchives), ItemDefinitionArchives);
+        PersistToState(nameof(ItemDefinitionArchivesList), ItemDefinitionArchivesList);
+        return Task.CompletedTask;
+    }
+
+    private void OnExpandedChanged(ItemDefinitionArchiveIdentifierDTO archive, bool isExpanded)
+    {
+        if (isExpanded)
+        {
+            Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (!ItemDefinitionArchives.ContainsKey(archive.Digest))
+                        {
+                            var digest = await Http.GetStringAsync($"api/item/definitionArchive/{archive.Digest}?raw=true");
+                            ItemDefinitionArchives[archive.Digest] = digest;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"Error loading the item definition archive");
+                        Snackbar.Add($"Unable to load item definition archive. {ex.Message}", MudBlazor.Severity.Error);
+                    }
+                })
+                .ContinueWith(t => StateHasChanged())
+                .AndForget();
+            
+        }
+        else
+        {
+            // Reset after a while to prevent sudden collapse
+            Task.Delay(350)
+                .ContinueWith(t => ItemDefinitionArchives[archive.Digest] = null)
+                .AndForget();
+        }
+    }
+}

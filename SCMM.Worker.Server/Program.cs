@@ -88,7 +88,8 @@ public static class HostExtensions
                         options.Connect(appConfigConnectionString)
                             .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
                             .Select(KeyFilter.Any, LabelFilter.Null)
-                            .Select(KeyFilter.Any, environment);
+                            .Select(KeyFilter.Any, environment)
+                            .Select(KeyFilter.Any, "scmm-worker-server");
                     },
                     optional: true
                 );

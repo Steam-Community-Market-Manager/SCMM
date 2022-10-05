@@ -137,6 +137,25 @@
             <response code="404">If the collection name doesn't exist (or doesn't contain any marketable items).</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemDefinitionArchives">
+            <summary>
+            List all known item definition archives
+            </summary>
+            <returns>List of item definition archives</returns>
+            <response code="200">List of known item definition archives.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemDefinitionArchive(System.String,System.Boolean)">
+            <summary>
+            Get item definition archive contents
+            </summary>
+            <param name="digest">The digest of the item definition archive to get</param>
+            <param name="raw">If true, the raw archive content is returned as a string. If false, the archive is returned as a list of  <see cref="T:SCMM.Steam.Data.Models.WebApi.Models.ItemDefinition"/> </param>
+            <returns>The item definition archive contents</returns>
+            <response code="200">The item definition archive contents.</response>
+            <response code="404">If the item definition archive doesn't exist.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemTypes">
             <summary>
             List all known item types
