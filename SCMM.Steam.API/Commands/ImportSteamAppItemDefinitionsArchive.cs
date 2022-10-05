@@ -15,6 +15,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
+using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using Steam.Models.SteamEconomy;
@@ -64,12 +65,12 @@ namespace SCMM.Steam.API.Commands
         public async Task HandleAsync(ImportSteamAppItemDefinitionsArchiveRequest request)
         {
             // Get the item definition archive
-            var itemDefinitionsArchive = await _steamApiClient.GameInventoryGetItemDefArchive(new GetItemDefArchiveJsonRequest()
+            var itemDefinitionsArchive = await _steamApiClient.GameInventoryGetItemDefArchiveRaw(new GetItemDefArchiveJsonRequest()
             {
                 AppId = UInt64.Parse(request.AppId),
                 Digest = request.ItemDefinitionsDigest,
             });
-            if (itemDefinitionsArchive == null || !itemDefinitionsArchive.Any())
+            if (String.IsNullOrEmpty(itemDefinitionsArchive))
             {
                 return;
             }
@@ -77,6 +78,13 @@ namespace SCMM.Steam.API.Commands
             // Get the app
             var app = await _steamDb.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId);
             if (app == null)
+            {
+                return;
+            }
+
+            // Deserialise the item definition archive
+            var itemDefinitionsArchiveItems = JsonSerializer.Deserialize<GetItemDefArchiveJsonResponse>(itemDefinitionsArchive);
+            if (itemDefinitionsArchiveItems == null || !itemDefinitionsArchiveItems.Any())
             {
                 return;
             }
@@ -89,8 +97,8 @@ namespace SCMM.Steam.API.Commands
                 {
                     App = app,
                     Digest = request.ItemDefinitionsDigest,
-                    ItemDefinitions = JsonSerializer.Serialize(itemDefinitionsArchive.ToArray()),
-                    TimePublished = itemDefinitionsArchive.Max(x => x.Modified.SteamTimestampToDateTimeOffset())
+                    ItemDefinitions = itemDefinitionsArchive,
+                    TimePublished = itemDefinitionsArchiveItems.Max(x => x.Modified.SteamTimestampToDateTimeOffset())
                 });
 
                 await _steamDb.SaveChangesAsync();
@@ -99,7 +107,7 @@ namespace SCMM.Steam.API.Commands
             if (request.ParseChanges)
             {
                 // TODO: Filter this properly
-                var itemDefinitions = itemDefinitionsArchive
+                var itemDefinitions = itemDefinitionsArchiveItems
                     .Where(x => x.Name != "DELETED" && x.Type != "generator")
                     .ToArray();
 

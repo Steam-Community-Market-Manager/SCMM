@@ -38,6 +38,13 @@ namespace SCMM.Steam.Client
             return response;
         }
 
+        public async Task<string> GameInventoryGetItemDefArchiveRaw(GetItemDefArchiveJsonRequest request, bool useCache = false)
+        {
+            request.Key ??= _configuration?.ApplicationKey;
+            var response = await GetText(request, useCache);
+            return response;
+        }
+
         #endregion
 
         #region Inventory Service
