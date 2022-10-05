@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SocketIOClient" Version="3.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
+    <ProjectReference Include="..\SCMM.Worker.Client\SCMM.Worker.Client.csproj" />
+  </ItemGroup>
+
+</Project>

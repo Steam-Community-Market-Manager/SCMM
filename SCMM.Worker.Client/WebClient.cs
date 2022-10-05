@@ -6,6 +6,7 @@ namespace SCMM.Worker.Client;
 
 public class WebClient : IDisposable
 {
+    private readonly IDictionary<string, string> _defaultHeaders;
     private readonly CookieContainer _cookieContainer;
     private readonly IWebProxy _webProxy;
     private readonly HttpMessageHandler _httpHandler;
@@ -13,6 +14,7 @@ public class WebClient : IDisposable
 
     public WebClient(CookieContainer cookieContainer = null, IWebProxy webProxy = null)
     {
+        _defaultHeaders = new Dictionary<string, string>();
         _cookieContainer = cookieContainer;
         _webProxy = webProxy;
         _httpHandler = new HttpClientHandler()
@@ -26,7 +28,7 @@ public class WebClient : IDisposable
 
     protected HttpClient BuildWebBrowserHttpClient(Uri referer = null)
     {
-        var httpClient = new HttpClient(_httpHandler, false);
+        var httpClient = BuildHttpClient();
 
         // We are a normal looking web browser, honest (helps with WAF rules that block bots)
         httpClient.DefaultRequestHeaders.UserAgent.Clear();
@@ -54,7 +56,7 @@ public class WebClient : IDisposable
 
     protected HttpClient BuildWebApiHttpClient(string apiKey = null)
     {
-        var httpClient = new HttpClient(_httpHandler, false);
+        var httpClient = BuildHttpClient();
         if (!string.IsNullOrEmpty(apiKey))
         {
             httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
@@ -65,12 +67,28 @@ public class WebClient : IDisposable
 
     protected HttpClient BuildHttpClient()
     {
-        return new HttpClient(_httpHandler, false);
+        var httpClient = new HttpClient(_httpHandler, false);
+        if (_defaultHeaders != null)
+        {
+            foreach (var header in _defaultHeaders)
+            {
+                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
+        }
+
+        return httpClient;
     }
 
     protected ClientWebSocket BuildWebSocketClient()
     {
         var webSocketClient = new ClientWebSocket();
+        if (_defaultHeaders != null)
+        {
+            foreach (var header in _defaultHeaders)
+            {
+                webSocketClient.Options.SetRequestHeader(header.Key, String.Join(';', header.Value));
+            }
+        }
         if (_cookieContainer != null)
         {
             webSocketClient.Options.Cookies = _cookieContainer;
@@ -108,6 +126,8 @@ public class WebClient : IDisposable
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
+
+    protected IDictionary<string, string> DefaultHeaders => _defaultHeaders;
 
     protected CookieContainer Cookies => _cookieContainer;
 }
