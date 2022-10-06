@@ -28,6 +28,7 @@ public class UpdateProfileInventoryValues
                     WHERE i.ProfileId = v.ProfileId AND i.AppId = v.AppId
                 ), 0)
                 FROM [SteamProfileInventoryValues] v
+	            WHERE v.Items > 0
             ");
 
             await transaction.CommitAsync();
