@@ -346,7 +346,7 @@ namespace SCMM.Steam.API.Commands
                     
                     var storeItemAsset = assetPricesResponse?.Data?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
                     var storeItemPrices = storeItemAsset?.Prices?.ToDictionary();
-                    var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailable(app, assetDescription, storeItemAsset, defaultCurrency, DateTimeOffset.Now);
+                    var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailable(app, assetDescription, storeItemAsset, defaultCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
                     if (storeItem == null)
                     {
                         continue;
@@ -426,7 +426,7 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task<SteamStoreItem> CreateOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamAssetDescription assetDescription, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeChecked)
+        private async Task<SteamStoreItem> CreateOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamAssetDescription assetDescription, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeDiscovered)
         {
             if (assetDescription.ClassId == null && asset.ClassId > 0)
             {
@@ -475,7 +475,7 @@ namespace SCMM.Steam.API.Commands
                 }
                 else
                 {
-                    assetDescription.TimeAccepted = timeChecked;
+                    assetDescription.TimeAccepted = timeDiscovered;
                 }
             }
 

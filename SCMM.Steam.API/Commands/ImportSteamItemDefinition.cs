@@ -66,7 +66,7 @@ namespace SCMM.Steam.API.Commands
                 _db.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
                 {
                     App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),
-                    ItemDefinitionId = request.ItemDefinitionId,
+                    ItemDefinitionId = request.ItemDefinitionId
                 });
             }
 
