@@ -30,15 +30,18 @@ using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Media;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
 using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
+using SCMM.Shared.Web.Statistics;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
+using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
 
@@ -129,10 +132,13 @@ public static class HostExtensions
             var redisConnectionString = Environment.GetEnvironmentVariable("RedisConnection");
             if (!String.IsNullOrEmpty(redisConnectionString))
             {
+                services.AddSingleton(x => ConnectionMultiplexer.Connect(redisConnectionString));
                 services.AddStackExchangeRedisCache(options =>
                 {
                     options.Configuration = redisConnectionString;
                 });
+
+                services.AddSingleton<IStatisticsService, RedisStatisticsService>();
             }
 
             // Web proxies
@@ -171,13 +177,10 @@ public static class HostExtensions
             services.AddSingleton<CSDealsWebClient>();
             services.AddSingleton<CSTradeWebClient>();
             services.AddSingleton<DMarketWebClient>();
-            //services.AddSingleton<GAMERALLWebClient>();
             services.AddSingleton<iTradeggWebClient>();
             services.AddSingleton<LootFarmWebClient>();
             services.AddSingleton<RustSkinsWebClient>();
             services.AddSingleton<RustTMWebClient>();
-            //services.AddSingleton<RUSTVendorWebClient>();
-            //services.AddSingleton<RustyTradeWebClient>();
             services.AddSingleton<SkinBaronWebClient>();
             services.AddSingleton<SkinSwapWebClient>();
             services.AddSingleton<SkinportWebClient>();

@@ -14,14 +14,17 @@ using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Market.RustyPot.Client;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Client;
 using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
+using SCMM.Shared.Web.Statistics;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
+using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
 
@@ -136,10 +139,13 @@ public static class HostExtensions
             var redisConnectionString = Environment.GetEnvironmentVariable("RedisConnection");
             if (!String.IsNullOrEmpty(redisConnectionString))
             {
+                services.AddSingleton(x => ConnectionMultiplexer.Connect(redisConnectionString));
                 services.AddStackExchangeRedisCache(options =>
                 {
                     options.Configuration = redisConnectionString;
                 });
+
+                services.AddSingleton<IStatisticsService, RedisStatisticsService>();
             }
 
             // Web proxies

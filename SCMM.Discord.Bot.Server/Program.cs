@@ -20,17 +20,20 @@ using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Finance;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
 using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Middleware;
+using SCMM.Shared.Web.Statistics;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
+using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
 
@@ -157,10 +160,13 @@ public static class WebApplicationExtensions
         var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
         if (!String.IsNullOrEmpty(redisConnectionString))
         {
+            builder.Services.AddSingleton(x => ConnectionMultiplexer.Connect(redisConnectionString));
             builder.Services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = redisConnectionString;
             });
+
+            builder.Services.AddSingleton<IStatisticsService, RedisStatisticsService>();
         }
 
         // Web proxies
