@@ -15,7 +15,12 @@ namespace SCMM.Azure.ServiceBus
             _administrationClient = administrationClient;
         }
 
-        public async Task ScheduleMessageAsync<T>(T message, DateTimeOffset scheduledEnqueueTime, CancellationToken cancellationToken = default) where T : class, IMessage
+        public Task ScheduleMessageFromNowAsync<T>(TimeSpan scheduledEnqueueTimeFromNow, T message, CancellationToken cancellationToken = default) where T : class, IMessage
+        {
+            return ScheduleMessageAsync(DateTimeOffset.UtcNow.Add(scheduledEnqueueTimeFromNow), message, cancellationToken);
+        }
+
+        public async Task ScheduleMessageAsync<T>(DateTimeOffset scheduledEnqueueTime, T message, CancellationToken cancellationToken = default) where T : class, IMessage
         {
             await using var sender = _client.CreateSender<T>();
             await sender.ScheduleMessageAsync(

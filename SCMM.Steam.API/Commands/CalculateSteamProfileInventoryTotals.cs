@@ -1,5 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Azure.ServiceBus;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
@@ -41,11 +43,13 @@ namespace SCMM.Steam.API.Commands
     {
         private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly ServiceBusClient _serviceBus;
 
-        public CalculateSteamProfileInventoryTotals(SteamDbContext db, IQueryProcessor queryProcessor)
+        public CalculateSteamProfileInventoryTotals(SteamDbContext db, IQueryProcessor queryProcessor, ServiceBusClient serviceBus)
         {
             _db = db;
             _queryProcessor = queryProcessor;
+            _serviceBus = serviceBus;
         }
 
         public async Task<CalculateSteamProfileInventoryTotalsResponse> HandleAsync(CalculateSteamProfileInventoryTotalsRequest request)
@@ -156,6 +160,15 @@ namespace SCMM.Steam.API.Commands
                         profile.Roles = new PersistableStringCollection(profile.Roles);
                         profile.Roles.Remove(Roles.Whale);
                     }
+                }
+
+                if (profile.Roles.Contains(Roles.Whale))
+                {
+                    // Re-import whale inventories at least once every 24-hrs
+                    await _serviceBus.ScheduleMessageFromNowAsync(TimeSpan.FromHours(25), new ImportProfileInventoryMessage()
+                    {
+                        ProfileId = profile.ProfileId
+                    });
                 }
 
                 await _db.SaveChangesAsync();
