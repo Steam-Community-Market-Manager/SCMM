@@ -160,7 +160,7 @@ namespace SCMM.Shared.Web.Middleware
                 //
                 // TRANSPORT SECURITY
                 //
-                
+
                 if (hstsDurationInSeconds > 0)
                 {
                     context.Response.Headers.TryAdd("Strict-Transport-Security", $"max-age={hstsDurationInSeconds} ; includeSubDomains");

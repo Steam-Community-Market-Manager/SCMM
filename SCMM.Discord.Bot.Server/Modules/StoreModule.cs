@@ -9,7 +9,6 @@ using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using System.Globalization;
 using System.Text;

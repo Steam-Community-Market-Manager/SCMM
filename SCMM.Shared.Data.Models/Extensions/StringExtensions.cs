@@ -19,7 +19,7 @@
             }
             return value.First().ToString().ToLower() + value.Substring(1);
         }
-        
+
         public static string Pluralise(this string value, int count = 0)
         {
             if (String.IsNullOrEmpty(value))
@@ -48,7 +48,7 @@
 
         public static string Trim(this string value, params string[] trimStrings)
         {
-            foreach(var trimString in trimStrings)
+            foreach (var trimString in trimStrings)
             {
                 if (value.StartsWith(trimString))
                 {

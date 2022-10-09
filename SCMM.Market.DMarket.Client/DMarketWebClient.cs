@@ -1,6 +1,4 @@
-﻿using SCMM.Worker.Client;
-using SCMM.Steam.Data.Models;
-using System.Net.Http.Headers;
+﻿using SCMM.Steam.Data.Models;
 using System.Text.Json;
 
 namespace SCMM.Market.DMarket.Client
@@ -19,7 +17,7 @@ namespace SCMM.Market.DMarket.Client
             const int rateLimitDelay = 3000;
             const int rateLimitMaxRetryCount = 3;
             var rateLimitRetryCount = 0;
-            retry:
+        retry:
 
             try
             {

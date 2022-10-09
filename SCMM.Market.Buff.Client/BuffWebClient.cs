@@ -1,6 +1,4 @@
-﻿using SCMM.Worker.Client;
-using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.Buff.Client

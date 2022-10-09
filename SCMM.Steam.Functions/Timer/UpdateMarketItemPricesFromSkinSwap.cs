@@ -47,7 +47,7 @@ public class UpdateMarketItemPricesFromSkinSwap
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinSwap (appId: {app.SteamId})");
-         
+
             try
             {
                 var skinSwapAppItems = skinSwapItems.Where(x => x.Key == app.SteamId).SelectMany(x => x.Value).ToList();

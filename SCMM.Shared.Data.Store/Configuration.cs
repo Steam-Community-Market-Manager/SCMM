@@ -20,10 +20,10 @@ namespace SCMM.Shared.Data.Store
         [Required]
         public PersistableStringCollection List { get; private set; }
 
-        ICollection<string> IConfigurationOption.List 
+        ICollection<string> IConfigurationOption.List
         {
             get => this.List;
-            set => this.List = new PersistableStringCollection(value); 
+            set => this.List = new PersistableStringCollection(value);
         }
     }
 

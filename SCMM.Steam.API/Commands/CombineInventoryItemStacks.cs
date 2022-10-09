@@ -49,7 +49,7 @@ namespace SCMM.Steam.API.Commands
                 Id = request.ProfileId
             });
 
-            var itemIds = request.SourceItems.Keys.Select(x => x.ToString()).Union(new [] { request.DestinationItemId.ToString() });
+            var itemIds = request.SourceItems.Keys.Select(x => x.ToString()).Union(new[] { request.DestinationItemId.ToString() });
             var items = await _db.SteamProfileInventoryItems
                 .Include(x => x.App)
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
@@ -75,7 +75,7 @@ namespace SCMM.Steam.API.Commands
                     SteamId = resolvedId.SteamId64.Value,
                     FromItemId = sourceItem.ItemId,
                     DestItemId = destinationItemId,
-                    Quantity = (uint) sourceItem.Quantity
+                    Quantity = (uint)sourceItem.Quantity
                 });
 
                 if (response.Any())
@@ -85,7 +85,7 @@ namespace SCMM.Steam.API.Commands
                         var inventoryItem = items.FirstOrDefault(x => x.SteamId == item.ItemId);
                         if (inventoryItem != null)
                         {
-                            inventoryItem.Quantity = (int) item.Quantity;
+                            inventoryItem.Quantity = (int)item.Quantity;
                             if (inventoryItem.Quantity <= 0)
                             {
                                 _db.SteamProfileInventoryItems.Remove(inventoryItem);

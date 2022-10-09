@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Data.Models.UI.System;
+﻿namespace SCMM.Web.Data.Models.UI.System;
 
 public class TimeRangeDTO
 {

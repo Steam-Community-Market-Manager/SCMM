@@ -46,11 +46,11 @@ public class UpdateMarketItemPricesFromSkinport
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from Skinport (appId: {app.SteamId})");
-           
+
             try
             {
                 var skinportItems = (await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name)) ?? new List<SkinportItem>();
-                
+
                 var items = await _db.SteamMarketItems
                    .Where(x => x.AppId == app.Id)
                    .Select(x => new

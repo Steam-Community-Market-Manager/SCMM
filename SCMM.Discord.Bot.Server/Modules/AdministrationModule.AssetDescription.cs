@@ -151,7 +151,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var message = await Context.Message.ReplyAsync("Importing workshop files from creators...");
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamCfg.ApplicationKey);
             var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
-            
+
             var apps = await _steamDb.SteamApps.AsNoTracking()
                 .ToListAsync();
 

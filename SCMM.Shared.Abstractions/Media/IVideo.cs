@@ -8,7 +8,7 @@ public interface IVideo
 
     public string Title { get; }
 
-    public string ChannelTitle { get;}
+    public string ChannelTitle { get; }
 
     public string Description { get; }
 

@@ -45,11 +45,11 @@ public class UpdateMarketItemPricesFromTradeitGG
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
-         
+
             try
             {
                 var tradeitGGItems = new Dictionary<TradeitGGItem, int>();
-                var inventoryDataItems = (IDictionary<TradeitGGItem, int>) null;
+                var inventoryDataItems = (IDictionary<TradeitGGItem, int>)null;
                 var inventoryDataOffset = 0;
                 do
                 {

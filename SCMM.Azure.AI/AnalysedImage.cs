@@ -1,6 +1,6 @@
 ﻿using SCMM.Shared.Abstractions.Analytics;
 
-namespace SCMM.Shared.Abstractions;
+namespace SCMM.Azure.AI;
 
 public class AnalysedImage : IAnalysedImage
 {

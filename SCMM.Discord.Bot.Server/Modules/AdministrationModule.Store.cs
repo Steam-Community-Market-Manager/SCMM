@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client.Commands;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;

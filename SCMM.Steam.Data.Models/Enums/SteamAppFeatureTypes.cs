@@ -7,7 +7,7 @@
 
         StorePersistent = 0x0001,
         StoreRotating = 0x0002,
-        
+
         ItemWorkshop = 0x0010,
 
         ItemFeatureCrafting = 0x0100,

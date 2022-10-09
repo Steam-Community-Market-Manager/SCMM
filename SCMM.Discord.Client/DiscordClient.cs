@@ -1,12 +1,10 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
-using System.Text.RegularExpressions;
 
 namespace SCMM.Discord.Client
 {
@@ -34,7 +32,7 @@ namespace SCMM.Discord.Client
                 // TODO: Apply for guild memebers privileged intent
                 //GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
                 AlwaysDownloadUsers = true,
-                SuppressUnknownDispatchWarnings = true                
+                SuppressUnknownDispatchWarnings = true
             });
             _client.Log += OnClientLogAsync;
             _client.ShardConnected += OnShardConnectedAsync;
@@ -81,7 +79,7 @@ namespace SCMM.Discord.Client
             {
                 if (!handlersRegistered)
                 {
-                    lock(this)
+                    lock (this)
                     {
                         handlersRegistered = true;
                         _ = _commandHandler.AddCommandsAsync();
@@ -220,9 +218,9 @@ namespace SCMM.Discord.Client
 
         public async Task<ulong> SendMessageAsync(
             string userIdOrName, string message = null,
-            string authorIconUrl = null, string authorName = null, string authorUrl = null, 
-            string title = null, string url = null, string thumbnailUrl = null, 
-            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, 
+            string authorIconUrl = null, string authorName = null, string authorUrl = null,
+            string title = null, string url = null, string thumbnailUrl = null,
+            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false,
             string imageUrl = null, Color? color = null, string[] reactions = null)
         {
             WaitUntilClientIsConnected();
@@ -267,10 +265,10 @@ namespace SCMM.Discord.Client
         }
 
         public async Task<ulong> SendMessageAsync(
-            ulong guildId, ulong channelId, string message = null, 
-            string authorIconUrl = null, string authorName = null, string authorUrl = null, 
-            string title = null, string url = null, string thumbnailUrl = null, 
-            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, 
+            ulong guildId, ulong channelId, string message = null,
+            string authorIconUrl = null, string authorName = null, string authorUrl = null,
+            string title = null, string url = null, string thumbnailUrl = null,
+            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false,
             string imageUrl = null, Color? color = null, string[] reactions = null, bool crossPost = false)
         {
             WaitUntilClientIsConnected();
@@ -298,7 +296,7 @@ namespace SCMM.Discord.Client
             {
                 throw new Exception($"Unable to send message \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
             }
-                    
+
             // React to the message
             if (reactions?.Any() == true)
             {
@@ -365,9 +363,9 @@ namespace SCMM.Discord.Client
         }
 
         private Embed BuildEmbed(
-            string authorIconUrl = null, string authorName = null, string authorUrl = null, 
-            string title = null, string url = null, string thumbnailUrl = null, 
-            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, 
+            string authorIconUrl = null, string authorName = null, string authorUrl = null,
+            string title = null, string url = null, string thumbnailUrl = null,
+            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false,
             string imageUrl = null, Color? color = null)
         {
             // Pre-build the embed content (so we can share it across all messages)

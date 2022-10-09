@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.RustSkins.Client;
-using SCMM.Market.SkinBaron.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
@@ -47,11 +46,11 @@ public class UpdateMarketItemPricesFromRustSkins
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from RUSTSkins (appId: {app.SteamId})");
-            
+
             try
             {
                 var rustSkinsItems = new List<RustSkinsItemListing>();
-                var listingsResponse = (RustSkinsMarketListingsResponse) null;
+                var listingsResponse = (RustSkinsMarketListingsResponse)null;
                 var listingPage = 1;
                 do
                 {
@@ -63,7 +62,7 @@ public class UpdateMarketItemPricesFromRustSkins
                         listingPage++;
                     }
                 } while (listingsResponse?.Success == true && listingsResponse?.Listings?.Any() == true);
-                
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

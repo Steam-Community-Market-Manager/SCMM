@@ -6,13 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.Analytic;
-using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models.UI.Statistic;
 using SCMM.Web.Server.Extensions;
@@ -566,7 +563,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var app = this.App();
             var startDate = new DateTimeOffset(start, TimeZoneInfo.Utc.BaseUtcOffset);
-            var endDate = (end != null ? new DateTimeOffset(end.Value, TimeZoneInfo.Utc.BaseUtcOffset) : (DateTimeOffset?) null);
+            var endDate = (end != null ? new DateTimeOffset(end.Value, TimeZoneInfo.Utc.BaseUtcOffset) : (DateTimeOffset?)null);
             var topSellerPositions = await _db.SteamStoreItemTopSellerPositions
                 .Where(x => x.Description.AppId == app.Guid)
                 .Where(x => x.Timestamp >= startDate)
@@ -997,7 +994,7 @@ namespace SCMM.Web.Server.API.Controllers
             });
 
             // Calculate rank positions
-            for(int i = 0; i < profiles.Items.Length; i++)
+            for (int i = 0; i < profiles.Items.Length; i++)
             {
                 profiles.Items[i].Rank = (start + i + 1);
             }

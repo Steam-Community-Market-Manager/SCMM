@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace SCMM.Shared.Abstractions.Analytics;
+﻿namespace SCMM.Shared.Abstractions.Analytics;
 
 public interface IAnalysedImage
 {

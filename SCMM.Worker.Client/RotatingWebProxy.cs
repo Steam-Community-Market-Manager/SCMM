@@ -1,7 +1,6 @@
-﻿using SCMM.Shared.Data.Models.Extensions;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models.Extensions;
 using System.Net;
-using System.Linq;
 
 namespace SCMM.Worker.Client;
 

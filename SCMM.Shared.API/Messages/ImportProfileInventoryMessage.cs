@@ -4,7 +4,7 @@ using SCMM.Shared.Abstractions.Messaging.Attributes;
 namespace SCMM.Shared.API.Messages
 {
     [Queue(Name = "Import-Profile-Inventory")]
-    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)] 
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]
     public class ImportProfileInventoryMessage : Message
     {
         public override string Id => $"{ProfileId}/{(AppIds?.Length > 0 ? String.Join('+', AppIds) : "*")}";

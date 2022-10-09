@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using SCMM.Steam.Abstractions;
 using SCMM.Shared.Data.Models;
+using SCMM.Steam.Abstractions;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.InteropServices;

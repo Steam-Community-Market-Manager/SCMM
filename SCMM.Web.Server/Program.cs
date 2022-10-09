@@ -14,6 +14,7 @@ using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Web.Formatters;
 using SCMM.Shared.Web.Middleware;
+using SCMM.Steam.Abstractions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -22,12 +23,11 @@ using SCMM.SteamCMD;
 using SCMM.Web.Client.Shared.Storage;
 using SCMM.Web.Server;
 using SCMM.Web.Server.Shared.Storage;
-using SCMM.Worker.Client.Configuration;
 using SCMM.Worker.Client;
+using SCMM.Worker.Client.Configuration;
 using System.Net;
 using System.Reflection;
 using System.Security.Claims;
-using SCMM.Steam.Abstractions;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 

@@ -407,13 +407,13 @@ namespace SCMM.Steam.Data.Store
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
                 var cumulativeSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
                 var lowestSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Min(x => x.Price) : 0);
-                
+
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //SellOrderCount = sellOrdersSorted.Sum(y => y.Quantity);
                 SellOrderCount = (sellOrderCount ?? SellOrderCount);
                 SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
-                
+
                 UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply
                 {
                     Price = SellOrderCount > 0 ? SellOrderLowestPrice : 0,
@@ -553,12 +553,12 @@ namespace SCMM.Steam.Data.Store
             var marketAge = (FirstSaleOn != null ? (DateTimeOffset.UtcNow - FirstSaleOn) : TimeSpan.Zero);
             var cheapestPrice = SellOrderLowestPrice;
             var medianPriceLastWeek = Last168hrValue;
-            
+
             // If the item is more than 7 days old and the buy now price is +200% the median price over the last week
             IsBeingManipulated = (
                 (marketAge > TimeSpan.FromDays(7)) &&
                 (cheapestPrice > 0 && medianPriceLastWeek > 0) &&
-                (cheapestPrice / (decimal)medianPriceLastWeek) > 2m 
+                (cheapestPrice / (decimal)medianPriceLastWeek) > 2m
             );
         }
 
@@ -592,7 +592,7 @@ namespace SCMM.Steam.Data.Store
             // Check if price spike manipulations
             if ((marketAge > TimeSpan.FromDays(7)) &&
                 (cheapestPrice > 0 && medianPriceLastWeek > 0) &&
-                (cheapestPrice / (decimal) medianPriceLastWeek) > 2m)
+                (cheapestPrice / (decimal)medianPriceLastWeek) > 2m)
             {
                 IsBeingManipulated = true;
                 var reson = $"The current price is {cheapestPrice.ToPercentageString(medianPriceLastWeek)}% higher than the median price over the last 7 days";
@@ -610,7 +610,7 @@ namespace SCMM.Steam.Data.Store
             else
             {
                 IsBeingManipulated = false;
-                var reason = (string) null;
+                var reason = (string)null;
             }
         }
     }

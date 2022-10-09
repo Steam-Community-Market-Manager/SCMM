@@ -1,6 +1,6 @@
 ﻿using SCMM.Shared.Data.Store.Types;
-using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Store.Types;
 using System.ComponentModel.DataAnnotations;
 

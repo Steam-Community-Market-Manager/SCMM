@@ -1,5 +1,4 @@
-﻿using SCMM.Worker.Client;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace SCMM.Market.Skinport.Client
 {

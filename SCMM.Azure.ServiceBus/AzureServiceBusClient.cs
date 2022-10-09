@@ -93,9 +93,9 @@ namespace SCMM.Azure.ServiceBus
 
                 var receiveMessageTask = receiverClient.ReceiveMessageAsync(queueTimeout, cancellationToken);
                 var waitForTimeoutTask = Task.Delay(messageTimeout);
-                await Task.WhenAny(new[] 
+                await Task.WhenAny(new[]
                 {
-                    receiveMessageTask, 
+                    receiveMessageTask,
                     waitForTimeoutTask
                 });
 

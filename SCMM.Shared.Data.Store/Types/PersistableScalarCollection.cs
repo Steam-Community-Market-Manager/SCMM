@@ -28,7 +28,7 @@ namespace SCMM.Shared.Data.Store.Types
         [Required]
         public virtual string Serialised
         {
-            get 
+            get
             {
                 return string.Join(ValueSeperator, _data.Select(x => ConvertSingleValueToPersistable(x)));
             }

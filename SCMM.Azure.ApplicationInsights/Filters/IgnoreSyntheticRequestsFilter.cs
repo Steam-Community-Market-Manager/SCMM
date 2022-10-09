@@ -14,9 +14,9 @@ public class IgnoreSyntheticRequestsFilter : ITelemetryProcessor
 
     public void Process(ITelemetry item)
     {
-        if (!string.IsNullOrEmpty(item.Context.Operation.SyntheticSource)) 
-        { 
-            return; 
+        if (!string.IsNullOrEmpty(item.Context.Operation.SyntheticSource))
+        {
+            return;
         }
 
         this.Next.Process(item);

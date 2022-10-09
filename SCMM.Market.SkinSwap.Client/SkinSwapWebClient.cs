@@ -1,6 +1,4 @@
-﻿using SCMM.Worker.Client;
-using System.Net.Http.Headers;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace SCMM.Market.SkinSwap.Client
 {

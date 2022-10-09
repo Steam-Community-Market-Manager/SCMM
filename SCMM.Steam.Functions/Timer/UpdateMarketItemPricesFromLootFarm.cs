@@ -45,11 +45,11 @@ public class UpdateMarketItemPricesFromLootFarmtJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
-            
+
             try
             {
                 var lootFarmItems = (await _lootFarmWebClient.GetItemPricesAsync(app.Name)) ?? new List<LootFarmItemPrice>();
-                
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

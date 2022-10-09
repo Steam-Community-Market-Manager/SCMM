@@ -66,7 +66,7 @@ namespace SCMM.Discord.Client
 
                 var globalModules = _interactions.Modules.Where(x => x.Preconditions.OfType<RequireContextAttribute>().All(x => x.Contexts != ContextType.Guild)).ToArray();
                 await _interactions.AddModulesGloballyAsync(deleteMissing: true, modules: globalModules);
-                
+
                 var guildModules = _interactions.Modules.Where(x => x.Preconditions.OfType<RequireContextAttribute>().Any(x => x.Contexts == ContextType.Guild)).ToArray();
                 if (guildModules.Any())
                 {

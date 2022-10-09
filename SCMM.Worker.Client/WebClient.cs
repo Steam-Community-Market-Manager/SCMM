@@ -43,7 +43,7 @@ public class WebClient : IDisposable
 
         // We made this request from a web browser, honest (helps with WAF rules that enforce OWASP)
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-        
+
         if (referer != null)
         {
             // We made this request from your website, honest...

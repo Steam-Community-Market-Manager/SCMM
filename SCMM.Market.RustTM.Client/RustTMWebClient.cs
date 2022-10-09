@@ -1,5 +1,4 @@
-﻿using SCMM.Worker.Client;
-using SCMM.Steam.Data.Models;
+﻿using SCMM.Steam.Data.Models;
 using System.Text.Json;
 
 namespace SCMM.Market.RustTM.Client

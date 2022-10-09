@@ -108,7 +108,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(latestSystemUpdates
                 .OrderByDescending(x => x.Timestamp)
                 .Select(x => new SystemUpdateMessageDTO()
-                { 
+                {
                     Timestamp = x.Timestamp,
                     Description = x.Content,
                     Media = x.Attachments.ToDictionary(k => k.Url, v => v.ContentType)

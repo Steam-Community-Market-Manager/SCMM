@@ -46,7 +46,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 var description = new StringBuilder();
                 description.AppendLine($"In-game item definitions for {appItemDefinition.AppName} have been updated.");
                 description.AppendLine($"```{appItemDefinition.ItemDefinitionsDigest}```");
-                
+
                 return _client.SendMessageAsync(
                     guildId,
                     channelId,
@@ -94,7 +94,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             {
                 var description = new StringBuilder();
                 description.Append($"New {marketItem.ItemType} has been listed on the {marketItem.AppName} community market.");
-                
+
                 return _client.SendMessageAsync(
                     guildId,
                     channelId,
@@ -208,7 +208,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             {
                 var description = new StringBuilder();
                 description.Append($"New video has been uploaded that discusses the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
-                
+
                 // TODO: Check if this is actually a YouTube video first
                 return _client.SendMessageAsync(
                     guildId,
@@ -309,7 +309,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
-                    color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?) UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?)UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
                     crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });

@@ -1,7 +1,7 @@
-﻿using SCMM.Shared.Abstractions.Messaging;
-using SCMM.Shared.Abstractions.Messaging.Attributes;
-using SCMM.Discord.API.Messages;
+﻿using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
+using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Messaging.Attributes;
 
 namespace SCMM.Discord.Bot.Server.Handlers
 {

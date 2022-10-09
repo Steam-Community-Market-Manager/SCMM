@@ -16,7 +16,7 @@ public class GuildConfigurationNameAutocompleteHandler : AutocompleteHandler
             var name = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
             var configNames = DiscordGuild.GuildConfiguration.Definitions
                 .Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .Where(x => x.RequiredFlags == 0 || (guild != null && (((int) guild.Flags) & x.RequiredFlags) > 0))
+                .Where(x => x.RequiredFlags == 0 || (guild != null && (((int)guild.Flags) & x.RequiredFlags) > 0))
                 .Select(x => new AutocompleteResult()
                 {
                     Name = x.Name,

@@ -1,5 +1,4 @@
 ﻿using SCMM.Shared.Data.Models;
-using SCMM.Steam.Data.Models.Enums;
 
 namespace SCMM.Web.Data.Models.UI.App
 {

@@ -16,12 +16,12 @@ namespace SCMM.Discord.Bot.Server.Modules
             var priceData = await _steamDb.SteamMarketItemSale.Where(x => x.ItemId == item.Id && x.Timestamp >= cutoff).OrderByDescending(x => x.Timestamp).Take(168).ToListAsync();
 
             var priceAnomalies = await _timeSeriesAnalysisService.DetectTimeSeriesAnomaliesAsync(
-                priceData.ToDictionary(x => x.Timestamp, x => (float) x.MedianPrice),
+                priceData.ToDictionary(x => x.Timestamp, x => (float)x.MedianPrice),
                 granularity: TimeGranularity.Hourly,
                 sensitivity: 90
             );
             var quantityAnomalies = await _timeSeriesAnalysisService.DetectTimeSeriesAnomaliesAsync(
-                priceData.ToDictionary(x => x.Timestamp, x => (float) x.Quantity),
+                priceData.ToDictionary(x => x.Timestamp, x => (float)x.Quantity),
                 granularity: TimeGranularity.Hourly,
                 sensitivity: 90
             );

@@ -6,16 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.Extensions;
+using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
-using SCMM.Steam.Data.Models.Enums;
-using SCMM.Web.Data.Models.UI.Store;
-using SCMM.Web.Client;
-using SCMM.Steam.Data.Models.WebApi.Models;
 using System.Text.Json;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -167,7 +165,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsCraftable == true);
             }
-            
+
             // Join
             query = query
                 .Include(x => x.App)
@@ -576,7 +574,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetItemDefinitionArchives()
         {
             var appId = this.App().Guid;
-            
+
             var itemDefinitionArchives = await _db.SteamItemDefinitionsArchive.AsNoTracking()
                 .Where(x => x.AppId == appId)
                 .OrderByDescending(x => x.TimePublished)
@@ -588,7 +586,7 @@ namespace SCMM.Web.Server.API.Controllers
                 })
                 .OrderByDescending(x => x.Timestamp)
                 .ToListAsync();
-            
+
             return Ok(itemDefinitionArchives);
         }
 
@@ -621,9 +619,9 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Item definition archive with that digest does not exist");
             }
 
-            return Ok(raw 
+            return Ok(raw
                 ? itemDefinitionArchive
-                : JsonSerializer.Deserialize<ItemDefinition[]>(itemDefinitionArchive) 
+                : JsonSerializer.Deserialize<ItemDefinition[]>(itemDefinitionArchive)
             );
         }
 
@@ -649,7 +647,7 @@ namespace SCMM.Web.Server.API.Controllers
             // TODO: Add support for other apps
             return Ok(
                 itemTypes.GroupBy(x => x.ToRustItemGroup()).OrderBy(x => x.Key).Select(g => new ItemTypeGroupDTO()
-                { 
+                {
                     Name = g.Key,
                     ItemTypes = g.OrderBy(x => x).Select(i => new ItemTypeDTO()
                     {

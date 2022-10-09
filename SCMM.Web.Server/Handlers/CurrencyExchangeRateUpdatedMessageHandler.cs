@@ -1,6 +1,5 @@
 ﻿using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Messaging.Attributes;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 
 namespace SCMM.Web.Server.Handlers

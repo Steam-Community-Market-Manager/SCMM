@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
-    public class ProfileInventoryItemDescriptionStackDTO 
+    public class ProfileInventoryItemDescriptionStackDTO
     {
         public string SteamId { get; set; }
 

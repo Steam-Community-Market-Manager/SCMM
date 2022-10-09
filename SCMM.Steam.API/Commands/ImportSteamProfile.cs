@@ -89,7 +89,7 @@ namespace SCMM.Steam.API.Commands
                     var playerSummaryResponse = await _apiClient.SteamUserGetPlayerSummaries(
                         new GetPlayerSummariesJsonRequest()
                         {
-                            SteamIds = new[] { steamId } 
+                            SteamIds = new[] { steamId }
                         },
                         useCache: !request.Force
                     );
@@ -136,7 +136,7 @@ namespace SCMM.Steam.API.Commands
                     if (playerBan != null)
                     {
                         profile.IsTradeBanned = (
-                            !String.IsNullOrEmpty(playerBan.EconomyBan) && 
+                            !String.IsNullOrEmpty(playerBan.EconomyBan) &&
                             !String.Equals(playerBan.EconomyBan, "none", StringComparison.InvariantCultureIgnoreCase)
                         );
                     }
@@ -153,7 +153,7 @@ namespace SCMM.Steam.API.Commands
                         {
                             ProfileId = profileId,
                             Xml = true
-                        }, 
+                        },
                         useCache: !request.Force
                     );
                     if (response == null)
@@ -185,7 +185,7 @@ namespace SCMM.Steam.API.Commands
                     profile.AvatarUrl = response.AvatarMedium;
                     profile.AvatarLargeUrl = response.AvatarFull;
                     profile.IsTradeBanned = (
-                        !String.IsNullOrEmpty(response.TradeBanState) && 
+                        !String.IsNullOrEmpty(response.TradeBanState) &&
                         !String.Equals(response.TradeBanState, "none", StringComparison.InvariantCultureIgnoreCase)
                     );
                 }

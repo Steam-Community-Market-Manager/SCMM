@@ -48,10 +48,10 @@
         public const string SteamCurrencyEUR = "EUR";
         public const string SteamCurrencyCNY = "CNY";
         public const string SteamDefaultCurrency = SteamCurrencyUSD;
-        
+
         public const string SteamLanguageEnglish = "english";
         public const string SteamDefaultLanguage = SteamLanguageEnglish;
-        
+
         #region CSGO
 
         public const ulong CSGOAppId = 730L;

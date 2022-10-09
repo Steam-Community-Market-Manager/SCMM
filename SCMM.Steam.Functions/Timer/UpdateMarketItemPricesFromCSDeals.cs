@@ -46,7 +46,7 @@ public class UpdateMarketItemPricesFromCSDeals
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from CS.Deals (appId: {app.SteamId})");
-            
+
             try
             {
                 var csDealsInventoryItems = (await _csDealsWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value ?? new CSDealsItemListing[0];
@@ -92,7 +92,7 @@ public class UpdateMarketItemPricesFromCSDeals
             try
             {
                 var csDealsLowestPriceItems = (await _csDealsWebClient.GetPricingGetLowestPricesAsync(app.SteamId)) ?? new List<CSDealsItemPrice>();
-                
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

@@ -1,5 +1,4 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Store.Types;
 using System.Collections.ObjectModel;
 
 namespace SCMM.Shared.Data.Store

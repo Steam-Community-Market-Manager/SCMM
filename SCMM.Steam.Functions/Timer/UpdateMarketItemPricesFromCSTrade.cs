@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Market.CSTrade.Client;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
@@ -51,7 +51,7 @@ public class UpdateMarketItemPricesFromCSTrade
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from CS.TRADE (appId: {app.SteamId})");
-            
+
             try
             {
                 var csTradeAppItems = csTradeItems.Where(x => x.AppId == app.SteamId).Where(x => x.Price != null).ToList();

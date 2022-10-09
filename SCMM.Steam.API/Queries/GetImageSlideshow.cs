@@ -5,9 +5,9 @@ using SCMM.Shared.Data.Models;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Store;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats.Gif;
 
 namespace SCMM.Steam.API.Queries
 {
@@ -53,9 +53,9 @@ namespace SCMM.Steam.API.Queries
             }
 
             var imageSize = Math.Max(32, request.ImageSize);
-            var imageFrameDelay = Math.Max(1, (int) Math.Floor(request.ImageFrameDelay.TotalMilliseconds * 0.1));
+            var imageFrameDelay = Math.Max(1, (int)Math.Floor(request.ImageFrameDelay.TotalMilliseconds * 0.1));
             var maxFrames = Math.Min(tileCount, request.MaxImages ?? int.MaxValue);
-            
+
             imageSources = imageSources.Take(maxFrames).ToList();
             await HydrateImageData(imageSources);
             if (!imageSources.Any())
@@ -66,9 +66,9 @@ namespace SCMM.Steam.API.Queries
             var imageInfo = Image.Identify(imageSources.First().ImageData);
             var imageRatio = ((decimal)imageInfo.Width / (decimal)imageInfo.Height);
             var frameWidth = imageSize;
-            var frameHeight = (int) Math.Ceiling(imageSize / imageRatio);
+            var frameHeight = (int)Math.Ceiling(imageSize / imageRatio);
             var transparent = new Rgba32(255, 255, 255, 0);
-            
+
             var slideshow = new Image<Rgba32>(frameWidth, frameHeight, transparent);
             slideshow.Mutate(ctx => ctx
                 .BackgroundColor(transparent)

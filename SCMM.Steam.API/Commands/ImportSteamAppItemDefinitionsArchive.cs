@@ -22,7 +22,6 @@ using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System.Globalization;
-using System.Reflection;
 using System.Text.Json;
 
 namespace SCMM.Steam.API.Commands
@@ -135,7 +134,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                     await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
                     await _steamDb.SaveChangesAsync();
-                
+
                     _logger.LogInformation($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                     await AddOrUpdateMarketItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
                     await _steamDb.SaveChangesAsync();
@@ -274,7 +273,7 @@ namespace SCMM.Steam.API.Commands
 
                 // TODO: Validate that new store items are present in asset price list, else loop and retry
 
-                var permanentItemStore = (SteamItemStore) null;
+                var permanentItemStore = (SteamItemStore)null;
                 var limitedItemStore = (SteamItemStore)null;
 
                 // If the app uses a permanent or limited item store, check that they are still available (or create new ones)
@@ -341,9 +340,9 @@ namespace SCMM.Steam.API.Commands
                     var assetDescription = addedStoreItem.AssetDescription;
                     var storeType = addedStoreItem.AssetDescription.IsPermanent ? "permanent" : "limited";
                     var store = addedStoreItem.AssetDescription.IsPermanent ? permanentItemStore : limitedItemStore;
-                    
+
                     _logger.LogInformation($"A new item has been added to the {storeType} item store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
-                    
+
                     var storeItemAsset = assetPricesResponse?.Data?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
                     var storeItemPrices = storeItemAsset?.Prices?.ToDictionary();
                     var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailable(app, assetDescription, storeItemAsset, defaultCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
@@ -513,7 +512,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     var itemDefinition = newMarketableItem.ItemDefinition;
                     var assetDescription = newMarketableItem.AssetDescription;
-                    
+
                     if (newMarketableItem.HasBecomeMarketable)
                     {
                         _logger.LogInformation($"An new item has been become marketable! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");

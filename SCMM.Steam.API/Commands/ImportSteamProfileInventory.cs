@@ -42,7 +42,7 @@ namespace SCMM.Steam.API.Commands
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileInventory(ILogger<ImportSteamProfileInventory>  logger, SteamDbContext db, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileInventory(ILogger<ImportSteamProfileInventory> logger, SteamDbContext db, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
@@ -60,7 +60,7 @@ namespace SCMM.Steam.API.Commands
             });
 
             // If the profile id does not yet exist, fetch it now
-            var importedProfile = (ImportSteamProfileResponse) null;
+            var importedProfile = (ImportSteamProfileResponse)null;
             if (!resolvedId.Exists)
             {
                 importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
@@ -227,7 +227,7 @@ namespace SCMM.Steam.API.Commands
                         StartAssetId = startAssetId,
                         Count = count,
                         NoRender = true
-                    }, 
+                    },
                     useCache: useCache
                 );
                 if (inventory == null)

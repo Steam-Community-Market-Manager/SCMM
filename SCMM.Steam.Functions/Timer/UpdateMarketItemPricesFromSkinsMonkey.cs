@@ -45,11 +45,11 @@ public class UpdateMarketItemPricesFromSkinsMonkey
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinsMonkey (appId: {app.SteamId})");
-            
+
             try
             {
                 var skinsMonkeyItems = await _skinsMonkeyWebClient.GetItemPricesAsync(app.SteamId);
-                    
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

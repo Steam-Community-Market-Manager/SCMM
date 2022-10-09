@@ -45,11 +45,11 @@ public class UpdateMarketItemPricesFromSwapGG
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
-          
+
             try
             {
                 var swapggTradeItems = (await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId)) ?? new List<SwapGGTradeItem>();
-                
+
                 var items = await _db.SteamMarketItems
                   .Where(x => x.AppId == app.Id)
                   .Select(x => new
@@ -89,7 +89,7 @@ public class UpdateMarketItemPricesFromSwapGG
             try
             {
                 var swapggMarketItems = (await _swapGGWebClient.GetMarketPricingLowestAsync(app.SteamId)) ?? new Dictionary<string, SwapGGMarketItem>();
-                
+
                 var items = await _db.SteamMarketItems
                   .Where(x => x.AppId == app.Id)
                   .Select(x => new

@@ -87,7 +87,7 @@ namespace SCMM.Steam.API.Commands
 
                                 var allColours = new[] { accentColour };
                                 var colourTags = new Dictionary<string, string>();
-                                foreach(var colour in allColours)
+                                foreach (var colour in allColours)
                                 {
                                     var colourMatch = ColourName.FindClosestMatch(colour);
                                     if (colourMatch != null)
@@ -305,7 +305,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             await _steamDb.SaveChangesAsync();
-            
+
             // Update workshop file metadata
             await blob.SetMetadataAsync(blobMetadata);
             _logger.LogInformation($"Blob metadata updated");

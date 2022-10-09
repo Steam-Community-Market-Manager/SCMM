@@ -46,11 +46,11 @@ public class UpdateMarketItemPricesFromSkinBaron
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinBaron (appId: {app.SteamId})");
-            
+
             try
             {
                 var skinBaronItems = new List<SkinBaronItemOffer>();
-                var offersResponse = (SkinBaronFilterOffersResponse) null;
+                var offersResponse = (SkinBaronFilterOffersResponse)null;
                 var browsingPage = 1;
                 do
                 {
@@ -63,7 +63,7 @@ public class UpdateMarketItemPricesFromSkinBaron
                         browsingPage++;
                     }
                 } while (offersResponse != null && offersResponse.ItemsPerPage > 0);
-                
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

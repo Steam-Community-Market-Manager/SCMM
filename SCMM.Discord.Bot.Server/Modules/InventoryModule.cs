@@ -4,7 +4,6 @@ using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
 using SCMM.Discord.Client.Commands;
-using SCMM.Discord.Client.Extensions;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
@@ -42,7 +41,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
     )
     {
-        var user = (DiscordUser) null;
+        var user = (DiscordUser)null;
 
         // If steam id was not specified, default to the user (if any)
         if (string.IsNullOrEmpty(steamId) && Context.User != null)

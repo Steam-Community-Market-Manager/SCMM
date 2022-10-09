@@ -1,7 +1,5 @@
 ﻿using AngleSharp.Common;
 using AutoMapper;
-using SCMM.Shared.API.Extensions;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Store;

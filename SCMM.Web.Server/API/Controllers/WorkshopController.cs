@@ -8,10 +8,10 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.Extensions;
-using SCMM.Web.Server.Extensions;
+using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Workshop;
+using SCMM.Web.Server.Extensions;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -104,7 +104,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.SteamId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()));
             }
-            
+
             // Join
             query = query
                 .Include(x => x.App)

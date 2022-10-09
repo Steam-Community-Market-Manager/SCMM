@@ -3,12 +3,12 @@ using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Steam.Abstractions;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
+using SCMM.Steam.Abstractions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.Shared.Abstractions.Messaging;
 
 namespace SCMM.Steam.API.Commands
 {

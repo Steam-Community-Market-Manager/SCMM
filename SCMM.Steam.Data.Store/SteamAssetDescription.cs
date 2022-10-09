@@ -4,13 +4,11 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store.Types;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -47,7 +45,7 @@ namespace SCMM.Steam.Data.Store
         /// If true, the workshop file content is no longer available
         /// </summary>
         public bool WorkshopFileIsUnavailable { get; set; }
-        
+
         public ulong? CreatorId { get; set; }
 
         public Guid? CreatorProfileId { get; set; }
@@ -283,9 +281,9 @@ namespace SCMM.Steam.Data.Store
                 }
                 else
                 {
-                    buyUrl = new SteamItemStorePageRequest() 
-                    { 
-                        AppId = appId 
+                    buyUrl = new SteamItemStorePageRequest()
+                    {
+                        AppId = appId
                     };
                 }
                 yield return new MarketPrice

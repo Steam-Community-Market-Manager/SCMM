@@ -26,7 +26,7 @@ public class StoreNameAutocompleteHandler : AutocompleteHandler
             var steamDb = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
             var itemNames = await steamDb.SteamItemStores
                 .Where(x => x.App.SteamId == appId.ToString())
-                .Where(x => 
+                .Where(x =>
                     (String.IsNullOrEmpty(value)) ||
                     (!String.IsNullOrEmpty(x.Name) && x.Name.Contains(value)) ||
                     (x.Start != null && (value.Contains(x.Start.Value.Year.ToString())))

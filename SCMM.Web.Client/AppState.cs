@@ -1,13 +1,13 @@
 ﻿using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.Data.Models;
+using SCMM.Web.Client.Shared.Storage;
+using SCMM.Web.Data.Models;
+using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
-using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Profile;
-using SCMM.Web.Data.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using SCMM.Web.Client.Shared.Storage;
 
 namespace SCMM.Web.Client;
 

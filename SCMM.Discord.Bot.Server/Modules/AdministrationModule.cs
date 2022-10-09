@@ -1,13 +1,11 @@
 ﻿using CommandQuery;
 using Discord;
 using Discord.Commands;
-using SCMM.Azure.AI;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Data.Store;
-using SCMM.Fixer.Client;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Finance;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Store;
 using System.Reflection;

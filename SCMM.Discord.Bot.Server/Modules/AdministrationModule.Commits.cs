@@ -135,7 +135,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
         private void BuildDecodeDictionary(string encoded, string decoded, Dictionary<char, List<char>> dictionary)
         {
-            for(int i = 0; i < Math.Min(encoded.Length, decoded.Length); i++)
+            for (int i = 0; i < Math.Min(encoded.Length, decoded.Length); i++)
             {
                 if (!dictionary.ContainsKey(encoded[i]))
                 {

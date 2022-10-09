@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Market.DMarket.Client;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
@@ -52,7 +52,7 @@ public class UpdateMarketItemPricesFromDMarketJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from DMarket (appId: {app.SteamId})");
-            
+
             try
             {
                 var dMarketItems = new List<DMarketItem>();
@@ -68,7 +68,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                         dMarketItems.AddRange(marketItemsResponse.Objects);
                     }
                 } while (marketItemsResponse != null && !String.IsNullOrEmpty(marketItemsResponse.Cursor));
-                
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

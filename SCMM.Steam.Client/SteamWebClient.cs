@@ -176,7 +176,7 @@ namespace SCMM.Steam.Client
             {
                 cacheKey += $":{request.Uri.Query}";
             }
-            
+
             // Try get the request from cache
             var cachedResponse = await _cache.GetAsync(cacheKey);
             if (cachedResponse != null)

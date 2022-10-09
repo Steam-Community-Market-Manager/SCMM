@@ -22,25 +22,25 @@ using SCMM.Market.LootFarm.Client;
 using SCMM.Market.RustSkins.Client;
 using SCMM.Market.RustTM.Client;
 using SCMM.Market.SkinBaron.Client;
-using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.Skinport.Client;
 using SCMM.Market.SkinsMonkey.Client;
 using SCMM.Market.SkinsMonkey.Client.Extensions;
+using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
+using SCMM.Shared.Abstractions.Analytics;
+using SCMM.Shared.Abstractions.Media;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
+using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
-using System.Reflection;
-using SCMM.Worker.Client.Configuration;
 using SCMM.Worker.Client;
+using SCMM.Worker.Client.Configuration;
 using System.Net;
-using SCMM.Steam.Abstractions;
-using SCMM.Shared.Abstractions.Analytics;
-using SCMM.Shared.Abstractions.Media;
+using System.Reflection;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -196,9 +196,9 @@ public static class HostExtensions
             // Command/query/message handlers
             var contactAssemblies = new[]
             {
-                Assembly.GetEntryAssembly(), 
-                Assembly.Load("SCMM.Shared.API"), 
-                Assembly.Load("SCMM.Discord.API"), 
+                Assembly.GetEntryAssembly(),
+                Assembly.Load("SCMM.Shared.API"),
+                Assembly.Load("SCMM.Discord.API"),
                 Assembly.Load("SCMM.Steam.API")
             };
             services.AddCommands(contactAssemblies);

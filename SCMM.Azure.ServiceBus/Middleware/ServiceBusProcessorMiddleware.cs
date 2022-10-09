@@ -10,7 +10,6 @@ using SCMM.Shared.Abstractions.Messaging.Attributes;
 using SCMM.Shared.Data.Models.Extensions;
 using System.Reflection;
 using System.Text.Json;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace SCMM.Azure.ServiceBus.Middleware
 {
@@ -218,7 +217,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
             var context = new AzureMessageContext(_serviceBusClient)
             {
                 MessageId = args.Message.MessageId,
-                MessageType = Type.GetType((string) args.Message.ApplicationProperties.GetValueOrDefault(ServiceBusConstants.ApplicationPropertyType, typeof(IMessage).AssemblyQualifiedName)),
+                MessageType = Type.GetType((string)args.Message.ApplicationProperties.GetValueOrDefault(ServiceBusConstants.ApplicationPropertyType, typeof(IMessage).AssemblyQualifiedName)),
                 ReplyTo = args.Message.ReplyTo
             };
 
@@ -237,7 +236,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler cannot be instantiated");
                 }
 
-                var handlerMethod = handlerInstance.GetType().GetMethod("HandleAsync", new [] { context.MessageType, typeof(AzureMessageContext) });
+                var handlerMethod = handlerInstance.GetType().GetMethod("HandleAsync", new[] { context.MessageType, typeof(AzureMessageContext) });
                 if (handlerMethod == null)
                 {
                     throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler method not found");

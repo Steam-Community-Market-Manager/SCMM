@@ -47,7 +47,7 @@ public class UpdateMarketItemPricesFromBuff
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from Buff (appId: {app.SteamId})");
-          
+
             try
             {
                 var buffItems = new List<BuffItem>();
@@ -61,7 +61,7 @@ public class UpdateMarketItemPricesFromBuff
                         buffItems.AddRange(marketGoodsResponse.Items);
                     }
                 } while (marketGoodsResponse != null && marketGoodsResponse.PageNum < marketGoodsResponse.TotalPage);
-                
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

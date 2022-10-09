@@ -1,6 +1,6 @@
 ﻿using CommandQuery;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Discord.API.Messages;
+using SCMM.Shared.Abstractions.Messaging;
 
 namespace SCMM.Discord.API.Commands
 {

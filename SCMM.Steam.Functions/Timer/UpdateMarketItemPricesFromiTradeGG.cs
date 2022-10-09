@@ -46,7 +46,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from iTrade.gg (appId: {app.SteamId})");
-            
+
             try
             {
                 var iTradeggItems = (await _iTradeggWebClient.GetInventoryAsync(app.SteamId)) ?? new List<iTradeggItem>();

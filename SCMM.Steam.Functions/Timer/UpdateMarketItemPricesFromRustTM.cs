@@ -46,7 +46,7 @@ public class UpdateMarketItemPricesFromRustTM
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from Rust.tm (appId: {app.SteamId})");
-           
+
             try
             {
                 var rustTMItems = (await _rustTMWebClient.GetPricesAsync(usdCurrency.Name)) ?? new List<RustTMItem>();

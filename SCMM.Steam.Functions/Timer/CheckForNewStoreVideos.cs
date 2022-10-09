@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Media;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
@@ -101,7 +101,7 @@ public class CheckForNewStoreVideos
                     );
 
                     await _db.SaveChangesAsync();
-                    
+
                     foreach (var item in newMedia)
                     {
                         await _serviceBus.SendMessageAsync(new StoreMediaAddedMessage()

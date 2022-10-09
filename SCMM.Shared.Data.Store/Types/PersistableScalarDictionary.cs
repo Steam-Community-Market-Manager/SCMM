@@ -36,7 +36,7 @@ namespace SCMM.Shared.Data.Store.Types
             get
             {
                 return string.Join(
-                    ItemSeperator, 
+                    ItemSeperator,
                     _data.Select(x =>
                         $"{ConvertSingleKeyToPersistable(x.Key)}{KeyValueSeperator}{ConvertSingleValueToPersistable(x.Value)}"
                     )

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SCMM.Web.Client;
+using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
-using SCMM.Web.Data.Models.UI.App;
-using SCMM.Web.Client;
 
 namespace SCMM.Web.Server.Extensions
 {
@@ -41,7 +41,7 @@ namespace SCMM.Web.Server.Extensions
                 UInt64.TryParse(controller.User.AppId(), out appId);
             }
 
-            return AppCache.GetById(appId) ?? 
+            return AppCache.GetById(appId) ??
                    AppCache.GetById(AppState.DefaultAppId);
         }
 

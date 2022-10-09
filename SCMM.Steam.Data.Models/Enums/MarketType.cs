@@ -43,7 +43,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Tradeit.gg")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#27273F")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")] 
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
         TradeitGG = 14,
 
         [Display(Name = "CS.Deals Trade")]
@@ -54,7 +54,7 @@ namespace SCMM.Steam.Data.Models.Enums
         // TODO: Add missing items quantities
         [Display(Name = "CS.Deals Marketplace")]
         [Market(Type = PriceTypes.Cash, Color = "#313846")]
-        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")] 
+        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")]
         CSDealsMarketplace = 16,
 
         [Display(Name = "Skin Baron")]
@@ -107,7 +107,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://tradeskinsfast.com/")]
         TradeSkinsFast = 24,
-        
+
         [Display(Name = "SkinsMonkey")]
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed

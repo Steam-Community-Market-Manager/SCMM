@@ -3,7 +3,6 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Json;
@@ -21,7 +20,6 @@ using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -560,7 +558,7 @@ namespace SCMM.Web.Server.API.Controllers
                     // Calculate the item's quantity and average price
                     itemSummary.Quantity = itemInventoryInstances.Sum(x => x.Quantity);
                     itemSummary.AverageBuyPrice = (isMyInventory && itemInventoryInstances.Any(x => x.BuyPrice > 0))
-                        ? (long) Math.Round(itemInventoryInstances.Where(x => x.BuyPrice > 0).Average(x => x.BuyPrice.Value), 0) 
+                        ? (long)Math.Round(itemInventoryInstances.Where(x => x.BuyPrice > 0).Average(x => x.BuyPrice.Value), 0)
                         : 0;
 
                     // Calculate the item's stack sizes
@@ -622,7 +620,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ItemCollection = x.Description.ItemCollection
                 })
                 .ToListAsync();
-            
+
             var showDrops = this.User.Preference(_db, x => x.InventoryShowItemDrops);
             var showUnmarketable = this.User.Preference(_db, x => x.InventoryShowUnmarketableItems);
             var itemCollections = profileItemsInCollection.Select(x => x.ItemCollection).Distinct().ToArray();

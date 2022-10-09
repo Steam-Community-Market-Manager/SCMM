@@ -22,7 +22,7 @@ public abstract class ResponsiveComponent : ComponentBase, IAsyncDisposable
                 {
                     Breakpoint = breakpoint;
                     OnBreakpointChanged(breakpoint);
-                }, 
+                },
                 new ResizeOptions
                 {
                     ReportRate = 250,

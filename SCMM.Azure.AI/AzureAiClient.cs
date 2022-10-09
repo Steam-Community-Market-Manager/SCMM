@@ -4,7 +4,6 @@ using Azure.AI.AnomalyDetector.Models;
 using Azure.AI.TextAnalytics;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
-using SCMM.Shared.Abstractions;
 using SCMM.Shared.Abstractions.Analytics;
 
 namespace SCMM.Azure.AI
@@ -50,9 +49,9 @@ namespace SCMM.Azure.AI
                 .ToArray();
 
             var anomalies = new List<TimeSeriesAnomaly>();
-            var response = (EntireDetectResponse) await _anomalyDetectorClient.DetectEntireSeriesAsync(new DetectRequest(dataPoints)
+            var response = (EntireDetectResponse)await _anomalyDetectorClient.DetectEntireSeriesAsync(new DetectRequest(dataPoints)
             {
-                Granularity = (global::Azure.AI.AnomalyDetector.Models.TimeGranularity) granularity,
+                Granularity = (global::Azure.AI.AnomalyDetector.Models.TimeGranularity)granularity,
                 Sensitivity = sensitivity
             });
 
@@ -108,7 +107,7 @@ namespace SCMM.Azure.AI
             }
 
             var response = await _textAnalyticsClient.AnalyzeSentimentAsync(text);
-            return (Sentiment) (response?.Value?.Sentiment ?? TextSentiment.Neutral);
+            return (Sentiment)(response?.Value?.Sentiment ?? TextSentiment.Neutral);
         }
     }
 }
