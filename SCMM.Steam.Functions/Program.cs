@@ -39,6 +39,7 @@ using System.Reflection;
 using SCMM.Worker.Client.Configuration;
 using SCMM.Worker.Client;
 using System.Net;
+using SCMM.Steam.Abstractions;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -189,7 +190,7 @@ public static class HostExtensions
             services.AddSingleton<TradeitGGWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<SteamCmdWrapper>();
+            services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
             // Command/query/message handlers
             var contactAssemblies = new[]

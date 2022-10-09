@@ -29,6 +29,7 @@ using SCMM.Worker.Client;
 using System.Net;
 using System.Reflection;
 using System.Security.Claims;
+using SCMM.Steam.Abstractions;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -180,7 +181,7 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton<AzureAiClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
-        builder.Services.AddScoped<SteamCmdWrapper>();
+        builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Auto-mapper
         builder.Services.AddAutoMapper(Assembly.GetEntryAssembly());

@@ -1,15 +1,14 @@
-﻿using Azure.Core;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
+using SCMM.Steam.Abstractions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.SteamCMD;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -32,16 +31,16 @@ namespace SCMM.Steam.API.Commands
 
         private readonly ILogger<ImportSteamWorkshopFileToBlobStorage> _logger;
         private readonly SteamDbContext _steamDb;
-        private readonly SteamCmdWrapper _steamCmd;
+        private readonly ISteamConsoleClient _steamConsoleClient;
         private readonly ServiceBusClient _serviceBus;
         private readonly string _workshopFilesStorageConnectionString;
         private readonly string _workshopFilesStorageUrl;
 
-        public ImportSteamWorkshopFileToBlobStorage(ILogger<ImportSteamWorkshopFileToBlobStorage> logger, IConfiguration configuration, SteamDbContext steamDb, SteamCmdWrapper steamCmd, ServiceBusClient serviceBus)
+        public ImportSteamWorkshopFileToBlobStorage(ILogger<ImportSteamWorkshopFileToBlobStorage> logger, IConfiguration configuration, SteamDbContext steamDb, ISteamConsoleClient steamConsoleClient, ServiceBusClient serviceBus)
         {
             _logger = logger;
             _steamDb = steamDb;
-            _steamCmd = steamCmd;
+            _steamConsoleClient = steamConsoleClient;
             _serviceBus = serviceBus;
             _workshopFilesStorageConnectionString = (configuration.GetConnectionString("WorkshopFilesStorageConnection") ?? Environment.GetEnvironmentVariable("WorkshopFilesStorageConnection"));
             _workshopFilesStorageUrl = configuration.GetDataStoreUrl();
@@ -81,7 +80,7 @@ namespace SCMM.Steam.API.Commands
             {
                 // Download the workshop file from steam
                 _logger.LogInformation($"Downloading workshop file {request.PublishedFileId} from steam");
-                var publishedFileData = await _steamCmd.DownloadWorkshopFile(
+                var publishedFileData = await _steamConsoleClient.DownloadWorkshopFile(
                     appId: request.AppId.ToString(),
                     workshopFileId: request.PublishedFileId.ToString()
                 );

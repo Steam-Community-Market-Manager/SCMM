@@ -38,6 +38,7 @@
     <ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
     <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
+    <ProjectReference Include="..\SCMM.SteamCMD\SCMM.SteamCMD.csproj" />
     <ProjectReference Include="..\SCMM.Web.Client\SCMM.Web.Client.csproj" />
     <ProjectReference Include="..\SCMM.Web.Data.Models\SCMM.Web.Data.Models.csproj" />
   </ItemGroup>

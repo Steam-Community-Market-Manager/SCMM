@@ -11,6 +11,7 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Steam.Abstractions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -155,7 +156,7 @@ public static class HostExtensions
             services.AddSingleton<AzureAiClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<SteamCmdWrapper>();
+            services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
             // Command/query/message handlers
             var contactAssemblies = new[]

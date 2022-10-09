@@ -20,10 +20,10 @@
     <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
     <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
     <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Abstractions\SCMM.Steam.Abstractions.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />
-    <ProjectReference Include="..\SCMM.SteamCMD\SCMM.SteamCMD.csproj" />
   </ItemGroup>
 
 </Project>

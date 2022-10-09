@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Shared.Data.Models\SCMM.Shared.Data.Models.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Abstractions\SCMM.Steam.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

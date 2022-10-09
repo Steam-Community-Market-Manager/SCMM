@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
+using SCMM.Steam.Abstractions;
 using SCMM.Shared.Data.Models;
-using System;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 
 namespace SCMM.SteamCMD;
-public class SteamCmdWrapper
+public class SteamCmdProcessWrapper : ISteamConsoleClient
 {
-    private readonly ILogger<SteamCmdWrapper> _logger;
+    private readonly ILogger<SteamCmdProcessWrapper> _logger;
 
-    public SteamCmdWrapper(ILogger<SteamCmdWrapper> logger)
+    public SteamCmdProcessWrapper(ILogger<SteamCmdProcessWrapper> logger)
     {
         _logger = logger;
     }
