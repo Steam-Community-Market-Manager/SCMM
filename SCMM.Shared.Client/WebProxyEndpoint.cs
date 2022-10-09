@@ -1,5 +1,4 @@
-﻿
-namespace SCMM.Worker.Client;
+﻿namespace SCMM.Shared.Client;
 
 public class WebProxyEndpoint
 {

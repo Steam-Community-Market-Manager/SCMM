@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.SwapGG.Client
 {
-    public class SwapGGWebClient : Worker.Client.WebClient
+    public class SwapGGWebClient : Shared.Client.WebClient
     {
         private const string TradeBaseUri = "https://api.swap.gg/";
         private const string MarketBaseUri = "https://market-api.swap.gg/v1/";

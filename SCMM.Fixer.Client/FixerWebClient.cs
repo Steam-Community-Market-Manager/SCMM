@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Fixer.Client
 {
-    public class FixerWebClient : Worker.Client.WebClient, ICurrencyExchangeService
+    public class FixerWebClient : Shared.Client.WebClient, ICurrencyExchangeService
     {
         private const string BaseUri = "https://data.fixer.io/api/";
 

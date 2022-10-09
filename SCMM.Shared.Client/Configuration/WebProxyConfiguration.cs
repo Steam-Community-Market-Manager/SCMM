@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace SCMM.Worker.Client.Configuration;
+namespace SCMM.Shared.Client.Configuration;
 
 public static class ConfigurationExtensions
 {

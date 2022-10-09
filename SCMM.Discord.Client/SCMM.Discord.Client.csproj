@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Discord.Data.Models\SCMM.Discord.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
   </ItemGroup>

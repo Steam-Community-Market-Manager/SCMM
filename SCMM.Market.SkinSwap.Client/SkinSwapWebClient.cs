@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.SkinSwap.Client
 {
-    public class SkinSwapWebClient : Worker.Client.WebClient
+    public class SkinSwapWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://skinswap.com/api/v1/";
 

@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace SCMM.Market.TradeitGG.Client
 {
-    public class TradeitGGWebClient : Worker.Client.WebClient
+    public class TradeitGGWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 

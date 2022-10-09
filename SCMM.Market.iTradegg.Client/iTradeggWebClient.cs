@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.iTradegg.Client
 {
-    public class iTradeggWebClient : Worker.Client.WebClient
+    public class iTradeggWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://itrade.gg/ajax/";
 

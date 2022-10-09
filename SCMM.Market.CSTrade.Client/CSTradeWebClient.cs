@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.CSTrade.Client
 {
-    public class CSTradeWebClient : Worker.Client.WebClient
+    public class CSTradeWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://cdn.cs.trade:8443/api/";
 

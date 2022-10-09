@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace SCMM.Worker.Client;
+namespace SCMM.Shared.Client;
 
 public interface IRotatingWebProxy : IWebProxy
 {

@@ -21,6 +21,8 @@ using SCMM.Fixer.Client.Extensions;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Finance;
 using SCMM.Shared.API.Extensions;
+using SCMM.Shared.Client;
+using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Middleware;
@@ -29,8 +31,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
-using SCMM.Worker.Client;
-using SCMM.Worker.Client.Configuration;
 using System.Net;
 using System.Reflection;
 

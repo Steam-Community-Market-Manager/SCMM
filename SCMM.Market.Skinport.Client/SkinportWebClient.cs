@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.Skinport.Client
 {
-    public class SkinportWebClient : Worker.Client.WebClient
+    public class SkinportWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://api.skinport.com/v1/";
 

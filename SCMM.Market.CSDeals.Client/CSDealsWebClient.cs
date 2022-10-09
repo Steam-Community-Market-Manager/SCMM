@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.CSDeals.Client
 {
-    public class CSDealsWebClient : Worker.Client.WebClient
+    public class CSDealsWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://cs.deals/";
         private const string BaseApiUri = "https://cs.deals/API/";

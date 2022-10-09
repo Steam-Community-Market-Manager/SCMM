@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.DMarket.Client
 {
-    public class DMarketWebClient : Worker.Client.WebClient
+    public class DMarketWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://api.dmarket.com/exchange/v1/";
 

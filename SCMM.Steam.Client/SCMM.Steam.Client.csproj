@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
-    <ProjectReference Include="..\SCMM.Worker.Client\SCMM.Worker.Client.csproj" />
   </ItemGroup>
 
 </Project>

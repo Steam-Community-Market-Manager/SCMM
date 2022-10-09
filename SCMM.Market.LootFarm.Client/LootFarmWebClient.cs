@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.LootFarm.Client
 {
-    public class LootFarmWebClient : Worker.Client.WebClient
+    public class LootFarmWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://loot.farm/";
 

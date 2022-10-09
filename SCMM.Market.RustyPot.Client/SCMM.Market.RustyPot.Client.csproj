@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
-    <ProjectReference Include="..\SCMM.Worker.Client\SCMM.Worker.Client.csproj" />
+	<ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
+	<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
   </ItemGroup>
 
 </Project>

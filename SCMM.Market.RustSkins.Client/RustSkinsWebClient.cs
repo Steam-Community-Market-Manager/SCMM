@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.RustSkins.Client
 {
-    public class RustSkinsWebClient : Worker.Client.WebClient
+    public class RustSkinsWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://rustskins.com/api/v1/";
 

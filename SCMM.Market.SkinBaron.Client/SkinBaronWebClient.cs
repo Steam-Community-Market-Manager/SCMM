@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.SkinBaron.Client
 {
-    public class SkinBaronWebClient : Worker.Client.WebClient
+    public class SkinBaronWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://skinbaron.de/api/v2/";
 

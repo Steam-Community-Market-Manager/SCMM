@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.SkinsMonkey.Client
 {
-    public class SkinsMonkeyWebClient : Worker.Client.WebClient
+    public class SkinsMonkeyWebClient : Shared.Client.WebClient
     {
         private const string ApiUri = "https://skinsmonkey.com/api/public/v1/";
 

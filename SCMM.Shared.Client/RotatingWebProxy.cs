@@ -2,7 +2,7 @@
 using SCMM.Shared.Data.Models.Extensions;
 using System.Net;
 
-namespace SCMM.Worker.Client;
+namespace SCMM.Shared.Client;
 
 public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByHost
 {
@@ -20,9 +20,9 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             proxies.AddRange(webProxyEndpoints
                 .Select(x => new WebProxyWithCooldown()
                 {
-                    Priority = (webProxyEndpoints.ToList().IndexOf(x) + 1),
+                    Priority = webProxyEndpoints.ToList().IndexOf(x) + 1,
                     Address = new Uri(x.Url),
-                    Credentials = (x.Domain == null && x.Username == null && x.Password == null) ? null : new NetworkCredential()
+                    Credentials = x.Domain == null && x.Username == null && x.Password == null ? null : new NetworkCredential()
                     {
                         Domain = x.Domain,
                         UserName = x.Username,
@@ -42,7 +42,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         var now = DateTime.UtcNow;
         return _proxies
             .Where(x => x.IsEnabled)
-            .OrderBy(x => (x.GetHostCooldown(address) - now))
+            .OrderBy(x => x.GetHostCooldown(address) - now)
             .ThenBy(x => x.Priority)
             .FirstOrDefault();
     }
@@ -88,7 +88,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         }
 
         var proxy = GetNextAvailableProxy(host);
-        return (proxy?.Address == null);
+        return proxy?.Address == null;
     }
 
     NetworkCredential ICredentials.GetCredential(Uri uri, string authType)
@@ -136,13 +136,13 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
 
         public DateTime GetHostCooldown(Uri address)
         {
-            return Cooldowns.GetOrDefault(address?.Host ?? String.Empty, DateTime.MinValue);
+            return Cooldowns.GetOrDefault(address?.Host ?? string.Empty, DateTime.MinValue);
         }
 
         public void IncrementHostCooldown(Uri address, TimeSpan increment)
         {
             var now = DateTime.UtcNow;
-            var host = (address?.Host ?? String.Empty);
+            var host = address?.Host ?? string.Empty;
             var cooldown = Cooldowns.GetOrDefault(host, DateTime.MinValue);
             if (cooldown < now)
             {
@@ -151,7 +151,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             }
 
             // cooldown += increment
-            Cooldowns[host] = (cooldown.Add(increment));
+            Cooldowns[host] = cooldown.Add(increment);
         }
     }
 }

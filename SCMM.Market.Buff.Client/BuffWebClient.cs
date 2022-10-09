@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.Buff.Client
 {
-    public class BuffWebClient : Worker.Client.WebClient
+    public class BuffWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://buff.163.com/api/";
 

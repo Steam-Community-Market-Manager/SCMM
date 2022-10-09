@@ -6,7 +6,7 @@ using SocketIOClient.Transport;
 
 namespace SCMM.Market.RustyPot.Client
 {
-    public class RustyPotWebClient : Worker.Client.WebClient
+    public class RustyPotWebClient : Shared.Client.WebClient
     {
         private ILogger<RustyPotWebClient> _logger;
         private readonly IServiceBus _serviceBus;

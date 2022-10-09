@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 
-namespace SCMM.Worker.Client;
+namespace SCMM.Shared.Client;
 
 public class WebClient : IDisposable
 {
@@ -18,10 +18,10 @@ public class WebClient : IDisposable
         _webProxy = webProxy;
         _httpHandler = new HttpClientHandler()
         {
-            UseCookies = (cookieContainer != null),
-            CookieContainer = (cookieContainer ?? new CookieContainer()),
+            UseCookies = cookieContainer != null,
+            CookieContainer = cookieContainer ?? new CookieContainer(),
             Proxy = webProxy,
-            PreAuthenticate = (webProxy != null)
+            PreAuthenticate = webProxy != null
         };
     }
 
