@@ -17,8 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
-    <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.Abstractions\SCMM.Shared.Abstractions.csproj" />
     <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Abstractions\SCMM.Steam.Abstractions.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />

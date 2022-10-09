@@ -46,7 +46,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                        x => x.Content = $"Importing all exchange rates for {missingDate.ToString("yyyy-MM-dd")} ({Array.IndexOf(missingDates, missingDate) + 1}/{missingDates.Length})..."
                     );
 
-                    var exchangeRates = await _fixerWebClient.GetHistoricalRatesAsync(missingDate, usdCurrency.Name, requiredCurrencyNames);
+                    var exchangeRates = await _currencyExchangeService.GetHistoricalExchangeRatesAsync(missingDate, usdCurrency.Name, requiredCurrencyNames);
                     if (exchangeRates != null)
                     {
                         foreach (var exchangeRate in exchangeRates)
@@ -81,7 +81,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     );
 
                     var missingCurrencies = requiredCurrencyNames.Where(x => !missingRate.Currencies.Any(y => x == y)).ToArray();
-                    var exchangeRates = await _fixerWebClient.GetHistoricalRatesAsync(missingRate.Date, usdCurrency.Name, missingCurrencies);
+                    var exchangeRates = await _currencyExchangeService.GetHistoricalExchangeRatesAsync(missingRate.Date, usdCurrency.Name, missingCurrencies);
                     if (exchangeRates != null)
                     {
                         foreach (var exchangeRate in exchangeRates)

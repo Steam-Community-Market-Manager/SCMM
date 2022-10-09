@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.Abstractions\SCMM.Shared.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

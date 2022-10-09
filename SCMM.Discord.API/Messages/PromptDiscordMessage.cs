@@ -1,5 +1,5 @@
-﻿using SCMM.Azure.ServiceBus;
-using SCMM.Azure.ServiceBus.Attributes;
+﻿using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Messaging.Attributes;
 
 namespace SCMM.Discord.API.Messages
 {

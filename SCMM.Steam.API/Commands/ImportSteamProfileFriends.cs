@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
@@ -35,17 +35,17 @@ namespace SCMM.Steam.API.Commands
     public class ImportSteamProfileFriends : ICommandHandler<ImportSteamProfileFriendsRequest, ImportSteamProfileFriendsResponse>
     {
         private readonly ILogger<ImportSteamProfileFriends> _logger;
-        private readonly ServiceBusClient _serviceBusClient;
+        private readonly IServiceBus _serviceBus;
         private readonly SteamDbContext _db;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly SteamConfiguration _cfg;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, ServiceBusClient serviceBusClient, SteamDbContext db, SteamCommunityWebClient communityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, IServiceBus serviceBus, SteamDbContext db, SteamCommunityWebClient communityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
-            _serviceBusClient = serviceBusClient;
+            _serviceBus = serviceBus;
             _db = db;
             _communityClient = communityClient;
             _cfg = cfg?.GetSteamConfiguration();
@@ -116,7 +116,7 @@ namespace SCMM.Steam.API.Commands
                             if (inventory?.Assets?.Any() == true)
                             {
                                 // Inventory found, import this profile
-                                await _serviceBusClient.SendMessageAsync(new ImportProfileMessage()
+                                await _serviceBus.SendMessageAsync(new ImportProfileMessage()
                                 {
                                     ProfileId = missingFriendSteamId.ToString()
                                 });

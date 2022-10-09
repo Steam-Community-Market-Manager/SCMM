@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -50,18 +50,18 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _cfg;
         private readonly SteamWebApiClient _apiClient;
         private readonly SteamCommunityWebClient _communityClient;
-        private readonly ServiceBusClient _serviceBusClient;
+        private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, ServiceBusClient serviceBusClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _apiClient = apiClient;
             _communityClient = communityClient;
-            _serviceBusClient = serviceBusClient;
+            _serviceBus = serviceBus;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
@@ -312,7 +312,7 @@ namespace SCMM.Steam.API.Commands
                 // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
                 if (publishedFileId > 0 && (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl)) && !assetDescription.WorkshopFileIsUnavailable)
                 {
-                    await _serviceBusClient.SendMessageAsync(new ImportWorkshopFileContentsMessage()
+                    await _serviceBus.SendMessageAsync(new ImportWorkshopFileContentsMessage()
                     {
                         AppId = request.AppId,
                         PublishedFileId = publishedFileId,

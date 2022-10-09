@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus.Attributes;
 using SCMM.Azure.ServiceBus.Extensions;
+using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Messaging.Attributes;
 using SCMM.Shared.Data.Models.Extensions;
 using System.Reflection;
 using System.Text.Json;
@@ -19,12 +20,12 @@ namespace SCMM.Azure.ServiceBus.Middleware
         private readonly ILogger<ServiceBusProcessorMiddleware> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly List<ServiceBusProcessor> _serviceBusProcessors;
-        private readonly global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient _serviceBusAdministrationClient;
-        private readonly global::Azure.Messaging.ServiceBus.ServiceBusClient _serviceBusClient;
+        private readonly ServiceBusAdministrationClient _serviceBusAdministrationClient;
+        private readonly ServiceBusClient _serviceBusClient;
         private bool disposedValue;
 
         public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory,
-            global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient serviceBusAdministrationClient, global::Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient,
+            ServiceBusAdministrationClient serviceBusAdministrationClient, ServiceBusClient serviceBusClient,
             MessageHandlerTypeCollection messageHandlerTypeCollection)
         {
             _next = next;
@@ -214,10 +215,10 @@ namespace SCMM.Azure.ServiceBus.Middleware
 
         private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
         {
-            var context = new MessageContext(_serviceBusClient)
+            var context = new AzureMessageContext(_serviceBusClient)
             {
                 MessageId = args.Message.MessageId,
-                MessageType = Type.GetType((string) args.Message.ApplicationProperties.GetValueOrDefault(IMessage.ApplicationPropertyType, typeof(IMessage).AssemblyQualifiedName)),
+                MessageType = Type.GetType((string) args.Message.ApplicationProperties.GetValueOrDefault(ServiceBusConstants.ApplicationPropertyType, typeof(IMessage).AssemblyQualifiedName)),
                 ReplyTo = args.Message.ReplyTo
             };
 
@@ -236,7 +237,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler cannot be instantiated");
                 }
 
-                var handlerMethod = handlerInstance.GetType().GetMethod("HandleAsync", new [] { context.MessageType, typeof(MessageContext) });
+                var handlerMethod = handlerInstance.GetType().GetMethod("HandleAsync", new [] { context.MessageType, typeof(AzureMessageContext) });
                 if (handlerMethod == null)
                 {
                     throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler method not found");

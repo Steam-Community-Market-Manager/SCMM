@@ -1,5 +1,5 @@
 ﻿using CommandQuery;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Discord.API.Messages;
 
 namespace SCMM.Discord.API.Commands
@@ -14,16 +14,16 @@ namespace SCMM.Discord.API.Commands
 
     public class PromptMessage : ICommandHandler<PromptMessageRequest, PromptMessageResponse>
     {
-        private readonly ServiceBusClient _client;
+        private readonly IServiceBus _serviceBus;
 
-        public PromptMessage(ServiceBusClient client)
+        public PromptMessage(IServiceBus serviceBus)
         {
-            _client = client;
+            _serviceBus = serviceBus;
         }
 
         public async Task<PromptMessageResponse> HandleAsync(PromptMessageRequest request)
         {
-            return await _client.SendMessageAndAwaitReplyAsync<PromptDiscordMessage, PromptMessageResponse>(request);
+            return await _serviceBus.SendMessageAndAwaitReplyAsync<PromptDiscordMessage, PromptMessageResponse>(request);
         }
     }
 }

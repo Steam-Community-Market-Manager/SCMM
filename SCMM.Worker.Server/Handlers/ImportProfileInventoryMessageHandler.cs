@@ -1,6 +1,6 @@
 ﻿using CommandQuery;
-using SCMM.Azure.ServiceBus;
-using SCMM.Azure.ServiceBus.Attributes;
+using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Messaging.Attributes;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
@@ -17,7 +17,7 @@ namespace SCMM.Worker.Server.Handlers
             _commandProcessor = commandProcessor;
         }
 
-        public async Task HandleAsync(ImportProfileInventoryMessage message, MessageContext context)
+        public async Task HandleAsync(ImportProfileInventoryMessage message, IMessageContext context)
         {
             var importResult = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {

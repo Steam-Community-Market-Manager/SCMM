@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Steam.Abstractions;
@@ -21,6 +21,8 @@ using SCMM.Worker.Client;
 using SCMM.Worker.Client.Configuration;
 using System.Net;
 using System.Reflection;
+using SCMM.Shared.Abstractions.Analytics;
+using SCMM.Azure.ServiceBus;
 
 Console.WriteLine();
 Console.WriteLine(" =============== ");
@@ -153,7 +155,7 @@ public static class HostExtensions
                 return configuration.GetAzureAiConfiguration();
             });
             services.AddSingleton<SteamSession>();
-            services.AddSingleton<AzureAiClient>();
+            services.AddSingleton<IImageAnalysisService, AzureAiClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();

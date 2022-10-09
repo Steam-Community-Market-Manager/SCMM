@@ -3,12 +3,12 @@ using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
 using SCMM.Steam.Abstractions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
+using SCMM.Shared.Abstractions.Messaging;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -32,11 +32,11 @@ namespace SCMM.Steam.API.Commands
         private readonly ILogger<ImportSteamWorkshopFileToBlobStorage> _logger;
         private readonly SteamDbContext _steamDb;
         private readonly ISteamConsoleClient _steamConsoleClient;
-        private readonly ServiceBusClient _serviceBus;
+        private readonly IServiceBus _serviceBus;
         private readonly string _workshopFilesStorageConnectionString;
         private readonly string _workshopFilesStorageUrl;
 
-        public ImportSteamWorkshopFileToBlobStorage(ILogger<ImportSteamWorkshopFileToBlobStorage> logger, IConfiguration configuration, SteamDbContext steamDb, ISteamConsoleClient steamConsoleClient, ServiceBusClient serviceBus)
+        public ImportSteamWorkshopFileToBlobStorage(ILogger<ImportSteamWorkshopFileToBlobStorage> logger, IConfiguration configuration, SteamDbContext steamDb, ISteamConsoleClient steamConsoleClient, IServiceBus serviceBus)
         {
             _logger = logger;
             _steamDb = steamDb;

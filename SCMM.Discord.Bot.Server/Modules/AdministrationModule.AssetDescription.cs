@@ -495,7 +495,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 });
             }
 
-            await _serviceBusClient.SendMessagesAsync(messages);
+            await _serviceBus.SendMessagesAsync(messages);
             return CommandResult.Success();
         }
 
@@ -518,7 +518,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 });
             }
 
-            await _serviceBusClient.SendMessagesAsync(messages);
+            await _serviceBus.SendMessagesAsync(messages);
             return CommandResult.Success();
         }
     }

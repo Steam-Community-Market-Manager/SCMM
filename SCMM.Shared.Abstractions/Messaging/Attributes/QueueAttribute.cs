@@ -1,4 +1,4 @@
-﻿namespace SCMM.Azure.ServiceBus.Attributes
+﻿namespace SCMM.Shared.Abstractions.Messaging.Attributes
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class QueueAttribute : Attribute

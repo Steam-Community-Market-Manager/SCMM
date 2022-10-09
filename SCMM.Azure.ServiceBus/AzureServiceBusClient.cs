@@ -1,15 +1,16 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using SCMM.Azure.ServiceBus.Extensions;
+using SCMM.Shared.Abstractions.Messaging;
 
 namespace SCMM.Azure.ServiceBus
 {
-    public class ServiceBusClient
+    public class AzureServiceBusClient : IServiceBus
     {
-        private readonly global::Azure.Messaging.ServiceBus.ServiceBusClient _client;
-        private readonly global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient _administrationClient;
+        private readonly ServiceBusClient _client;
+        private readonly ServiceBusAdministrationClient _administrationClient;
 
-        public ServiceBusClient(global::Azure.Messaging.ServiceBus.ServiceBusClient client, global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient administrationClient)
+        public AzureServiceBusClient(ServiceBusClient client, ServiceBusAdministrationClient administrationClient)
         {
             _client = client;
             _administrationClient = administrationClient;

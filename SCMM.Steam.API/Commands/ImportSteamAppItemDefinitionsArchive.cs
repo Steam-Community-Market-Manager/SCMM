@@ -1,7 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -46,11 +46,11 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamDbContext _steamDb;
         private readonly SteamWebApiClient _steamApiClient;
         private readonly SteamCommunityWebClient _steamCommunityClient;
-        private readonly ServiceBusClient _serviceBus;
+        private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAppItemDefinitionsArchive(ILogger<ImportSteamAppItemDefinitionsArchive> logger, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamApiClient, SteamCommunityWebClient steamCommunityClient, ServiceBusClient serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAppItemDefinitionsArchive(ILogger<ImportSteamAppItemDefinitionsArchive> logger, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamApiClient, SteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _steamConfiguration = steamConfiguration;

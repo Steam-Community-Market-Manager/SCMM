@@ -1,5 +1,5 @@
-﻿using SCMM.Azure.ServiceBus;
-using SCMM.Azure.ServiceBus.Attributes;
+﻿using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Messaging.Attributes;
 using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
 
@@ -15,7 +15,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             _client = client;
         }
 
-        public Task HandleAsync(SendDiscordMessage message, MessageContext context)
+        public Task HandleAsync(SendDiscordMessage message, IMessageContext context)
         {
             if (!String.IsNullOrEmpty(message.Username))
             {

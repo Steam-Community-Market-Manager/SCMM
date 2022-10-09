@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
+﻿using SCMM.Shared.Abstractions.Finance;
+using System.Text.Json;
 
 namespace SCMM.Fixer.Client
 {
-    public class FixerWebClient : Worker.Client.WebClient
+    public class FixerWebClient : Worker.Client.WebClient, ICurrencyExchangeService
     {
         private const string BaseUri = "https://data.fixer.io/api/";
 
@@ -13,7 +14,7 @@ namespace SCMM.Fixer.Client
             _configuration = configuration;
         }
 
-        public async Task<IDictionary<string, decimal>> GetHistoricalRatesAsync(DateTime date, string from, params string[] to)
+        public async Task<IDictionary<string, decimal>> GetHistoricalExchangeRatesAsync(DateTime date, string from, params string[] to)
         {
             using (var client = BuildWebApiHttpClient())
             {

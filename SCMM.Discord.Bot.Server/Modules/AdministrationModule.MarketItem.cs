@@ -1,7 +1,7 @@
-﻿using Azure.AI.AnomalyDetector.Models;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client.Commands;
+using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Data.Models.Extensions;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -15,19 +15,13 @@ namespace SCMM.Discord.Bot.Server.Modules
             var item = await _steamDb.SteamMarketItems.FirstOrDefaultAsync(x => x.Description.Name == itemName);
             var priceData = await _steamDb.SteamMarketItemSale.Where(x => x.ItemId == item.Id && x.Timestamp >= cutoff).OrderByDescending(x => x.Timestamp).Take(168).ToListAsync();
 
-            var priceAnomalies = await _azureAiClient.DetectTimeSeriesAnomaliesAsync(
-                priceData.Select(x => new TimeSeriesPoint(x.MedianPrice)
-                {
-                    Timestamp = x.Timestamp,
-                }),
+            var priceAnomalies = await _timeSeriesAnalysisService.DetectTimeSeriesAnomaliesAsync(
+                priceData.ToDictionary(x => x.Timestamp, x => (float) x.MedianPrice),
                 granularity: TimeGranularity.Hourly,
                 sensitivity: 90
             );
-            var quantityAnomalies = await _azureAiClient.DetectTimeSeriesAnomaliesAsync(
-                priceData.Select(x => new TimeSeriesPoint(x.Quantity)
-                {
-                    Timestamp = x.Timestamp,
-                }),
+            var quantityAnomalies = await _timeSeriesAnalysisService.DetectTimeSeriesAnomaliesAsync(
+                priceData.ToDictionary(x => x.Timestamp, x => (float) x.Quantity),
                 granularity: TimeGranularity.Hourly,
                 sensitivity: 90
             );

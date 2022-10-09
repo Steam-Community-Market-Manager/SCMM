@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Azure.ServiceBus;
 using SCMM.Discord.Client;
 using SCMM.Discord.Data.Store;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
@@ -39,7 +39,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             _client = client;
         }
 
-        public async Task HandleAsync(AppItemDefinitionsUpdatedMessage appItemDefinition, MessageContext context)
+        public async Task HandleAsync(AppItemDefinitionsUpdatedMessage appItemDefinition, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guildId, channelId) =>
             {
@@ -60,7 +60,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(ItemDefinitionAddedMessage itemDefinition, MessageContext context)
+        public async Task HandleAsync(ItemDefinitionAddedMessage itemDefinition, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsItemAdded, (guildId, channelId) =>
             {
@@ -88,7 +88,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(MarketItemAddedMessage marketItem, MessageContext context)
+        public async Task HandleAsync(MarketItemAddedMessage marketItem, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemAdded, (guildId, channelId) =>
             {
@@ -121,27 +121,27 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(MarketItemManipulationDetectedMessage marketItem, MessageContext context)
+        public async Task HandleAsync(MarketItemManipulationDetectedMessage marketItem, IMessageContext context)
         {
             throw new NotImplementedException();
         }
 
-        public async Task HandleAsync(MarketItemPriceAllTimeHighReachedMessage marketItem, MessageContext context)
+        public async Task HandleAsync(MarketItemPriceAllTimeHighReachedMessage marketItem, IMessageContext context)
         {
             throw new NotImplementedException();
         }
 
-        public async Task HandleAsync(MarketItemPriceAllTimeLowReachedMessage marketItem, MessageContext context)
+        public async Task HandleAsync(MarketItemPriceAllTimeLowReachedMessage marketItem, IMessageContext context)
         {
             throw new NotImplementedException();
         }
 
-        public async Task HandleAsync(MarketItemPriceProfitableDealDetectedMessage marketItem, MessageContext context)
+        public async Task HandleAsync(MarketItemPriceProfitableDealDetectedMessage marketItem, IMessageContext context)
         {
             throw new NotImplementedException();
         }
 
-        public async Task HandleAsync(StoreAddedMessage store, MessageContext context)
+        public async Task HandleAsync(StoreAddedMessage store, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreAdded, (guildId, channelId) =>
             {
@@ -168,7 +168,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(StoreItemAddedMessage storeItem, MessageContext context)
+        public async Task HandleAsync(StoreItemAddedMessage storeItem, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guildId, channelId) =>
             {
@@ -202,7 +202,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(StoreMediaAddedMessage storeMedia, MessageContext context)
+        public async Task HandleAsync(StoreMediaAddedMessage storeMedia, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guildId, channelId) =>
             {
@@ -225,7 +225,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(WorkshopFilePublishedMessage workshopFile, MessageContext context)
+        public async Task HandleAsync(WorkshopFilePublishedMessage workshopFile, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFilePublished, (guildId, channelId) =>
             {
@@ -264,7 +264,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(WorkshopFileUpdatedMessage workshopFile, MessageContext context)
+        public async Task HandleAsync(WorkshopFileUpdatedMessage workshopFile, IMessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guildId, channelId) =>
             {

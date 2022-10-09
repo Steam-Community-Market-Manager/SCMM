@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
@@ -64,9 +64,9 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _cfg;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
-        private readonly ServiceBusClient _serviceBus;
+        private readonly IServiceBus _serviceBus;
 
-        public UpdateSteamAssetDescription(ILogger<UpdateSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBus)
+        public UpdateSteamAssetDescription(ILogger<UpdateSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus)
         {
             _logger = logger;
             _db = db;

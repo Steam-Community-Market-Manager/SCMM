@@ -1,6 +1,6 @@
 ﻿using CommandQuery;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
@@ -44,16 +44,16 @@ namespace SCMM.Steam.API.Commands
     public class ImportSteamProfile : ICommandHandler<ImportSteamProfileRequest, ImportSteamProfileResponse>
     {
         private readonly ILogger<ImportSteamProfile> _logger;
-        private readonly ServiceBusClient _serviceBusClient;
+        private readonly IServiceBus _serviceBus;
         private readonly SteamDbContext _db;
         private readonly SteamWebApiClient _apiClient;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, ServiceBusClient serviceBusClient, SteamDbContext db, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
+        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, IServiceBus serviceBus, SteamDbContext db, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
         {
             _logger = logger;
-            _serviceBusClient = serviceBusClient;
+            _serviceBus = serviceBus;
             _db = db;
             _apiClient = apiClient;
             _communityClient = communityClient;
@@ -202,14 +202,14 @@ namespace SCMM.Steam.API.Commands
 
                 if (request.ImportFriendsListAsync && profile != null && !String.IsNullOrEmpty(profile.SteamId))
                 {
-                    await _serviceBusClient.SendMessageAsync(new ImportProfileFriendsMessage()
+                    await _serviceBus.SendMessageAsync(new ImportProfileFriendsMessage()
                     {
                         ProfileId = profile.SteamId
                     });
                 }
                 if (request.ImportInventoryAsync && profile != null && !String.IsNullOrEmpty(profile.SteamId))
                 {
-                    await _serviceBusClient.SendMessageAsync(new ImportProfileInventoryMessage()
+                    await _serviceBus.SendMessageAsync(new ImportProfileInventoryMessage()
                     {
                         ProfileId = profile.SteamId
                     });

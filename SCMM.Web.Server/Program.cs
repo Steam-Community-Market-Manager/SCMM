@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.OpenApi.Models;
-using SCMM.Azure.AI;
-using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
@@ -176,9 +174,7 @@ public static class WebApplicationExtensions
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
-        builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<SteamSession>();
-        builder.Services.AddSingleton<AzureAiClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();

@@ -1,6 +1,6 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -43,9 +43,9 @@ namespace SCMM.Steam.API.Commands
     {
         private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
-        private readonly ServiceBusClient _serviceBus;
+        private readonly IServiceBus _serviceBus;
 
-        public CalculateSteamProfileInventoryTotals(SteamDbContext db, IQueryProcessor queryProcessor, ServiceBusClient serviceBus)
+        public CalculateSteamProfileInventoryTotals(SteamDbContext db, IQueryProcessor queryProcessor, IServiceBus serviceBus)
         {
             _db = db;
             _queryProcessor = queryProcessor;

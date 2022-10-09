@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace SCMM.Azure.AI;
+namespace SCMM.Shared.API;
 
 /// <remarks>
 /// https://www.color-blindness.com/color-name-hue-tool/js/ntc.js
@@ -71,7 +71,7 @@ public static class ColourName
             {
                 return item;
             }
-            
+
             ndf1 = Math.Pow(r - item.R, 2) + Math.Pow(g - item.G, 2) + Math.Pow(b - item.B, 2);
             ndf2 = Math.Abs(Math.Pow(h - item.H, 2)) + Math.Pow(s - item.S, 2) + Math.Abs(Math.Pow(l - item.L, 2));
             ndf = ndf1 + ndf2 * 2;
@@ -88,7 +88,7 @@ public static class ColourName
     private static byte[] GetRGB(string htmlColour)
     {
         var rgb = ColorTranslator.FromHtml($"#{htmlColour}");
-        return new[] { rgb.R, rgb.G, rgb.B }; 
+        return new[] { rgb.R, rgb.G, rgb.B };
     }
 
     private static byte[] GetHSL(string htmlColour)
@@ -107,7 +107,7 @@ public static class ColourName
         double s = 0;
         if (l > 0 && l < 1)
         {
-            s = delta / (l < 0.5 ? (2 * l) : (2 - 2 * l));
+            s = delta / (l < 0.5 ? 2 * l : 2 - 2 * l);
         }
 
         double h = 0;
@@ -119,20 +119,20 @@ public static class ColourName
             }
             if (max == g && max != b)
             {
-                h += (2 + (b - r) / delta);
+                h += 2 + (b - r) / delta;
             }
             if (max == b && max != r)
             {
-                h += (4 + (r - g) / delta);
+                h += 4 + (r - g) / delta;
             }
             h /= 6;
         }
 
-        return new byte[] 
-        { 
+        return new byte[]
+        {
             (byte)(h * 255),
             (byte)(s * 255),
-            (byte)(l * 255) 
+            (byte)(l * 255)
         };
     }
 

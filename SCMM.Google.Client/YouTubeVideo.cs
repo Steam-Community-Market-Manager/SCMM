@@ -1,6 +1,8 @@
-﻿namespace SCMM.Google.Client
+﻿using SCMM.Shared.Abstractions.Media;
+
+namespace SCMM.Google.Client
 {
-    public class YouTubeVideo
+    public class YouTubeVideo : IVideo
     {
         public string Id { get; set; }
 

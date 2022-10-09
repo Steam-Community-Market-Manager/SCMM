@@ -1,10 +1,10 @@
 ﻿using Azure.Storage.Blobs;
 using CommandQuery;
-using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.AI;
+using SCMM.Shared.Abstractions.Analytics;
+using SCMM.Shared.API;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Extensions;
@@ -13,7 +13,6 @@ using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System.Drawing;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -31,14 +30,14 @@ namespace SCMM.Steam.API.Commands
     {
         private readonly ILogger<AnalyseSteamWorkshopContentsInBlobStorage> _logger;
         private readonly SteamDbContext _steamDb;
-        private readonly AzureAiClient _azureAiClient;
+        private readonly IImageAnalysisService _imageAnalysisService;
         private readonly string _workshopFilesStorageConnectionString;
 
-        public AnalyseSteamWorkshopContentsInBlobStorage(ILogger<AnalyseSteamWorkshopContentsInBlobStorage> logger, IConfiguration configuration, SteamDbContext steamDb, AzureAiClient azureAiClient)
+        public AnalyseSteamWorkshopContentsInBlobStorage(ILogger<AnalyseSteamWorkshopContentsInBlobStorage> logger, IConfiguration configuration, SteamDbContext steamDb, IImageAnalysisService imageAnalysisService)
         {
             _logger = logger;
             _steamDb = steamDb;
-            _azureAiClient = azureAiClient;
+            _imageAnalysisService = imageAnalysisService;
             _workshopFilesStorageConnectionString = (configuration.GetConnectionString("WorkshopFilesStorageConnection") ?? Environment.GetEnvironmentVariable("WorkshopFilesStorageConnection"));
         }
 
@@ -81,10 +80,10 @@ namespace SCMM.Steam.API.Commands
                         {
                             // Determine the icons dominant colour and any captions/tags that help describe the image
                             using var iconStream = iconFile.Open();
-                            var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
-                            if (!string.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
+                            var iconAnalysis = await _imageAnalysisService.AnalyseImageAsync(iconStream);
+                            if (!string.IsNullOrEmpty(iconAnalysis?.AccentColor))
                             {
-                                accentColour = $"#{iconAnalysis.Color.AccentColor}";
+                                accentColour = $"#{iconAnalysis.AccentColor}";
 
                                 var allColours = new[] { accentColour };
                                 var colourTags = new Dictionary<string, string>();
@@ -108,23 +107,23 @@ namespace SCMM.Steam.API.Commands
                             {
                                 _logger.LogWarning("Icon analyse failed to identify the accent colour");
                             }
-                            if (iconAnalysis?.Description?.Captions?.Any() == true)
+                            if (iconAnalysis?.Captions?.Any() == true)
                             {
                                 var captionIndex = 0;
-                                foreach (var caption in iconAnalysis.Description.Captions)
+                                foreach (var caption in iconAnalysis.Captions)
                                 {
                                     var tagName = $"{Constants.AssetTagAiCaption}.{(char)('a' + captionIndex++)}";
-                                    tags[tagName] = $"{caption.Text.FirstCharToUpper()} ({Math.Round(caption.Confidence * 100, 0)}%)";
+                                    tags[tagName] = $"{caption.Key.FirstCharToUpper()} ({Math.Round(caption.Value * 100, 0)}%)";
                                 }
                             }
                             else
                             {
                                 _logger.LogWarning("Icon analyse failed to identify any captions");
                             }
-                            if (iconAnalysis?.Description?.Tags?.Any() == true)
+                            if (iconAnalysis?.Tags?.Any() == true)
                             {
                                 var tagIndex = 0;
-                                foreach (var tag in iconAnalysis.Description.Tags)
+                                foreach (var tag in iconAnalysis.Tags)
                                 {
                                     var tagName = $"{Constants.AssetTagAiTag}.{(char)('a' + tagIndex++)}";
                                     tags[tagName] = tag.FirstCharToUpper();

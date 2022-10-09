@@ -4,10 +4,12 @@ using Azure.AI.AnomalyDetector.Models;
 using Azure.AI.TextAnalytics;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using SCMM.Shared.Abstractions;
+using SCMM.Shared.Abstractions.Analytics;
 
 namespace SCMM.Azure.AI
 {
-    public class AzureAiClient
+    public class AzureAiClient : ITimeSeriesAnalysisService, IImageAnalysisService, ITextAnalysisService
     {
         private readonly AnomalyDetectorClient _anomalyDetectorClient;
         private readonly ComputerVisionClient _computerVisionClient;
@@ -32,29 +34,36 @@ namespace SCMM.Azure.AI
             }
         }
 
-        public async Task<IEnumerable<TimeSeriesAnomaly>> DetectTimeSeriesAnomaliesAsync(IEnumerable<TimeSeriesPoint> data, TimeGranularity? granularity = TimeGranularity.Daily, int? sensitivity = null)
+        public async Task<IEnumerable<ITimeSeriesAnomaly>> DetectTimeSeriesAnomaliesAsync(IDictionary<DateTimeOffset, float> data, Shared.Abstractions.Analytics.TimeGranularity? granularity = Shared.Abstractions.Analytics.TimeGranularity.Daily, int? sensitivity = null)
         {
             if (_anomalyDetectorClient == null)
             {
                 throw new InvalidOperationException("Anomaly detector is not configured");
             }
 
-            var rawData = data.OrderBy(x => x.Timestamp).ToArray();
+            var dataPoints = data
+                .Select(x => new TimeSeriesPoint(x.Value)
+                {
+                    Timestamp = x.Key
+                })
+                .OrderBy(x => x.Timestamp)
+                .ToArray();
+
             var anomalies = new List<TimeSeriesAnomaly>();
-            var response = (EntireDetectResponse) await _anomalyDetectorClient.DetectEntireSeriesAsync(new DetectRequest(rawData)
+            var response = (EntireDetectResponse) await _anomalyDetectorClient.DetectEntireSeriesAsync(new DetectRequest(dataPoints)
             {
-                Granularity = granularity,
+                Granularity = (global::Azure.AI.AnomalyDetector.Models.TimeGranularity) granularity,
                 Sensitivity = sensitivity
             });
 
-            for (var i = 0; i < rawData.Length; ++i)
+            for (var i = 0; i < dataPoints.Length; ++i)
             {
                 if (response.IsAnomaly[i])
                 {
                     anomalies.Add(new TimeSeriesAnomaly()
                     {
-                        Timestamp = rawData[i].Timestamp,
-                        ActualValue = rawData[i].Value,
+                        Timestamp = dataPoints[i].Timestamp,
+                        ActualValue = dataPoints[i].Value,
                         ExpectedValue = response.ExpectedValues[i],
                         UpperMargin = response.ExpectedValues[i],
                         LowerMargin = response.ExpectedValues[i],
@@ -68,20 +77,30 @@ namespace SCMM.Azure.AI
             return anomalies;
         }
 
-        public async Task<ImageAnalysis> AnalyseImageAsync(Stream image, params VisualFeatureTypes?[] visualFeatures)
+        public async Task<IAnalysedImage> AnalyseImageAsync(Stream image)
         {
             if (_computerVisionClient == null)
             {
                 throw new InvalidOperationException("Computer vision is not configured");
             }
 
-            return await _computerVisionClient.AnalyzeImageInStreamAsync(
+            var result = await _computerVisionClient.AnalyzeImageInStreamAsync(
                 image,
-                visualFeatures: visualFeatures?.ToList()
+                visualFeatures: new List<VisualFeatureTypes?> {
+                    VisualFeatureTypes.Color, VisualFeatureTypes.Tags, VisualFeatureTypes.Description
+                }
             );
+
+            return new AnalysedImage
+            {
+                AccentColor = result?.Color?.AccentColor,
+                Colors = result?.Color?.DominantColors,
+                Tags = result?.Description?.Tags,
+                Captions = result?.Description?.Captions?.ToDictionary(x => x.Text, x => x.Confidence)
+            };
         }
 
-        public async Task<TextSentiment> GetTextSentimentAsync(string text)
+        public async Task<Sentiment> GetTextSentimentAsync(string text)
         {
             if (_textAnalyticsClient == null)
             {
@@ -89,7 +108,7 @@ namespace SCMM.Azure.AI
             }
 
             var response = await _textAnalyticsClient.AnalyzeSentimentAsync(text);
-            return response?.Value?.Sentiment ?? TextSentiment.Neutral;
+            return (Sentiment) (response?.Value?.Sentiment ?? TextSentiment.Neutral);
         }
     }
 }

@@ -7,10 +7,11 @@
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.Data.Models\SCMM.Shared.Data.Models.csproj" />
   </ItemGroup>
 
 </Project>

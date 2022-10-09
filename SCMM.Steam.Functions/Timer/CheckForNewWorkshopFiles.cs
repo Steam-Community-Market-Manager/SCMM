@@ -2,7 +2,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
@@ -22,9 +22,9 @@ public class CheckForNewWorkshopFiles
     private readonly SteamCommunityWebClient _steamCommunityClient;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly ServiceBusClient _serviceBus;
+    private readonly IServiceBus _serviceBus;
 
-    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient steamCommunityClient, ServiceBusClient serviceBus)
+    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus)
     {
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;

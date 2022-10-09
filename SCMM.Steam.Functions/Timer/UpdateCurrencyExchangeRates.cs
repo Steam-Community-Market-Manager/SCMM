@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
@@ -15,13 +15,13 @@ public class UpdateCurrencyExchangeRates
 {
     private readonly SteamDbContext _db;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
-    private readonly ServiceBusClient _serviceBusClient;
+    private readonly IServiceBus _serviceBus;
 
-    public UpdateCurrencyExchangeRates(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, ServiceBusClient serviceBusClient)
+    public UpdateCurrencyExchangeRates(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
-        _serviceBusClient = serviceBusClient;
+        _serviceBus = serviceBus;
     }
 
     [Function("Update-Currency-Exchange-Rates")]
@@ -146,6 +146,6 @@ public class UpdateCurrencyExchangeRates
             );
         }
 
-        await _serviceBusClient.SendMessagesAsync(currencyExchangeRateUpdatedMessages);
+        await _serviceBus.SendMessagesAsync(currencyExchangeRateUpdatedMessages);
     }
 }

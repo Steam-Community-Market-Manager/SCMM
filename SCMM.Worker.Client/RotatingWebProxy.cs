@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using SCMM.Shared.Data.Models.Extensions;
+﻿using SCMM.Shared.Data.Models.Extensions;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Linq;
 

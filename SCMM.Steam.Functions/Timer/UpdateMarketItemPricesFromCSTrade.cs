@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Market.CSTrade.Client;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
@@ -17,9 +17,9 @@ public class UpdateMarketItemPricesFromCSTrade
 {
     private readonly SteamDbContext _db;
     private readonly CSTradeWebClient _csTradeWebClient;
-    private readonly ServiceBusClient _serviceBus;
+    private readonly IServiceBus _serviceBus;
 
-    public UpdateMarketItemPricesFromCSTrade(SteamDbContext db, CSTradeWebClient csTradeWebClient, ServiceBusClient serviceBus)
+    public UpdateMarketItemPricesFromCSTrade(SteamDbContext db, CSTradeWebClient csTradeWebClient, IServiceBus serviceBus)
     {
         _db = db;
         _csTradeWebClient = csTradeWebClient;

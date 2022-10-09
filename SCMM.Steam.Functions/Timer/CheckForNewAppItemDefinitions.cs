@@ -2,7 +2,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Client;
@@ -17,10 +17,10 @@ public class CheckForNewAppItemDefinitions
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamDbContext _steamDb;
-    private readonly ServiceBusClient _serviceBus;
+    private readonly IServiceBus _serviceBus;
     private readonly SteamWebApiClient _apiClient;
 
-    public CheckForNewAppItemDefinitions(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamWebApiClient apiClient, ServiceBusClient serviceBus)
+    public CheckForNewAppItemDefinitions(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamWebApiClient apiClient, IServiceBus serviceBus)
     {
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;

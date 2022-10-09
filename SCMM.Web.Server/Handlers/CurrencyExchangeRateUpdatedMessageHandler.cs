@@ -1,5 +1,6 @@
-﻿using SCMM.Azure.ServiceBus;
-using SCMM.Azure.ServiceBus.Attributes;
+﻿using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Messaging.Attributes;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 
 namespace SCMM.Web.Server.Handlers
@@ -16,7 +17,7 @@ namespace SCMM.Web.Server.Handlers
             _currencyCache = currencyCache;
         }
 
-        public Task HandleAsync(CurrencyExchangeRateUpdatedMessage message, MessageContext context)
+        public Task HandleAsync(CurrencyExchangeRateUpdatedMessage message, IMessageContext context)
         {
             _currencyCache.UpdateExchangeRate(message.Currency, message.ExchangeRateMultiplier);
             _logger.LogTrace($"Currency {message.Currency} exchange rate multiple has been updated to {message.ExchangeRateMultiplier}");

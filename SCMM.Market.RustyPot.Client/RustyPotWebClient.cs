@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SocketIOClient;
 using SocketIOClient.Transport;
@@ -9,12 +9,12 @@ namespace SCMM.Market.RustyPot.Client
     public class RustyPotWebClient : Worker.Client.WebClient
     {
         private ILogger<RustyPotWebClient> _logger;
-        private readonly ServiceBusClient _serviceBus;
+        private readonly IServiceBus _serviceBus;
         private readonly ICollection<string> _steamIds;
 
         private const string WebsiteHostname = "rustypot.com";
 
-        public RustyPotWebClient(ILogger<RustyPotWebClient> logger, ServiceBusClient serviceBus)
+        public RustyPotWebClient(ILogger<RustyPotWebClient> logger, IServiceBus serviceBus)
         {
             _logger = logger;
             _serviceBus = serviceBus;

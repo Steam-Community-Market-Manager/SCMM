@@ -2,11 +2,12 @@
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Abstractions.Media;
 using System.Reflection;
 
 namespace SCMM.Google.Client
 {
-    public class GoogleClient : IDisposable
+    public class GoogleClient : IDisposable, IVideoStreamingService
     {
         public const int PageMaxResults = 50;
 
@@ -50,8 +51,13 @@ namespace SCMM.Google.Client
         /// <remarks>
         /// A call to this method has a quota cost of 1 unit + an additional 1 unit for every page of videos returned (see PageMaxResults).
         /// </remarks>
-        public async Task<IEnumerable<YouTubeVideo>> ListChannelVideosAsync(string channelId, int? maxResults = PageMaxResults)
+        public async Task<IEnumerable<IVideo>> ListChannelVideosAsync(string channelId, int? maxResults = PageMaxResults)
         {
+            if (maxResults == null || maxResults < 0 || maxResults > PageMaxResults)
+            {
+                maxResults = PageMaxResults;
+            }
+
             var channelDetailsRequest = _service.Channels.List(ContentDetails);
             channelDetailsRequest.Id = channelId;
 
@@ -101,8 +107,13 @@ namespace SCMM.Google.Client
         /// <remarks>
         /// A call to this method has a quota cost of 100 units for every page of videos returned (see PageMaxResults).
         /// </remarks>
-        public async Task<IEnumerable<YouTubeVideo>> SearchForVideosAsync(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int? maxResults = PageMaxResults)
+        public async Task<IEnumerable<IVideo>> SearchForVideosAsync(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int? maxResults = PageMaxResults)
         {
+            if (maxResults == null || maxResults < 0 || maxResults > PageMaxResults)
+            {
+                maxResults = PageMaxResults;
+            }
+
             var videos = new List<YouTubeVideo>();
             var nextPageToken = (string)null;
             do

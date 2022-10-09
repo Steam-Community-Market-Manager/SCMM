@@ -31,6 +31,8 @@ using SCMM.Worker.Client;
 using System.Net;
 using System.Reflection;
 using SCMM.Steam.Abstractions;
+using SCMM.Shared.Abstractions.Analytics;
+using SCMM.Shared.Abstractions.Finance;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -176,8 +178,8 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<DiscordClient>();
         builder.Services.AddSingleton<SteamSession>();
-        builder.Services.AddSingleton<FixerWebClient>();
-        builder.Services.AddSingleton<AzureAiClient>();
+        builder.Services.AddSingleton<ICurrencyExchangeService, FixerWebClient>();
+        builder.Services.AddSingleton<ITimeSeriesAnalysisService, AzureAiClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();

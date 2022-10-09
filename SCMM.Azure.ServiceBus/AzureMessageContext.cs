@@ -1,12 +1,13 @@
 ﻿using Azure.Messaging.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 
 namespace SCMM.Azure.ServiceBus
 {
-    public class MessageContext
+    public class AzureMessageContext : IMessageContext
     {
-        private readonly global::Azure.Messaging.ServiceBus.ServiceBusClient _client;
+        private readonly ServiceBusClient _client;
 
-        public MessageContext(global::Azure.Messaging.ServiceBus.ServiceBusClient client)
+        public AzureMessageContext(ServiceBusClient client)
         {
             _client = client;
         }

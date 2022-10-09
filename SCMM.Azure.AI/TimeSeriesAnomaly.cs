@@ -1,6 +1,8 @@
-﻿namespace SCMM.Azure.AI;
+﻿using SCMM.Shared.Abstractions.Analytics;
 
-public class TimeSeriesAnomaly
+namespace SCMM.Azure.AI;
+
+public class TimeSeriesAnomaly : ITimeSeriesAnomaly
 {
     public DateTimeOffset? Timestamp { get; set; }
 

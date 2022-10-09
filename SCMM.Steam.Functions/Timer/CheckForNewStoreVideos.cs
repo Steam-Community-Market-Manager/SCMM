@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
-using SCMM.Google.Client;
+using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Media;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
@@ -12,25 +12,25 @@ using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class CheckForNewStoreVideosYouTube
+public class CheckForNewStoreVideos
 {
     private readonly SteamDbContext _db;
-    private readonly GoogleClient _googleClient;
+    private readonly IEnumerable<IVideoStreamingService> _videoStreamingServices;
     private readonly CheckForNewStoreVideosConfiguration _configuration;
-    private readonly ServiceBusClient _serviceBus;
+    private readonly IServiceBus _serviceBus;
 
-    public CheckForNewStoreVideosYouTube(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient, ServiceBusClient serviceBus)
+    public CheckForNewStoreVideos(IConfiguration configuration, SteamDbContext db, IEnumerable<IVideoStreamingService> videoStreamingServices, IServiceBus serviceBus)
     {
         _db = db;
-        _googleClient = googleClient;
+        _videoStreamingServices = videoStreamingServices;
         _configuration = configuration.GetSection("StoreVideos").Get<CheckForNewStoreVideosConfiguration>();
         _serviceBus = serviceBus;
     }
 
-    [Function("Check-New-Store-Videos-YouTube")]
+    [Function("Check-New-Store-Videos")]
     public async Task Run([TimerTrigger("0 5 * * * *")] /* every hour, 5 minutes past */ TimerInfo timerInfo, FunctionContext context)
     {
-        var logger = context.GetLogger("Check-New-Store-Videos-YouTube");
+        var logger = context.GetLogger("Check-New-Store-Videos");
 
         var steamApps = await _db.SteamApps
             .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
@@ -51,50 +51,53 @@ public class CheckForNewStoreVideosYouTube
 
             foreach (var itemStore in activeItemStores)
             {
-                var media = new List<YouTubeVideo>();
+                var media = new Dictionary<IVideo, IVideoStreamingService>();
                 foreach (var channel in _configuration.Channels.Where(x => x.Type == CheckForNewStoreVideosConfiguration.ChannelType.YouTube))
                 {
-                    try
+                    foreach (var videoStreamingService in _videoStreamingServices)
                     {
-                        // TODO: If we already have a video for this channel, don't waste time checking again
-                        // NOTE: We only accept one video per-channel, per-store
-                        /*
-                        if (itemStore.Media.ContainsKey(channel.ChannelId))
+                        try
                         {
-                            continue;
+                            // TODO: If we already have a video for this channel, don't waste time checking again
+                            // NOTE: We only accept one video per-channel, per-store
+                            /*
+                            if (itemStore.Media.ContainsKey(channel.ChannelId))
+                            {
+                                continue;
+                            }
+                            */
+
+                            // Find the earliest video that matches our store data period.
+                            logger.LogTrace($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.Value.UtcDateTime}...");
+                            var videos = await videoStreamingService.ListChannelVideosAsync(channel.ChannelId);
+                            var firstStoreVideo = videos
+                                .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
+                                .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.Value.UtcDateTime && x.PublishedAt.Value.UtcDateTime <= itemStore.Start.Value.UtcDateTime.AddDays(7))
+                                .OrderBy(x => x.PublishedAt.Value)
+                                .FirstOrDefault();
+
+                            if (firstStoreVideo != null)
+                            {
+                                media[firstStoreVideo] = videoStreamingService;
+                            }
                         }
-                        */
-
-                        // Find the earliest video that matches our store data period.
-                        logger.LogTrace($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.Value.UtcDateTime}...");
-                        var videos = await _googleClient.ListChannelVideosAsync(channel.ChannelId, GoogleClient.PageMaxResults);
-                        var firstStoreVideo = videos
-                            .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
-                            .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.Value.UtcDateTime && x.PublishedAt.Value.UtcDateTime <= itemStore.Start.Value.UtcDateTime.AddDays(7))
-                            .OrderBy(x => x.PublishedAt.Value)
-                            .FirstOrDefault();
-
-                        if (firstStoreVideo != null)
+                        catch (Exception ex)
                         {
-                            media.Add(firstStoreVideo);
+                            logger.LogError(ex, $"Failed to check channel (id: {channel.ChannelId}) for new store videos, skipping...");
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, $"Failed to check channel (id: {channel.ChannelId}) for new store videos, skipping...");
                     }
                 }
 
                 var newMedia = media
-                    .Where(x => !itemStore.Media.Contains(x.Id))
-                    .OrderBy(x => x.PublishedAt)
+                    .Where(x => !itemStore.Media.Contains(x.Key.Id))
+                    .OrderBy(x => x.Key.PublishedAt)
                     .ToList();
 
                 if (newMedia.Any())
                 {
                     logger.LogInformation($"{newMedia.Count} new video(s) were found for store {itemStore.Start.Value.UtcDateTime}");
                     itemStore.Media = new PersistableStringCollection(
-                        itemStore.Media.Union(newMedia.Select(x => x.Id))
+                        itemStore.Media.Union(newMedia.Select(x => x.Key.Id))
                     );
 
                     await _db.SaveChangesAsync();
@@ -109,19 +112,19 @@ public class CheckForNewStoreVideosYouTube
                             AppColour = app.PrimaryColor,
                             StoreId = itemStore.StoreId(),
                             StoreName = itemStore.StoreName(),
-                            ChannelId = item.ChannelId,
-                            ChannelName = item.ChannelTitle,
-                            VideoId = item.Id,
-                            VideoName = item.Title,
-                            VideoThumbnailUrl = item.Thumbnail.ToString(),
-                            VideoPublishedOn = item.PublishedAt ?? DateTimeOffset.Now,
+                            ChannelId = item.Key.ChannelId,
+                            ChannelName = item.Key.ChannelTitle,
+                            VideoId = item.Key.Id,
+                            VideoName = item.Key.Title,
+                            VideoThumbnailUrl = item.Key.Thumbnail.ToString(),
+                            VideoPublishedOn = item.Key.PublishedAt ?? DateTimeOffset.Now,
                         });
 
                         /*
                         try
                         {
-                            await googleClient.LikeVideoAsync(storeVideo.Id);
-                            await googleClient.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
+                            await item.Value.LikeVideoAsync(storeVideo.Id);
+                            await item.Value.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
                                 $"thank you for showcasing this weeks new skins, your video has been featured on {_configuration.GetWebsiteUrl()}/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
                             );
                         }

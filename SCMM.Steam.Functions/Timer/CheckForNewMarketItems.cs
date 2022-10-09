@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
@@ -24,9 +24,9 @@ public class CheckForNewMarketItems
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
-    private readonly ServiceBusClient _serviceBus;
+    private readonly IServiceBus _serviceBus;
 
-    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, ServiceBusClient serviceBus)
+    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;

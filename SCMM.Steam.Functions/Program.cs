@@ -30,7 +30,6 @@ using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -40,6 +39,8 @@ using SCMM.Worker.Client.Configuration;
 using SCMM.Worker.Client;
 using System.Net;
 using SCMM.Steam.Abstractions;
+using SCMM.Shared.Abstractions.Analytics;
+using SCMM.Shared.Abstractions.Media;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -159,8 +160,8 @@ public static class HostExtensions
                 return configuration.GetGoogleConfiguration();
             });
             services.AddSingleton<SteamSession>();
-            services.AddSingleton<AzureAiClient>();
-            services.AddSingleton<GoogleClient>();
+            services.AddSingleton<IImageAnalysisService, AzureAiClient>();
+            services.AddSingleton<IVideoStreamingService, GoogleClient>();
             services.AddSingleton<BuffWebClient>();
             services.AddSingleton((services) =>
             {

@@ -2,10 +2,12 @@
 using Discord;
 using Discord.Commands;
 using SCMM.Azure.AI;
-using SCMM.Azure.ServiceBus;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Data.Store;
 using SCMM.Fixer.Client;
+using SCMM.Shared.Abstractions.Analytics;
+using SCMM.Shared.Abstractions.Finance;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Store;
 using System.Reflection;
@@ -26,12 +28,12 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly SteamCommunityWebClient _communityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
-        private readonly ServiceBusClient _serviceBusClient;
-        private readonly FixerWebClient _fixerWebClient;
-        private readonly AzureAiClient _azureAiClient;
+        private readonly IServiceBus _serviceBus;
+        private readonly ICurrencyExchangeService _currencyExchangeService;
+        private readonly ITimeSeriesAnalysisService _timeSeriesAnalysisService;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, AzureAiClient azureAiClient, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, CommandService commandService)
         {
             _discordDb = discordDb;
             _steamDb = steamDb;
@@ -39,9 +41,9 @@ namespace SCMM.Discord.Bot.Server.Modules
             _communityClient = communityClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
-            _serviceBusClient = serviceBusClient;
-            _fixerWebClient = fixerWebClient;
-            _azureAiClient = azureAiClient;
+            _serviceBus = serviceBus;
+            _currencyExchangeService = currencyExchangeService;
+            _timeSeriesAnalysisService = timeSeriesAnalysisService;
             _commandService = commandService;
         }
 
