@@ -18,48 +18,55 @@ public class UpdateAssetDescriptionSupplyTotals
     {
         using (var transaction = await _db.Database.BeginTransactionAsync())
         {
-            _db.Database.SetCommandTimeout(300); // 5min
+            _db.Database.SetCommandTimeout(300); // 5mins
+
+            // Recalculate the various supply totals
             await _db.Database.ExecuteSqlInterpolatedAsync(@$"
-                ; WITH AssetDescriptionSupplyTotals ([Id], SupplyTotalOwnersEstimated, SupplyTotalOwnersKnown, SupplyTotalInvestorsEstimated, SupplyTotalInvestorsKnown, SupplyTotalMarketsKnown)
+                ; WITH AssetDescriptionSupply ([Id], SubscriptionsLifetime)
                 AS (
 	                SELECT
 		                a.Id,
-		                (
-			                a.SubscriptionsLifetime
-		                ) AS SupplyTotalOwnersEstimated,
-		                (
-			                SELECT COUNT(DISTINCT(i.ProfileId))
-			                FROM [SteamProfileInventoryItems] i 
-			                WHERE i.DescriptionId = a.Id
-		                ) AS SupplyTotalOwnersKnown,
-		                (
-			                a.SupplyTotalInvestorsEstimated
-		                ) AS SupplyTotalInvestorsEstimated,
-		                (
-			                SELECT (SUM(i.Quantity) - COUNT(DISTINCT(i.ProfileId)))
-			                FROM [SteamProfileInventoryItems] i 
-			                WHERE i.DescriptionId = a.Id
-		                ) AS SupplyTotalInvestorsKnown,
-		                (
-			                SELECT TOP 1 m.BuyPricesTotalSupply
-			                FROM [SteamMarketItems] m
-			                WHERE m.DescriptionId = a.Id
-		                ) AS SupplyTotalMarketsKnown
+		                a.SubscriptionsLifetime
 	                FROM [SteamAssetDescriptions] a
+                ),
+                MarketSupply ([Id], BuyPricesTotalSupply)
+                AS (
+	                SELECT 
+		                m.DescriptionId, 
+		                m.BuyPricesTotalSupply
+	                FROM [SteamMarketItems] m
+                ),
+                InventorySupply ([Id], UniqueProfileIds, TotalQuantity)
+                AS (
+	                SELECT
+		                i.DescriptionId,
+		                COUNT(DISTINCT(i.ProfileId)),
+		                SUM(i.Quantity)
+	                FROM [SteamProfileInventoryItems] i
+	                GROUP BY i.DescriptionId
                 )
                 UPDATE a
                 SET
-	                [SupplyTotalOwnersEstimated] = s.SupplyTotalOwnersEstimated,
-	                [SupplyTotalOwnersKnown] = s.SupplyTotalOwnersKnown,
-	                [SupplyTotalInvestorsKnown] = s.SupplyTotalInvestorsKnown,
-	                [SupplyTotalMarketsKnown] = s.SupplyTotalMarketsKnown,
+	                [SupplyTotalOwnersEstimated] = ads.SubscriptionsLifetime,
+	                [SupplyTotalOwnersKnown] = ivs.UniqueProfileIds,
+	                [SupplyTotalInvestorsKnown] = (ivs.TotalQuantity - ivs.UniqueProfileIds),
+	                [SupplyTotalMarketsKnown] = mks.BuyPricesTotalSupply
+                FROM [SteamAssetDescriptions] a
+	                LEFT OUTER JOIN AssetDescriptionSupply ads ON ads.Id = a.Id
+	                LEFT OUTER JOIN MarketSupply mks ON mks.Id = a.Id
+	                LEFT OUTER JOIN InventorySupply ivs ON ivs.Id = a.Id
+            ");
+
+            // Recalculate the overall supply total
+            await _db.Database.ExecuteSqlInterpolatedAsync(@$"
+                UPDATE a
+                SET
 	                [SupplyTotalEstimated] = (
-		                (ISNULL(s.SupplyTotalOwnersKnown, 0) + IIF(s.SupplyTotalOwnersKnown > s.SupplyTotalOwnersEstimated, 0, ISNULL((s.SupplyTotalOwnersEstimated - s.SupplyTotalOwnersKnown), 0))) +
-		                (ISNULL(s.SupplyTotalInvestorsKnown, 0) + IIF(s.SupplyTotalInvestorsKnown > s.SupplyTotalInvestorsEstimated, 0, ISNULL((s.SupplyTotalInvestorsEstimated - s.SupplyTotalInvestorsKnown), 0))) +
-		                ISNULL(s.SupplyTotalMarketsKnown, 0)
+		                (ISNULL(a.SupplyTotalOwnersKnown, 0) + IIF(a.SupplyTotalOwnersKnown > a.SupplyTotalOwnersEstimated, 0, ISNULL((a.SupplyTotalOwnersEstimated - a.SupplyTotalOwnersKnown), 0))) +
+		                (ISNULL(a.SupplyTotalInvestorsKnown, 0) + IIF(a.SupplyTotalInvestorsKnown > a.SupplyTotalInvestorsEstimated, 0, ISNULL((a.SupplyTotalInvestorsEstimated - a.SupplyTotalInvestorsKnown), 0))) +
+		                ISNULL(a.SupplyTotalMarketsKnown, 0)
 	                )
-                FROM AssetDescriptionSupplyTotals s
-	                INNER JOIN [SteamAssetDescriptions] a ON a.Id = s.Id
+                FROM [SteamAssetDescriptions] a
             ");
 
             await transaction.CommitAsync();
