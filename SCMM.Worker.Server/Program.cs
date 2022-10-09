@@ -11,6 +11,7 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Market.RustyPot.Client;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Client;
@@ -54,6 +55,12 @@ using (var host = hostBuilder.Build())
         host.Services.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(),
         host.Services.GetRequiredService<MessageHandlerTypeCollection>()
     );
+
+    var rustyPot = new RustyPotWebClient(
+        host.Services.GetRequiredService<ILogger<RustyPotWebClient>>(),
+        host.Services.GetRequiredService<IServiceBus>()
+    );
+    var rustyPotMonitorJob = await rustyPot.MonitorAsync();
 
     logger.LogInformation("Service bus processor is ready to handle messages.");
     await using (serviceBusProcessor)
