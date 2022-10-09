@@ -9,6 +9,7 @@ public class RedisStatisticsService : IStatisticsService
 
     public RedisStatisticsService(ConnectionMultiplexer redis)
     {
+        _redis = redis;
     }
 
     public Task<T> GetAsync<T>(string key)
