@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Net.WebSockets;
 
 namespace SCMM.Worker.Client;
 
@@ -77,24 +76,6 @@ public class WebClient : IDisposable
         }
 
         return httpClient;
-    }
-
-    protected ClientWebSocket BuildWebSocketClient()
-    {
-        var webSocketClient = new ClientWebSocket();
-        if (_defaultHeaders != null)
-        {
-            foreach (var header in _defaultHeaders)
-            {
-                webSocketClient.Options.SetRequestHeader(header.Key, String.Join(';', header.Value));
-            }
-        }
-        if (_cookieContainer != null)
-        {
-            webSocketClient.Options.Cookies = _cookieContainer;
-        }
-
-        return webSocketClient;
     }
 
     public void RotateWebProxy(Uri address, TimeSpan cooldown)
