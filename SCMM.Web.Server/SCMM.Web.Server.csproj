@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
     <ProjectReference Include="..\SCMM.Azure.ApplicationInsights\SCMM.Azure.ApplicationInsights.csproj" />
     <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
     <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />

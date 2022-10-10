@@ -162,13 +162,14 @@ public static class HostExtensions
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetSteamConfiguration();
             });
+            services.AddSingleton<SteamSession>();
             services.AddSingleton((services) =>
             {
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetAzureAiConfiguration();
             });
-            services.AddSingleton<SteamSession>();
             services.AddSingleton<IImageAnalysisService, AzureAiClient>();
+
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();

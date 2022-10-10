@@ -155,18 +155,18 @@ public static class HostExtensions
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetSteamConfiguration();
             });
+            services.AddSingleton<SteamSession>();
             services.AddSingleton((services) =>
             {
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetAzureAiConfiguration();
             });
+            services.AddSingleton<IImageAnalysisService, AzureAiClient>();
             services.AddSingleton((services) =>
             {
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetGoogleConfiguration();
             });
-            services.AddSingleton<SteamSession>();
-            services.AddSingleton<IImageAnalysisService, AzureAiClient>();
             services.AddSingleton<IVideoStreamingService, GoogleClient>();
             services.AddSingleton<BuffWebClient>();
             services.AddSingleton((services) =>
@@ -192,6 +192,7 @@ public static class HostExtensions
             });
             services.AddSingleton<SwapGGWebClient>();
             services.AddSingleton<TradeitGGWebClient>();
+
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();

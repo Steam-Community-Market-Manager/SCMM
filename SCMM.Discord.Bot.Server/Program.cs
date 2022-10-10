@@ -179,13 +179,15 @@ public static class WebApplicationExtensions
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());
-        builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
-        builder.Services.AddSingleton(x => builder.Configuration.GetFixerConfiguration());
-        builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<DiscordClient>();
+        builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
         builder.Services.AddSingleton<SteamSession>();
+        builder.Services.AddSingleton(x => builder.Configuration.GetFixerConfiguration());
         builder.Services.AddSingleton<ICurrencyExchangeService, FixerWebClient>();
+        builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<ITimeSeriesAnalysisService, AzureAiClient>();
+        builder.Services.AddSingleton<IImageAnalysisService, AzureAiClient>();
+
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
