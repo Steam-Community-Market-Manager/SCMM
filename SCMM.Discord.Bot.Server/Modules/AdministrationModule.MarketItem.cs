@@ -48,7 +48,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                 String.Format(StatisticKeys.IndexFundByAppId, appId),
                 indexFund
                     .OrderBy(x => x.Key)
-                    .ToDictionary(x => x.Key, x => x.Value)
+                    .ToDictionary(x => x.Key, x => x.Value),
+                deleteKeyBeforeSet: true
             );
 
             await message.ModifyAsync(

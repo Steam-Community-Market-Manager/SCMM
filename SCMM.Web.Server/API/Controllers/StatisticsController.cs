@@ -983,7 +983,6 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.MarketValue > 0 && x.Profile.LastUpdatedInventoryOn != null)
                 .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
                 .OrderByDescending(x => x.Profile.LastUpdatedInventoryOn)
-                .ThenByDescending(x => x.MarketValue)
                 .Select(x => new ProfileInventoryValueStatisticDTO()
                 {
                     SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
