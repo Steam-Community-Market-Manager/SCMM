@@ -3,6 +3,7 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
@@ -447,7 +448,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Item id is invalid");
             }
 
-            max = Math.Max(max, 0);
+            max = Math.Max(0, Math.Min(PaginationExtensions.MaxCount, max));
             if (max <= 0)
             {
                 return BadRequest("Max must be greater than zero");
