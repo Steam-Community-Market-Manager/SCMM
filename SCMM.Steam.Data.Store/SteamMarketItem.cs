@@ -461,9 +461,10 @@ namespace SCMM.Steam.Data.Store
 
         public void RecalculateSales(SteamMarketItemSale[] newSales = null)
         {
-            // Add any new sales we don't already have
+            // Synchronise sales data
             if (newSales != null)
             {
+                SalesHistory.RemoveAll(x => !newSales.Any(y => y.Timestamp == x.Timestamp));
                 SalesHistory.AddRange(newSales.Where(x => !SalesHistory.Any(y => x.Timestamp == y.Timestamp)));
             }
 
