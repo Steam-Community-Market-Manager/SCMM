@@ -126,8 +126,10 @@ namespace SCMM.Steam.Client
                 if (ex.IsRateLimited)
                 {
                     // Add a cooldown to the current web proxy and rotate to the next proxy if possible
-                    // Observed Steam rate-limits from testing:
-                    //  - 20 requests within 20 seconds, resets after 60 seconds
+                    // Steam web API terms of use (https://steamcommunity.com/dev/apiterms)
+                    //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
+                    // Steam community web site rate-limits observed from personal testing:
+                    //  - You are limited to 20 requests within 20 seconds, which resets after 60 seconds.
                     RotateWebProxy(request?.Uri, cooldown: TimeSpan.FromSeconds(60));
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
