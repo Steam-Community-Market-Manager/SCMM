@@ -127,7 +127,7 @@ namespace SCMM.Discord.Client
                 (context.User.GetFullUsername()),
                 (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a"),
                 (context.Channel != null ? context.Channel.Name : "n/a"),
-                (result as CommandResult),
+                (result),
                 (text, embed) => context.Message.ReplyAsync(text: text, embed: embed),
                 (emote) => context.Message.TryAddReactionAsync(emote)
             );
@@ -136,11 +136,12 @@ namespace SCMM.Discord.Client
         private async Task RespondToCommandResult<T>(string commandName, string userName, string guildName, string channelName, IResult result, Func<string, Embed, Task<T>> replyFunc, Func<Emoji, Task> addReactionFunc)
             where T : IUserMessage
         {
-            var commandResult = (result as CommandResult);
             if (result == null)
             {
                 return;
             }
+
+            var commandResult = (result as CommandResult);
 
             // Success
             if (result.IsSuccess)
