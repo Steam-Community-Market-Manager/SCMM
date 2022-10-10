@@ -3,7 +3,6 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
