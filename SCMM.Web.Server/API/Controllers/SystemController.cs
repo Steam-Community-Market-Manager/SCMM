@@ -61,8 +61,8 @@ namespace SCMM.Web.Server.API.Controllers
                     ItemDefinitionsLastModified = x.TimeUpdated,
                     LastCheckedAssetDescriptions = new TimeRangeDTO()
                     {
-                        Oldest = x.AssetDescriptions.Min(y => y.TimeRefreshed),
-                        Newest = x.AssetDescriptions.Max(y => y.TimeRefreshed),
+                        Oldest = x.AssetDescriptions.Where(x => x.ClassId != null).Min(y => y.TimeRefreshed),
+                        Newest = x.AssetDescriptions.Where(x => x.ClassId != null).Max(y => y.TimeRefreshed),
                     },
                     LastCheckedMarketOrders = new TimeRangeDTO()
                     {
