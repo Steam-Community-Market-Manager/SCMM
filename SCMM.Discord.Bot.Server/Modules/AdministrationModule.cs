@@ -6,6 +6,7 @@ using SCMM.Discord.Data.Store;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Finance;
 using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Store;
 using System.Reflection;
@@ -29,9 +30,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly IServiceBus _serviceBus;
         private readonly ICurrencyExchangeService _currencyExchangeService;
         private readonly ITimeSeriesAnalysisService _timeSeriesAnalysisService;
+        private readonly IStatisticsService _statisticsService;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, IStatisticsService statisticsService, CommandService commandService)
         {
             _discordDb = discordDb;
             _steamDb = steamDb;
@@ -42,6 +44,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             _serviceBus = serviceBus;
             _currencyExchangeService = currencyExchangeService;
             _timeSeriesAnalysisService = timeSeriesAnalysisService;
+            _statisticsService = statisticsService;
             _commandService = commandService;
         }
 

@@ -72,9 +72,9 @@
                             <ChartRow Height="70%"></ChartRow>
                         </ChartRows>
                         <ChartSeriesCollection>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="AdjustedVolume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
                             </Syncfusion.Blazor.Charts.ChartSeries>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="ValueAxis" Name="Value" XName="Date" YName="Value" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="ValueAxis" Name="Value" XName="Date" YName="AverageValue" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
                                 <ChartTrendlines>
                                     <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Value Trend" Fill="#ffffff">
                                     </ChartTrendline>
@@ -110,15 +110,15 @@
                 </div>
                 <div class="pa-1 flex-shrink-1">
                     <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
-                        <MudButton OnClick="@(() => LoadMarketSales(7))" Color="@(MarketSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Week</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketSales(30))" Color="@(MarketSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Month</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketSales(365))" Color="@(MarketSalesMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Year</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketSales(-1))" Color="@(MarketSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Lifetime</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(7))" Color="@(MarketIndexFundMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Week</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(30))" Color="@(MarketIndexFundMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Month</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(365))" Color="@(MarketIndexFundMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Year</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(-1))" Color="@(MarketIndexFundMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Lifetime</MudButton>
                     </MudButtonGroup>
                 </div>
             </div>
             <div class="d-flex flex-column justify-stretch align-stretch relative">
-                @if (MarketSalesChartData == null)
+                @if (MarketIndexFundChartData == null)
                 {
                     <div class="d-flex align-center justify-center full-width full-height pa-2">
                         <Loading Message="Loading market sales..." />
@@ -160,9 +160,9 @@
                             <ChartRow Height="70%"></ChartRow>
                         </ChartRows>
                         <ChartSeriesCollection>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketSalesChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
                             </Syncfusion.Blazor.Charts.ChartSeries>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketSalesChartData" YAxisName="RevenueAxis" Name="Revenue" XName="Date" YName="Revenue" Fill="#388e3c" Type="ChartSeriesType.Line">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="RevenueAxis" Name="Revenue" XName="Date" YName="CumulativeValue" Fill="#388e3c" Type="ChartSeriesType.Line">
                                 <ChartTrendlines>
                                     <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Revenue Trend" Fill="#ffffff">
                                     </ChartTrendline>
@@ -185,16 +185,11 @@
     
     private IEnumerable<MarketIndexFundChartPointDTO> MarketIndexFundChartData { get; set; }
     
-    private IEnumerable<MarketSalesChartPointDTO> MarketSalesChartData { get; set; }
-    
     private int MarketIndexFundMaxDays { get; set; }
 
-    private int MarketSalesMaxDays { get; set; }
-    
     protected override void OnInitialized()
     {
         _ = LoadMarketIndexFund();
-        _ = LoadMarketSales();
     }
     
     protected async Task LoadMarketIndexFund(int maxDays = 30)
@@ -210,27 +205,6 @@
         {
             Logger.LogError(ex, $"Unable to list market index fund");
             Snackbar.Add($"Unable to load market index fund. {ex.Message}", MudBlazor.Severity.Error);
-            throw;
-        }
-        finally
-        {
-            StateHasChanged();
-        }
-    }
-
-    protected async Task LoadMarketSales(int maxDays = 30)
-    {
-        try
-        {
-            MarketSalesMaxDays = maxDays;
-            MarketSalesChartData = null;
-            StateHasChanged();
-            MarketSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<MarketSalesChartPointDTO>>($"api/stats/market/sales?maxDays={maxDays}");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Unable to list market sales");
-            Snackbar.Add($"Unable to load market sales. {ex.Message}", MudBlazor.Severity.Error);
             throw;
         }
         finally

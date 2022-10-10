@@ -3,8 +3,10 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -23,63 +25,22 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<StatisticsController> _logger;
         private readonly SteamDbContext _db;
+        private readonly IStatisticsService _statisticsService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public StatisticsController(ILogger<StatisticsController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public StatisticsController(ILogger<StatisticsController> logger, SteamDbContext db, IStatisticsService statisticsService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
+            _statisticsService = statisticsService;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Get marketplace sales and revenue chart data, grouped by day (UTC)
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="maxDays">The maximum number of days worth of market history to return. Use <code>-1</code> for all history</param>
-        /// <response code="200">List of market sales and revenue grouped/keyed per day by UTC date.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("market/sales")]
-        [ProducesResponseType(typeof(IEnumerable<MarketSalesChartPointDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketSales(int maxDays = 30)
-        {
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
-            var appId = this.App().Guid;
-            var query = _db.SteamMarketItemSale
-                .AsNoTracking()
-                .Where(x => x.Item.AppId == appId)
-                .Where(x => x.Timestamp.Date <= yesterday.Date)
-                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
-                .GroupBy(x => x.Timestamp.Date)
-                .OrderBy(x => x.Key.Date)
-                .Select(x => new
-                {
-                    // TODO: Snapshot these for faster querying
-                    Date = x.Key,
-                    Volume = x.Sum(y => y.Quantity),
-                    Revenue = x.Sum(y => y.Quantity * y.MedianPrice)
-                });
-
-            var salesPerDay = (await query.ToListAsync()).Select(
-                x => new MarketSalesChartPointDTO
-                {
-                    Date = x.Date,
-                    Volume = x.Volume,
-                    Revenue = this.Currency().ToPrice(this.Currency().CalculateExchange(x.Revenue))
-                }
-            );
-
-            return Ok(salesPerDay);
-        }
+        // Most skinned item
 
         /// <summary>
         /// Get marketplace index fund chart data, grouped by day (UTC)
@@ -98,30 +59,30 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
-            var appId = this.App().Guid;
-            var query = _db.SteamMarketItemSale
-                .AsNoTracking()
-                .Where(x => x.Item.AppId == appId)
-                .Where(x => x.Timestamp.Date <= yesterday.Date)
-                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
-                .GroupBy(x => x.Timestamp.Date)
-                .OrderBy(x => x.Key.Date)
-                .Select(x => new
-                {
-                    // TODO: Snapshot these for faster querying
-                    Date = x.Key,
-                    Volume = x/*.DistinctBy(x => x.ItemId)*/.Sum(y => y.Quantity),
-                    MedianPrice = x.Average(y => y.MedianPrice),
-                });
 
-            var salesPerDay = (await query.ToListAsync()).Select(
-                x => new MarketIndexFundChartPointDTO
-                {
-                    Date = x.Date,
-                    Volume = x.Volume/*(long)Math.Round((x.Volume > 0 && x.ItemCount > 0) ? (x.Volume / (decimal)x.ItemCount) : 0, 0)*/,
-                    Value = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.MedianPrice, 0)))
-                }
+            var appId = this.App().Id;
+            var indexFund = await _statisticsService.GetDictionaryAsync<DateTime, IndexFundStatistic>(
+                String.Format(StatisticKeys.IndexFundByAppId, appId)
             );
+            if (indexFund?.Count <= 0)
+            {
+                return NotFound();
+            }
+
+            var salesPerDay = indexFund
+                .Where(x => x.Key <= yesterday.Date)
+                .Where(x => maxDaysCutoff == null || x.Key >= maxDaysCutoff.Value.Date)
+                .OrderBy(x => x.Key)
+                .Select(
+                    x => new MarketIndexFundChartPointDTO
+                    {
+                        Date = x.Key,
+                        Volume = x.Value.TotalVolume,
+                        AdjustedVolume = (long)Math.Round((x.Value.TotalVolume > 0 && x.Value.TotalUniqueItems > 0) ? (x.Value.TotalVolume / (decimal)x.Value.TotalUniqueItems) : 0, 0),
+                        AverageValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.Value.AverageMedianPrice, 0))),
+                        CumulativeValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long) x.Value.TotalMedianPrice))
+                    }
+                );
 
             return Ok(salesPerDay);
         }

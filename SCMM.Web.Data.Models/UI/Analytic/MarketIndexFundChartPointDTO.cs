@@ -6,6 +6,10 @@
 
         public long Volume { get; set; }
 
-        public decimal Value { get; set; }
+        public long AdjustedVolume { get; set; }
+
+        public decimal AverageValue { get; set; }
+
+        public decimal CumulativeValue { get; set; }
     }
 }
