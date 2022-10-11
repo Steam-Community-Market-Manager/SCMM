@@ -2,12 +2,12 @@
 {
     public class IndexFundStatistic
     {
-        public double AverageMedianPrice { get; set; }
+        public int TotalItems { get; set; }
 
-        public long TotalMedianPrice { get; set; }
+        public long TotalSalesVolume { get; set; }
 
-        public long TotalVolume { get; set; }
+        public long TotalSalesValue { get; set; }
 
-        public int TotalUniqueItems { get; set; }
+        public double AverageItemValue { get; set; }
     }
 }

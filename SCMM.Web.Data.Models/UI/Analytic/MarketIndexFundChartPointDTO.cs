@@ -4,12 +4,10 @@
     {
         public DateTime Date { get; set; }
 
-        public long Volume { get; set; }
+        public long TotalSalesVolume { get; set; }
 
-        public long AdjustedVolume { get; set; }
+        public decimal TotalSalesValue { get; set; }
 
-        public decimal AverageValue { get; set; }
-
-        public decimal CumulativeValue { get; set; }
+        public decimal AverageItemValue { get; set; }
     }
 }

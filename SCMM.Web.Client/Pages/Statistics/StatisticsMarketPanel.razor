@@ -16,7 +16,7 @@
                         <img src="@State.App.IconUrl" class="mr-2" style="width: 1em; height: 1em" />
                         <span>@State.App.Name Index Fund</span>
                     </MudText>
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                         <span>If there was an <MudLink Typo="MudBlazor.Typo.body2" Href="https://www.investopedia.com/terms/i/indexfund.asp" Target="_blank">index fund</MudLink> that tracked the performance of all market items, how is it performing?</span>
                     </MudText>
                 </div>
@@ -29,7 +29,7 @@
                     </MudButtonGroup>
                 </div>
             </div>
-            <div class="d-flex flex-column justify-stretch align-stretch relative">
+            <div class="d-flex flex-column justify-stretch align-stretch relative" style="height:75vh">
                 @if (MarketIndexFundChartData == null)
                 {
                     <div class="d-flex align-center justify-center full-width full-height pa-2">
@@ -38,25 +38,6 @@
                 }
                 else
                 {
-                    <style>
-                        #MarketIndexFund_Series_1_TrendLine_0 {
-                            stroke-dasharray: 10px 10px;
-                            stroke-linejoin: round;
-                            stroke-linecap: round;
-                            -webkit-animation: dash 1s linear infinite;
-                            animation: dash 1s linear infinite;
-                        }
-                        @@-webkit-keyframes dash {
-                            100% {
-                                stroke-dashoffset: -20px;
-                            }
-                        }
-                        @@keyframes dash {
-                            100% {
-                                stroke-dashoffset: -20px;
-                            }
-                        }
-                    </style>
                     <SfChart ID="MarketIndexFund" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
                         <ChartArea>
                             <ChartAreaBorder Width="0"></ChartAreaBorder>
@@ -64,21 +45,22 @@
                         <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
                         </ChartPrimaryXAxis>
                         <ChartAxes>
-                            <ChartAxis Name="VolumeAxis" RowIndex="0" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true" />
-                            <ChartAxis Name="ValueAxis" RowIndex="1" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
+                            <ChartAxis Name="TotalSalesVolumeAxis" RowIndex="0" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true" />
+                            <ChartAxis Name="TotalSalesValueAxis" RowIndex="1" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
+                            <ChartAxis Name="AverageItemValueAxis" RowIndex="3" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
                         </ChartAxes>
                         <ChartRows>
-                            <ChartRow Height="30%"></ChartRow>
-                            <ChartRow Height="70%"></ChartRow>
+                            <ChartRow Height="25%"></ChartRow>
+                            <ChartRow Height="35%"></ChartRow>
+                            <ChartRow Height="5%"></ChartRow>
+                            <ChartRow Height="35%"></ChartRow>
                         </ChartRows>
                         <ChartSeriesCollection>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="AdjustedVolume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="TotalSalesVolumeAxis" Name="Total Sales Volume" XName="Date" YName="TotalSalesVolume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
                             </Syncfusion.Blazor.Charts.ChartSeries>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="ValueAxis" Name="Value" XName="Date" YName="AverageValue" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
-                                <ChartTrendlines>
-                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Value Trend" Fill="#ffffff">
-                                    </ChartTrendline>
-                                </ChartTrendlines>
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="TotalSalesValueAxis" Name="Total Sales Value" XName="Date" YName="TotalSalesValue" Fill="#388e3c" Type="ChartSeriesType.Line">
+                            </Syncfusion.Blazor.Charts.ChartSeries>
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="AverageItemValueAxis" Name="Average Item Value" XName="Date" YName="AverageItemValue" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
                             </Syncfusion.Blazor.Charts.ChartSeries>
                         </ChartSeriesCollection>
                         <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
@@ -89,92 +71,11 @@
                 }
             </div>
             <div>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" GutterBottom>
+                    <span>For every day are items trading on the Steam Community Market we get the total number of sales <i>(volume)</i> and median sale price <i>(value)</i> of all traded items for that day.</span><br />
+                    <span>The index fund value is calculated as <code>day[number_of_item / median_sale_price]</code>. The cumulative value is calculated as <code>day[number_of_sales * median_sale_price]</code> for each day</span><br/>
                     <span>Based on Dr. Blake Porter's <MudLink Typo="MudBlazor.Typo.caption" Href="https://www.blakeporterneuro.com/video-game-skin-analysis-rust/" Target="_blank">"Video Game Skin Analysis"</MudLink> (2019).</span>
                 </MudText>
-            </div>
-        </StatisticsPanel>
-    </MudItem>
-
-    <MudItem xs="12" xl="12">
-        <StatisticsPanel>
-            <div class="d-flex flex-row flex-wrap">
-                <div class="d-flex flex-column flex-grow-1">
-                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="">
-                        <i class="fas fa-fw fa-chart-line" />
-                        <span>Market Turnover</span>
-                    </MudText>
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">
-                        <span>How much income is generated by market sales each day? How many items are bought and sold on the market each day?</span>
-                    </MudText>
-                </div>
-                <div class="pa-1 flex-shrink-1">
-                    <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(7))" Color="@(MarketIndexFundMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Week</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(30))" Color="@(MarketIndexFundMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Month</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(365))" Color="@(MarketIndexFundMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Year</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(-1))" Color="@(MarketIndexFundMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Lifetime</MudButton>
-                    </MudButtonGroup>
-                </div>
-            </div>
-            <div class="d-flex flex-column justify-stretch align-stretch relative">
-                @if (MarketIndexFundChartData == null)
-                {
-                    <div class="d-flex align-center justify-center full-width full-height pa-2">
-                        <Loading Message="Loading market sales..." />
-                    </div>
-                }
-                else
-                {
-                    <style>
-                        #MarketSalesHistory_Series_1_TrendLine_0 {
-                            stroke-dasharray: 10px 10px;
-                            stroke-linejoin: round;
-                            stroke-linecap: round;
-                            -webkit-animation: dash 1s linear infinite;
-                            animation: dash 1s linear infinite;
-                        }
-                        @@-webkit-keyframes dash {
-                            100% {
-                                stroke-dashoffset: -20px;
-                            }
-                        }
-                        @@keyframes dash {
-                            100% {
-                                stroke-dashoffset: -20px;
-                            }
-                        }
-                    </style>
-                    <SfChart ID="MarketSalesHistory" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
-                        <ChartArea>
-                            <ChartAreaBorder Width="0"></ChartAreaBorder>
-                        </ChartArea>
-                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                        </ChartPrimaryXAxis>
-                        <ChartAxes>
-                            <ChartAxis Name="VolumeAxis" RowIndex="0" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true" />
-                            <ChartAxis Name="RevenueAxis" RowIndex="1" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
-                        </ChartAxes>
-                        <ChartRows>
-                            <ChartRow Height="30%"></ChartRow>
-                            <ChartRow Height="70%"></ChartRow>
-                        </ChartRows>
-                        <ChartSeriesCollection>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
-                            </Syncfusion.Blazor.Charts.ChartSeries>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="RevenueAxis" Name="Revenue" XName="Date" YName="CumulativeValue" Fill="#388e3c" Type="ChartSeriesType.Line">
-                                <ChartTrendlines>
-                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Revenue Trend" Fill="#ffffff">
-                                    </ChartTrendline>
-                                </ChartTrendlines>
-                            </Syncfusion.Blazor.Charts.ChartSeries>
-                        </ChartSeriesCollection>
-                        <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
-                        <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
-                        <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
-                        <ChartLegendSettings Visible="true"></ChartLegendSettings>
-                    </SfChart>
-                }
             </div>
         </StatisticsPanel>
     </MudItem>

@@ -27,19 +27,20 @@ namespace SCMM.Discord.Bot.Server.Modules
                 await message.ModifyAsync(
                     x => x.Content = $"Rebuilding market index fund {start.Date.ToString()}..."
                 );
-                indexFund[start] =  await _steamDb.SteamMarketItemSale
+                indexFund[start] = _steamDb.SteamMarketItemSale
                     .AsNoTracking()
                     .Where(x => x.Item.App.SteamId == appId)
                     .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
+                    .ToList()
                     .GroupBy(x => true)
                     .Select(x => new IndexFundStatistic
                     {
-                        AverageMedianPrice = x.Average(y => y.MedianPrice),
-                        TotalMedianPrice = x.Sum(y => y.MedianPrice * y.Quantity),
-                        TotalVolume = x.Sum(y => y.Quantity),
-                        TotalUniqueItems = x.Select(x => x.Item.Id).Distinct().Count()
+                        TotalItems = x.GroupBy(x => x.ItemId).Count(),
+                        TotalSalesVolume = x.Sum(y => y.Quantity),
+                        TotalSalesValue = x.Sum(y => y.MedianPrice * y.Quantity),
+                        AverageItemValue = x.GroupBy(x => x.ItemId).Average(y => y.Average(z => z.MedianPrice))
                     })
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefault();
 
                 start = start.AddDays(1);
             }
@@ -48,8 +49,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 String.Format(StatisticKeys.IndexFundByAppId, appId),
                 indexFund
                     .OrderBy(x => x.Key)
-                    .ToDictionary(x => x.Key, x => x.Value),
-                deleteKeyBeforeSet: true
+                    .ToDictionary(x => x.Key, x => x.Value)
             );
 
             await message.ModifyAsync(

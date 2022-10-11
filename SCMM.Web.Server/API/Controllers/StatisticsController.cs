@@ -77,10 +77,10 @@ namespace SCMM.Web.Server.API.Controllers
                     x => new MarketIndexFundChartPointDTO
                     {
                         Date = x.Key,
-                        Volume = x.Value.TotalVolume,
-                        AdjustedVolume = (long)Math.Round((x.Value.TotalVolume > 0 && x.Value.TotalUniqueItems > 0) ? (x.Value.TotalVolume / (decimal)x.Value.TotalUniqueItems) : 0, 0),
-                        AverageValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.Value.AverageMedianPrice, 0))),
-                        CumulativeValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long) x.Value.TotalMedianPrice))
+                        TotalSalesVolume = x.Value.TotalSalesVolume,
+                        //AdjustedSalesVolume = (long)Math.Round((x.Value.TotalSalesVolume > 0 && x.Value.TotalItems > 0) ? (x.Value.TotalSalesVolume / (decimal)x.Value.TotalItems) : 0, 0),
+                        TotalSalesValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Value.TotalSalesValue)),
+                        AverageItemValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.Value.AverageItemValue, 0))),
                     }
                 );
 
