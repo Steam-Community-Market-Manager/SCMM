@@ -1045,22 +1045,19 @@
     {
         if (Item.IsTradable && Item.SupplyTotalOwnersKnown > 0)
         {
-            if ((State.Profile?.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private) || State.IsInRole(Roles.VIP))
+            ItemHolders = await RestoreFromStateOrLoad(nameof(ItemHolders), async () =>
             {
-                ItemHolders = await RestoreFromStateOrLoad(nameof(ItemHolders), async () =>
+                try
                 {
-                    try
-                    {
-                        return await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemHoldingUserDTO>>($"api/item/{Item.Id}/topHolders?max=30");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, $"Error loading the item holders list");
-                        Snackbar.Add($"Unable to load item holders list. {ex.Message}", MudBlazor.Severity.Error);
-                        throw;
-                    }
-                });
-            }
+                    return await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemHoldingUserDTO>>($"api/item/{Item.Id}/topHolders?max=30");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"Error loading the item holders list");
+                    Snackbar.Add($"Unable to load item holders list. {ex.Message}", MudBlazor.Severity.Error);
+                    throw;
+                }
+            });
         }
         if (!String.IsNullOrEmpty(Item.ItemCollection))
         {

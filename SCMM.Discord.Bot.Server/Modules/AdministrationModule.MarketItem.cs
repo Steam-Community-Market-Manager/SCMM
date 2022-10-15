@@ -21,41 +21,50 @@ namespace SCMM.Discord.Bot.Server.Modules
             var end = _steamDb.SteamMarketItemSale.Max(x => x.Timestamp).Date;
             var indexFund = new Dictionary<DateTime, IndexFundStatistic>();
 
-            var message = await Context.Message.ReplyAsync("Rebuilding market index fund...");
-            while (start < end)
+            try
             {
+                var message = await Context.Message.ReplyAsync("Rebuilding market index fund...");
+                while (start < end)
+                {
+                    await message.ModifyAsync(
+                        x => x.Content = $"Rebuilding market index fund {start.Date.ToString()}..."
+                    );
+                    indexFund[start] = _steamDb.SteamMarketItemSale
+                        .AsNoTracking()
+                        .Where(x => x.Item.App.SteamId == appId)
+                        .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
+                        .ToList()
+                        .GroupBy(x => true)
+                        .Select(x => new IndexFundStatistic
+                        {
+                            TotalItems = x.GroupBy(x => x.ItemId).Count(),
+                            TotalSalesVolume = x.Sum(y => y.Quantity),
+                            TotalSalesValue = x.Sum(y => y.MedianPrice * y.Quantity),
+                            AverageItemValue = x.GroupBy(x => x.ItemId).Average(y => y.Average(z => z.MedianPrice))
+                        })
+                        .FirstOrDefault();
+
+                    start = start.AddDays(1);
+                }
+
                 await message.ModifyAsync(
-                    x => x.Content = $"Rebuilding market index fund {start.Date.ToString()}..."
+                    x => x.Content = $"Rebuilt market index fund"
                 );
-                indexFund[start] = _steamDb.SteamMarketItemSale
-                    .AsNoTracking()
-                    .Where(x => x.Item.App.SteamId == appId)
-                    .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
-                    .ToList()
-                    .GroupBy(x => true)
-                    .Select(x => new IndexFundStatistic
-                    {
-                        TotalItems = x.GroupBy(x => x.ItemId).Count(),
-                        TotalSalesVolume = x.Sum(y => y.Quantity),
-                        TotalSalesValue = x.Sum(y => y.MedianPrice * y.Quantity),
-                        AverageItemValue = x.GroupBy(x => x.ItemId).Average(y => y.Average(z => z.MedianPrice))
-                    })
-                    .FirstOrDefault();
 
-                start = start.AddDays(1);
+                return CommandResult.Success();
             }
-
-            await _statisticsService.SetDictionaryAsync(
-                String.Format(StatisticKeys.IndexFundByAppId, appId),
-                indexFund
-                    .OrderBy(x => x.Key)
-                    .ToDictionary(x => x.Key, x => x.Value)
-            );
-
-            await message.ModifyAsync(
-                x => x.Content = $"Rebuilt market index fund"
-            );
-            return CommandResult.Success();
+            finally
+            {
+                if (indexFund.Any())
+                {
+                    await _statisticsService.SetDictionaryAsync(
+                        String.Format(StatisticKeys.IndexFundByAppId, appId),
+                        indexFund
+                            .OrderBy(x => x.Key)
+                            .ToDictionary(x => x.Key, x => x.Value)
+                    );
+                }
+            }
         }
 
         [Command("find-sales-history-anomalies")]

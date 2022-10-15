@@ -932,8 +932,7 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamProfileInventoryValues
                 .AsNoTracking()
                 .Where(x => x.AppId == appId)
-                .Where(x => x.MarketValue > 0 && x.Profile.LastUpdatedInventoryOn != null)
-                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .Where(x => x.MarketValue > 0)
                 .OrderByDescending(x => x.MarketValue)
                 .Select(x => new ProfileInventoryValueStatisticDTO()
                 {
@@ -980,8 +979,7 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamProfileInventoryValues
                 .AsNoTracking()
                 .Where(x => x.AppId == appId)
-                .Where(x => x.MarketValue > 0 && x.Profile.LastUpdatedInventoryOn != null)
-                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .Where(x => x.MarketValue > 0)
                 .OrderByDescending(x => x.Profile.LastUpdatedInventoryOn)
                 .Select(x => new ProfileInventoryValueStatisticDTO()
                 {

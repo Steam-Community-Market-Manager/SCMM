@@ -56,11 +56,11 @@
                             <ChartRow Height="35%"></ChartRow>
                         </ChartRows>
                         <ChartSeriesCollection>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="TotalSalesVolumeAxis" Name="Total Sales Volume" XName="Date" YName="TotalSalesVolume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="TotalSalesVolumeAxis" Name="Daily Sales Volume" XName="Date" YName="TotalSalesVolume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
                             </Syncfusion.Blazor.Charts.ChartSeries>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="TotalSalesValueAxis" Name="Total Sales Value" XName="Date" YName="TotalSalesValue" Fill="#388e3c" Type="ChartSeriesType.Line">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="TotalSalesValueAxis" Name="Daily Sales Value" XName="Date" YName="TotalSalesValue" Fill="#388e3c" Type="ChartSeriesType.Line">
                             </Syncfusion.Blazor.Charts.ChartSeries>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="AverageItemValueAxis" Name="Average Item Value" XName="Date" YName="AverageItemValue" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="AverageItemValueAxis" Name="@($"{@State.App.Name} Index Fund Value")" XName="Date" YName="AverageItemValue" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
                             </Syncfusion.Blazor.Charts.ChartSeries>
                         </ChartSeriesCollection>
                         <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
@@ -73,8 +73,8 @@
             <div>
                 <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" GutterBottom>
                     <span>Based on Dr. Blake Porter's <MudLink Typo="MudBlazor.Typo.caption" Href="https://www.blakeporterneuro.com/video-game-skin-analysis-rust/" Target="_blank">"Video Game Skin Analysis"</MudLink> (2019).</span><br />
-                    <span>For every day there are items trading on the Steam Community Market we get the total number of sales <code>(volume)</code> and median sale price <code>(value)</code> of all traded items for that day.</span><br />
-                    <span>The index fund value is calculated as '<code>day[number_of_item / median_sale_price]</code>'. The cumulative value is calculated as '<code>day[number_of_sales * median_sale_price]</code>' for each day</span><br />
+                    <span>For every day there are items trading on the Steam Community Market we get the total number of sales and median sale price of all traded items for that day.</span><br />
+                    <span>The index fund value is calculated as '<code>sales[day].groupBy(item).avg(item.median_sales_price)</code>'. The cumulative value is calculated as '<code>sales[day].sum(median_sales_price * sales_volume)</code>'.</span><br />
                 </MudText>
             </div>
         </StatisticsPanel>

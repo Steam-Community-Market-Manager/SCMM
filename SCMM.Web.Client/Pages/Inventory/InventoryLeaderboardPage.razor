@@ -17,164 +17,161 @@
             <span>Analyse Inventory</span>
         </MudButton>
     </MudContainer>
-    @if ((State.Profile?.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private) || State.IsInRole(Roles.VIP))
-    {
-        <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
-            <MudGrid Spacing="4">
-                @if (Totals != null)
-                {
-                    <MudItem xs="12" Class="pb-0">
-                        <MudText Typo="Typo.h6" Class="text-centered">
-                            <span>@Totals.TotalInventories.ToQuantityString() <span class="mud-secondary-text"> inventories tracked, </span></span>
-                            <span><span class="mud-secondary-text"> containing </span> @Totals.TotalItems.ToQuantityString() <span class="mud-secondary-text"> items, </span></span>
-                            <span><span class="mud-secondary-text"> with a total market value of </span> @State.Currency.ToPriceString(Totals.TotalMarketValue) </span>
-                        </MudText>
-                    </MudItem>
-                }
-                <MudItem xs="12" md="6">
-                    <StatisticsPanel Icon="fas fa-fw fa-trophy" Title="Highest Valued Inventories" Dense="true">
-                        <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
-                            <tbody>
-                                <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile">
-                                    <ItemContent>
-                                        <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)">
-                                            <td>
-                                                <div class="d-flex flex-row justify-start align-center">
-                                                    <MudText Typo="Typo.caption" Class="pr-2">#@profile.Rank.ToQuantityString()</MudText>
-                                                    <img src="@(!String.IsNullOrEmpty(profile.SteamId) ? profile.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
-                                                    <div class="d-flex flex-column">
-                                                        <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
-                                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
-                                                            @if (profile.IsBanned)
-                                                            {
-                                                                <span class="no-wrap mud-error-text">
-                                                                    <i class="fas fa-fw fa-ban"></i>
-                                                                    <span> Banned </span>
-                                                                </span>
-                                                            }
-                                                            @if (profile.IsPrivate)
-                                                            {
-                                                                <span class="no-wrap mud-warning-text">
-                                                                    <i class="fas fa-fw fa-lock"></i>
-                                                                    <span> Private </span>
-                                                                </span>
-                                                            }
-                                                            @if (profile.IsBot)
-                                                            {
-                                                                <span class="no-wrap">
-                                                                    <i class="fas fa-fw fa-robot"></i>
-                                                                    <span> Bot </span>
-                                                                </span>
-                                                            }
-                                                            <span class="no-wrap">
-                                                                <i class="fas fa-fw fa-clock"></i>
-                                                                <span> Synced @((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1)) </span>
-                                                            </span>
-                                                        </MudText>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="text-right">
-                                                <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
-                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
-                                            </td>
-                                        </tr>
-                                    </ItemContent>
-                                    <Placeholder>
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex flex-row justify-start align-center">
-                                                    <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                                    <div class="d-flex flex-column">
-                                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="text-right">
-                                                <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
-                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
-                                            </td>
-                                        </tr>
-                                    </Placeholder>
-                                </Virtualize>
-                            </tbody>
-                        </MudSimpleTable>
-                    </StatisticsPanel>
+    <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
+        <MudGrid Spacing="4">
+            @if (Totals != null)
+            {
+                <MudItem xs="12" Class="pb-0">
+                    <MudText Typo="Typo.h6" Class="text-centered">
+                        <span>@Totals.TotalInventories.ToQuantityString() <span class="mud-secondary-text"> inventories tracked, </span></span>
+                        <span><span class="mud-secondary-text"> containing </span> @Totals.TotalItems.ToQuantityString() <span class="mud-secondary-text"> items, </span></span>
+                        <span><span class="mud-secondary-text"> with a total market value of </span> @State.Currency.ToPriceString(Totals.TotalMarketValue) </span>
+                    </MudText>
                 </MudItem>
-                <MudItem xs="12" md="6">
-                    <StatisticsPanel Icon="fas fa-fw fa-clock" Title="Recently Valued Inventories" Dense="true">
-                        <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
-                            <tbody>
-                                <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile">
-                                    <ItemContent>
-                                        <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)">
-                                            <td>
-                                                <div class="d-flex flex-row justify-start align-center">
-                                                    <img src="@(!String.IsNullOrEmpty(profile.SteamId) ? profile.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
-                                                    <div class="d-flex flex-column">
-                                                        <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
-                                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
-                                                            @if (profile.IsBanned)
-                                                            {
-                                                                <span class="no-wrap mud-error-text">
-                                                                    <i class="fas fa-fw fa-ban"></i>
-                                                                    <span> Banned </span>
-                                                                </span>
-                                                            }
-                                                            @if (profile.IsPrivate)
-                                                            {
-                                                                <span class="no-wrap mud-warning-text">
-                                                                    <i class="fas fa-fw fa-lock"></i>
-                                                                    <span> Private </span>
-                                                                </span>
-                                                            }
-                                                            @if (profile.IsBot)
-                                                            {
-                                                                <span class="no-wrap">
-                                                                    <i class="fas fa-fw fa-robot"></i>
-                                                                    <span> Bot </span>
-                                                                </span>
-                                                            }
-                                                            <span class="no-wrap">
-                                                                <i class="fas fa-fw fa-clock"></i>
-                                                                <span> Synced @((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1)) </span>
+            }
+            <MudItem xs="12" md="6">
+                <StatisticsPanel Icon="fas fa-fw fa-trophy" Title="Highest Valued Inventories" Dense="true">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
+                        <tbody>
+                            <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile">
+                                <ItemContent>
+                                    <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)">
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudText Typo="Typo.caption" Class="pr-2">#@profile.Rank.ToQuantityString()</MudText>
+                                                <img src="@(!String.IsNullOrEmpty(profile.SteamId) ? profile.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                        @if (profile.IsBanned)
+                                                        {
+                                                            <span class="no-wrap mud-error-text">
+                                                                <i class="fas fa-fw fa-ban"></i>
+                                                                <span> Banned </span>
                                                             </span>
-                                                        </MudText>
-                                                    </div>
+                                                        }
+                                                        @if (profile.IsPrivate)
+                                                        {
+                                                            <span class="no-wrap mud-warning-text">
+                                                                <i class="fas fa-fw fa-lock"></i>
+                                                                <span> Private </span>
+                                                            </span>
+                                                        }
+                                                        @if (profile.IsBot)
+                                                        {
+                                                            <span class="no-wrap">
+                                                                <i class="fas fa-fw fa-robot"></i>
+                                                                <span> Bot </span>
+                                                            </span>
+                                                        }
+                                                        <span class="no-wrap">
+                                                            <i class="fas fa-fw fa-clock"></i>
+                                                            <span> Synced @((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1)) </span>
+                                                        </span>
+                                                    </MudText>
                                                 </div>
-                                            </td>
-                                            <td class="text-right">
-                                                <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
-                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
-                                            </td>
-                                        </tr>
-                                    </ItemContent>
-                                    <Placeholder>
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex flex-row justify-start align-center">
-                                                    <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                                    <div class="d-flex flex-column">
-                                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
-                                                    </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                                <Placeholder>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
                                                 </div>
-                                            </td>
-                                            <td class="text-right">
-                                                <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
-                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
-                                            </td>
-                                        </tr>
-                                    </Placeholder>
-                                </Virtualize>
-                            </tbody>
-                        </MudSimpleTable>
-                    </StatisticsPanel>
-                </MudItem>
-            </MudGrid>
-        </MudContainer>
-    }
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
+                                        </td>
+                                    </tr>
+                                </Placeholder>
+                            </Virtualize>
+                        </tbody>
+                    </MudSimpleTable>
+                </StatisticsPanel>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <StatisticsPanel Icon="fas fa-fw fa-clock" Title="Recently Valued Inventories" Dense="true">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
+                        <tbody>
+                            <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile">
+                                <ItemContent>
+                                    <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)">
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <img src="@(!String.IsNullOrEmpty(profile.SteamId) ? profile.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                        @if (profile.IsBanned)
+                                                        {
+                                                            <span class="no-wrap mud-error-text">
+                                                                <i class="fas fa-fw fa-ban"></i>
+                                                                <span> Banned </span>
+                                                            </span>
+                                                        }
+                                                        @if (profile.IsPrivate)
+                                                        {
+                                                            <span class="no-wrap mud-warning-text">
+                                                                <i class="fas fa-fw fa-lock"></i>
+                                                                <span> Private </span>
+                                                            </span>
+                                                        }
+                                                        @if (profile.IsBot)
+                                                        {
+                                                            <span class="no-wrap">
+                                                                <i class="fas fa-fw fa-robot"></i>
+                                                                <span> Bot </span>
+                                                            </span>
+                                                        }
+                                                        <span class="no-wrap">
+                                                            <i class="fas fa-fw fa-clock"></i>
+                                                            <span> Synced @((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1)) </span>
+                                                        </span>
+                                                    </MudText>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                                <Placeholder>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
+                                        </td>
+                                    </tr>
+                                </Placeholder>
+                            </Virtualize>
+                        </tbody>
+                    </MudSimpleTable>
+                </StatisticsPanel>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
 </PageContainer>
 
 @code {
