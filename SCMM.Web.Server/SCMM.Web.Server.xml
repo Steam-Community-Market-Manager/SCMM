@@ -110,6 +110,7 @@
             <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
             <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
             <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemTopHolders(System.String,System.Int32)">
@@ -120,6 +121,7 @@
             <param name="max">The maximum number of users to return.</param>
             <response code="200">List of top user holding the item.</response>
             <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String,System.Nullable{System.UInt64})">

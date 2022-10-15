@@ -300,14 +300,22 @@ namespace SCMM.Web.Server.API.Controllers
             ulong.TryParse(id, out id64);
 
             var appId = this.App().Guid;
+            var item = await _db.SteamMarketItems
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .FirstOrDefaultAsync(x =>
+                    (guid != Guid.Empty && x.Description.Id == guid) ||
+                    (id64 > 0 && x.Description.ClassId == id64) ||
+                    (x.Description.Name == id)
+                );
+            if (item == null)
+            {
+                return NotFound($"Item was not found");
+            }
+
             var query = _db.SteamMarketItemSellOrder
                 .Include(x => x.Item.Currency)
-                .Where(x => x.Item.AppId == appId)
-                .Where(x =>
-                    (guid != Guid.Empty && x.Item.Description.Id == guid) ||
-                    (id64 > 0 && x.Item.Description.ClassId == id64) ||
-                    (x.Item.Description.Name == id)
-                )
+                .Where(x => x.ItemId == item.Id)
                 .OrderBy(x => x.Price);
 
             return Ok(
@@ -344,14 +352,22 @@ namespace SCMM.Web.Server.API.Controllers
             ulong.TryParse(id, out id64);
 
             var appId = this.App().Guid;
+            var item = await _db.SteamMarketItems
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .FirstOrDefaultAsync(x =>
+                    (guid != Guid.Empty && x.Description.Id == guid) ||
+                    (id64 > 0 && x.Description.ClassId == id64) ||
+                    (x.Description.Name == id)
+                );
+            if (item == null)
+            {
+                return NotFound($"Item was not found");
+            }
+
             var query = _db.SteamMarketItemBuyOrder
                 .Include(x => x.Item.Currency)
-                .Where(x => x.Item.AppId == appId)
-                .Where(x =>
-                    (guid != Guid.Empty && x.Item.Description.Id == guid) ||
-                    (id64 > 0 && x.Item.Description.ClassId == id64) ||
-                    (x.Item.Description.Name == id)
-                )
+                .Where(x => x.ItemId == item.Id)
                 .OrderByDescending(x => x.Price);
 
             return Ok(
@@ -370,10 +386,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
         /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the request item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/sales")]
         [ProducesResponseType(typeof(IEnumerable<ItemSalesChartPointDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemSales([FromRoute] string id, int maxDays = 30)
         {
@@ -387,17 +406,25 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
+            var item = await _db.SteamMarketItems
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .FirstOrDefaultAsync(x =>
+                    (guid != Guid.Empty && x.Description.Id == guid) ||
+                    (id64 > 0 && x.Description.ClassId == id64) ||
+                    (x.Description.Name == id)
+                );
+            if (item == null)
+            {
+                return NotFound($"Item was not found");
+            }
+
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
             var getCandleData = (maxDays >= 1 && maxDays <= 30);
-            var appId = this.App().Guid;
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
-                .Where(x => x.Item.AppId == appId)
-                .Where(x =>
-                    (guid != Guid.Empty && x.Item.Description.Id == guid) ||
-                    (id64 > 0 && x.Item.Description.ClassId == id64) ||
-                    (x.Item.Description.Name == id)
-                )
+                .Where(x => x.ItemId == item.Id)
                 .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
                 .GroupBy(x => x.Timestamp.Date)
                 .OrderBy(x => x.Key.Date)
@@ -435,10 +462,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="max">The maximum number of users to return.</param>
         /// <response code="200">List of top user holding the item.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the request item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/topHolders")]
         [ProducesResponseType(typeof(IEnumerable<ItemHoldingUserDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemTopHolders([FromRoute] string id, int max = 30)
         {
@@ -459,15 +489,22 @@ namespace SCMM.Web.Server.API.Controllers
             ulong.TryParse(id, out id64);
 
             var appId = this.App().Guid;
-            var topHoldingProfiles = await _db.SteamProfileInventoryItems
+            var item = await _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Where(x => x.AppId == appId)
-                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
-                .Where(x =>
-                    (guid != Guid.Empty && x.Description.Id == guid) ||
-                    (id64 > 0 && x.Description.ClassId == id64) ||
-                    (x.Description.Name == id)
-                )
+                .FirstOrDefaultAsync(x =>
+                    (guid != Guid.Empty && x.Id == guid) ||
+                    (id64 > 0 && x.ClassId == id64) ||
+                    (x.Name == id)
+                );
+            if (item == null)
+            {
+                return NotFound($"Item was not found");
+            }
+
+            var topHoldingProfiles = await _db.SteamProfileInventoryItems
+                .AsNoTracking()
+                .Where(x => x.DescriptionId == item.Id)
                 .GroupBy(x => x.ProfileId)
                 .Select(x => new
                 {
