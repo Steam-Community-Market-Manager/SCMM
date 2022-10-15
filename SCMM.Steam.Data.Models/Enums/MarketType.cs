@@ -62,7 +62,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF")]
         SkinBaron = 17,
 
-        [Obsolete("Dead?, Unable to deposit cash anymore, social links don't work anymore")]
+        [Obsolete("Dead? Unable to deposit cash anymore, social links don't work anymore")]
         [Display(Name = "RUST Skins")]
         [Market(Type = PriceTypes.Cash, Color = "#EF7070")]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]

@@ -22,7 +22,8 @@ public class UpdateMarketItemPricesFromRustSkins
         _rustSkinsWebClient = rustSkinsWebClient;
     }
 
-    [Function("Update-Market-Item-Prices-From-RustSkins")]
+    // Dead? Unable to deposit cash anymore, social links don't work anymore
+    //[Function("Update-Market-Item-Prices-From-RustSkins")]
     public async Task Run([TimerTrigger("0 7-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-RustSkins");
