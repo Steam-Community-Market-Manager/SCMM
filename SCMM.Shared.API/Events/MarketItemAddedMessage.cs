@@ -4,7 +4,7 @@ using SCMM.Shared.Abstractions.Messaging.Attributes;
 namespace SCMM.Shared.API.Events
 {
     [Topic(Name = "Market-Item-Added")]
-    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 10080 /* 7 days */)]
     public class MarketItemAddedMessage : Message
     {
         public override string Id => $"{AppId}/{ItemId}";

@@ -4,7 +4,7 @@ using SCMM.Shared.Abstractions.Messaging.Attributes;
 namespace SCMM.Shared.API.Events
 {
     [Topic(Name = "Workshop-File-Published")]
-    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 60)]
+    [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 10080 /* 7 days */)]
     public class WorkshopFilePublishedMessage : Message
     {
         public override string Id => $"{AppId}/{ItemId}";
