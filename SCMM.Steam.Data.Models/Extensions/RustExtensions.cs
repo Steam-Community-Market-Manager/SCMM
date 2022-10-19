@@ -204,6 +204,8 @@ namespace SCMM.Steam.Data.Models.Extensions
                 case "Wood Double Door": return "door.double.hinged.wood";
                 case "Wood Storage Box": return "box.wooden"; // texture issues (Heli Cargo)
                 case "Wooden Door": return "door.hinged.wood";
+                case "Mace": return "mace";
+                case "Torch": return "torch";
                 default: return itemType?.ToLower();
             }
         }
@@ -337,7 +339,8 @@ namespace SCMM.Steam.Data.Models.Extensions
                 case "Salvaged Sword":
                 case "Combat Knife":
                 case "Bone Knife":
-                case "Bone Club": return true;
+                case "Bone Club":
+                case "Mace": return true;
                 default: return false;
             }
         }
@@ -353,7 +356,8 @@ namespace SCMM.Steam.Data.Models.Extensions
                 case "Hatchet":
                 case "Stone Pickaxe":
                 case "Stone Hatchet":
-                case "Rock": return true;
+                case "Rock":
+                case "Torch": return true;
                 default: return false;
             }
         }
