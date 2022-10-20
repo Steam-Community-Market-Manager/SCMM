@@ -167,7 +167,7 @@ namespace SCMM.Steam.API.Commands
                     // Re-import whale inventories at least once every 24-hrs
                     await _serviceBus.ScheduleMessageFromNowAsync(TimeSpan.FromHours(25), new ImportProfileInventoryMessage()
                     {
-                        ProfileId = profile.ProfileId
+                        ProfileId = profile.SteamId
                     });
                 }
 
