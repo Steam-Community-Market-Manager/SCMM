@@ -23,6 +23,8 @@ namespace SCMM.Azure.ServiceBus.Middleware
         private readonly ServiceBusClient _serviceBusClient;
         private bool disposedValue;
 
+        private readonly MessageHandlerTypeCollection _messageHandlerTypeCollection;
+
         public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory,
             ServiceBusAdministrationClient serviceBusAdministrationClient, ServiceBusClient serviceBusClient,
             MessageHandlerTypeCollection messageHandlerTypeCollection)
@@ -33,10 +35,42 @@ namespace SCMM.Azure.ServiceBus.Middleware
             _serviceBusProcessors = new List<ServiceBusProcessor>();
             _serviceBusAdministrationClient = serviceBusAdministrationClient;
             _serviceBusClient = serviceBusClient;
+            _messageHandlerTypeCollection = messageHandlerTypeCollection;
 
+            Task
+                .Delay(TimeSpan.FromSeconds(30))
+                .ContinueWith(async (x) => await StartAsync());
+
+        }
+
+        protected virtual async Task DisposeAsync(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    await StopMessageProcessorsAsync();
+                }
+                disposedValue = true;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsync(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        public Task Invoke(HttpContext httpContext)
+        {
+            return _next(httpContext);
+        }
+
+        public async Task StartAsync()
+        {
             // Build a dictionary of handler interfaces and their associated concrete implementation type
             var handlerMappings = new Dictionary<Type, Type>();
-            var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
+            var handlerAssemblies = _messageHandlerTypeCollection.Assemblies.ToArray();
             var handlerTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>));
             var messageTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessage)).Where(x => !x.IsAbstract);
             foreach (var handlerType in handlerTypes)
@@ -69,29 +103,6 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     _logger.LogError(x.Exception, "Failed to create queues, some messages may not get handled");
                 }
             });
-        }
-
-        protected virtual async Task DisposeAsync(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    await StopMessageProcessorsAsync();
-                }
-                disposedValue = true;
-            }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsync(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        public Task Invoke(HttpContext httpContext)
-        {
-            return _next(httpContext);
         }
 
         private async Task CreateMissingTopicsAndQueuesAsync(IEnumerable<Type> messageTypes)
