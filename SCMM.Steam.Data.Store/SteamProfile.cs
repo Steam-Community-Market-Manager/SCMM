@@ -51,6 +51,14 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? LastSignedInOn { get; set; }
 
+        // Whale = Inventory with more than 5k items or $10k value
+        // Investor = Item with more than 10 quantity
+        // Collector = Inventory with more than 100 unique (paid) skins
+        // Freeloader = Inventory with only drops (free items)
+        // Gambler = Known to frequent gambling websites
+        // Bot = Known marketplace or gambling bot
+        //public PersistableAffinityDictionary Affinities { get; set; }
+
         public int DonatorLevel { get; set; }
 
         public long GamblingOffset { get; set; }
