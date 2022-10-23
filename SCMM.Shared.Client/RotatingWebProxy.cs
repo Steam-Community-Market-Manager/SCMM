@@ -40,11 +40,22 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     private WebProxyWithCooldown GetNextAvailableProxy(Uri address)
     {
         var now = DateTime.UtcNow;
-        return _proxies
+
+        // Use the highest priority proxy that isn't in cooldown
+        var proxy = _proxies
+            .Where(x => x.IsEnabled)
+            .Where(x => x.GetHostCooldown(address) <= now)
+            .OrderBy(x => x.Priority)
+            .FirstOrDefault();
+
+        // If all proxies are in cooldown, then use the one that is closest to exiting cooldown
+        proxy ??= _proxies
             .Where(x => x.IsEnabled)
             .OrderBy(x => x.GetHostCooldown(address) - now)
             .ThenBy(x => x.Priority)
             .FirstOrDefault();
+
+        return proxy;
     }
 
     public void RotateProxy(Uri address, TimeSpan cooldown)
