@@ -140,7 +140,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         var fields = new List<EmbedFieldBuilder>();
-        foreach (var price in competitiveMarketPrices)
+        foreach (var price in competitiveMarketPrices.Take(25))
         {
             var priceAvailabilityFormatter = (!price.IsAvailable ? "~~" : null);
             var priceIsCheapest = (price.Price == competitiveMarketPrices.Min(x => x.Price));

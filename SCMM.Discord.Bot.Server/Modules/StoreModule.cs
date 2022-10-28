@@ -128,7 +128,7 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
 
         var fields = new List<EmbedFieldBuilder>();
         var sortedItems = store.Items.OrderByDescending(x => (x.Item.Description.SupplyTotalEstimated ?? 0)).ThenByDescending(x => (x.Item.Description.SubscriptionsLifetime ?? 0));
-        foreach (var item in sortedItems)
+        foreach (var item in sortedItems.Take(25))
         {
             var itemValue = new StringBuilder();
             itemValue.Append($"`{currency.ToPriceString(currency.CalculateExchange(item.Item.Price ?? 0, item.Item.Currency))}`");

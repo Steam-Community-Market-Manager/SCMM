@@ -148,7 +148,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 var description = new StringBuilder();
                 description.Append($"{store.Items?.Length ?? 0} new item(s) have been added to the {store.AppName} store.");
 
-                var fields = store.Items.ToDictionary(
+                var fields = store.Items.Take(25).ToDictionary(
                     x => x.Name,
                     x => x.PriceDescription ?? "N/A"
                 );
