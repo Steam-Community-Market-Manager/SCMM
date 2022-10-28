@@ -58,13 +58,13 @@ using (var host = hostBuilder.Build())
         host.Services.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(),
         host.Services.GetRequiredService<MessageHandlerTypeCollection>()
     );
-
+    /*
     var rustyPot = new RustyPotWebClient(
         host.Services.GetRequiredService<ILogger<RustyPotWebClient>>(),
         host.Services.GetRequiredService<IServiceBus>()
     );
     var rustyPotMonitorJob = await rustyPot.MonitorAsync();
-
+    */
     logger.LogInformation("Service bus processor is ready to handle messages.");
     await using (serviceBusProcessor)
     {

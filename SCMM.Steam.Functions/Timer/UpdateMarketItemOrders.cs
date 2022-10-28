@@ -62,17 +62,12 @@ public class UpdateMarketItemOrders
             }
             catch (SteamRequestException ex)
             {
-                // If we're throttled, cool-down and try again later...
                 logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'. {ex.Message}");
-                if (ex.IsRateLimited)
-                {
-                    return;
-                }
             }
-            catch (Exception ex)
+            finally
             {
-                logger.LogError(ex, $"Failed to update market item order history for '{item.SteamId}'. {ex.Message}");
-                continue;
+                item.LastCheckedOrdersOn = DateTimeOffset.Now;
+                await _db.SaveChangesAsync();
             }
         }
 
