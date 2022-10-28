@@ -161,7 +161,7 @@ namespace SCMM.Steam.API.Commands
                         profile.Roles.Remove(Roles.Whale);
                     }
                 }
-
+                /*
                 if (profile.Roles.Contains(Roles.Whale))
                 {
                     // Re-import whale inventories at least once every 24-hrs
@@ -170,7 +170,7 @@ namespace SCMM.Steam.API.Commands
                         ProfileId = profile.SteamId
                     });
                 }
-
+                */
                 await _db.SaveChangesAsync();
             }
 

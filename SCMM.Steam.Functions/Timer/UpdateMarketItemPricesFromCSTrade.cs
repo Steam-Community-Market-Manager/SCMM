@@ -93,6 +93,7 @@ public class UpdateMarketItemPricesFromCSTrade
                     .Select(x => x.BotId)
                     .Distinct()
                     .ToArray();
+                /*
                 var importTradeBotInventoryMessages = csTradeBots.Select(x => new ImportProfileInventoryMessage()
                 {
                     ProfileId = x,
@@ -102,6 +103,7 @@ public class UpdateMarketItemPricesFromCSTrade
                 {
                     await _serviceBus.SendMessagesAsync(importTradeBotInventoryMessages);
                 }
+                */
             }
             catch (Exception ex)
             {

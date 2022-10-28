@@ -93,8 +93,8 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                // Retry up to five times, then give up
-                if (retryAttempt >= 5)
+                // Retry up to three times, then give up
+                if (retryAttempt >= 3)
                 {
                     throw new SteamRequestException($"Request failed after {retryAttempt} attempts");
                 }

@@ -108,6 +108,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                     .Where(x => x != null)
                     .Distinct()
                     .ToArray();
+                /*
                 var importInventoryMessages = dMarketItemHolders.Select(x => new ImportProfileInventoryMessage()
                 {
                     ProfileId = x,
@@ -117,6 +118,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 {
                     await _serviceBus.SendMessagesAsync(importInventoryMessages);
                 }
+                */
             }
             catch (Exception ex)
             {

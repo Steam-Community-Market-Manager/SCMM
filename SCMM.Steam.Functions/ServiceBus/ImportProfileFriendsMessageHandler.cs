@@ -5,6 +5,7 @@ using SCMM.Steam.API.Commands;
 
 namespace SCMM.Steam.Functions.ServiceBus;
 
+/*
 public class ImportProfileFriendsMessageHandler
 {
     private readonly ICommandProcessor _commandProcessor;
@@ -24,3 +25,4 @@ public class ImportProfileFriendsMessageHandler
         });
     }
 }
+*/
