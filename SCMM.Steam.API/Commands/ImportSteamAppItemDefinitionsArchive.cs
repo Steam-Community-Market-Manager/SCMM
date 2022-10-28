@@ -328,7 +328,25 @@ namespace SCMM.Steam.API.Commands
                                 AppId = app.Id,
                                 Start = DateTimeOffset.UtcNow
                             });
+
                             _logger.LogInformation($"A new limited item store was added (appId: {app.SteamId}, storeId: {limitedItemStore.StoreId()})");
+
+                            var existingLimitedItemsThatAreStillAvailable = activeItemStores.SelectMany(x => x.Items)
+                                .Where(x => x.Item.IsAvailable && !x.Item.Description.IsPermanent)
+                                .ToArray();
+                            foreach (var existingStoreItem in existingLimitedItemsThatAreStillAvailable)
+                            {
+                                limitedItemStore.Items.Add(new SteamStoreItemItemStore()
+                                {
+                                    Store = limitedItemStore,
+                                    Item = existingStoreItem.Item,
+                                    Currency = existingStoreItem.Currency,
+                                    CurrencyId = existingStoreItem.CurrencyId,
+                                    Price = existingStoreItem.Price,
+                                    Prices = new PersistablePriceDictionary(existingStoreItem.Prices),
+                                    IsPriceVerified = existingStoreItem.IsPriceVerified,
+                                });
+                            }
                         }
                     }
                 }
