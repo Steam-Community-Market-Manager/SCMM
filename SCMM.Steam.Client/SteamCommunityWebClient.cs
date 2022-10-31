@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
 using System.Net;
+using System.Net.Http;
 using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
@@ -18,6 +20,11 @@ namespace SCMM.Steam.Client
         public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
             : base(logger, cache, session: session, proxy: proxy)
         {
+            DefaultHeaders.Add("Host", new Uri(Constants.SteamCommunityUrl).Host);
+            DefaultHeaders.Add("Origin", Constants.SteamCommunityUrl);
+            DefaultHeaders.Add("Referer", Constants.SteamCommunityUrl);
+            DefaultHeaders.Add("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US; Valve Steam Client/default/1666144119; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36");
+            DefaultHeaders.Add("X-Requested-With", "XMLHttpRequest");
         }
 
         #region Profile

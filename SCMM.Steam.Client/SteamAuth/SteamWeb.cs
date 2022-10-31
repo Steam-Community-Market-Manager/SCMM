@@ -160,7 +160,7 @@ namespace SteamAuth
                     //Thus, we should only throw this exception when we're attempting to refresh our session.
                     if (location == "steammobile://lostauth" && requestURL == APIEndpoints.MOBILEAUTH_GETWGTOKEN)
                     {
-                        throw new SteamGuardAccount.WGTokenExpiredException();
+                        throw new Exception("WGTokenExpired");
                     }
                 }
             }

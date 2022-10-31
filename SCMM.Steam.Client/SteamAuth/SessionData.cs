@@ -4,40 +4,43 @@ namespace SteamAuth
 {
     public class SessionData
     {
-        public string SessionID { get; set; }
+        public string OAuthToken { get; set; }
 
         public ulong SteamID { get; set; }
+
+        public string SessionID { get; set; }
 
         public string SteamLogin { get; set; }
 
         public string SteamLoginSecure { get; set; }
 
-        public string WebCookie { get; set; }
-
-        public string OAuthToken { get; set; }
+        public Cookie[] Cookies { get; set; }
 
         public void AddCookies(CookieContainer cookies)
         {
-            cookies.Add(new Cookie("mobileClientVersion", "0 (2.1.3)", "/", ".steamcommunity.com"));
-            cookies.Add(new Cookie("mobileClient", "android", "/", ".steamcommunity.com"));
-
-            if (!string.IsNullOrEmpty(SessionID))
+            if (Cookies?.Length > 0)
             {
-                cookies.Add(new Cookie("sessionid", SessionID, "/", ".steamcommunity.com"));
+                foreach(var cookie in Cookies)
+                {
+                    cookies.Add(new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain)
+                    {
+                        HttpOnly = cookie.HttpOnly,
+                        Secure = cookie.Secure,
+                        Expires = cookie.Expires                        
+                    });
+                }
             }
 
-            cookies.Add(new Cookie("steamid", SteamID.ToString(), "/", ".steamcommunity.com"));
-            cookies.Add(new Cookie("steamLogin", SteamLogin, "/", ".steamcommunity.com")
+            cookies.Add(new Cookie("steamid", SteamID.ToString(), "/", "steamcommunity.com"));
+            cookies.Add(new Cookie("steamLogin", SteamID + "%7C%7C" + SteamLogin, "/", "steamcommunity.com")
             {
                 HttpOnly = true
             });
-            cookies.Add(new Cookie("steamLoginSecure", SteamLoginSecure, "/", ".steamcommunity.com")
+            cookies.Add(new Cookie("steamLoginSecure", SteamID + "%7C%7C" + SteamLoginSecure, "/", "steamcommunity.com")
             {
                 HttpOnly = true,
                 Secure = true
             });
-
-            cookies.Add(new Cookie("Steam_Language", "english", "/", ".steamcommunity.com"));
         }
     }
 }

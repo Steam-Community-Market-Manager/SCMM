@@ -164,12 +164,12 @@ namespace SteamAuth
 
                 var session = new SessionData
                 {
+                    SteamID = oAuthData.SteamID,
                     OAuthToken = oAuthData.OAuthToken,
-                    SteamID = oAuthData.SteamID
+                    SteamLogin = oAuthData.SteamLogin,
+                    SteamLoginSecure = oAuthData.SteamLoginSecure,
+                    Cookies = readableCookies.ToArray()
                 };
-                session.SteamLogin = session.SteamID + "%7C%7C" + oAuthData.SteamLogin;
-                session.SteamLoginSecure = session.SteamID + "%7C%7C" + oAuthData.SteamLoginSecure;
-                session.WebCookie = oAuthData.Webcookie;
                 try
                 {
                     session.SessionID = readableCookies["sessionid"].Value;
@@ -220,6 +220,9 @@ namespace SteamAuth
                 [JsonPropertyName("steamid")]
                 public ulong SteamID { get; set; }
 
+                [JsonPropertyName("account_name")]
+                public string AccountName { get; set; }
+
                 [JsonPropertyName("oauth_token")]
                 public string OAuthToken { get; set; }
 
@@ -228,9 +231,6 @@ namespace SteamAuth
 
                 [JsonPropertyName("wgtoken_secure")]
                 public string SteamLoginSecure { get; set; }
-
-                [JsonPropertyName("webcookie")]
-                public string Webcookie { get; set; }
             }
         }
 
