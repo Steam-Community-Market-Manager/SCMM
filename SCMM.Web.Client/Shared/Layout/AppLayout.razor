@@ -28,6 +28,13 @@
         <AppNavigationMenu />
     </MudDrawer>
     <MudMainContent Style="height:100vh; overflow-y:scroll; overflow-x:hidden;">
+        @if (!String.IsNullOrEmpty(SiteAlert))
+        {
+            <MudAlert Severity="Severity.Normal" Variant="Variant.Filled" Icon="fas fa-fw fa-exclamation-triangle" Dense="true" Square="true" Class="mud-alert-filled-primary"
+                      ShowCloseIcon="true" CloseIcon="fa fa-fw fa-times" CloseIconClicked="@(() => { SiteAlert = null; StateHasChanged(); })">
+                <span>@SiteAlert</span>
+            </MudAlert>
+        }
         @Body
         <AppContentFooter />
     </MudMainContent>
@@ -35,11 +42,19 @@
 
 @code
 {
+    private string SiteAlert { get; set; }
+
     private bool DrawerIsOpen { get; set; } = false;
 
     private DrawerVariant DrawerVariant { get; set; } = DrawerVariant.Responsive;
 
     private Guid _breakpointSubscriptionId;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        SiteAlert = "Steam is heavily rate limiting our servers and we're having trouble serving everyones requests. Some functionality may be broken and market data may be out of date for a while as we try and find a solution to the issue, check back later. Sorry for the inconvenience.";
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
