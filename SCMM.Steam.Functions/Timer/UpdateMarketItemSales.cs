@@ -23,7 +23,7 @@ public class UpdateMarketItemSales
         _steamCommunityWebClient = steamCommunityWebClient;
     }
 
-    [Function("Update-Market-Item-Sales")]
+    //[Function("Update-Market-Item-Sales")]
     public async Task Run([TimerTrigger("0 1-59/2 * * * *")] /* every odd minute */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Sales");
