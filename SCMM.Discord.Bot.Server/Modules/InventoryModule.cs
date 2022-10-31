@@ -193,9 +193,9 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var fields = new List<EmbedFieldBuilder>
         {
             new EmbedFieldBuilder()
-            .WithName($"{marketIcon} {currency.ToPriceString(inventoryTotals.MarketValue)}")
-            .WithValue(marketMovement)
-            .WithIsInline(false)
+                .WithName($"{marketIcon} {currency.ToPriceString(inventoryTotals.MarketValue)}")
+                .WithValue(marketMovement)
+                .WithIsInline(false)
         };
 
         var embed = new EmbedBuilder()

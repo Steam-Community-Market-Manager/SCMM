@@ -375,11 +375,13 @@ namespace SCMM.Discord.Client
                 var fieldBuilders = new List<EmbedFieldBuilder>();
                 if (fields != null && fields.Any())
                 {
-                    fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
-                        .WithName(x.Key)
-                        .WithValue(string.IsNullOrEmpty(x.Value) ? "-" : x.Value)
-                        .WithIsInline(fieldsInline)
-                    ).ToList();
+                    fieldBuilders.AddRange(
+                        fields.Select(x => new EmbedFieldBuilder()
+                            .WithName(x.Key)
+                            .WithValue(string.IsNullOrEmpty(x.Value) ? "-" : x.Value)
+                            .WithIsInline(fieldsInline)
+                        )
+                    );
                 }
 
                 var embed = new EmbedBuilder()
@@ -387,7 +389,7 @@ namespace SCMM.Discord.Client
                     .WithUrl(SafeUrl(url))
                     .WithThumbnailUrl(SafeUrl(thumbnailUrl))
                     .WithDescription(description)
-                    .WithFields(fieldBuilders)
+                    .WithFields(fieldBuilders.Take(25))
                     .WithImageUrl(SafeUrl(imageUrl))
                     .WithColor((color != null ? color.Value : Color.Default))
                     .WithFooter(x => x.Text = _websiteUrl);
