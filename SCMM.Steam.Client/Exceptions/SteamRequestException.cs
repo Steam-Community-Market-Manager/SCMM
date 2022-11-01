@@ -5,7 +5,7 @@ namespace SCMM.Steam.Client.Exceptions
 {
     public class SteamRequestException : Exception
     {
-        public SteamRequestException(string message) : base()
+        public SteamRequestException(string message) : base(message)
         {
             StatusCode = null;
         }
