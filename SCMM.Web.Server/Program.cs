@@ -178,7 +178,7 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton((services) =>
         {
             var configuration = services.GetService<IConfiguration>();
-            return configuration.GetWebProxyConfiguration();
+            return configuration.GetWebProxyConfiguration().Expand();
         });
 
         // 3rd party clients

@@ -13,8 +13,9 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     {
         var proxies = new List<WebProxyWithCooldown>()
         {
-            new WebProxyWithCooldown()
+            new WebProxyWithCooldown() // self, no proxy, highest priority
         };
+
         if (webProxyEndpoints != null)
         {
             proxies.AddRange(webProxyEndpoints
@@ -40,20 +41,19 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     private WebProxyWithCooldown GetNextAvailableProxy(Uri address)
     {
         var now = DateTime.UtcNow;
+        var enabledProxies = _proxies.Where(x => x.IsEnabled);
 
         // Use the highest priority proxy that isn't in cooldown
-        var proxy = _proxies
-            .Where(x => x.IsEnabled)
+        var proxy = enabledProxies
             .Where(x => x.GetHostCooldown(address) <= now)
             .OrderBy(x => x.Priority)
             .FirstOrDefault();
 
-        // If all proxies are in cooldown, then use the one that is closest to exiting cooldown
-        proxy ??= _proxies
-            .Where(x => x.IsEnabled)
-            .OrderBy(x => x.GetHostCooldown(address) - now)
-            .ThenBy(x => x.Priority)
-            .FirstOrDefault();
+        if (proxy == null && enabledProxies.Any())
+        {
+            // Crap...
+            _logger.LogWarning($"All available proxies for '{address?.Host}' are currently in cooldown! Request will by-pass the proxy.");
+        }
 
         return proxy;
     }
@@ -75,7 +75,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         if (proxy != null)
         {
             proxy.IsEnabled = false;
-            _logger.LogWarning($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled");
+            _logger.LogWarning($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled.");
         }
     }
 
@@ -87,7 +87,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         }
 
         var proxy = GetNextAvailableProxy(destination);
-        _logger.LogDebug($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy");
+        _logger.LogDebug($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy.");
         return proxy?.Address;
     }
 

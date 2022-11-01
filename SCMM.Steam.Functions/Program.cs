@@ -146,7 +146,7 @@ public static class HostExtensions
             services.AddSingleton((services) =>
             {
                 var configuration = services.GetService<IConfiguration>();
-                return configuration.GetWebProxyConfiguration();
+                return configuration.GetWebProxyConfiguration().Expand();
             });
 
             // 3rd party clients
