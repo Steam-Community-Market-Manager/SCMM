@@ -6,7 +6,6 @@ using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
 using System.Net;
-using System.Net.Http;
 using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
@@ -55,11 +54,6 @@ namespace SCMM.Steam.Client
         public async Task<SteamItemStoreGetItemDefsPaginatedJsonResponse> GetStorePaginated(SteamItemStoreGetItemDefsPaginatedJsonRequest request, bool useCache = false)
         {
             return await GetJson<SteamItemStoreGetItemDefsPaginatedJsonRequest, SteamItemStoreGetItemDefsPaginatedJsonResponse>(request, useCache);
-        }
-
-        public async Task<XElement> GetStoreItemPage(SteamItemStoreDetailPageRequest request, bool useCache = false)
-        {
-            return await GetHtml<SteamItemStoreDetailPageRequest>(request, useCache);
         }
 
         #endregion
