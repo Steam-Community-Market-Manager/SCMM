@@ -286,7 +286,7 @@ namespace SCMM.Discord.Client
 
                     case InteractionCommandError.Exception:
                         logLevel = LogLevel.Error;
-                        responseMessage = replyFunc($"Sorry, this is embarrassing, but I've just shit 💩 the bed 🛏 trying to process that command. Technical reason: ```{result.ErrorReason}```", null, true);
+                        responseMessage = replyFunc($"Sorry, this is embarrassing, but I've encountered an error while processing that command.\nTechnical reason: ```{result.ErrorReason}```", null, true);
                         break;
 
                     case InteractionCommandError.Unsuccessful:

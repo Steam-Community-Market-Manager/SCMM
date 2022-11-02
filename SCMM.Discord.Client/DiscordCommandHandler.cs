@@ -225,7 +225,7 @@ namespace SCMM.Discord.Client
 
                     case CommandError.Exception:
                         logLevel = LogLevel.Error;
-                        responseMessage = replyFunc($"Sorry, this is embarrassing, but I've just shit 💩 the bed 🛏 trying to process that command. Technical reason: ```{result.ErrorReason}```", null);
+                        responseMessage = replyFunc($"Sorry, this is embarrassing, but I've encountered an error while processing that command.\nTechnical reason: ```{result.ErrorReason}```", null);
                         reactionEmoji = new Emoji("🐛"); // bug
                         break;
 
