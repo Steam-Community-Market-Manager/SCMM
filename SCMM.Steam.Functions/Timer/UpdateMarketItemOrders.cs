@@ -22,8 +22,8 @@ public class UpdateMarketItemOrders
         _steamCommunityWebClient = steamCommunityWebClient;
     }
 
-    //[Function("Update-Market-Item-Orders")]
-    public async Task Run([TimerTrigger("0 */2 * * * *")] /* every even minute */ TimerInfo timerInfo, FunctionContext context)
+    [Function("Update-Market-Item-Orders")]
+    public async Task Run([TimerTrigger("15 * * * * *")] /* 15 seconds past every minute */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Orders");
 
@@ -33,7 +33,7 @@ public class UpdateMarketItemOrders
             .Where(x => !string.IsNullOrEmpty(x.SteamId))
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
             .OrderBy(x => x.LastCheckedOrdersOn)
-            .Take(100) // batch 100 at a time
+            .Take(50) // batch 50 items per minute
             .ToList();
 
         if (!items.Any())
@@ -58,7 +58,6 @@ public class UpdateMarketItemOrders
                 );
 
                 await UpdateMarketItemOrderHistory(item, response);
-                await _db.SaveChangesAsync();
             }
             catch (SteamRequestException ex)
             {

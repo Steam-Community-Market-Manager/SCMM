@@ -24,7 +24,7 @@ public class UpdateMarketItemSales
     }
 
     //[Function("Update-Market-Item-Sales")]
-    public async Task Run([TimerTrigger("0 1-59/2 * * * *")] /* every odd minute */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("45 * * * * *")] /* 45 seconds past every minute */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Sales");
 
@@ -35,7 +35,7 @@ public class UpdateMarketItemSales
             .OrderBy(x => x.LastCheckedSalesOn)
             .Include(x => x.App)
             .Include(x => x.Description)
-            .Take(100) // batch 100 at a time
+            .Take(50) // batch 50 items per minute
             .ToList();
 
         if (!items.Any())
