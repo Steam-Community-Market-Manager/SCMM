@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using CommandQuery.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ using SCMM.Market.RustyPot.Client;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Statistics;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
 using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
@@ -120,9 +122,12 @@ public static class HostExtensions
             {
                 services.AddDbContext<SteamDbContext>(options =>
                 {
+                    options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                    options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
+                    options.ConfigureWarnings(c => c.Log((RelationalEventId.CommandExecuting, LogLevel.Debug)));
+                    options.ConfigureWarnings(c => c.Log((RelationalEventId.CommandExecuted, LogLevel.Debug)));
                     options.UseSqlServer(steamDbConnectionString, sql =>
                     {
-                        //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                         sql.EnableRetryOnFailure();
                     });
                 });

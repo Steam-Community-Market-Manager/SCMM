@@ -5,6 +5,7 @@ using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.OpenApi.Models;
 using SCMM.Azure.AI;
@@ -143,13 +144,14 @@ public static class WebApplicationExtensions
         {
             builder.Services.AddDbContext<SteamDbContext>(options =>
             {
-                options.UseSqlServer(dbConnectionString, sql =>
-                {
-                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                    sql.EnableRetryOnFailure();
-                });
                 options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
                 options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
+                options.ConfigureWarnings(c => c.Log((RelationalEventId.CommandExecuting, LogLevel.Debug)));
+                options.ConfigureWarnings(c => c.Log((RelationalEventId.CommandExecuted, LogLevel.Debug)));
+                options.UseSqlServer(dbConnectionString, sql =>
+                {
+                    sql.EnableRetryOnFailure();
+                });
             });
         }
 

@@ -1,6 +1,7 @@
 using Azure.Identity;
 using CommandQuery.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +67,10 @@ public static class HostExtensions
             {
                 logging.AddDebug();
                 logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Debug);
+                logging.AddFilter("Microsoft", level => level >= LogLevel.Warning);
+                logging.AddFilter("Microsoft.Hosting.Lifetime", level => level >= LogLevel.Warning);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database", level => level >= LogLevel.Warning);
             }
             else
             {
@@ -111,13 +116,14 @@ public static class HostExtensions
             {
                 services.AddDbContext<SteamDbContext>(options =>
                 {
-                    options.UseSqlServer(steamDbConnectionString, sql =>
-                    {
-                        //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                        sql.EnableRetryOnFailure();
-                    });
                     options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
                     options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
+                    options.ConfigureWarnings(c => c.Log((RelationalEventId.CommandExecuting, LogLevel.Debug)));
+                    options.ConfigureWarnings(c => c.Log((RelationalEventId.CommandExecuted, LogLevel.Debug)));
+                    options.UseSqlServer(steamDbConnectionString, sql =>
+                    {
+                        sql.EnableRetryOnFailure();
+                    });
                 });
             }
 
