@@ -33,19 +33,21 @@ public class WebClient : IDisposable
         var httpClient = BuildHttpClient();
 
         // We are a normal looking web browser, honest (helps with WAF rules that block bots)
-        httpClient.DefaultRequestHeaders.UserAgent.Clear();
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppleWebKit", "537.36"));
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(KHTML, like Gecko)"));
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
-
-        // NOTE: Don't give them an easy way to identify us
-        //DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("SCMM", "1.0"));
+        if (!httpClient.DefaultRequestHeaders.UserAgent.Any())
+        {
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppleWebKit", "537.36"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(KHTML, like Gecko)"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
+        }
 
         // We made this request from a web browser, honest (helps with WAF rules that enforce OWASP)
-        httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        if (!httpClient.DefaultRequestHeaders.Contains("X-Requested-With"))
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        }
 
         if (referer != null)
         {
@@ -61,7 +63,10 @@ public class WebClient : IDisposable
         var httpClient = BuildHttpClient();
         if (!string.IsNullOrEmpty(apiKey))
         {
-            httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
+            if (!httpClient.DefaultRequestHeaders.Contains("x-api-key"))
+            {
+                httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
+            }
         }
 
         return httpClient;
@@ -70,12 +75,31 @@ public class WebClient : IDisposable
     protected HttpClient BuildHttpClient()
     {
         var httpClient = new HttpClient(_httpHandler, false);
+
+        // Set default client headers
         if (_defaultHeaders != null)
         {
             foreach (var header in _defaultHeaders)
             {
                 httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
+        }
+
+        // If these headers weren't set by the client, use these sensible defaults
+        if (!httpClient.DefaultRequestHeaders.Accept.Any())
+        {
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+        }
+        if (!httpClient.DefaultRequestHeaders.AcceptEncoding.Any())
+        {
+            httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+            httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+            httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
+        }
+        if (!httpClient.DefaultRequestHeaders.AcceptLanguage.Any())
+        {
+            httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en-US"));
+            httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 0.9));
         }
 
         return httpClient;
