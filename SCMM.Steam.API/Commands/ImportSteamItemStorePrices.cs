@@ -85,7 +85,9 @@ namespace SCMM.Steam.API.Commands
                 }
                 if (storeItem == null)
                 {
-                    var assetDescription = _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefault(x => x.Name == itemName);
+                    var assetDescription = _db.SteamAssetDescriptions
+                        .Include(x => x.App)
+                        .FirstOrDefault(x => x.Name == itemName);
                     if (assetDescription == null)
                     {
                         continue;

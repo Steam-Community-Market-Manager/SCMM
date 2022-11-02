@@ -87,6 +87,7 @@ public class UpdateMarketItemOrders
                 .Include(x => x.BuyOrders)
                 .Include(x => x.SellOrders)
                 //.Include(x => x.OrdersHistory)
+                .AsSplitQuery()
                 .SingleOrDefaultAsync(x => x.Id == item.Id);
         }
 

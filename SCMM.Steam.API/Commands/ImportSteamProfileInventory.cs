@@ -81,6 +81,7 @@ namespace SCMM.Steam.API.Commands
                     TotalItems = x.InventoryItems.Count,
                     LastUpdatedOn = x.LastUpdatedInventoryOn
                 })
+                .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
             // If the profile inventory is less than 1 hour old and we aren't forcing an update, just return the current inventory

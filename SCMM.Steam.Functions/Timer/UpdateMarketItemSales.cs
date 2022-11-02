@@ -94,6 +94,7 @@ public class UpdateMarketItemSales
         {
             item = await _db.SteamMarketItems
                 .Include(x => x.SalesHistory)
+                .AsSplitQuery()
                 .SingleOrDefaultAsync(x => x.Id == item.Id);
         }
 
