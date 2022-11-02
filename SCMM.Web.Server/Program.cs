@@ -151,6 +151,7 @@ public static class WebApplicationExtensions
                 options.UseSqlServer(dbConnectionString, sql =>
                 {
                     sql.EnableRetryOnFailure();
+                    sql.CommandTimeout(60);
                 });
             });
         }

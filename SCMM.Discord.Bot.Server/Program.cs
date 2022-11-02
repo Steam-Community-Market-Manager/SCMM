@@ -147,6 +147,7 @@ public static class WebApplicationExtensions
                 options.UseSqlServer(steamDbConnectionString, sql =>
                 {
                     sql.EnableRetryOnFailure();
+                    sql.CommandTimeout(60);
                 });
             });
         }

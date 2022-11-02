@@ -129,6 +129,7 @@ public static class HostExtensions
                     options.UseSqlServer(steamDbConnectionString, sql =>
                     {
                         sql.EnableRetryOnFailure();
+                        sql.CommandTimeout(60);
                     });
                 });
             }
