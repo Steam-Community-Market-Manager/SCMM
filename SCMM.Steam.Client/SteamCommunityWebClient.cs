@@ -19,11 +19,23 @@ namespace SCMM.Steam.Client
         public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
             : base(logger, cache, session: session, proxy: proxy)
         {
+            // Transport
             DefaultHeaders.Add("Host", new Uri(Constants.SteamCommunityUrl).Host);
-            DefaultHeaders.Add("Origin", Constants.SteamCommunityUrl);
-            DefaultHeaders.Add("Referer", Constants.SteamCommunityUrl);
+            DefaultHeaders.Add("Referer", Constants.SteamCommunityUrl + "/");
+            //DefaultHeaders.Add("Connection", "keep-alive");
+            
+            // Security
+            DefaultHeaders.Add("Sec-Fetch-Dest", "empty");
+            DefaultHeaders.Add("Sec-Fetch-Mode", "cors");
+            DefaultHeaders.Add("Sec-Fetch-Site", "same-origin");
+
+            // Client
+            DefaultHeaders.Add("Accept", "*/*");
+            DefaultHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+            DefaultHeaders.Add("Accept-Language", "en-US,en;q=0.9");
             DefaultHeaders.Add("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US; Valve Steam Client/default/1666144119; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36");
             DefaultHeaders.Add("X-Requested-With", "XMLHttpRequest");
+
         }
 
         #region Profile
