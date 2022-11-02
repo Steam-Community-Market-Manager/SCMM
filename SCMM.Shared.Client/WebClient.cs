@@ -21,10 +21,13 @@ public class WebClient : IDisposable
             UseCookies = cookieContainer != null,
             CookieContainer = cookieContainer ?? new CookieContainer(),
             Proxy = webProxy,
-            PreAuthenticate = webProxy != null
+            PreAuthenticate = (webProxy != null),
+            AutomaticDecompression = DecompressionMethods.All,
+            AllowAutoRedirect = true,
+            MaxAutomaticRedirections = 3
         };
     }
-
+    
     protected HttpClient BuildWebBrowserHttpClient(Uri referer = null)
     {
         var httpClient = BuildHttpClient();
