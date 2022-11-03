@@ -137,7 +137,7 @@ namespace SCMM.Steam.Client
                     //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
                     // Steam community web site rate-limits observed from personal testing:
                     //  - You are limited to 20 requests within 20 seconds, which resets after 60 seconds.
-                    RotateWebProxy(request?.Uri, cooldown: TimeSpan.FromMinutes(10));
+                    RotateWebProxy(request?.Uri, cooldown: TimeSpan.FromMinutes(60));
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
