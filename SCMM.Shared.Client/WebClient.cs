@@ -102,6 +102,11 @@ public class WebClient : IDisposable
             httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 0.9));
         }
 
+        if (httpClient.DefaultRequestHeaders.IfModifiedSince == null && IfModifiedSinceTimeAgo != null)
+        {
+            httpClient.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.UtcNow.Subtract(IfModifiedSinceTimeAgo.Value);
+        }
+
         return httpClient;
     }
 
@@ -135,7 +140,10 @@ public class WebClient : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected IDictionary<string, string> DefaultHeaders => _defaultHeaders;
+    public IDictionary<string, string> DefaultHeaders => _defaultHeaders;
 
-    protected CookieContainer Cookies => _cookieContainer;
+    public CookieContainer Cookies => _cookieContainer;
+
+    public TimeSpan? IfModifiedSinceTimeAgo { get; set; }
+
 }

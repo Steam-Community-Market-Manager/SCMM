@@ -41,6 +41,8 @@ public class UpdateMarketItemOrders
             return;
         }
 
+        _steamCommunityWebClient.IfModifiedSinceTimeAgo = TimeSpan.FromHours(1);
+
         var id = Guid.NewGuid();
         logger.LogTrace($"Updating market item orders information (id: {id}, count: {items.Count()})");
         foreach (var item in items)
@@ -61,7 +63,11 @@ public class UpdateMarketItemOrders
             }
             catch (SteamRequestException ex)
             {
-                logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'. {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item orders for '{item.SteamId}'. {ex.Message}");
+            }
+            catch (SteamNotModifiedException ex)
+            {
+                logger.LogInformation(ex, $"No change in market item orders for '{item.SteamId}' since last request. {ex.Message}");
             }
             finally
             {

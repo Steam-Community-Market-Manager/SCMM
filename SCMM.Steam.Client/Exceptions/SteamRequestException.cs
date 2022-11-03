@@ -49,5 +49,9 @@ namespace SCMM.Steam.Client.Exceptions
             StatusCode == HttpStatusCode.Unauthorized ||
             StatusCode == HttpStatusCode.Forbidden
         );
+
+        public bool IsNotModified => (
+            StatusCode == HttpStatusCode.NotModified
+        );
     }
 }

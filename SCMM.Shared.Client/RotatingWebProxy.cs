@@ -87,7 +87,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         }
 
         var proxy = GetNextAvailableProxy(destination);
-        _logger.LogDebug($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy.");
+        _logger.LogInformation($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy.");
         return proxy?.Address;
     }
 

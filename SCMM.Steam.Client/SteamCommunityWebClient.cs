@@ -22,7 +22,7 @@ namespace SCMM.Steam.Client
             // Transport
             DefaultHeaders.Add("Host", new Uri(Constants.SteamCommunityUrl).Host);
             DefaultHeaders.Add("Referer", Constants.SteamCommunityUrl + "/");
-            //DefaultHeaders.Add("Connection", "keep-alive");
+            DefaultHeaders.Add("Connection", "keep-alive");
             
             // Security
             DefaultHeaders.Add("Sec-Fetch-Dest", "empty");

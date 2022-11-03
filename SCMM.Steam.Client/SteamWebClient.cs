@@ -111,6 +111,13 @@ namespace SCMM.Steam.Client
             }
             catch (SteamRequestException ex)
             {
+                // Check if the content has not been modified since the last request
+                // 304: Not Modified
+                if (ex.IsNotModified)
+                {
+                    throw new SteamNotModifiedException();
+                }
+
                 // Check if the request failed due to a temporary or network related error
                 // 408: RequestTimeout
                 // 504: GatewayTimeout
