@@ -67,10 +67,6 @@ public static class HostExtensions
             {
                 logging.AddDebug();
                 logging.AddConsole();
-                logging.SetMinimumLevel(LogLevel.Debug);
-                logging.AddFilter("Microsoft", level => level >= LogLevel.Warning);
-                logging.AddFilter("Microsoft.Hosting.Lifetime", level => level >= LogLevel.Warning);
-                logging.AddFilter("Microsoft.EntityFrameworkCore.Database", level => level >= LogLevel.Warning);
             }
             else
             {

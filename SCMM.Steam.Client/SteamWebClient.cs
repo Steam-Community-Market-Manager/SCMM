@@ -98,13 +98,16 @@ namespace SCMM.Steam.Client
                 {
                     throw new SteamRequestException($"Request failed after {retryAttempt} attempts");
                 }
+
                 // Use a back-off delay between retry attempts to avoid further rate-limiting
+                /*
                 if (retryAttempt > 1)
                 {
                     var delay = TimeSpan.FromSeconds(Math.Pow(3, retryAttempt));
                     _logger.LogWarning($"Request is delaying for {delay.TotalSeconds} seconds (retry attempt: {retryAttempt})");
                     await Task.Delay(delay);
                 }
+                */
 
                 // Zhu Li, do the thing...
                 return await Get(request);
