@@ -54,7 +54,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         if (proxy == null && enabledProxies.Any())
         {
             // Crap...
-            _logger.LogWarning($"All available proxies for '{address?.Host}' are currently in cooldown! Request will by-pass the proxy.");
+            _logger.LogError($"All available proxies for '{address?.Host}' are currently in cooldown! Request will by-pass the proxy.");
         }
 
         return proxy;

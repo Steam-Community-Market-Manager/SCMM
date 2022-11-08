@@ -99,10 +99,12 @@ namespace SCMM.Steam.Client
 
         #region Market
 
+        /*
         public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request, bool useCache = false)
         {
             return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request, useCache);
         }
+        */
 
         public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request, string appId, string marketNameHash, bool useCache = false)
         {
@@ -168,6 +170,7 @@ namespace SCMM.Steam.Client
         }
         */
 
+        // TODO: Move to unauthenticated?
         public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverview(SteamMarketPriceOverviewJsonRequest request, bool useCache = false)
         {
             try
@@ -186,6 +189,7 @@ namespace SCMM.Steam.Client
             }
         }
 
+        // TODO: Move to unauthenticated?
         public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request, bool useCache = false)
         {
             try
