@@ -30,7 +30,7 @@
     <MudMainContent Style="height:100vh; overflow-y:scroll; overflow-x:hidden;">
         @if (!String.IsNullOrEmpty(SiteAlert))
         {
-            <MudAlert Severity="Severity.Normal" Variant="Variant.Filled" Icon="fas fa-fw fa-exclamation-triangle" Dense="true" Square="true" Class="mud-alert-filled-primary"
+            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="fas fa-fw fa-magnifying-glass-chart" Dense="true" Square="true" Class=""
                       ShowCloseIcon="true" CloseIcon="fa fa-fw fa-times" CloseIconClicked="@(() => { SiteAlert = null; StateHasChanged(); })">
                 <span>@SiteAlert</span>
             </MudAlert>
@@ -53,7 +53,7 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        SiteAlert = "Steam is heavily rate limiting our servers and we're having trouble serving everyones requests. Some functionality may be broken and market data may be out of date for a while as we try and find a solution to the issue, check back later. Sorry for the inconvenience.";
+        SiteAlert = "Steam is heavily rate limiting our servers. Market data is taking longer to update than normal. Please be patient as we work through a solution. Sorry for the inconvenience.";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
