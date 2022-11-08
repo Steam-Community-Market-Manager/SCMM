@@ -192,6 +192,8 @@ public static class WebApplicationExtensions
 
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
+        builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
+        builder.Services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Auto-mapper

@@ -18,7 +18,9 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
 
         if (webProxyEndpoints != null)
         {
+            var rnd = new Random();
             proxies.AddRange(webProxyEndpoints
+                .OrderBy(x => rnd.Next())
                 .Select(x => new WebProxyWithCooldown()
                 {
                     Priority = webProxyEndpoints.ToList().IndexOf(x) + 1,
@@ -87,7 +89,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         }
 
         var proxy = GetNextAvailableProxy(destination);
-        _logger.LogInformation($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy.");
+        _logger.LogDebug($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy.");
         return proxy?.Address;
     }
 

@@ -14,9 +14,9 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemActivity
 {
     private readonly SteamDbContext _db;
-    private readonly SteamCommunityWebClient _steamCommunityWebClient;
+    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
 
-    public UpdateMarketItemActivity(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
+    public UpdateMarketItemActivity(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -47,8 +47,10 @@ public class UpdateMarketItemActivity
             .Where(x => x.MarketItem.Last24hrSales > 1)
             .Select(x => new
             {
+                AppId = x.App.SteamId,
                 x.Id,
                 x.NameId,
+                x.NameHash,
                 MarketItemId = x.MarketItem.Id,
                 x.MarketItem.Last1hrSales
             })
@@ -88,7 +90,9 @@ public class UpdateMarketItemActivity
                         Language = language.SteamId,
                         CurrencyId = usdCurrency.SteamId,
                         NoRender = true
-                    }
+                    },
+                    assetDescription.AppId,
+                    assetDescription.NameHash
                 );
 
                 if (response?.Success != true || response?.Activity?.Any() != true)

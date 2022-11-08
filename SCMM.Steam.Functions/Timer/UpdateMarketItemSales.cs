@@ -15,9 +15,9 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemSales
 {
     private readonly SteamDbContext _db;
-    private readonly SteamCommunityWebClient _steamCommunityWebClient;
+    private readonly AuthenticatedProxiedSteamCommunityWebClient _steamCommunityWebClient;
 
-    public UpdateMarketItemSales(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
+    public UpdateMarketItemSales(SteamDbContext db, AuthenticatedProxiedSteamCommunityWebClient steamCommunityWebClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -82,6 +82,7 @@ public class UpdateMarketItemSales
             {
                 item.LastCheckedSalesOn = DateTimeOffset.Now;
                 await _db.SaveChangesAsync();
+                Thread.Sleep(1000);
             }
         }
 

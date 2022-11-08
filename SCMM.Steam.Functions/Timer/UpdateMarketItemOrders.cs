@@ -14,9 +14,9 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemOrders
 {
     private readonly SteamDbContext _db;
-    private readonly SteamCommunityWebClient _steamCommunityWebClient;
+    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
 
-    public UpdateMarketItemOrders(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
+    public UpdateMarketItemOrders(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -29,7 +29,9 @@ public class UpdateMarketItemOrders
 
         var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
         var items = _db.SteamMarketItems
+            .Include(x => x.App)
             .Include(x => x.Currency)
+            .Include(x => x.Description)
             .Where(x => !string.IsNullOrEmpty(x.SteamId))
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
             .OrderBy(x => x.LastCheckedOrdersOn)
@@ -56,7 +58,9 @@ public class UpdateMarketItemOrders
                         Language = Constants.SteamDefaultLanguage,
                         CurrencyId = item.Currency.SteamId,
                         NoRender = true
-                    }
+                    },
+                    item.App.SteamId.ToString(),
+                    item.Description.NameHash
                 );
 
                 await UpdateMarketItemOrderHistory(item, response);
@@ -73,6 +77,7 @@ public class UpdateMarketItemOrders
             {
                 item.LastCheckedOrdersOn = DateTimeOffset.Now;
                 await _db.SaveChangesAsync();
+                Thread.Sleep(1000);
             }
         }
 

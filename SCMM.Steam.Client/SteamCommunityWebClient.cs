@@ -16,26 +16,9 @@ namespace SCMM.Steam.Client
     /// </summary>
     public class SteamCommunityWebClient : SteamWebClient
     {
-        public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
-            : base(logger, cache, session: session, proxy: proxy)
+        public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache)
+            : base(logger, cache)
         {
-            // Transport
-            DefaultHeaders.Add("Host", new Uri(Constants.SteamCommunityUrl).Host);
-            DefaultHeaders.Add("Referer", Constants.SteamCommunityUrl + "/");
-            DefaultHeaders.Add("Connection", "keep-alive");
-            
-            // Security
-            DefaultHeaders.Add("Sec-Fetch-Dest", "empty");
-            DefaultHeaders.Add("Sec-Fetch-Mode", "cors");
-            DefaultHeaders.Add("Sec-Fetch-Site", "same-origin");
-
-            // Client
-            DefaultHeaders.Add("Accept", "*/*");
-            DefaultHeaders.Add("Accept-Encoding", "gzip, deflate, br");
-            DefaultHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-            DefaultHeaders.Add("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US; Valve Steam Client/default/1666144119; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36");
-            DefaultHeaders.Add("X-Requested-With", "XMLHttpRequest");
-
         }
 
         #region Profile
@@ -43,15 +26,6 @@ namespace SCMM.Steam.Client
         public async Task<SteamProfileXmlResponse> GetProfileById(SteamProfileByIdPageRequest request, bool useCache = true)
         {
             return await GetXml<SteamProfileByIdPageRequest, SteamProfileXmlResponse>(request, useCache);
-        }
-
-        #endregion
-
-        #region Inventory
-
-        public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request, bool useCache = true)
-        {
-            return await GetJson<SteamInventoryPaginatedJsonRequest, SteamInventoryPaginatedJsonResponse>(request, useCache);
         }
 
         #endregion
@@ -69,9 +43,120 @@ namespace SCMM.Steam.Client
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Client for https://steamcommunity.com/
+    /// Some requests require a valid Steam session cookie
+    /// </summary>
+    public class ProxiedSteamCommunityWebClient : SteamWebClient
+    {
+        public ProxiedSteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, IWebProxy proxy)
+            : base(logger, cache, session: null, proxy: proxy)
+        {
+            // Transport
+            DefaultHeaders.Add("Host", new Uri(Constants.SteamCommunityUrl).Host);
+            DefaultHeaders.Add("Referer", Constants.SteamCommunityUrl + "/");
+            DefaultHeaders.Add("Connection", "keep-alive");
+
+            // Security
+            DefaultHeaders.Add("sec-ch-ua", @"""Chromium"";v=""106"", ""Google Chrome"";v=""106"", ""Not;A=Brand"";v=""99""");
+            DefaultHeaders.Add("sec-ch-ua-mobile", "?1");
+            DefaultHeaders.Add("sec-ch-ua-platform", @"""Android""");
+            DefaultHeaders.Add("Sec-Fetch-Dest", "empty");
+            DefaultHeaders.Add("Sec-Fetch-Mode", "cors");
+            DefaultHeaders.Add("Sec-Fetch-Site", "same-origin");
+
+            // Client
+            DefaultHeaders.Add("Accept", "*/*");
+            DefaultHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+            DefaultHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+            DefaultHeaders.Add("User-Agent", "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Mobile Safari/537.36");
+            DefaultHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        }
+
+        #region Inventory
+
+        public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request, bool useCache = true)
+        {
+            try
+            {
+                DefaultHeaders["Referer"] = new SteamProfileInventoryPageRequest()
+                {
+                    AppId = request.AppId,
+                    SteamId = request.SteamId,
+                };
+
+                return await GetJson<SteamInventoryPaginatedJsonRequest, SteamInventoryPaginatedJsonResponse>(request, useCache);
+            }
+            finally
+            {
+                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
+            }
+        }
+
+        #endregion
 
         #region Market
 
+        public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request, bool useCache = false)
+        {
+            return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request, useCache);
+        }
+
+        public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request, string appId, string marketNameHash, bool useCache = false)
+        {
+            try
+            {
+                DefaultHeaders["Referer"] = new SteamMarketListingPageRequest()
+                {
+                    AppId = appId,
+                    MarketHashName = marketNameHash,
+                };
+
+                return await GetJson<SteamMarketItemOrdersActivityJsonRequest, SteamMarketItemOrdersActivityJsonResponse>(request, useCache);
+            }
+            finally
+            {
+                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
+            }
+        }
+
+        public async Task<SteamMarketItemOrdersHistogramJsonResponse> GetMarketItemOrdersHistogram(SteamMarketItemOrdersHistogramJsonRequest request, string appId, string marketNameHash, bool useCache = false)
+        {
+            try
+            {
+                DefaultHeaders["Referer"] = new SteamMarketListingPageRequest()
+                {
+                    AppId = appId,
+                    MarketHashName = marketNameHash,
+                };
+
+                return await GetJson<SteamMarketItemOrdersHistogramJsonRequest, SteamMarketItemOrdersHistogramJsonResponse>(request, useCache);
+            }
+            finally
+            {
+                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
+            }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Client for https://steamcommunity.com/
+    /// Some requests require a valid Steam session cookie
+    /// </summary>
+    public class AuthenticatedProxiedSteamCommunityWebClient : SteamWebClient
+    {
+        public AuthenticatedProxiedSteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
+            : base(logger, cache, session: session, proxy: proxy)
+        {
+        }
+
+        #region Market
+
+        /*
         public async Task<SteamMarketMyListingsPaginatedJsonResponse> GetMarketMyListingsPaginated(SteamMarketMyListingsPaginatedJsonRequest request, bool useCache = false)
         {
             return await GetJson<SteamMarketMyListingsPaginatedJsonRequest, SteamMarketMyListingsPaginatedJsonResponse>(request, useCache);
@@ -81,30 +166,42 @@ namespace SCMM.Steam.Client
         {
             return await GetJson<SteamMarketMyHistoryPaginatedJsonRequest, SteamMarketMyHistoryPaginatedJsonResponse>(request, useCache);
         }
-
-        public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request, bool useCache = false)
-        {
-            return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request, useCache);
-        }
-
-        public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request, bool useCache = false)
-        {
-            return await GetJson<SteamMarketItemOrdersActivityJsonRequest, SteamMarketItemOrdersActivityJsonResponse>(request, useCache);
-        }
-
-        public async Task<SteamMarketItemOrdersHistogramJsonResponse> GetMarketItemOrdersHistogram(SteamMarketItemOrdersHistogramJsonRequest request, bool useCache = false)
-        {
-            return await GetJson<SteamMarketItemOrdersHistogramJsonRequest, SteamMarketItemOrdersHistogramJsonResponse>(request, useCache);
-        }
+        */
 
         public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverview(SteamMarketPriceOverviewJsonRequest request, bool useCache = false)
         {
-            return await GetJson<SteamMarketPriceOverviewJsonRequest, SteamMarketPriceOverviewJsonResponse>(request, useCache);
+            try
+            {
+                DefaultHeaders["Referer"] = new SteamMarketListingPageRequest()
+                {
+                    AppId = request.AppId,
+                    MarketHashName = request.MarketHashName,
+                };
+
+                return await GetJson<SteamMarketPriceOverviewJsonRequest, SteamMarketPriceOverviewJsonResponse>(request, useCache);
+            }
+            finally
+            {
+                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
+            }
         }
 
         public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request, bool useCache = false)
         {
-            return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request, useCache);
+            try
+            {
+                DefaultHeaders["Referer"] = new SteamMarketListingPageRequest()
+                {
+                    AppId = request.AppId,
+                    MarketHashName = request.MarketHashName,
+                };
+
+                return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request, useCache);
+            }
+            finally
+            {
+                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
+            }
         }
 
         #endregion
