@@ -11,11 +11,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
 
     public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IEnumerable<WebProxyEndpoint> webProxyEndpoints)
     {
-        var proxies = new List<WebProxyWithCooldown>()
-        {
-            new WebProxyWithCooldown() // self, no proxy, highest priority
-        };
-
+        var proxies = new List<WebProxyWithCooldown>();
         if (webProxyEndpoints != null)
         {
             var rnd = new Random();
