@@ -114,6 +114,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed
         SkinsMonkey = 25,
 
+        [Obsolete("Items not buyable")]
         [Display(Name = "Skin Swap")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
         [BuyFrom(Url = "https://skinswap.com/r/scmm")] // Unconfirmed
