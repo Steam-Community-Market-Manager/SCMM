@@ -234,7 +234,7 @@ else
                             context.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Gift && 
                             context.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Drop)
                     {
-                        <MudTextField @bind-Value="@context.BuyPriceText" OnDebounceIntervalElapsed="@((e) => UpdateItemPrice(context, context.BuyPriceText))" DebounceInterval="500" PlaceHolder="Price" AutoFocus="true"
+                        <MudTextField @bind-Value="@context.BuyPriceText" OnDebounceIntervalElapsed="@((e) => UpdateItemPrice(context, e))" DebounceInterval="500" PlaceHolder="Price" AutoFocus="true"
                                       Adornment="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? MudBlazor.Adornment.Start : MudBlazor.Adornment.End)" Disabled="State.IsPrerendering"
                                       AdornmentText="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? State.Currency.PrefixText : State.Currency.SuffixText)" />
                     }
