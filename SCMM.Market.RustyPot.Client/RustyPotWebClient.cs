@@ -30,7 +30,7 @@ namespace SCMM.Market.RustyPot.Client
             var client = new SocketIO($"wss://{WebsiteHostname}", new SocketIOOptions
             {
                 Path = "/socket.io",
-                EIO = 4,
+                EIO = EngineIO.V4,
                 Transport = TransportProtocol.WebSocket,
                 ExtraHeaders = DefaultHeaders.ToDictionary(x => x.Key, x => x.Value)
             });
