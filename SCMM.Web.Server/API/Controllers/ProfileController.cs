@@ -539,6 +539,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description.App)
                 .Include(x => x.Description.StoreItem)
                 .Include(x => x.Description.StoreItem.Currency)
+                .Include(x => x.Description.StoreItem.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.Description.MarketItem)
                 .Include(x => x.Description.MarketItem.Currency)
                 .ToListAsync();
