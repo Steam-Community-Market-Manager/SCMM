@@ -12,7 +12,7 @@
 @inject HttpClient Http
 @inject AppState State
 
-<PageContainer Title="Market Deals">
+<PageContainer Title="@($"{State?.App?.Name} Market Deals")">
     <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning" Variant="MudBlazor.Variant.Text" Class="mud-alert-outlined-warning">
         <span>Always double check prices yourself before buying or selling. Prices shown here update once every hour and some deals may no longer be available.</span>
     </MudAlert>

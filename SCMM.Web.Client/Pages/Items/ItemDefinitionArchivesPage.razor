@@ -23,7 +23,7 @@
 }
 else if (ItemDefinitionArchivesList.Any())
 {
-    <PageContainer Title="Item Definition Archives">
+    <PageContainer Title="@($"{State?.App?.Name} Item Definition Archives")">
         <MudExpansionPanels MultiExpansion="true">
             @foreach (var itemDefinitionArchive in ItemDefinitionArchivesList)
             {

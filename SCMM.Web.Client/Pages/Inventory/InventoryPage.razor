@@ -10,7 +10,7 @@
 @inject HttpClient Http
 @inject AppState State
 
-<PageContainer Title="@(Profile != null ? $"Inventory - {Profile.Name}" : "Inventory")"
+<PageContainer Title="@(Profile != null ? $"{State?.App?.Name} Inventory - {Profile.Name}" : "Inventory")"
                Description="@(InventoryTotals != null ? $"Inventory contains {InventoryTotals.Items.ToQuantityString()} item(s) with a total market value of {State.Currency?.ToPriceString(InventoryTotals.MarketValue)}." : null)"
                ImageUrl="@Profile?.AvatarUrl">
     <MudGrid Spacing="2">
