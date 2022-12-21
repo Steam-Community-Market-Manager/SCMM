@@ -17,10 +17,16 @@
                         <MudItem xs="12" Class="ma-2">
                             <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">@itemGroup.Name</MudText>
                         </MudItem>
+                        <MudItem xs="6" sm="4" md="2" Class="d-flex clickable hover-zoom hover-darken pa-1" @onclick="@(() => this.Dialog.Close(itemGroup.ItemTypes))">
+                            <div class="d-flex flex-row align-center">
+                                <i class="fa fa-fw fa-list fa-xl mr-2"></i>
+                                <span>All @itemGroup.Name</span>
+                            </div>
+                        </MudItem>
                     }
                     @foreach (var itemType in itemGroup.ItemTypes.OrderBy(x => x.Name))
                     {
-                        <MudItem xs="6" sm="4" md="2" Class="d-flex clickable hover-zoom hover-darken pa-1" @onclick="@(() => this.Dialog.Close(itemType))">
+                        <MudItem xs="6" sm="4" md="2" Class="d-flex clickable hover-zoom hover-darken pa-1" @onclick="@(() => this.Dialog.Close(new [] { itemType }))">
                             <div class="d-flex flex-row align-center">
                                 <img src="/images/app/@(State.AppId)/items/@(itemType.Id).png" class="mr-2" style="height:3em" />
                                 <span>@itemType.Name</span>
@@ -34,9 +40,6 @@
 </MudDialog>
 
 @code {
-
-    [Parameter]
-    public string ItemType { get; set; }
 
     [Parameter]
     public IEnumerable<ItemTypeGroupDTO> ItemTypesGroups { get; set; }

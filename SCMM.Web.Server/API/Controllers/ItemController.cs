@@ -115,7 +115,11 @@ namespace SCMM.Web.Server.API.Controllers
             // Filter toggles
             if (!string.IsNullOrEmpty(type))
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.ItemType == type);
+                var itemTypes = type.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (itemTypes.Any())
+                {
+                    query = query.Where(x => id.Contains(x.ClassId) || itemTypes.Contains(x.ItemType));
+                }
             }
             if (!string.IsNullOrEmpty(collection))
             {

@@ -8,12 +8,25 @@
 <MudField Label="Item" Disabled="@(ItemTypesGroups == null || !ItemTypesGroups.Any() || State.IsPrerendering)" Variant="@Variant" Margin="@Margin" FullWidth="@FullWidth" Class="@Class">
     <div class="clickable" @onclick="@ShowItemTypePickerDialog">
         <div class="d-flex flex-row align-center">
-            @if (ItemType != null)
+            @if (ItemTypes?.Length > 0)
             {
-                <img src="/images/app/@(State.AppId)/items/@(ItemType.Id).png" class="my-n2 mr-2" style="height:2em" />
-                <span>@ItemType.Name</span>
+                <div class="d-flex flex-row align-center my-n2 mr-2 no-wrap">
+                    @if (ItemTypes.Length > 1)
+                    {
+                        <i class="fa fa-fw fa-list fa-xl mr-2"></i>
+                        <span>@ItemTypes.Length Items <small class="mud-secondary-text">(@String.Join(", ", ItemTypes.Select(x => x.Name)))</small></span>
+                    }
+                    else
+                    {
+                        @foreach (var itemType in ItemTypes)
+                        {
+                            <img src="/images/app/@(State.AppId)/items/@(itemType.Id).png" class="mr-2" style="height:2em" />
+                            <span>@itemType.Name</span>
+                        }
+                    }
+                </div>
                 <MudSpacer />
-                <MudIconButton Icon="fa fa-fw fa-times" Size="MudBlazor.Size.Small" OnClick="@(() => SetItemType(null))" Class="pa-0 ma-0" title="Clear"></MudIconButton>
+                <MudIconButton Icon="fa fa-fw fa-times" Size="MudBlazor.Size.Small" OnClick="@(() => SetItemTypes(null))" Class="pa-0 ma-0" title="Clear"></MudIconButton>
             }
             else
             {
@@ -49,7 +62,7 @@
 
     private IEnumerable<ItemTypeGroupDTO> ItemTypesGroups;
 
-    private ItemTypeDTO ItemType;
+    private ItemTypeDTO[] ItemTypes;
 
     protected override async Task OnLoadStateAsync()
     {
@@ -57,13 +70,16 @@
         {
             return await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemTypeGroupDTO>>($"api/item/types");
         });
-        ItemType = await RestoreFromStateOrLoad(nameof(ItemType), async () =>
+        ItemTypes = await RestoreFromStateOrLoad(nameof(ItemTypes), async () =>
         {
             if (ItemTypesGroups != null && !String.IsNullOrEmpty(Value))
             {
-                return ItemTypesGroups
-                    .SelectMany(x => x.ItemTypes)
-                    .FirstOrDefault(x => String.Equals(x.Name, Value, StringComparison.OrdinalIgnoreCase));
+                return new ItemTypeDTO[]
+                {
+                    ItemTypesGroups
+                        .SelectMany(x => x.ItemTypes)
+                        .FirstOrDefault(x => String.Equals(x.Name, Value, StringComparison.OrdinalIgnoreCase))
+                };
             }
             return null;
         });
@@ -72,14 +88,14 @@
     protected override Task OnPersistStateAsync()
     {
         PersistToState(nameof(ItemTypesGroups), ItemTypesGroups);
-        PersistToState(nameof(ItemType), ItemType);
+        PersistToState(nameof(ItemTypes), ItemTypes);
         return Task.CompletedTask;
     }
 
-    private async Task SetItemType(ItemTypeDTO itemType)
+    private async Task SetItemTypes(ItemTypeDTO[] itemTypes)
     {
-        ItemType = itemType;
-        Value = itemType?.Name;
+        ItemTypes = itemTypes;
+        Value = (itemTypes?.Length > 0 ? String.Join(",", itemTypes.Select(x => x.Name)) : null);
         StateHasChanged();
 
         await ValueChanged.InvokeAsync(Value);
@@ -92,10 +108,10 @@
             ["ItemTypesGroups"] = ItemTypesGroups
         });
 
-        var itemType = await dialog.GetReturnValueAsync<ItemTypeDTO>();
-        if (itemType != null)
+        var itemTypes = await dialog.GetReturnValueAsync<ItemTypeDTO[]>();
+        if (itemTypes != null)
         {
-            await SetItemType(itemType);
+            await SetItemTypes(itemTypes);
         }
     }
 
