@@ -633,7 +633,10 @@ else
                 StoreId = Store.Id;
 
                 // The selected store should show as the active tab in the store tab list
-                StoreIndex = Array.IndexOf(StoreList, StoreList.FirstOrDefault(x => x.Id == StoreId));
+                if (StoreList != null)
+                {
+                    StoreIndex = Array.IndexOf(StoreList, StoreList.FirstOrDefault(x => x.Id == StoreId));
+                }
 
                 StateHasChanged();
             }
