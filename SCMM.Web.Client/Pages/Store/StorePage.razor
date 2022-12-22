@@ -51,7 +51,7 @@ else if (StoreList.Any())
             <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" Class="pa-2 pr-4" />
 	    </Header>
     </MudTabs>
-    <PageContainer Title="@($"{State?.App?.Name} Store - {(Store?.Start?.ToString("d") ?? Store.Name ?? "Store")}")" Class="mb-6 ml-6 mr-6"
+    <PageContainer Title="@($"{State?.App?.Name} Store - {(Store?.Start?.ToString("d") ?? Store?.Name ?? "Store")}")" Class="mb-6 ml-6 mr-6"
                    Description="@(Store != null ? $"Store contains {Store.Items.Length} item(s) with a total cost of {State.Currency?.ToPriceString(Store.Items.Sum(x => x.StorePrice ?? 0))}." : null)"
                    ImageUrl="@Store?.ItemsThumbnailUrl">
         <MudGrid Spacing="2">
