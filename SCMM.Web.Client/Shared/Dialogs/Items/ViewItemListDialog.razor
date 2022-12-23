@@ -67,7 +67,7 @@
                             acceptedYear = item.TimeAccepted.Value.Year;
                             <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Color="Color.Default">
-                                    <span>Accepted in @item.TimeAccepted?.Year</span>
+                                    <span>Accepted in @item.TimeAccepted?.Year <small class="mud-secondary-text">(@ListFilteredAndSorted.Count(x => x.TimeAccepted?.Year == item.TimeAccepted?.Year))</small></span>
                                 </MudText>
                                 <MudDivider />
                             </MudItem>
