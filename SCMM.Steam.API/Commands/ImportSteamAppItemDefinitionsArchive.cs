@@ -157,6 +157,8 @@ namespace SCMM.Steam.API.Commands
                     {
                         // Parse store item changes in the archive
                         _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                        await RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                        await _steamDb.SaveChangesAsync();
                         await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
                     }
                     catch (Exception ex)
@@ -308,15 +310,14 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task AddOrUpdateStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
+        private async Task RemoveStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
         {
             var storeItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
                 {
                     ItemDefinition = x,
                     AssetDescription = y,
-                    HasBeenRemovedFromStore = (String.IsNullOrEmpty(x.PriceCategory) && (y.StoreItem?.IsAvailable == true)),
-                    HasBeenAddedToStore = (!String.IsNullOrEmpty(x.PriceCategory) && (y.StoreItem?.IsAvailable != true))
+                    HasBeenRemovedFromStore = (String.IsNullOrEmpty(x.PriceCategory) && (y.StoreItem?.IsAvailable == true))
                 })
                 .OrderBy(x => x.ItemDefinition.Name)
                 .ToArray();
@@ -334,6 +335,19 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogError(ex, $"Error while parsing removed store item (appId: {app.SteamId}, itemId: {removedStoreItem.ItemDefinition.ItemDefId}, name: '{removedStoreItem.ItemDefinition.Name}'). {ex.Message}");
                 }
             }
+        }
+
+        private async Task AddOrUpdateStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
+        {
+            var storeItems = itemDefinitions
+                .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
+                {
+                    ItemDefinition = x,
+                    AssetDescription = y,
+                    HasBeenAddedToStore = (!String.IsNullOrEmpty(x.PriceCategory) && (y.StoreItem?.IsAvailable != true))
+                })
+                .OrderBy(x => x.ItemDefinition.Name)
+                .ToArray();
 
             // Add all newly added store items
             var addedStoreItems = storeItems.Where(x => x.HasBeenAddedToStore);
@@ -411,6 +425,7 @@ namespace SCMM.Steam.API.Commands
 
                             var existingLimitedItemsThatAreStillAvailable = activeItemStores.SelectMany(x => x.Items)
                                 .Where(x => x.Item.IsAvailable && !x.Item.Description.IsPermanent)
+                                .DistinctBy(x => x.Item.Id)
                                 .ToArray();
                             foreach (var existingStoreItem in existingLimitedItemsThatAreStillAvailable)
                             {
