@@ -303,6 +303,7 @@ namespace SCMM.Steam.API.Commands
                         if (DateTime.TryParseExact(updateDateTime, "d MMM, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp) ||
                             DateTime.TryParseExact(updateDateTime, "d MMM @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp))
                         {
+                            /*
                             // Only track changes that happened after the item was accepted
                             if (timestamp > assetDescription.TimeAccepted)
                             {
@@ -337,6 +338,7 @@ namespace SCMM.Steam.API.Commands
                                     });
                                 }
                             }
+                            */
                         }
                     }
                 }
