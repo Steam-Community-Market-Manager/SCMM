@@ -312,21 +312,50 @@
                         @if (Item.IsBanned == true)
                         {
                             <MudTooltip Text="@($"This item has been trade and market banned due to {Item.BanReason.FirstCharToLower()}")">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Class="mud-chip-outlined" />
-                            </MudTooltip>
-                        }
-                        @if (Item.IsPermanent == true)
-                        {
-                            <MudTooltip Text="@($"This item will be permanently bound to your Steam account after purchase and it cannot be traded or sold")">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Permanent" Icon="fas fa-fw fa-thumbtack mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Error" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         <MudTooltip>
                             <ChildContent>
-                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsTradable ? "Tradable" : "Not Tradable")" Disabled="@(!Item.IsTradable)" Class="mud-chip-outlined"
-                                         Icon="@(Item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")" 
-                                         Variant="@(Item.IsTradable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
-                                         Color="@(Item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
+                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsMarketable ? "Marketable" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "Marketable Next Rotation" : "Not Marketable"))" Class="mud-chip-outlined"
+                                         Icon="@(Item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-balance-scale-left mr-3" : "fas fa-fw fa-times"))"
+                                         IconColor="@(Item.IsMarketable ? MudBlazor.Color.Default : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? MudBlazor.Color.Warning : MudBlazor.Color.Error))" 
+                                         Color="@(Item.IsMarketable ? MudBlazor.Color.Default : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? MudBlazor.Color.Warning : MudBlazor.Color.Error))"
+                                         Variant="MudBlazor.Variant.Text" />
+                            </ChildContent>
+                            <TooltipContent>
+                                @if (Item.IsMarketable)
+                                {
+                                    @if (Item.MarketableRestrictionDays > 0)
+                                    {
+                                        <span>This item <strong>can</strong> be listed on the Steam Community Market <strong>@(Item.MarketableRestrictionDays)</strong> day(s) after purchase</span>
+                                    }
+                                    else
+                                    {
+                                        <span>This item <strong>can</strong> be listed on the Steam Community Market immediately after purchase</span>
+                                    }
+                                }
+                                else
+                                {
+                                    @if (Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0)
+                                    {
+                                        <span>This item <strong>cannot</strong> currently be listed on the Steam Community Market once purchased, but <strong>probably</strong> can be after the store is next updated/rotated.</span>
+                                        <span>This is a known issue with store items that follow Steams preset pricing table (i.e. "default pricing").</span>
+                                    }
+                                    else
+                                    {
+                                        <span>This item <strong>cannot</strong> be listed on the Steam Community Market once purchased</span>
+                                    }
+                                }
+                            </TooltipContent>
+                        </MudTooltip>
+                        <MudTooltip>
+                            <ChildContent>
+                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsTradable ? "Tradable" : "Not Tradable")" Class="mud-chip-outlined"
+                                         Icon="@(Item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")"
+                                         IconColor="@(Item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Error)"
+                                         Color="@(Item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Error)"
+                                         Variant="MudBlazor.Variant.Text"  />
                             </ChildContent>
                             <TooltipContent>
                                 @if (Item.IsTradable)
@@ -346,39 +375,12 @@
                                 }
                             </TooltipContent>
                         </MudTooltip>
-                        <MudTooltip>
-                            <ChildContent>
-                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsMarketable ? "Marketable" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "Marketable" : "Not Marketable"))" Disabled="@(!Item.IsMarketable)" Class="mud-chip-outlined"
-                                         Icon="@(Item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-2" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
-                                         Variant="@(Item.IsMarketable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
-                                         Color="@(Item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" />
-                            </ChildContent>
-                            <TooltipContent>
-                                @if (Item.IsMarketable)
-                                {
-                                    @if (Item.MarketableRestrictionDays > 0)
-                                    {
-                                        <span>This item <strong>can</strong> be listed on the Steam Community Market <strong>@(Item.MarketableRestrictionDays)</strong> day(s) after purchase</span>
-                                    }
-                                    else
-                                    {
-                                        <span>This item <strong>can</strong> be listed on the Steam Community Market immediately after purchase</span>
-                                    }
-                                }
-                                else
-                                {
-                                    @if (Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0)
-                                    {
-                                        <span>This item currently <strong>cannot</strong> be listed on the Steam Community Market once purchased, but <strong>probably</strong> can be when the store is next updated/rotated.</span>
-                                        <span>This is a known issue with store items that follow Steams preset pricing table (i.e. "default pricing").</span>
-                                    }
-                                    else
-                                    {
-                                        <span>This item <strong>cannot</strong> be listed on the Steam Community Market once purchased</span>
-                                    }
-                                }
-                            </TooltipContent>
-                        </MudTooltip>
+                        @if (Item.IsPermanent == true)
+                        {
+                            <MudTooltip Text="@($"This item will be permanently bound to your Steam account after purchase and it cannot be traded or sold")">
+                                <MudChip Size="MudBlazor.Size.Small" Text="Permanent" Icon="fas fa-fw fa-thumbtack mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                            </MudTooltip>
+                        }
                         @if (Item.HasGlow == true)
                         {
                             <MudTooltip>
