@@ -9,7 +9,7 @@
     <PackageReference Include="Markdig" Version="0.30.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.11" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageReference Include="MudBlazor" Version="6.1.6" />
+    <PackageReference Include="MudBlazor" Version="6.1.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Syncfusion.Blazor.Charts" Version="20.3.0.56" />
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="20.3.0.56" />
