@@ -7,6 +7,7 @@ using SCMM.Steam.Data.Models;
 
 namespace SCMM.Worker.Server.Handlers
 {
+    /*
     [Concurrency(MaxConcurrentCalls = 1)]
     public class ImportProfileInventoryMessageHandler : IMessageHandler<ImportProfileInventoryMessage>
     {
@@ -40,4 +41,5 @@ namespace SCMM.Worker.Server.Handlers
             }
         }
     }
+    */
 }

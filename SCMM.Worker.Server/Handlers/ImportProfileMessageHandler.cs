@@ -6,6 +6,7 @@ using SCMM.Steam.API.Commands;
 
 namespace SCMM.Worker.Server.Handlers
 {
+    /*
     [Concurrency(MaxConcurrentCalls = 1)]
     public class ImportProfileMessageHandler : IMessageHandler<ImportProfileMessage>
     {
@@ -26,4 +27,5 @@ namespace SCMM.Worker.Server.Handlers
             });
         }
     }
+    */
 }
