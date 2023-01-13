@@ -23,5 +23,15 @@ namespace SCMM.Web.Data.Models.Extensions
                 default: return source;
             }
         }
+
+        public static IOrderedQueryable<TSource> OrderByDirection<TSource, TKey>(this IQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector, SortDirection direction)
+        {
+            if (direction == SortDirection.Descending)
+            {
+                return source.OrderByDescending(keySelector);
+            }
+
+            return source.OrderBy(keySelector);
+        }
     }
 }

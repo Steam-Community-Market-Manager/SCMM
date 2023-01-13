@@ -21,5 +21,7 @@ namespace SCMM.Web.Data.Models.UI.Item
         public long? Demand { get; set; }
 
         public ItemInteractionDTO[] Actions { get; set; }
+
+        public long? PriceMovement => (BuyNowPrice - OriginalPrice) ?? 0;
     }
 }

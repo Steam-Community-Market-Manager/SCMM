@@ -180,7 +180,14 @@ namespace SCMM.Web.Server.API.Controllers
             // Sort
             if (!String.IsNullOrEmpty(sortBy))
             {
-                query = query.SortBy(sortBy, sortDirection);
+                if (String.Equals(sortBy, "PriceMovement", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.OrderByDirection(x => (x.MarketItem.SellOrderLowestPrice - x.StoreItem.Price) ?? 0, sortDirection);
+                }
+                else
+                {
+                    query = query.SortBy(sortBy, sortDirection);
+                }
             }
             else
             {
