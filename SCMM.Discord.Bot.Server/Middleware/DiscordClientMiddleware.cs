@@ -7,6 +7,7 @@ using SCMM.Discord.Data.Store;
 using SCMM.Shared.Client.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
+using System.Text.RegularExpressions;
 using DiscordConfiguration = SCMM.Discord.Client.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Middleware
@@ -115,7 +116,8 @@ namespace SCMM.Discord.Bot.Server.Middleware
             {
                 Id = m.Id,
                 AuthorId = m.AuthorId,
-                Content = m.Content,
+                // Remove all Discord mentions/channels/users tags from the message content
+                Content = Regex.Replace(m.Content, @"<[@&#]*[0-9]+>", String.Empty, RegexOptions.IgnoreCase).Trim().FirstCharToUpper(),
                 Attachments = m.Attachments?.Select(a => new MessageAttachment()
                 {
                     Id = a.Id,

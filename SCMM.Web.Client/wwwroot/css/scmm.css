@@ -116,6 +116,11 @@
     font-size: 2rem;
 }
 
+.notification-content ul {
+    list-style: disc !important;
+    margin-left: 2em;
+}
+
 .fade-out {
     animation: fade-out 0.5s 5s forwards 1;
 }

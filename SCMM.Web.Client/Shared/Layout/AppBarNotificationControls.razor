@@ -1,5 +1,6 @@
 ﻿@using SCMM.Web.Client.Shared.Storage
 @using SCMM.Web.Data.Models.UI.System
+@using Markdig
 @inherits PersistentComponent
 @inject ILogger<AppBarAppControls> Logger
 @inject ISnackbar Snackbar
@@ -37,7 +38,17 @@
                                 <span class="no-wrap">@((DateTimeOffset.Now - message.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</span>
                             </MudText>
                             <MudText Typo="Typo.body1" Color="Color.Secondary">
-                                <span>@message.Description</span>
+                                <span class="notification-content">
+                                @((MarkupString)
+                                    Markdown.ToHtml(
+                                        message.Description,
+                                        new MarkdownPipelineBuilder()
+                                            .UseAdvancedExtensions()
+                                            .UseSoftlineBreakAsHardlineBreak()
+                                            .Build()
+                                    )
+                                )
+                                </span>
                             </MudText>
                             <div class="d-flex align-start justify-top flex-wrap">
                                 @foreach (var media in message.Media)
