@@ -41,7 +41,7 @@ JsonSerializerOptionsExtensions.SetDefaultOptions();
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var hostBuilder = new HostBuilder()
     .ConfigureLogging()
-    .ConfigureAppConfiguration(environment, args)
+    .ConfigureAppConfiguration(environment ?? String.Empty, args)
     .ConfigureServices()
     .UseConsoleLifetime()
     .UseEnvironment(environment);

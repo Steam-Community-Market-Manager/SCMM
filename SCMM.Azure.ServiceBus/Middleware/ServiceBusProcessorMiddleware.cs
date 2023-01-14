@@ -39,7 +39,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
 
             Task
                 .Delay(TimeSpan.FromSeconds(30))
-                .ContinueWith(async (x) => await StartAsync());
+                .ContinueWith((x) => Start());
 
         }
 
@@ -66,7 +66,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
             return _next(httpContext);
         }
 
-        public async Task StartAsync()
+        public void Start()
         {
             // Build a dictionary of handler interfaces and their associated concrete implementation type
             var handlerMappings = new Dictionary<Type, Type>();

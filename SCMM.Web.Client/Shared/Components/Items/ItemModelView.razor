@@ -38,7 +38,7 @@
             }
             <div class="d-flex flex-row align-center mx-4">
                 <MudTooltip Text="Toggle the lights on/off">
-                    <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null || State.IsPrerendering)" Class="" />
+                    <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Material.Filled.LightMode" ToggledIcon="@Icons.Material.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null || State.IsPrerendering)" Class="" />
                 </MudTooltip>
                 <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Color="@Color.Warning" Disabled="@(Scene == null || !IsLightOn || State.IsPrerendering)" Class="ma-2 mr-4" />
             </div>

@@ -23,7 +23,7 @@ namespace SCMM.Web.Server.Extensions
             memberOptions.MapFrom((src, dst, _, context) =>
             {
                 return context.Items.ContainsKey(ContextKeyLanguage)
-                    ? (TLanguage)context.Options.Items[ContextKeyLanguage]
+                    ? (TLanguage)context.Items[ContextKeyLanguage]
                     : null;
             });
         }
@@ -33,7 +33,7 @@ namespace SCMM.Web.Server.Extensions
             memberOptions.MapFrom((src, dst, _, context) =>
             {
                 return context.Items.ContainsKey(ContextKeyCurrency)
-                    ? (TCurrency)context.Options.Items[ContextKeyCurrency]
+                    ? (TCurrency)context.Items[ContextKeyCurrency]
                     : null;
             });
         }
@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.Extensions
             memberOptions.MapFrom((src, dst, _, context) =>
             {
                 return context.Items.ContainsKey(ContextKeyApp)
-                    ? (TApp)context.Options.Items[ContextKeyApp]
+                    ? (TApp)context.Items[ContextKeyApp]
                     : null;
             });
         }

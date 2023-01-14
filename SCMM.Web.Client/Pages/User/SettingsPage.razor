@@ -472,7 +472,7 @@
         });
 
         var result = await confirmation.Result;
-        if (!result.Cancelled && (bool) result.Data == true)
+        if (!result.Canceled && (bool) result.Data == true)
         {
             await DeleteProfileDataAndSignout();
         }

@@ -596,7 +596,7 @@ namespace SCMM.Steam.Data.Store
                 (cheapestPrice / (decimal)medianPriceLastWeek) > 2m)
             {
                 IsBeingManipulated = true;
-                var reson = $"The current price is {cheapestPrice.ToPercentageString(medianPriceLastWeek)}% higher than the median price over the last 7 days";
+                var reason = $"The current price is {cheapestPrice.ToPercentageString(medianPriceLastWeek)}% higher than the median price over the last 7 days";
             }
 
             // Check for volume spike manipulations
@@ -611,7 +611,6 @@ namespace SCMM.Steam.Data.Store
             else
             {
                 IsBeingManipulated = false;
-                var reason = (string)null;
             }
         }
     }

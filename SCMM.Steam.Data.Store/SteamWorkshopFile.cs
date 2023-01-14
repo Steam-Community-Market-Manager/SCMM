@@ -37,7 +37,7 @@ namespace SCMM.Steam.Data.Store
 
         public string Name { get; set; }
 
-        public string Description { get; set; }
+        public new string Description { get; set; }
 
         [Required]
         public PersistableStringDictionary Tags { get; set; }
