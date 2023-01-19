@@ -288,9 +288,10 @@ else
             </MudTd>
         </RowEditingTemplate>
         <NoRecordsContent>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-8">
-                <span>No items found</span>
-			</MudText>
+            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                <TumbleWeed Light="true" />
+                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No items found</MudText>
+            </div>
         </NoRecordsContent>
         <PagerContent>
             <MudTablePager />

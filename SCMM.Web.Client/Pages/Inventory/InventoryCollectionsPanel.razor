@@ -21,7 +21,10 @@
 }
 else if (!InventoryCollections.FilterBy(Filter).Any())
 {
-    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="No item collections found" Class="pa-8" />
+    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+        <TumbleWeed Light="true" />
+        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No item collections found</MudText>
+    </div>
 }
 else 
 {

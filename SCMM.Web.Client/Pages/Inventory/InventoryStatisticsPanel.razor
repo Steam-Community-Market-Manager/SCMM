@@ -43,7 +43,14 @@
                 </TreeMapTooltipSettings>
             </SfTreeMap>
         }
-	</MudItem>
+        else
+        {
+            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                <TumbleWeed Light="true" />
+                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No statistics found</MudText>
+            </div>
+        }
+    </MudItem>
 
 </MudGrid>
 

@@ -64,9 +64,9 @@ namespace SCMM.Web.Server.API.Controllers
             var indexFund = await _statisticsService.GetDictionaryAsync<DateTime, IndexFundStatistic>(
                 String.Format(StatisticKeys.IndexFundByAppId, appId)
             );
-            if (indexFund?.Count <= 0)
+            if ((indexFund?.Count ?? 0) <= 0)
             {
-                return NotFound();
+                return Ok(Enumerable.Empty<MarketIndexFundChartPointDTO>());
             }
 
             var salesPerDay = indexFund
@@ -909,9 +909,9 @@ namespace SCMM.Web.Server.API.Controllers
 
             return Ok(new ProfileInventoryTotalsStatisticDTO()
             {
-                TotalInventories = totals.Inventories,
-                TotalItems = totals.Items,
-                TotalMarketValue = this.Currency().CalculateExchange(totals.MarketValue)
+                TotalInventories = totals?.Inventories ?? 0,
+                TotalItems = totals?.Items ?? 0,
+                TotalMarketValue = this.Currency().CalculateExchange(totals?.MarketValue ?? 0)
             });
         }
 

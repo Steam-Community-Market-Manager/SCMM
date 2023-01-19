@@ -21,7 +21,10 @@
 }
 else if (!InventoryMovement.FilterBy(Filter).Where(x => x.Movement != 0).Any())
 {
-    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="No market movement has been observed (yet), check back later" Class="pa-8" />
+    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+        <TumbleWeed Light="true" />
+        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No market movement has been observed (yet), check back later</MudText>
+    </div>
 }
 else 
 {

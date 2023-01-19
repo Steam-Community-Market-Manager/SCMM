@@ -101,7 +101,10 @@ namespace SCMM.Steam.API.Commands
                 .ToListAsync();
             if (!apps.Any())
             {
-                return null;
+                return new ImportSteamProfileInventoryResponse()
+                {
+                    Profile = profile
+                };
             }
 
             // Fetch the profiles inventory for each of the apps we monitor
