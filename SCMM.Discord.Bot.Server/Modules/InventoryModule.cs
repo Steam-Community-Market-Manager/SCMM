@@ -42,6 +42,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
     )
     {
         var user = (DiscordUser)null;
+        var appId = Constants.RustAppId.ToString();
 
         // If steam id was not specified, default to the user (if any)
         if (string.IsNullOrEmpty(steamId) && Context.User != null)
@@ -123,7 +124,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
         {
             ProfileId = profile.Id.ToString(),
-            AppIds = new[] { Constants.RustAppId.ToString() }
+            AppIds = new[] { appId }
         });
 
         await _steamDb.SaveChangesAsync();
@@ -142,7 +143,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
         {
             ProfileId = profile.SteamId,
-            AppId = Constants.RustAppId.ToString(),
+            AppId = appId,
             CurrencyId = currency.SteamId,
         });
 

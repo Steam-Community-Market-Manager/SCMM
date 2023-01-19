@@ -13,10 +13,9 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule
     {
         [Command("rebuild-market-index-fund-stats")]
-        public async Task<RuntimeResult> RebuildMarketIndexFundStats()
+        public async Task<RuntimeResult> RebuildMarketIndexFundStats(ulong appId)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var appId = Constants.RustAppId.ToString();
             var start = _steamDb.SteamMarketItemSale.Min(x => x.Timestamp).Date;
             var end = _steamDb.SteamMarketItemSale.Max(x => x.Timestamp).Date;
             var indexFund = new Dictionary<DateTime, IndexFundStatistic>();
@@ -31,7 +30,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     );
                     indexFund[start] = _steamDb.SteamMarketItemSale
                         .AsNoTracking()
-                        .Where(x => x.Item.App.SteamId == appId)
+                        .Where(x => x.Item.App.SteamId == appId.ToString())
                         .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
                         .ToList()
                         .GroupBy(x => true)

@@ -18,8 +18,8 @@ namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("import-rust-item-definitions-archives")]
-        public async Task<RuntimeResult> ImportRustItemDefinitionsArchivesAsync(params string[] digests)
+        [Command("import-item-definitions-archives")]
+        public async Task<RuntimeResult> ImportRustItemDefinitionsArchivesAsync(ulong appId, params string[] digests)
         {
             var message = await Context.Message.ReplyAsync("Importing item definitions archives...");
             foreach (var digest in digests)
@@ -29,7 +29,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 );
                 await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
                 {
-                    AppId = Constants.RustAppId.ToString(),
+                    AppId = appId.ToString(),
                     ItemDefinitionsDigest = digest
                 });
             }
@@ -42,12 +42,12 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("import-rust-item-definitions-archive-and-parse-changes")]
-        public async Task<RuntimeResult> ImportAndParseRustItemDefinitionsArchiveAsync(string digest)
+        [Command("import-item-definitions-archive-and-parse-changes")]
+        public async Task<RuntimeResult> ImportAndParseRustItemDefinitionsArchiveAsync(ulong appId, string digest)
         {
             await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
             {
-                AppId = Constants.RustAppId.ToString(),
+                AppId = appId.ToString(),
                 ItemDefinitionsDigest = digest,
                 ParseChanges = true
             });
@@ -56,8 +56,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("import-rust-asset-description")]
-        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(params ulong[] classIds)
+        [Command("import-asset-description")]
+        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(ulong appId, params ulong[] classIds)
         {
             var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
             foreach (var classId in classIds)
@@ -68,7 +68,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
-                    AppId = Constants.RustAppId,
+                    AppId = appId,
                     AssetClassId = classId
                 });
 
@@ -82,8 +82,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("import-csgo-asset-description")]
-        public async Task<RuntimeResult> ImportCSGOAssetDescriptionAsync(params ulong[] classIds)
+        [Command("import-asset-description")]
+        public async Task<RuntimeResult> ImportCSGOAssetDescriptionAsync(ulong appId, params ulong[] classIds)
         {
             var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
             foreach (var classId in classIds)
@@ -94,7 +94,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
-                    AppId = Constants.CSGOAppId,
+                    AppId = appId,
                     AssetClassId = classId
                 });
 
@@ -108,8 +108,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("import-csgo-market-item")]
-        public async Task<RuntimeResult> ImportCSGOMarketItemAsync(params string[] names)
+        [Command("import-market-item")]
+        public async Task<RuntimeResult> ImportCSGOMarketItemAsync(ulong appId, params string[] names)
         {
             var message = await Context.Message.ReplyAsync("Importing market items...");
             foreach (var name in names)
@@ -120,7 +120,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 var marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
                 {
-                    AppId = Constants.CSGOAppId.ToString(),
+                    AppId = appId.ToString(),
                     MarketHashName = name,
                 });
 
