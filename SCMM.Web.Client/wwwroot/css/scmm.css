@@ -121,6 +121,10 @@
     margin-left: 2em;
 }
 
+.markdown-container p {
+    margin-bottom: 0.75em;
+}
+
 .fade-out {
     animation: fade-out 0.5s 5s forwards 1;
 }
