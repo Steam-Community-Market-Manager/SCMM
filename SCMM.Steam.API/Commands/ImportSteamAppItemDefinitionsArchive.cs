@@ -103,6 +103,12 @@ namespace SCMM.Steam.API.Commands
                 await _steamDb.SaveChangesAsync();
             }
 
+            // Set the app item definitions digest if it isn't already populated (i.e. first time import for the app)
+            if (String.IsNullOrEmpty(app.ItemDefinitionsDigest))
+            {
+                app.ItemDefinitionsDigest = request.ItemDefinitionsDigest;
+            }
+
             if (request.ParseChanges)
             {
                 // TODO: Filter this properly
@@ -164,10 +170,13 @@ namespace SCMM.Steam.API.Commands
                     try
                     {
                         // Parse store item changes in the archive
-                        _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                        await RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
-                        await _steamDb.SaveChangesAsync();
-                        await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                        if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                        {
+                            _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                            await RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                            await _steamDb.SaveChangesAsync();
+                            await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -663,7 +672,7 @@ namespace SCMM.Steam.API.Commands
                         continue;
                     }
 
-                    // Reimport the asset description to get the latest item info-- specifically, the Steam community market "name id"
+                    // If possible, reimport the asset description to get the latest item info-- specifically, the Steam community market "name id"
                     if (assetDescription.ClassId > 0)
                     {
                         await _steamDb.SaveChangesAsync();
@@ -674,7 +683,7 @@ namespace SCMM.Steam.API.Commands
                         });
                     }
 
-                    // Add a new market item for this asset description
+                    // If missing, add a new market item for this asset description
                     var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
                     var marketItem = assetDescription.MarketItem;
                     if (marketItem == null)
@@ -686,6 +695,24 @@ namespace SCMM.Steam.API.Commands
                             App = app,
                             Description = assetDescription,
                             Currency = defaultCurrency,
+                        });
+                    }
+
+                    // Update the market item price and volume with what we know so far
+                    if (marketItem.SellOrderLowestPrice == 0 && !String.IsNullOrEmpty(marketPriceOverviewResponse.LowestPrice))
+                    {
+                        marketItem.SellOrderLowestPrice = marketPriceOverviewResponse.LowestPrice.SteamPriceAsInt();
+                    }
+                    if (marketItem.SellOrderCount == 0 && !String.IsNullOrEmpty(marketPriceOverviewResponse.Volume))
+                    {
+                        marketItem.SellOrderCount = marketPriceOverviewResponse.Volume.SteamQuantityValueAsInt();
+                    }
+                    if (marketItem.SellOrderLowestPrice > 0)
+                    {
+                        marketItem.UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply()
+                        {
+                            Price = marketItem.SellOrderLowestPrice,
+                            Supply = (marketItem.SellOrderCount > 0 ? marketItem.SellOrderCount : null)
                         });
                     }
 
