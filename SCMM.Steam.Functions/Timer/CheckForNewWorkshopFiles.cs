@@ -154,7 +154,7 @@ public class CheckForNewWorkshopFiles
                 // Creators will often publish items temporarily just to test them in-game and then delete them again, which we don't want to import (yet).
                 // If the item has existed for at least 15 minutes, we assume the creator is happy with the item and plans to keep it published
                 if ((missingPublishedFile.Title.Length < 5) || missingPublishedFile.Title.StartsWith("test", StringComparison.InvariantCultureIgnoreCase) ||
-                    (DateTime.UtcNow - missingPublishedFile.TimeCreated) <= TimeSpan.FromMinutes(15))
+                    (DateTime.UtcNow - missingPublishedFile.TimeCreated) <= TimeSpan.FromMinutes(30))
                 {
                     continue;
                 }
