@@ -34,6 +34,7 @@ public class UpdateMarketItemOrders
             .Include(x => x.Description)
             .Where(x => !string.IsNullOrEmpty(x.SteamId))
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
+            .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedOrdersOn)
             .Take(50) // batch 50 items per minute
             .ToList();

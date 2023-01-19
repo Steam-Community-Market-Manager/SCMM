@@ -28,6 +28,7 @@ public class UpdateAssetDescriptions
         var assetDescriptions = await _db.SteamAssetDescriptions
             .Where(x => x.ClassId != null)
             .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
+            .Where(x => x.App.IsActive)
             .OrderBy(x => x.TimeRefreshed)
             .Select(x => new
             {

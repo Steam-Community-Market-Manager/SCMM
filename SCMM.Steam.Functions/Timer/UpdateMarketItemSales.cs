@@ -32,6 +32,7 @@ public class UpdateMarketItemSales
         var items = _db.SteamMarketItems
             .Include(x => x.Currency)
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
+            .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedSalesOn)
             .Include(x => x.App)
             .Include(x => x.Description)

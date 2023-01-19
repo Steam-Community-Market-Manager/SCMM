@@ -46,6 +46,7 @@ public class CheckForNewMarketItems
             .Where(x => !String.IsNullOrEmpty(x.NameHash))
             .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
             .Where(x => x.IsAccepted)
+            .Where(x => x.App.IsActive)
             .Include(x => x.App)
             .Include(x => x.CreatorProfile)
             .ToList();

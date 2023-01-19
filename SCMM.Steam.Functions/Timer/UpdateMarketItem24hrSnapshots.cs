@@ -19,7 +19,10 @@ public class UpdateMarketItem24hrSnapshots
     {
         var logger = context.GetLogger("Update-24hr-Value-Snapshots");
 
-        var marketItems = await _db.SteamMarketItems.ToListAsync();
+        var marketItems = await _db.SteamMarketItems
+            .Where(x => x.App.IsActive)
+            .ToListAsync();
+
         if (!marketItems.Any())
         {
             return;

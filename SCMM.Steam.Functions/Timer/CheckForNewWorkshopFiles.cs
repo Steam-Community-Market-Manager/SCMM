@@ -44,6 +44,7 @@ public class CheckForNewWorkshopFiles
         var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
 
         var apps = await _steamDb.SteamApps.AsNoTracking()
+            .Where(x => x.IsActive)
             .ToListAsync();
 
         var assetDescriptions = await _steamDb.SteamAssetDescriptions.AsNoTracking()
