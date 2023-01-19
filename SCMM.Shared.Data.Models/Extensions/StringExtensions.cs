@@ -1,7 +1,29 @@
-﻿namespace SCMM.Shared.Data.Models.Extensions
+﻿using System.Text.RegularExpressions;
+
+namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class StringExtensions
     {
+        public static string ConvertToMarkdown(this string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            // Strip all HTML tags
+            value = Regex.Replace(value, @"<[^>]*>", string.Empty).Trim();
+
+            // Convert BB color tags to HTML
+            value = Regex.Replace(value, @"\[color=([^\]]*)\]", @"<span style=""color:$1"">").Trim();
+            value = Regex.Replace(value, @"\[\/color\]", @"</span>").Trim();
+
+            // Strip all remaining BB tags
+            value = Regex.Replace(value, @"\[[^\]]*\]", string.Empty).Trim();
+
+            return value;
+        }
+
         public static string FirstCharToUpper(this string value)
         {
             if (String.IsNullOrEmpty(value))

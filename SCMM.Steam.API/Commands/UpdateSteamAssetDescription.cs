@@ -130,9 +130,7 @@ namespace SCMM.Steam.API.Commands
                 if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrEmpty(itemDefinition.Description))
                 {
                     // Strip any HTML and BBCode tags, just get the plain-text
-                    itemDefinition.Description = Regex.Replace(itemDefinition.Description, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
-                    itemDefinition.Description = Regex.Replace(itemDefinition.Description, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
-                    assetDescription.Description = itemDefinition.Description;
+                    assetDescription.Description = itemDefinition.Description.ConvertToMarkdown().Trim();
                 }
 
                 // Parse asset tags (if any)
@@ -488,7 +486,7 @@ namespace SCMM.Steam.API.Commands
                 if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrWhiteSpace(itemDescriptionHtml))
                 {
                     // Strip any HTML tags, just get the plain-text
-                    assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
+                    assetDescription.Description = itemDescriptionHtml.ConvertToMarkdown().Trim();
                 }
             }
 
@@ -756,12 +754,10 @@ namespace SCMM.Steam.API.Commands
                     )
                     .Select(x =>
                     {
-                        // Strip any HTML and BBCode tags, just get the plain-text
-                        x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
-                        x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
+                        x.Value = x.Value.ConvertToMarkdown().Trim();
                         return x;
                     })
-                    .Select(x => (x.Color != null ? $"<span style='color:{x.Color.SteamColourToWebHexString()}'>{x.Value}</span>" : x.Value))
+                    .Select(x => (x.Color != null ? $@"<span style=""color:{x.Color.SteamColourToWebHexString()}"">{x.Value}</span>" : x.Value))
                     .Select(x => (x == " " ? "&nbsp;" : x))
                     .Where(x => !String.IsNullOrEmpty(x))
                     .ToArray()

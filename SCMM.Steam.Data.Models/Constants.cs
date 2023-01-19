@@ -40,9 +40,7 @@
         public const ulong SteamAssetDefaultInstanceId = 0;
 
         public const string SteamAssetClassDescriptionTypeHtml = "html";
-        public const string SteamAssetClassDescriptionStripHtmlRegex = @"<[^>]*>";
         public const string SteamAssetClassDescriptionTypeBBCode = "bbcode";
-        public const string SteamAssetClassDescriptionStripBBCodeRegex = @"\[[^\]]*\]";
 
         public const string SteamCurrencyUSD = "USD";
         public const string SteamCurrencyEUR = "EUR";
