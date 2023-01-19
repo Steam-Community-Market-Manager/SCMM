@@ -107,7 +107,15 @@ namespace SCMM.Steam.API.Commands
             {
                 // TODO: Filter this properly
                 var itemDefinitions = itemDefinitionsArchiveItems
-                    .Where(x => x.Name != "DELETED" && x.Type != "generator")
+                    .Where(x =>
+                        !String.IsNullOrEmpty(x.Type) &&
+                        x.Type?.ToLower() != "bundle" &&
+                        x.Type?.ToLower() != "generator" &&
+                        x.Type?.ToLower() != "playtimegenerator" &&
+                        x.Type?.ToLower() != "tag_generator" &&
+                        !String.IsNullOrEmpty(x.Name) &&
+                        x.Name?.ToLower() != "deleted"
+                    )
                     .ToArray();
 
                 var currencies = await _steamDb.SteamCurrencies.ToArrayAsync();
