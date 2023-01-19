@@ -4,7 +4,23 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class StringExtensions
     {
-        public static string ConvertToMarkdown(this string value)
+        public static string ToPlainText(this string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            // Strip all HTML tags
+            value = Regex.Replace(value, @"<[^>]*>", string.Empty).Trim();
+
+            // Strip all BB tags
+            value = Regex.Replace(value, @"\[[^\]]*\]", string.Empty).Trim();
+
+            return value;
+        }
+
+        public static string ToSafeMarkup(this string value)
         {
             if (value == null)
             {

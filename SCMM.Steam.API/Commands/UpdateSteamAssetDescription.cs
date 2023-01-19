@@ -89,7 +89,6 @@ namespace SCMM.Steam.API.Commands
                 var itemDefinition = request.AssetItemDefinition;
                 assetDescription.WorkshopFileId = (assetDescription.WorkshopFileId == null && itemDefinition.WorkshopId > 0) ? itemDefinition.WorkshopId : assetDescription.WorkshopFileId;
                 assetDescription.ItemDefinitionId = itemDefinition.ItemDefId;
-                assetDescription.ItemShortName = (String.IsNullOrEmpty(assetDescription.ItemShortName) ? itemDefinition.RustItemShortName : assetDescription.ItemShortName);
                 assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(itemDefinition.DisplayType)) ? itemDefinition.DisplayType : assetDescription.ItemType);
                 assetDescription.Name = (String.IsNullOrEmpty(assetDescription.Name) ? (itemDefinition.Name ?? itemDefinition.MarketName) : assetDescription.Name);
                 assetDescription.NameHash = (String.IsNullOrEmpty(assetDescription.NameHash) ? itemDefinition.MarketHashName ?? itemDefinition.Name : assetDescription.NameHash ?? assetDescription.Name);
@@ -123,7 +122,7 @@ namespace SCMM.Steam.API.Commands
                 if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrEmpty(itemDefinition.Description))
                 {
                     // Strip any HTML and BBCode tags, just get the plain-text
-                    assetDescription.Description = itemDefinition.Description.ConvertToMarkdown().Trim();
+                    assetDescription.Description = itemDefinition.Description.ToSafeMarkup().Trim();
                 }
 
                 // Parse asset tags (if any)
@@ -479,7 +478,7 @@ namespace SCMM.Steam.API.Commands
                 if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrWhiteSpace(itemDescriptionHtml))
                 {
                     // Strip any HTML tags, just get the plain-text
-                    assetDescription.Description = itemDescriptionHtml.ConvertToMarkdown().Trim();
+                    assetDescription.Description = itemDescriptionHtml.ToSafeMarkup().Trim();
                 }
             }
 
@@ -499,7 +498,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         // Is this asset a permanent item?
                         var isPermanentDescription = @"This item will be permanently bound to your steam account";
-                        if (Regex.IsMatch(assetDescription.Description, isPermanentDescription))
+                        if (Regex.IsMatch(assetDescription.Description.ToPlainText(), isPermanentDescription))
                         {
                             assetDescription.Description = assetDescription.Description.Replace(isPermanentDescription, string.Empty).Trim();
                             assetDescription.IsPermanent = true;
@@ -507,7 +506,7 @@ namespace SCMM.Steam.API.Commands
 
                         // Is this asset a glowing item?
                         var hasGlowDescription = @"This skin glows in the dark";
-                        if (Regex.IsMatch(assetDescription.Description, hasGlowDescription))
+                        if (Regex.IsMatch(assetDescription.Description.ToPlainText(), hasGlowDescription))
                         {
                             assetDescription.Description = assetDescription.Description.Replace(hasGlowDescription, string.Empty).Trim();
                             assetDescription.HasGlow = true;
@@ -515,7 +514,7 @@ namespace SCMM.Steam.API.Commands
 
                         // Is this asset a crafting component?
                         // e.g. "Cloth can be combined to craft"
-                        var craftingComponentMatchGroup = Regex.Match(assetDescription.Description, @"(.*) can be combined to craft").Groups;
+                        var craftingComponentMatchGroup = Regex.Match(assetDescription.Description.ToPlainText(), @"(.*) can be combined to craft").Groups;
                         var craftingComponent = (craftingComponentMatchGroup.Count > 1)
                             ? craftingComponentMatchGroup[1].Value.Trim()
                             : null;
@@ -529,7 +528,7 @@ namespace SCMM.Steam.API.Commands
 
                         // Is this asset able to be broken down in to crafting components?
                         // e.g. "Breaks down into 1x Cloth"
-                        var breaksDownMatchGroup = Regex.Match(assetDescription.Description, @"Breaks down into (.*)").Groups;
+                        var breaksDownMatchGroup = Regex.Match(assetDescription.Description.ToPlainText(), @"Breaks down into (.*)").Groups;
                         var breaksDown = (breaksDownMatchGroup.Count > 1)
                             ? breaksDownMatchGroup[1].Value.Trim()
                             : null;
@@ -540,7 +539,7 @@ namespace SCMM.Steam.API.Commands
                             assetDescription.BreaksIntoComponents = new PersistableAssetQuantityDictionary();
 
                             // e.g. "1x Cloth", "1x Wood", "1x Metal"
-                            var componentMatches = Regex.Matches(breaksDown, @"(\d+)\s*x\s*(\D*)").OfType<Match>();
+                            var componentMatches = Regex.Matches(breaksDown, @"(\d+)\s*x\s*([^\d\.\r\n\<]*)").OfType<Match>();
                             foreach (var componentMatch in componentMatches)
                             {
                                 var componentQuantity = componentMatch.Groups[1].Value;
@@ -556,7 +555,7 @@ namespace SCMM.Steam.API.Commands
                         // e.g. "Barrels contain skins for weapons and tools."
                         // e.g. "Bags contain clothes."
                         // e.g. "Boxes contain deployables,"
-                        var isSkinContainer = Regex.IsMatch(assetDescription.Description, @"(.*)s contain (skins|weapons|tools|clothes|deployables)");
+                        var isSkinContainer = Regex.IsMatch(assetDescription.Description.ToPlainText(), @"(.*)s contain (skins|weapons|tools|clothes|deployables)");
                         if (isSkinContainer && (assetDescription.IsMarketable || assetDescription.MarketableRestrictionDays > 0))
                         {
                             assetDescription.IsCraftable = true;
@@ -569,7 +568,7 @@ namespace SCMM.Steam.API.Commands
                         if (!string.IsNullOrEmpty(assetDescription.Description))
                         {
                             // e.g. "This is a skin for the Large Wood Box item." 
-                            var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item\.").Groups;
+                            var itemTypeMatchGroup = Regex.Match(assetDescription.Description.ToPlainText(), @"skin for the (.*) item\.").Groups;
                             var itemType = (itemTypeMatchGroup.Count > 1)
                                 ? itemTypeMatchGroup[1].Value.Trim()
                                 : null;
@@ -591,19 +590,19 @@ namespace SCMM.Steam.API.Commands
                             }
                             // Is it a non-craftable container?
                             // e.g. "This special crate acquired from a twitch drop during Trust in Rust 3 will yield a random skin"
-                            else if (Regex.IsMatch(assetDescription.Description, @"crate .* random skin"))
+                            else if (Regex.IsMatch(assetDescription.Description.ToPlainText(), @"crate .* random skin"))
                             {
                                 assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
                             }
                             // Is it a miscellaneous item?
                             // e.g. "Having this item in your Steam Inventory means you'll be able to craft it in game. If you sell, trade or break this item you will no longer have this ability in game."
-                            else if (Regex.IsMatch(assetDescription.Description, @"craft it in game"))
+                            else if (Regex.IsMatch(assetDescription.Description.ToPlainText(), @"craft it in game"))
                             {
                                 assetDescription.ItemType = Constants.RustItemTypeMiscellaneous;
                             }
                             // Is it an underwear item?
                             // e.g. "Having this item in your Steam Inventory means you'll be able to select this as your players default appearance. If you sell, trade or break this item you will no longer have this ability in game."
-                            else if (Regex.IsMatch(assetDescription.Description, @"players default appearance"))
+                            else if (Regex.IsMatch(assetDescription.Description.ToPlainText(), @"players default appearance"))
                             {
                                 assetDescription.ItemType = Constants.RustItemTypeUnderwear;
                             }
@@ -618,10 +617,17 @@ namespace SCMM.Steam.API.Commands
                         }
                     }
 
-                    // Parse asset item type (if missing)
+                    // Parse asset item short name (if missing)
                     if (string.IsNullOrEmpty(assetDescription.ItemShortName) && !string.IsNullOrEmpty(assetDescription.ItemType))
                     {
-                        assetDescription.ItemShortName = assetDescription.ItemType.ToRustItemShortName();
+                        if (!string.IsNullOrEmpty(request.AssetItemDefinition?.RustItemShortName))
+                        {
+                            assetDescription.ItemShortName = request.AssetItemDefinition.RustItemShortName;
+                        }
+                        else if (!string.IsNullOrEmpty(assetDescription.ItemType))
+                        {
+                            assetDescription.ItemShortName = assetDescription.ItemType.ToRustItemShortName();
+                        }
                     }
 
                     // Parse asset item collection (if missing and is a user created item)
@@ -751,7 +757,7 @@ namespace SCMM.Steam.API.Commands
                     )
                     .Select(x =>
                     {
-                        x.Value = x.Value.ConvertToMarkdown().Trim();
+                        x.Value = x.Value.ToSafeMarkup().Trim();
                         return x;
                     })
                     .Select(x => (x.Color != null ? $@"<span style=""color:{x.Color.SteamColourToWebHexString()}"">{x.Value}</span>" : x.Value))
