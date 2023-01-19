@@ -11,7 +11,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public ulong AppId { get; set; }
 
-        public SteamAssetDescriptionType AssetType { get; set; }
+        public SteamItemDefinitionType ItemDefinitionType { get; set; }
 
         public ulong? WorkshopFileId { get; set; }
 
@@ -103,6 +103,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public uint? VotesDown { get; set; }
 
+        public IDictionary<ulong, uint> Bundle { get; set; }
+        
         public bool IsCommodity { get; set; }
 
         public bool IsMarketable { get; set; }

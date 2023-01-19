@@ -94,11 +94,10 @@ namespace SCMM.Steam.API.Commands
             if (request.AssetItemDefinition != null)
             {
                 var itemDefinition = request.AssetItemDefinition;
-                assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || request.PublishedFile?.PublishedFileId > 0 || itemDefinition.WorkshopId > 0 ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
                 assetDescription.WorkshopFileId = (assetDescription.WorkshopFileId == null && itemDefinition.WorkshopId > 0) ? itemDefinition.WorkshopId : assetDescription.WorkshopFileId;
                 assetDescription.ItemDefinitionId = itemDefinition.ItemDefId;
-                assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(itemDefinition.Type) && assetDescription.AssetType == SteamAssetDescriptionType.PublisherItem) ? itemDefinition.Type : assetDescription.ItemType);
                 assetDescription.ItemShortName = (String.IsNullOrEmpty(assetDescription.ItemShortName) ? itemDefinition.RustItemShortName : assetDescription.ItemShortName);
+                assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(itemDefinition.DisplayType)) ? itemDefinition.DisplayType : assetDescription.ItemType);
                 assetDescription.Name = (String.IsNullOrEmpty(assetDescription.Name) ? (itemDefinition.Name ?? itemDefinition.MarketName) : assetDescription.Name);
                 assetDescription.NameHash = (String.IsNullOrEmpty(assetDescription.NameHash) ? itemDefinition.MarketHashName ?? itemDefinition.Name : assetDescription.NameHash ?? assetDescription.Name);
                 assetDescription.IconUrl = (String.IsNullOrEmpty(assetDescription.IconUrl) && !String.IsNullOrEmpty(itemDefinition.IconUrl)) ? new SteamBlobRequest(itemDefinition.IconUrl) : assetDescription.IconUrl;
@@ -113,6 +112,19 @@ namespace SCMM.Steam.API.Commands
                 // NOTE: 'DateCreated' seems to reset in the item defs everytime the item is modified, so we always use the earliest known date.
                 assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
                 assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(itemDefinition.Modified.SteamTimestampToDateTimeOffset());
+
+                // Parse item type
+                var itemDefinitionType = SteamItemDefinitionType.Item;
+                if (Enum.TryParse(itemDefinition.Type, true, out itemDefinitionType))
+                {
+                    assetDescription.ItemDefinitionType = itemDefinitionType;
+                    assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(itemDefinition.DisplayType)) ? itemDefinition.DisplayType : assetDescription.ItemType);
+                }
+                else
+                {
+                    assetDescription.ItemDefinitionType = SteamItemDefinitionType.Item;
+                    assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(itemDefinition.Type)) ? itemDefinition.Type : assetDescription.ItemType);
+                }
 
                 // Parse asset description (if any)
                 if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrEmpty(itemDefinition.Description))
@@ -149,11 +161,23 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
 
+                // Parse bundle
+                if (itemDefinition.Bundle != null)
+                {
+                    assetDescription.Bundle = new PersistableItemBundleDictionary();
+                    foreach (var item in itemDefinition.Bundle.Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var bundleItemParts = item.Split("x", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                        var bundleItemId = ulong.Parse(bundleItemParts.FirstOrDefault());
+                        var bundleItemWeight = bundleItemParts.Length > 1 ? uint.Parse(bundleItemParts.Skip(1).FirstOrDefault()) : 1;
+                        assetDescription.Bundle[bundleItemId] = bundleItemWeight;
+                    }
+                }
+
                 // TODO: Store tags "nocrate"
 
-                // TODO: Type ('item' | 'bundle' | 'generator' | 'playtimegenerator' | 'tag_generator')
-                // TODO: Promo (https://partner.steamgames.com/doc/features/inventory/schema#PromoItems)
                 // TODO: Exchange (https://partner.steamgames.com/doc/features/inventory/schema#ExchangeFormat)
+                // TODO: Promo (https://partner.steamgames.com/doc/features/inventory/schema#PromoItems)
                 // TODO: Price Category (https://partner.steamgames.com/doc/features/inventory/schema#SpecifyPrices)
 
             }
@@ -163,8 +187,7 @@ namespace SCMM.Steam.API.Commands
             {
                 var assetClass = request.AssetClass;
                 assetDescription.ClassId = assetClass.ClassId;
-                assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || request.PublishedFile?.PublishedFileId > 0 || String.Equals(assetClass.Type == Constants.SteamAssetClassTypeWorkshopItem, StringComparison.OrdinalIgnoreCase) ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
-                assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetClass.Type) && assetDescription.AssetType == SteamAssetDescriptionType.PublisherItem) ? assetClass.Type : assetDescription.ItemType);
+                assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetClass.Type)) ? assetClass.Type : assetDescription.ItemType);
                 assetDescription.Name = assetClass.MarketName;
                 assetDescription.NameHash = assetClass.MarketHashName ?? assetClass.Name;
                 assetDescription.IconUrl = !string.IsNullOrEmpty(assetClass.IconUrl) ? new SteamEconomyImageBlobRequest(assetClass.IconUrl) : null;
@@ -177,6 +200,18 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IsTradable = string.Equals(assetClass.Tradable, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.TradableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketTradableRestriction) ? (int?)null : int.Parse(assetClass.MarketTradableRestriction);
                 assetDescription.IsAccepted = true;
+
+                // Parse item type
+                var itemDefinitionType = SteamItemDefinitionType.Item;
+                if (Enum.TryParse(assetClass.Type, true, out itemDefinitionType))
+                {
+                    assetDescription.ItemDefinitionType = itemDefinitionType;
+                }
+                else
+                {
+                    assetDescription.ItemDefinitionType = SteamItemDefinitionType.Item;
+                    assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetClass.Type)) ? assetClass.Type : assetDescription.ItemType);
+                }
 
                 // Parse asset description (if any)
                 if (assetClass.Descriptions != null)
@@ -203,7 +238,6 @@ namespace SCMM.Steam.API.Commands
             if (request.PublishedFile != null)
             {
                 var publishedFile = request.PublishedFile;
-                assetDescription.AssetType = SteamAssetDescriptionType.WorkshopItem;
                 assetDescription.WorkshopFileId = publishedFile.PublishedFileId;
                 assetDescription.CreatorId = (publishedFile.Creator > 0 ? publishedFile.Creator : null);
                 assetDescription.NameWorkshop = publishedFile.Title;

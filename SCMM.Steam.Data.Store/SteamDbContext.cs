@@ -96,6 +96,8 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Previews);
             builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.Bundle);
+            builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.CraftingComponents);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.BreaksIntoComponents);

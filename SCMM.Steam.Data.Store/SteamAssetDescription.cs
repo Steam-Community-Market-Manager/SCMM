@@ -21,6 +21,7 @@ namespace SCMM.Steam.Data.Store
             Tags = new PersistableStringDictionary();
             IconDominantColours = new PersistableStringCollection();
             Previews = new PersistableMediaDictionary();
+            Bundle = new PersistableItemBundleDictionary();
             CraftingComponents = new PersistableAssetQuantityDictionary();
             BreaksIntoComponents = new PersistableAssetQuantityDictionary();
         }
@@ -31,11 +32,6 @@ namespace SCMM.Steam.Data.Store
         public SteamApp App { get; set; }
 
         public ulong? ClassId { get; set; }
-
-        /// <summary>
-        /// e.g. Publisher Item, Workshop Item
-        /// </summary>
-        public SteamAssetDescriptionType AssetType { get; set; }
 
         public ulong? WorkshopFileId { get; set; }
 
@@ -54,6 +50,8 @@ namespace SCMM.Steam.Data.Store
 
         public ulong? ItemDefinitionId { get; set; }
 
+        public SteamItemDefinitionType ItemDefinitionType { get; set; }
+
         /// <summary>
         /// e.g. Large Wood Box, Sheet Metal Door, etc
         /// </summary>
@@ -67,6 +65,7 @@ namespace SCMM.Steam.Data.Store
         /// <summary>
         /// e.g. Blackout, Whiteout, etc
         /// </summary>
+        /// TODO: Convert this to a dictionary
         public string ItemCollection { get; set; }
 
         public string Name { get; set; }
@@ -168,6 +167,9 @@ namespace SCMM.Steam.Data.Store
         public uint? VotesUp { get; set; }
 
         public uint? VotesDown { get; set; }
+
+        [Required]
+        public PersistableItemBundleDictionary Bundle { get; set; }
 
         public bool IsCommodity { get; set; }
 
