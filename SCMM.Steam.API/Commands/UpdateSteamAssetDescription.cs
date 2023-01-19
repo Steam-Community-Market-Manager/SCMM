@@ -97,10 +97,10 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || request.PublishedFile?.PublishedFileId > 0 || itemDefinition.WorkshopId > 0 ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
                 assetDescription.WorkshopFileId = (assetDescription.WorkshopFileId == null && itemDefinition.WorkshopId > 0) ? itemDefinition.WorkshopId : assetDescription.WorkshopFileId;
                 assetDescription.ItemDefinitionId = itemDefinition.ItemDefId;
-                assetDescription.ItemShortName = (String.IsNullOrEmpty(assetDescription.ItemShortName) ? itemDefinition.ItemShortName : assetDescription.ItemShortName);
                 assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(itemDefinition.Type) && assetDescription.AssetType == SteamAssetDescriptionType.PublisherItem) ? itemDefinition.Type : assetDescription.ItemType);
+                assetDescription.ItemShortName = (String.IsNullOrEmpty(assetDescription.ItemShortName) ? itemDefinition.RustItemShortName : assetDescription.ItemShortName);
                 assetDescription.Name = (String.IsNullOrEmpty(assetDescription.Name) ? (itemDefinition.Name ?? itemDefinition.MarketName) : assetDescription.Name);
-                assetDescription.NameHash = (String.IsNullOrEmpty(assetDescription.NameHash) ? itemDefinition.MarketHashName : assetDescription.NameHash);
+                assetDescription.NameHash = (String.IsNullOrEmpty(assetDescription.NameHash) ? itemDefinition.MarketHashName ?? itemDefinition.Name : assetDescription.NameHash ?? assetDescription.Name);
                 assetDescription.IconUrl = (String.IsNullOrEmpty(assetDescription.IconUrl) && !String.IsNullOrEmpty(itemDefinition.IconUrl)) ? new SteamBlobRequest(itemDefinition.IconUrl) : assetDescription.IconUrl;
                 assetDescription.IconLargeUrl = (String.IsNullOrEmpty(assetDescription.IconLargeUrl) && !String.IsNullOrEmpty(itemDefinition.IconUrlLarge)) ? new SteamBlobRequest(itemDefinition.IconUrlLarge ?? itemDefinition.IconUrl) : assetDescription.IconLargeUrl;
                 assetDescription.BackgroundColour = (String.IsNullOrEmpty(assetDescription.BackgroundColour) ? itemDefinition.BackgroundColor?.SteamColourToWebHexString() : assetDescription.BackgroundColour);
@@ -166,7 +166,7 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || request.PublishedFile?.PublishedFileId > 0 || String.Equals(assetClass.Type == Constants.SteamAssetClassTypeWorkshopItem, StringComparison.OrdinalIgnoreCase) ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
                 assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetClass.Type) && assetDescription.AssetType == SteamAssetDescriptionType.PublisherItem) ? assetClass.Type : assetDescription.ItemType);
                 assetDescription.Name = assetClass.MarketName;
-                assetDescription.NameHash = assetClass.MarketHashName;
+                assetDescription.NameHash = assetClass.MarketHashName ?? assetClass.Name;
                 assetDescription.IconUrl = !string.IsNullOrEmpty(assetClass.IconUrl) ? new SteamEconomyImageBlobRequest(assetClass.IconUrl) : null;
                 assetDescription.IconLargeUrl = !string.IsNullOrEmpty(assetClass.IconUrlLarge) ? new SteamEconomyImageBlobRequest(assetClass.IconUrlLarge ?? assetClass.IconUrl) : null;
                 assetDescription.BackgroundColour = assetClass.BackgroundColor?.SteamColourToWebHexString();

@@ -4,12 +4,12 @@
     {
         public string AppId { get; set; }
 
-        public string ItemId { get; set; }
+        public string ItemDefinitionId { get; set; }
 
-        public string Snr { get; set; }
+        public int Quantity { get; set; } = 1;
 
         public override Uri Uri => new Uri(
-            $"{Constants.SteamStoreUrl}/buyitem/{Uri.EscapeDataString(AppId)}/{Uri.EscapeDataString(ItemId)}/1?snr={Uri.EscapeDataString(Snr ?? String.Empty)}"
+            $"{Constants.SteamStoreUrl}/buyitem/{Uri.EscapeDataString(AppId)}/{Uri.EscapeDataString(ItemDefinitionId)}/{Quantity}"
         );
     }
 }

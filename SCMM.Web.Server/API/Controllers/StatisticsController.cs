@@ -783,7 +783,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Where(x => x.AppId == appId)
-                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.SupplyTotalEstimated > 0)
+                .Where(x => x.WorkshopFileId > 0 && x.SupplyTotalEstimated > 0)
                 .OrderByDescending(x => x.SupplyTotalEstimated)
                 .Select(x => new ItemSupplyStatisticDTO()
                 {

@@ -270,12 +270,12 @@ namespace SCMM.Steam.Data.Store
                             ItemId = StoreItem.SteamId
                         };
                     }
-                    else
+                    else if (StoreItem.Description?.ItemDefinitionId != null)
                     {
                         buyUrl = new SteamBuyItemPageRequest()
                         {
                             AppId = app.SteamId,
-                            ItemId = StoreItem.SteamId
+                            ItemDefinitionId = StoreItem.Description.ItemDefinitionId.ToString()
                         };
                     }
                 }
@@ -377,13 +377,13 @@ namespace SCMM.Steam.Data.Store
                             ItemId = StoreItem.SteamId
                         };
                     }
-                    else
+                    else if (StoreItem.Description?.ItemDefinitionId != null)
                     {
                         storeActionName = "Buy Now";
                         storeUrl = new SteamBuyItemPageRequest()
                         {
                             AppId = app.SteamId,
-                            ItemId = StoreItem.SteamId
+                            ItemDefinitionId = StoreItem.Description.ItemDefinitionId.ToString()
                         };
                     }
                 }
