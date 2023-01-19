@@ -77,11 +77,11 @@ namespace SCMM.Steam.Data.Store
                 .OwnsOne(x => x.Options);
 
             builder.Entity<SteamItemDefinitionsArchive>()
-                .HasIndex(x => x.Digest)
+                .HasIndex(x => new { x.AppId, x.Digest })
                 .IsUnique(true);
 
             builder.Entity<SteamAssetDescription>()
-                .HasIndex(x => new { x.ClassId, x.ItemDefinitionId })
+                .HasIndex(x => new { x.AppId, x.ClassId, x.ItemDefinitionId })
                 .IsUnique(true);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Notes);
@@ -190,7 +190,7 @@ namespace SCMM.Steam.Data.Store
                 .HasOne(x => x.Currency);
 
             builder.Entity<SteamWorkshopFile>()
-                .HasIndex(x => x.SteamId)
+                .HasIndex(x => new { x.AppId, x.SteamId })
                 .IsUnique(true);
             builder.Entity<SteamWorkshopFile>()
                 .OwnsOne(x => x.Previews);

@@ -3,11 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Abstractions.Messaging;
-using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
-using SCMM.Steam.Client;
-using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
@@ -18,7 +15,6 @@ using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
-using SteamWebAPI2.Utilities;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -61,7 +57,6 @@ namespace SCMM.Steam.API.Commands
     {
         private readonly ILogger<UpdateSteamAssetDescription> _logger;
         private readonly SteamDbContext _db;
-        private readonly SteamConfiguration _cfg;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IServiceBus _serviceBus;
@@ -70,7 +65,6 @@ namespace SCMM.Steam.API.Commands
         {
             _logger = logger;
             _db = db;
-            _cfg = cfg?.GetSteamConfiguration();
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _serviceBus = serviceBus;
@@ -78,7 +72,6 @@ namespace SCMM.Steam.API.Commands
 
         public async Task<UpdateSteamAssetDescriptionResponse> HandleAsync(UpdateSteamAssetDescriptionRequest request)
         {
-            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var assetDescription = request.AssetDescription;
             if (assetDescription == null)
             {
@@ -707,6 +700,10 @@ namespace SCMM.Steam.API.Commands
                             }
                         }
                     }
+                    break;
+
+                // Unturned
+                case Constants.UnturnedAppId:
                     break;
 
             }
