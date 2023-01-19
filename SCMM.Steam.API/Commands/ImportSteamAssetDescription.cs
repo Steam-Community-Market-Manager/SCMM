@@ -312,12 +312,16 @@ namespace SCMM.Steam.API.Commands
                 // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
                 if (publishedFileId > 0 && (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl)) && !assetDescription.WorkshopFileIsUnavailable)
                 {
-                    await _serviceBus.SendMessageAsync(new ImportWorkshopFileContentsMessage()
+                    var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString());
+                    if (app?.IsActive == true)
                     {
-                        AppId = request.AppId,
-                        PublishedFileId = publishedFileId,
-                        Force = publishedFileHasChanged
-                    });
+                        await _serviceBus.SendMessageAsync(new ImportWorkshopFileContentsMessage()
+                        {
+                            AppId = request.AppId,
+                            PublishedFileId = publishedFileId,
+                            Force = publishedFileHasChanged
+                        });
+                    }
                 }
             }
 
