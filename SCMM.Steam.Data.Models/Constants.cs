@@ -80,6 +80,12 @@
 
         #endregion
 
+        #region Unturned
+
+        public const ulong UnturnedAppId = 304930L;
+
+        #endregion
+
         #region SCMM
 
         public const string SCMMStoreIdDateFormat = "yyyy-MM-dd-HHmm";
