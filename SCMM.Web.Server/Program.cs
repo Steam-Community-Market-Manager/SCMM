@@ -370,7 +370,7 @@ public static class WebApplicationExtensions
             cspScriptSources: "'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.skypack.dev www.googletagmanager.com www.google-analytics.com",
             cspStyleSources: "'self' 'unsafe-inline' cdnjs.cloudflare.com fonts.googleapis.com www.google-analytics.com",
             cspFontSources: "'self' data: cdnjs.cloudflare.com fonts.gstatic.com",
-            cspImageSources: "'self' data: blob: *.scmm.app steamcommunity-a.akamaihd.net steamuserimages-a.akamaihd.net steamcdn-a.akamaihd.net avatars.steamstatic.com avatars.akamai.steamstatic.com cdn.discordapp.com files.facepunch.com www.google-analytics.com",
+            cspImageSources: "'self' data: blob: *.scmm.app steamcommunity-a.akamaihd.net steamuserimages-a.akamaihd.net steamcdn-a.akamaihd.net avatars.steamstatic.com avatars.akamai.steamstatic.com cdn.cloudflare.steamstatic.com cdn.discordapp.com files.facepunch.com www.google-analytics.com",
             cspFrameSources: "'self' www.youtube.com e.widgetbot.io",
             cspConnectSources: $"'self' *.scmm.app discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowLoopbackConnectHack}",
             cspAllowCrossOriginEmbedding: true
