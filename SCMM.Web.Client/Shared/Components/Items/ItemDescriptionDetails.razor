@@ -481,7 +481,8 @@
                             }
                             @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
                             {
-                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value?.ToLower()" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value?.ToLower()" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined"
+                                         title="@($"<strong>{tag.Key?.ToLower()}</strong> is <strong>{tag.Value?.ToLower()}</strong>")" />
                             }
 				        </div>
                     }
