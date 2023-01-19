@@ -251,24 +251,27 @@ namespace SCMM.Steam.API.Commands
                     if (newAssetDescription != null)
                     {
                         assetDescriptions.Add(newAssetDescription);
-                        await _serviceBus.SendMessageAsync(new ItemDefinitionAddedMessage()
+                        if (app.IsActive)
                         {
-                            AppId = UInt64.Parse(app.SteamId),
-                            AppName = app.Name,
-                            AppIconUrl = app.IconUrl,
-                            AppColour = app.PrimaryColor,
-                            CreatorId = newAssetDescription.CreatorId,
-                            CreatorName = newAssetDescription.CreatorProfile?.Name,
-                            CreatorAvatarUrl = newAssetDescription.CreatorProfile?.AvatarUrl,
-                            ItemId = newAssetDescription.ItemDefinitionId ?? 0,
-                            ItemType = newAssetDescription.ItemType,
-                            ItemShortName = newAssetDescription.ItemShortName,
-                            ItemName = newAssetDescription.Name,
-                            ItemDescription = newAssetDescription.Description,
-                            ItemCollection = newAssetDescription.ItemCollection,
-                            ItemIconUrl = newAssetDescription.IconUrl ?? newAssetDescription.IconLargeUrl,
-                            ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
-                        });
+                            await _serviceBus.SendMessageAsync(new ItemDefinitionAddedMessage()
+                            {
+                                AppId = UInt64.Parse(app.SteamId),
+                                AppName = app.Name,
+                                AppIconUrl = app.IconUrl,
+                                AppColour = app.PrimaryColor,
+                                CreatorId = newAssetDescription.CreatorId,
+                                CreatorName = newAssetDescription.CreatorProfile?.Name,
+                                CreatorAvatarUrl = newAssetDescription.CreatorProfile?.AvatarUrl,
+                                ItemId = newAssetDescription.ItemDefinitionId ?? 0,
+                                ItemType = newAssetDescription.ItemType,
+                                ItemShortName = newAssetDescription.ItemShortName,
+                                ItemName = newAssetDescription.Name,
+                                ItemDescription = newAssetDescription.Description,
+                                ItemCollection = newAssetDescription.ItemCollection,
+                                ItemIconUrl = newAssetDescription.IconUrl ?? newAssetDescription.IconLargeUrl,
+                                ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
+                            });
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -495,32 +498,35 @@ namespace SCMM.Steam.API.Commands
                             });
                         }
 
-                        await _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
+                        if (app.IsActive)
                         {
-                            AppId = UInt64.Parse(app.SteamId),
-                            AppName = app.Name,
-                            AppIconUrl = app.IconUrl,
-                            AppColour = app.PrimaryColor,
-                            StoreId = store?.StoreId(),
-                            StoreName = store?.StoreName(),
-                            CreatorId = storeItem.Description?.CreatorId,
-                            CreatorName = storeItem.Description?.CreatorProfile?.Name,
-                            CreatorAvatarUrl = storeItem.Description?.CreatorProfile?.AvatarUrl,
-                            ItemId = UInt64.Parse(storeItem.SteamId),
-                            ItemType = storeItem.Description?.ItemType,
-                            ItemShortName = storeItem.Description?.ItemShortName,
-                            ItemName = storeItem.Description?.Name,
-                            ItemDescription = storeItem.Description?.Description,
-                            ItemCollection = storeItem.Description?.ItemCollection,
-                            ItemIconUrl = storeItem.Description?.IconUrl ?? storeItem.Description?.IconLargeUrl,
-                            ItemImageUrl = storeItem.Description?.PreviewUrl ?? storeItem.Description?.IconLargeUrl ?? storeItem.Description?.IconUrl,
-                            ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
+                            await _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
                             {
-                                Currency = x.Key,
-                                Value = x.Value,
-                                Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value)
-                            }).ToArray()
-                        });
+                                AppId = UInt64.Parse(app.SteamId),
+                                AppName = app.Name,
+                                AppIconUrl = app.IconUrl,
+                                AppColour = app.PrimaryColor,
+                                StoreId = store?.StoreId(),
+                                StoreName = store?.StoreName(),
+                                CreatorId = storeItem.Description?.CreatorId,
+                                CreatorName = storeItem.Description?.CreatorProfile?.Name,
+                                CreatorAvatarUrl = storeItem.Description?.CreatorProfile?.AvatarUrl,
+                                ItemId = UInt64.Parse(storeItem.SteamId),
+                                ItemType = storeItem.Description?.ItemType,
+                                ItemShortName = storeItem.Description?.ItemShortName,
+                                ItemName = storeItem.Description?.Name,
+                                ItemDescription = storeItem.Description?.Description,
+                                ItemCollection = storeItem.Description?.ItemCollection,
+                                ItemIconUrl = storeItem.Description?.IconUrl ?? storeItem.Description?.IconLargeUrl,
+                                ItemImageUrl = storeItem.Description?.PreviewUrl ?? storeItem.Description?.IconLargeUrl ?? storeItem.Description?.IconUrl,
+                                ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
+                                {
+                                    Currency = x.Key,
+                                    Value = x.Value,
+                                    Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value)
+                                }).ToArray()
+                            });
+                        }
 
                         newStoreItems.Add(storeItem);
                     }
@@ -675,7 +681,7 @@ namespace SCMM.Steam.API.Commands
                         });
                     }
 
-                    if (newMarketableItem.HasBecomeMarketable)
+                    if (newMarketableItem.HasBecomeMarketable && app.IsActive)
                     {
                         await _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
                         {
@@ -750,7 +756,7 @@ namespace SCMM.Steam.API.Commands
                 _logger.LogError(ex, $"Failed to generate store item thumbnail image (appId: {app.SteamId}, storeId: {store.StoreId()})");
             }
 
-            if (newItems.Any())
+            if (newItems.Any() && app.IsActive)
             {
                 await _serviceBus.SendMessageAsync(new StoreAddedMessage()
                 {
