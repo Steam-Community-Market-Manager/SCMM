@@ -42,9 +42,12 @@
         public const string SteamAssetClassDescriptionTypeHtml = "html";
         public const string SteamAssetClassDescriptionTypeBBCode = "bbcode";
 
+        public const int SteamCurrencyIdUSD = 1;
         public const string SteamCurrencyUSD = "USD";
         public const string SteamCurrencyEUR = "EUR";
         public const string SteamCurrencyCNY = "CNY";
+
+        public const int SteamDefaultCurrencyId = SteamCurrencyIdUSD;
         public const string SteamDefaultCurrency = SteamCurrencyUSD;
 
         public const string SteamLanguageEnglish = "english";
@@ -52,6 +55,7 @@
 
 
         public const string SteamCountryUS = "US";
+        public const string SteamDefaultCountry = "US";
 
         #region CSGO
 

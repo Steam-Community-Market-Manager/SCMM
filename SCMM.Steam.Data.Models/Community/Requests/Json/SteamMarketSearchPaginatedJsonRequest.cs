@@ -5,6 +5,7 @@
         public const int MaxPageSize = 100;
 
         public const string SortColumnDefault = "default";
+        public const string SortColumnPopular = "popular";
         public const string SortColumnName = "name";
         public const string SortColumnQuantity = "quantity";
         public const string SortColumnPrice = "price";

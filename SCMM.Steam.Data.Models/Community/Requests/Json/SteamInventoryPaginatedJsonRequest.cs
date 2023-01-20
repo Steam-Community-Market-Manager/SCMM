@@ -8,7 +8,7 @@
 
         public string AppId { get; set; }
 
-        public string Language { get; set; } = Constants.SteamLanguageEnglish;
+        public string Language { get; set; } = Constants.SteamDefaultLanguage;
 
         public ulong? StartAssetId { get; set; }
 

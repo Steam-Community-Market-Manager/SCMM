@@ -6,9 +6,9 @@
 
         public int Count { get; set; }
 
-        public string Language { get; set; }
+        public string Language { get; set; } = Constants.SteamDefaultLanguage;
 
-        public string CurrencyId { get; set; }
+        public string CurrencyId { get; set; } = Constants.SteamDefaultCurrencyId.ToString();
 
         public bool NoRender { get; set; } = true;
     }

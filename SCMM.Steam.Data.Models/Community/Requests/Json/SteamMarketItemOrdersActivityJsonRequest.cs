@@ -6,11 +6,11 @@ namespace SCMM.Steam.Data.Models.Community.Requests.Json
     {
         public string ItemNameId { get; set; }
 
-        public string Country { get; set; } = Constants.SteamCountryUS;
+        public string Country { get; set; } = Constants.SteamDefaultCountry;
 
-        public string Language { get; set; } = Constants.SteamLanguageEnglish;
+        public string Language { get; set; } = Constants.SteamDefaultLanguage;
 
-        public string CurrencyId { get; set; }
+        public string CurrencyId { get; set; } = Constants.SteamDefaultCurrencyId.ToString();
 
         public bool NoRender { get; set; } = true;
 
