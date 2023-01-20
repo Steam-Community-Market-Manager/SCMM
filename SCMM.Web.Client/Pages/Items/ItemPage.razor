@@ -1,16 +1,16 @@
 ﻿@using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
-@page "/item/{Name}"
-@page "/items/{Name}"
-@page "/skin/{Name}"
-@page "/skins/{Name}"
+@page "/item/{Id}"
+@page "/items/{Id}"
+@page "/skin/{Id}"
+@page "/skins/{Id}"
 @inherits PersistentComponent
 @inject ILogger<ItemPage> Logger
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject AppState State
 
-<PageContainer Title="@($"{State?.App?.Name} Skin - {Item?.Name ?? Name}")" 
+<PageContainer Title="@($"{State?.App?.Name} Skin - {Item?.Name ?? Id}")" 
                Description="@(Item?.Description)"
                ImageUrl="@(Item?.IconLargeUrl ?? Item?.PreviewUrl)">
 
@@ -28,7 +28,7 @@
 @code {
 
     [Parameter]
-    public string Name { get; set; }
+    public string Id { get; set; }
 
     private ItemDetailedDTO Item;
 
@@ -50,7 +50,7 @@
     protected override async Task OnParametersSetAsync()
     {
         // If we have navigated to a different item, reload the new item
-        if ((Item != null) && !String.Equals(Name, Item?.Name, StringComparison.InvariantCultureIgnoreCase))
+        if ((Item != null) && !String.Equals(Id, Item?.Id.ToString() ?? String.Empty, StringComparison.InvariantCultureIgnoreCase) && !String.Equals(Id, Item?.Name, StringComparison.InvariantCultureIgnoreCase))
         {
             Item = null;
             StateHasChanged();
@@ -62,7 +62,7 @@
     {
         try
         {
-            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>($"/api/item/{Uri.EscapeDataString(Name)}");
+            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>($"/api/item/{Uri.EscapeDataString(Id)}");
         }
         catch (Exception ex)
         {

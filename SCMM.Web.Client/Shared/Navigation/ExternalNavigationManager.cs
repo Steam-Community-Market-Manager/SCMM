@@ -31,7 +31,7 @@ public class ExternalNavigationManager
         switch (_state?.Profile?.ItemInfoWebsite ?? ItemInfoWebsiteType.External)
         {
             case ItemInfoWebsiteType.Internal:
-                _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", $"/item/{item.Name}");
+                _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", $"/item/{item.Id}");
                 break;
 
             case ItemInfoWebsiteType.External:

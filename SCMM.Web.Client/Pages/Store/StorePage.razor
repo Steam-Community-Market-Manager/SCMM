@@ -705,7 +705,7 @@ else
 
     private void ViewItem(StoreItemDetailsDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");
+        ExternalNavigationManager.NavigateToNewTab($"/item/{item.AssetDescriptionId}");
     }
 
     private void ShowCreatorItemsDialog(StoreItemDetailsDTO item)
