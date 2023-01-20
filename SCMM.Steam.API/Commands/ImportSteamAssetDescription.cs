@@ -74,20 +74,23 @@ namespace SCMM.Steam.API.Commands
             var assetClass = (AssetClassInfoModel)null;
             if (request.AssetClass == null)
             {
-                // We need to fetch it from Steam...
-                var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
-                var assetClassInfoResponse = await steamEconomy.GetAssetClassInfoAsync(
-                    (uint)request.AppId,
-                    new List<ulong>()
-                    {
-                        request.AssetClassId
-                    }
-                );
-                if (assetClassInfoResponse?.Data?.Success != true)
+                if (request.AssetClassId > 0)
                 {
-                    throw new Exception($"Failed to get class info for asset {request.AssetClassId}, request failed");
+                    // We need to fetch it from Steam...
+                    var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
+                    var assetClassInfoResponse = await steamEconomy.GetAssetClassInfoAsync(
+                        (uint)request.AppId,
+                        new List<ulong>()
+                        {
+                        request.AssetClassId
+                        }
+                    );
+                    if (assetClassInfoResponse?.Data?.Success != true)
+                    {
+                        throw new Exception($"Failed to get class info for asset {request.AssetClassId}, request failed");
+                    }
+                    assetClass = assetClassInfoResponse.Data.AssetClasses.FirstOrDefault(x => x.ClassId == request.AssetClassId);
                 }
-                assetClass = assetClassInfoResponse.Data.AssetClasses.FirstOrDefault(x => x.ClassId == request.AssetClassId);
             }
             else
             {
@@ -109,32 +112,32 @@ namespace SCMM.Steam.API.Commands
                     MarketMarketableRestriction = request.AssetClass.MarketMarketableRestriction,
                     Descriptions = new ReadOnlyCollection<AssetClassDescriptionModel>(
                         new List<AssetClassDescriptionModel>(
-                            request.AssetClass.Descriptions.Select(x => new AssetClassDescriptionModel()
+                            request.AssetClass.Descriptions?.Select(x => new AssetClassDescriptionModel()
                             {
                                 Type = x.Type,
                                 Value = x.Value,
                                 Color = x.Type
-                            })
+                            }) ?? Enumerable.Empty<AssetClassDescriptionModel>()
                         )
                     ),
                     Actions = new ReadOnlyCollection<AssetClassActionModel>(
                         new List<AssetClassActionModel>(
-                            request.AssetClass.Actions.Select(x => new AssetClassActionModel()
+                            request.AssetClass.Actions?.Select(x => new AssetClassActionModel()
                             {
                                 Link = x.Link,
                                 Name = x.Name
-                            })
+                            }) ?? Enumerable.Empty<AssetClassActionModel>()
                         )
                     ),
                     Tags = new ReadOnlyCollection<AssetClassTagModel>(
                         new List<AssetClassTagModel>(
-                            request.AssetClass.Tags.Select(x => new AssetClassTagModel()
+                            request.AssetClass.Tags?.Select(x => new AssetClassTagModel()
                             {
                                 Category = x.Category,
                                 InternalName = x.InternalName,
                                 CategoryName = x.LocalizedCategoryName,
                                 Name = x.LocalizedTagName
-                            })
+                            }) ?? Enumerable.Empty<AssetClassTagModel>()
                         )
                     ),
                     ClassId = request.AssetClass.ClassId
@@ -251,7 +254,10 @@ namespace SCMM.Steam.API.Commands
 
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
             var marketListingPageHtml = (string)null;
-            var assetIsMarketable = string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
+            var assetIsMarketable = (
+                string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase) || 
+                (string.IsNullOrEmpty(assetClass.Marketable) && !string.IsNullOrEmpty(assetClass.MarketHashName))
+            );
             var needsDescription = ((!assetClassHasItemDescription && string.IsNullOrEmpty(assetDescription.Description)) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
             var needsNameId = (assetDescription.NameId == null);
             if (assetIsMarketable && (needsDescription || needsNameId))

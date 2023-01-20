@@ -96,9 +96,9 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IconLargeUrl = (String.IsNullOrEmpty(assetDescription.IconLargeUrl) && !String.IsNullOrEmpty(itemDefinition.IconUrlLarge)) ? new SteamBlobRequest(itemDefinition.IconUrlLarge ?? itemDefinition.IconUrl) : assetDescription.IconLargeUrl;
                 assetDescription.BackgroundColour = (String.IsNullOrEmpty(assetDescription.BackgroundColour) ? itemDefinition.BackgroundColor?.SteamColourToWebHexString() : assetDescription.BackgroundColour);
                 assetDescription.ForegroundColour = (String.IsNullOrEmpty(assetDescription.ForegroundColour) ? itemDefinition.NameColor?.SteamColourToWebHexString() : assetDescription.ForegroundColour);
-                assetDescription.IsCommodity = itemDefinition.Commodity;
                 assetDescription.IsMarketable = itemDefinition.Marketable;
                 assetDescription.IsTradable = itemDefinition.Tradable;
+                assetDescription.IsCommodity = itemDefinition.Commodity;
                 assetDescription.IsAccepted = true;
                 assetDescription.TimeAccepted = (assetDescription.TimeAccepted ?? itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
                 // NOTE: 'DateCreated' seems to reset in the item defs everytime the item is modified, so we always use the earliest known date.
@@ -184,11 +184,18 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IconLargeUrl = !string.IsNullOrEmpty(assetClass.IconUrlLarge) ? new SteamEconomyImageBlobRequest(assetClass.IconUrlLarge ?? assetClass.IconUrl) : null;
                 assetDescription.BackgroundColour = assetClass.BackgroundColor?.SteamColourToWebHexString();
                 assetDescription.ForegroundColour = assetClass.NameColor?.SteamColourToWebHexString();
-                assetDescription.IsCommodity = string.Equals(assetClass.Commodity, "1", StringComparison.InvariantCultureIgnoreCase);
-                assetDescription.IsMarketable = string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.MarketableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketMarketableRestriction) ? (int?)null : int.Parse(assetClass.MarketMarketableRestriction);
-                assetDescription.IsTradable = string.Equals(assetClass.Tradable, "1", StringComparison.InvariantCultureIgnoreCase);
+                assetDescription.IsMarketable = (
+                    string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase) ||
+                    (string.IsNullOrEmpty(assetClass.Marketable) && !string.IsNullOrEmpty(assetClass.MarketHashName)) ||
+                    assetDescription.MarketableRestrictionDays != null
+                );
                 assetDescription.TradableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketTradableRestriction) ? (int?)null : int.Parse(assetClass.MarketTradableRestriction);
+                assetDescription.IsTradable = (
+                    string.Equals(assetClass.Tradable, "1", StringComparison.InvariantCultureIgnoreCase) ||
+                    assetDescription.TradableRestrictionDays != null
+                );
+                assetDescription.IsCommodity = string.Equals(assetClass.Commodity, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.IsAccepted = true;
 
                 // Parse item type
@@ -393,7 +400,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Parse asset icon image data
-            if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl))
+            if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl) && app?.IsActive == true)
             {
                 try
                 {
