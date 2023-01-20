@@ -349,7 +349,7 @@ namespace SCMM.Steam.Data.Store
                 };
             }
 
-            if (MarketItem != null && !String.IsNullOrEmpty(NameHash) && !String.IsNullOrEmpty(MarketItem.SteamId))
+            if (MarketItem != null && !String.IsNullOrEmpty(NameHash))
             {
                 yield return new ItemInteraction
                 {
