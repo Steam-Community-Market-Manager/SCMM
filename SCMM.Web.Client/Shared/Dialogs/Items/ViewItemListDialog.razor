@@ -11,7 +11,13 @@
     <TitleContent>
         <MudGrid>
             <MudItem xs="12" Class="@($"d-flex flex-wrap {(IsMediaSize(Breakpoint.MdAndUp) ? "pr-12" : null)}")">
-                <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@ListName</MudText>
+                <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">
+                    @ListName
+                    @if(List?.Items?.Any() == true)
+                    {
+                        <span> (@List.Items.Length) </span>
+                    }
+                </MudText>
                 @if (List?.Items?.Any() == true)
                 {
                     <MudSpacer />
