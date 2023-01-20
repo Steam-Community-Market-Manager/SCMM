@@ -5,7 +5,7 @@ namespace SCMM.Shared.Data.Store.Extensions
 {
     public static class PaginationExtensions
     {
-        public const int MaxCount = 100;
+        public const int MaxCount = 300;
 
         public static PaginatedResult<T> Paginate<T>(this IQueryable<T> query, int start, int count)
         {
