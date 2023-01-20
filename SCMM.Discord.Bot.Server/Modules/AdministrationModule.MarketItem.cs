@@ -6,7 +6,13 @@ using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -90,6 +96,100 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var type = (priceAnomalies.Contains(anomaly)) ? "PRICE" : "QUANTITY";
                 await Context.Channel.SendMessageAsync($"{type} ANOMALY @ {anomaly.Timestamp} (actual {anomaly.ActualValue}, expected {anomaly.ExpectedValue}, upper: {anomaly.UpperMargin}, lower: {anomaly.LowerMargin}, positive: {anomaly.IsPositive}, negative: {anomaly.IsNegative}, severity: {anomaly.Severity})");
             }
+
+            return CommandResult.Success();
+        }
+
+        [Command("import-market-items")]
+        public async Task<RuntimeResult> ImportMarketItems(ulong appId)
+        {
+            var message = await Context.Message.ReplyAsync("Importing market items...");
+
+            var app = await _steamDb.SteamApps
+                .FirstOrDefaultAsync(x => x.SteamId == appId.ToString());
+
+            var defaultCurrency = await _steamDb.SteamCurrencies
+                .FirstOrDefaultAsync(x => x.Name == Constants.SteamDefaultCurrency);
+
+            var existingItems = await _steamDb.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == app.Id)
+                .Select(x => x.ClassId)
+                .ToArrayAsync();
+
+            var paginationStart = 0;
+            var paginationCount = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
+            var searchResults = (SteamMarketSearchPaginatedJsonResponse)null;
+            do
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing market items {paginationStart}/{searchResults?.TotalCount.ToString() ?? "???"}..."
+                );
+
+                searchResults = await _communityClient.GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(new SteamMarketSearchPaginatedJsonRequest()
+                {
+                    AppId = appId.ToString(),
+                    GetDescriptions = true,
+                    SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName,
+                    Start = paginationStart,
+                    Count = paginationCount
+                }, useCache: false);
+                paginationStart += paginationCount;
+
+                if (searchResults?.Success == true && searchResults.Results != null)
+                {
+                    foreach (var item in searchResults.Results)
+                    {
+                        if (existingItems.Contains(item.AssetDescription.ClassId))
+                        {
+                            continue;
+                        }
+
+                        var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                        {
+                            AppId = appId,
+                            AssetClass = item.AssetDescription
+                        });
+
+                        var assetDescription = importedAssetDescription?.AssetDescription;
+                        if (assetDescription != null && assetDescription.MarketItem == null)
+                        {
+                            var marketItem = assetDescription.MarketItem = new SteamMarketItem()
+                            {
+                                SteamId = assetDescription.NameId?.ToString(),
+                                AppId = app.Id,
+                                App = app,
+                                Description = assetDescription,
+                                Currency = defaultCurrency,
+                            };
+
+                            if (marketItem.SellOrderLowestPrice == 0 && item.SellPrice > 0)
+                            {
+                                marketItem.SellOrderLowestPrice = item.SellPrice;
+                            }
+                            if (marketItem.SellOrderCount == 0 && item.SellListings > 0)
+                            {
+                                marketItem.SellOrderCount = item.SellListings;
+                            }
+                            if (marketItem.SellOrderLowestPrice > 0)
+                            {
+                                marketItem.UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply()
+                                {
+                                    Price = marketItem.SellOrderLowestPrice,
+                                    Supply = (marketItem.SellOrderCount > 0 ? marketItem.SellOrderCount : null)
+                                });
+                            }
+                        }
+
+                        await _steamDb.SaveChangesAsync();
+                    }
+                }
+
+            } while (searchResults?.Success == true && searchResults?.Results?.Count > 0);
+
+            var itemCount = (searchResults?.TotalCount.ToString() ?? "???");
+            await message.ModifyAsync(
+                x => x.Content = $"Importing market items {itemCount}/{itemCount}"
+            );
 
             return CommandResult.Success();
         }
