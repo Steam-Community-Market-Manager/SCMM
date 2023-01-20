@@ -58,14 +58,19 @@ public class WebClient : IDisposable
         return httpClient;
     }
 
-    protected HttpClient BuildWebApiHttpClient(string apiKey = null)
+    protected HttpClient BuildWebApiHttpClient()
+    {
+        return BuildWebApiHttpClient(null, null, null);
+    }
+
+    protected HttpClient BuildWebApiHttpClient(string authHeaderName, string authHeaderFormat, string authKey = null)
     {
         var httpClient = BuildHttpClient();
-        if (!string.IsNullOrEmpty(apiKey))
+        if (!string.IsNullOrEmpty(authHeaderName) && !string.IsNullOrEmpty(authHeaderFormat) && !string.IsNullOrEmpty(authKey))
         {
-            if (!httpClient.DefaultRequestHeaders.Contains("x-api-key"))
+            if (!httpClient.DefaultRequestHeaders.Contains(authHeaderName))
             {
-                httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
+                httpClient.DefaultRequestHeaders.Add(authHeaderName, String.Format(authHeaderFormat, authKey));
             }
         }
 

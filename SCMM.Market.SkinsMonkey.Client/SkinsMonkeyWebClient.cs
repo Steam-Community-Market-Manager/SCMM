@@ -15,7 +15,7 @@ namespace SCMM.Market.SkinsMonkey.Client
 
         public async Task<IEnumerable<SkinsMonkeyItem>> GetItemPricesAsync(string appId)
         {
-            using (var client = BuildWebApiHttpClient(_configuration.ApiKey))
+            using (var client = BuildSkinsMoneyClient())
             {
                 var url = $"{ApiUri}price/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
@@ -25,5 +25,11 @@ namespace SCMM.Market.SkinsMonkey.Client
                 return JsonSerializer.Deserialize<IEnumerable<SkinsMonkeyItem>>(textJson);
             }
         }
+
+        private HttpClient BuildSkinsMoneyClient() => BuildWebApiHttpClient(
+            authHeaderName: "x-api-key",
+            authHeaderFormat: "{0}",
+            authKey: _configuration.ApiKey
+        );
     }
 }
