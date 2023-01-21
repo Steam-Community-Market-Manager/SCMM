@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using SCMM.Webshare.Proxy.Client;
 
-namespace SCMM.Fixer.Client.Extensions
+namespace SCMM.Webshare.Client.Extensions
 {
     public static class ConfigurationExtensions
     {

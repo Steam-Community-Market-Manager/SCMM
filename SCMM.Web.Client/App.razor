@@ -1,6 +1,7 @@
 @inherits PersistentComponent
 @inject ILogger<App> Logger
 @inject ISnackbar Snackbar
+@inject ISystemService SystemService
 @inject AppState State
 @inject HttpClient Http
 
@@ -31,7 +32,21 @@
     {
         // Load the application state
         await State.LoadFromCookiesAsync();
-        
+
+        // Load the system status
+        State.SystemStatus = await RestoreFromStateOrLoad(nameof(State.SystemStatus), async () =>
+        {
+            try
+            {
+                return await SystemService.GetSystemStatusAsync(State.AppId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Unable to load system status. {ex.Message}");
+                return null;
+            }
+        });
+
         // Load the our profile
         State.Profile = await RestoreFromStateOrLoad(nameof(State.Profile), async () =>
         {
@@ -42,6 +57,7 @@
             }
             catch (Exception ex)
             {
+                Logger.LogError(ex, $"Unable to load your profile. {ex.Message}");
                 Snackbar.Add($"Unable to load your profile. {ex.Message}", MudBlazor.Severity.Error);
                 throw;
             }
@@ -50,6 +66,7 @@
 
     protected override Task OnPersistStateAsync()
     {
+        PersistToState(nameof(State.SystemStatus), State.SystemStatus);
         PersistToState(nameof(State.Profile), State.Profile);
         return Task.CompletedTask;
     }

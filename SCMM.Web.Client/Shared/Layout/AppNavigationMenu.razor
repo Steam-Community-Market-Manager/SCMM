@@ -67,7 +67,34 @@
     <MudNavLink OnClick="ShowDonationDialog" Icon="fas fa-fw fa-fw fa-donate" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Donate</span>
     </MudNavLink>
-    
+
+    @if (State.SystemStatus != null) 
+    {
+        var systemStatus = State.SystemStatus.Status;
+
+        <MudDivider />
+        <MudNavLink Href="/system" Disabled="@State.IsPrerendering" title="View the system status details"
+                    Icon="@(systemStatus == SystemStatusSeverity.Normal ? "fas fa-fw fa-heart-circle-check" : (systemStatus == SystemStatusSeverity.Degraded) ? "fas fa-fw fa-heart-circle-exclamation" : "fas fa-fw fa-heart-circle-xmark")"
+                    IconColor="@(systemStatus == SystemStatusSeverity.Normal ? Color.Success : (systemStatus == SystemStatusSeverity.Degraded) ? Color.Warning : Color.Error)">
+            <MudText Typo="Typo.inherit" Class="no-wrap"
+                     Color="@(systemStatus == SystemStatusSeverity.Normal ? Color.Success : (systemStatus == SystemStatusSeverity.Degraded) ? Color.Warning : Color.Error)">
+                @switch(systemStatus)
+                {
+                    case SystemStatusSeverity.Normal:
+                        <span class="no-wrap">Services are OK</span>
+                        break;
+                    case SystemStatusSeverity.Degraded:
+                        <span class="no-wrap">Services are degraded</span>
+                        break;
+                    case SystemStatusSeverity.Critical:
+                        <span class="no-wrap">Services are critical</span>
+                        break;
+                }
+            </MudText>
+        </MudNavLink>
+
+    }
+
 </MudNavMenu>
 
 @code {

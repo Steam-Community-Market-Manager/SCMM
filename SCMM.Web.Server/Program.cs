@@ -15,6 +15,7 @@ using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Statistics;
+using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
 using SCMM.Shared.Client.Configuration;
@@ -28,9 +29,11 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
-using SCMM.Web.Client.Shared.Storage;
+using SCMM.Web.Data.Models.Services;
 using SCMM.Web.Server;
-using SCMM.Web.Server.Shared.Storage;
+using SCMM.Web.Server.Services;
+using SCMM.Webshare.Client;
+using SCMM.Webshare.Client.Extensions;
 using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
@@ -177,6 +180,8 @@ public static class WebApplicationExtensions
         }
 
         // Web proxies
+        builder.Services.AddSingleton(x => builder.Configuration.GetWebshareConfiguration());
+        builder.Services.AddSingleton<IWebProxyManagementService, WebshareWebClient>();
         builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
         builder.Services.AddSingleton((services) =>
         {
@@ -297,7 +302,9 @@ public static class WebApplicationExtensions
     {
         builder.Services.AddUIServices();
 
-        builder.Services.AddScoped<ICookieManager, HttpCookieManager>();
+        builder.Services.AddScoped<ICookieManager, HttpContextCookieManager>();
+        builder.Services.AddScoped<ISystemService, CommandQuerySystemService>();
+
         builder.Services.AddScoped<HttpClient>(sp =>
         {
             var navigationManager = sp.GetRequiredService<NavigationManager>();

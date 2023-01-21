@@ -1,7 +1,7 @@
 ﻿using SCMM.Shared.Abstractions.WebProxies;
 using System.Text.Json.Serialization;
 
-namespace SCMM.Webshare.Proxy.Client;
+namespace SCMM.Webshare.Client;
 
 public class WebshareProxyDetails : IWebProxyDetails
 {

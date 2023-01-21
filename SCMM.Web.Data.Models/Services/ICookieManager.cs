@@ -1,5 +1,4 @@
-﻿
-namespace SCMM.Web.Client.Shared.Storage;
+﻿namespace SCMM.Web.Data.Models.Services;
 
 public interface ICookieManager
 {

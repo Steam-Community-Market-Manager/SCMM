@@ -1,11 +1,12 @@
 ﻿using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.Data.Models;
-using SCMM.Web.Client.Shared.Storage;
 using SCMM.Web.Data.Models;
+using SCMM.Web.Data.Models.Services;
 using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
 using SCMM.Web.Data.Models.UI.Profile;
+using SCMM.Web.Data.Models.UI.System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -62,6 +63,23 @@ public class AppState : INotifyPropertyChanged
             if (value != _isPrerendering)
             {
                 _isPrerendering = value;
+                NotifyPropertyChanged();
+            }
+        }
+    }
+
+    private SystemStatusDTO _systemStatus;
+    public SystemStatusDTO SystemStatus
+    {
+        get
+        {
+            return _systemStatus;
+        }
+        set
+        {
+            if (value != _systemStatus)
+            {
+                _systemStatus = value;
                 NotifyPropertyChanged();
             }
         }

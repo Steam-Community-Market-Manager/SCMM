@@ -1,14 +1,13 @@
-﻿@using SCMM.Web.Client.Shared.Storage
-@using SCMM.Web.Data.Models.UI.System
+﻿@using SCMM.Web.Data.Models.UI.System
 @using Markdig
 @inherits PersistentComponent
 @inject ILogger<AppBarAppControls> Logger
 @inject ISnackbar Snackbar
 @inject ICookieManager CookieManager
+@inject ISystemService SystemService
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
-@inject HttpClient Http
 
 @if (Notifications?.Any() == true)
 {
@@ -74,7 +73,7 @@
 
     private bool NotificationsAreNew => (Notifications?.Any() == true && Notifications?.Max(x => x.Timestamp) > NotificationsLastViewedOn);
 
-    private SystemUpdateMessageDTO[] Notifications;
+    private IEnumerable<SystemUpdateMessageDTO> Notifications;
 
     private bool IsOpen;
 
@@ -88,7 +87,7 @@
         {
             try
             {
-                return await Http.GetFromJsonWithDefaultsAsync<SystemUpdateMessageDTO[]>($"api/system/latestUpdates");
+                return await SystemService.ListLatestSystemUpdateMessagesAsync();
             }
             catch (Exception ex)
             {

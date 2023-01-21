@@ -2,5 +2,5 @@
 
 public interface IWebProxyManagementService
 {
-    Task<IEnumerable<IWebProxyDetails>> ListWebProxies();
+    Task<IEnumerable<IWebProxyDetails>> ListWebProxiesAsync();
 }

@@ -4,9 +4,10 @@ using MudBlazor;
 using MudBlazor.Services;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Web.Client;
+using SCMM.Web.Client.Services;
 using SCMM.Web.Client.Shared;
 using SCMM.Web.Client.Shared.Navigation;
-using SCMM.Web.Client.Shared.Storage;
+using SCMM.Web.Data.Models.Services;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 
@@ -22,6 +23,10 @@ public static class WebAssemblyHostExtensions
     public static WebAssemblyHostBuilder ConfigureServices(this WebAssemblyHostBuilder builder)
     {
         builder.Services.AddUIServices();
+
+        builder.Services.AddScoped<ICookieManager, JavascriptCookieManager>();
+        builder.Services.AddScoped<ISystemService, HttpSystemService>();
+
         builder.Services.AddScoped<HttpClient>(sp =>
         {
             var navigationManager = sp.GetRequiredService<NavigationManager>();
@@ -39,7 +44,7 @@ public static class WebAssemblyHostExtensions
     public static void AddUIServices(this IServiceCollection services)
     {
         services.AddScoped<AppState>();
-        services.AddScoped<ICookieManager, CookieManager>();
+
         services.AddScoped<ExternalNavigationManager>();
         services.AddScoped<DocumentManager>();
 

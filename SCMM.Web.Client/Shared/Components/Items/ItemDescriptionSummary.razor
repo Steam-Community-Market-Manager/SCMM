@@ -129,14 +129,14 @@
 
 @code {
 
-        [Parameter]
-        public bool Highlighted { get; set; }
+    [Parameter]
+    public bool Highlighted { get; set; }
 
-        [Parameter]
-        public bool Dense { get; set; }
+    [Parameter]
+    public bool Dense { get; set; }
 
-        [Parameter]
-        public IItemDescription Item { get; set; }
+    [Parameter]
+    public IItemDescription Item { get; set; }
 
     private ICanBePurchased PurchasableItem => (Item as ICanBePurchased);
 

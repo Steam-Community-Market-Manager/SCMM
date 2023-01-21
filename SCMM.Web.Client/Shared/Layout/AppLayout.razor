@@ -28,12 +28,18 @@
         <AppNavigationMenu />
     </MudDrawer>
     <MudMainContent Style="height:100vh; overflow-y:scroll; overflow-x:hidden;">
-        @if (!String.IsNullOrEmpty(SiteAlert))
+        @if (State.SystemStatus?.Alerts != null)
         {
-            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="fas fa-fw fa-magnifying-glass-chart" Dense="true" Square="true" Class=""
-                      ShowCloseIcon="true" CloseIcon="fa fa-fw fa-times" CloseIconClicked="@(() => { SiteAlert = null; StateHasChanged(); })">
-                <span>@SiteAlert</span>
-            </MudAlert>
+            foreach (var systemAlert in State.SystemStatus.Alerts)
+            {
+                @if (systemAlert.IsVisible)
+                {
+                    <MudAlert Severity="Enum.Parse<Severity>(systemAlert.Severity.ToString())" Variant="Variant.Filled" Icon="fas fa-fw fa-magnifying-glass-chart" Dense="true" Square="true"
+                              ShowCloseIcon="@(!systemAlert.IsPersistent)" CloseIcon="fa fa-fw fa-times" CloseIconClicked="@(() => { systemAlert.IsVisible = false; StateHasChanged(); })">
+                        <span>@systemAlert.Message</span>
+                    </MudAlert>
+                }
+            }
         }
         @Body
         <AppContentFooter />
@@ -42,8 +48,6 @@
 
 @code
 {
-    private string SiteAlert { get; set; }
-
     private bool DrawerIsOpen { get; set; } = false;
 
     private DrawerVariant DrawerVariant { get; set; } = DrawerVariant.Responsive;
@@ -53,7 +57,6 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        //SiteAlert = "Steam is heavily rate limiting our servers. Market data is taking longer to update than normal. Please be patient as we work through a solution. Sorry for the inconvenience.";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

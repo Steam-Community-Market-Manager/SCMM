@@ -1,4 +1,4 @@
-﻿namespace SCMM.Webshare.Proxy.Client
+﻿namespace SCMM.Webshare.Client
 {
     public class WebshareConfiguration
     {

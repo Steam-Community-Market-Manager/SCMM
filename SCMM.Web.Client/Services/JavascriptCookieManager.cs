@@ -1,12 +1,13 @@
 ﻿using Microsoft.JSInterop;
+using SCMM.Web.Data.Models.Services;
 
-namespace SCMM.Web.Client.Shared.Storage;
+namespace SCMM.Web.Client.Services;
 
-public class CookieManager : ICookieManager
+public class JavascriptCookieManager : ICookieManager
 {
     private readonly IJSRuntime _jsRuntime;
 
-    public CookieManager(IJSRuntime jsRuntime)
+    public JavascriptCookieManager(IJSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
     }
@@ -22,7 +23,7 @@ public class CookieManager : ICookieManager
         try
         {
             // TODO: Change this to sync if/when Blazor supports it
-            return (await _jsRuntime.InvokeAsync<T>("CookieInterop.getCookie", name)) ?? defaultValue;
+            return await _jsRuntime.InvokeAsync<T>("CookieInterop.getCookie", name) ?? defaultValue;
         }
         catch
         {

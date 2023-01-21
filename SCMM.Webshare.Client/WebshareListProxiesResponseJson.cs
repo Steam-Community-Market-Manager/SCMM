@@ -1,7 +1,6 @@
-﻿using SCMM.Webshare.Proxy.Client;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace SCMM.Fixer.Client
+namespace SCMM.Webshare.Client
 {
     public class WebshareListProxiesResponseJson
     {

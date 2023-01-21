@@ -1,8 +1,7 @@
-﻿using SCMM.Fixer.Client;
-using SCMM.Shared.Abstractions.WebProxies;
+﻿using SCMM.Shared.Abstractions.WebProxies;
 using System.Text.Json;
 
-namespace SCMM.Webshare.Proxy.Client
+namespace SCMM.Webshare.Client
 {
     public class WebshareWebClient : Shared.Client.WebClient, IWebProxyManagementService
     {
@@ -16,14 +15,14 @@ namespace SCMM.Webshare.Proxy.Client
             _configuration = configuration;
         }
 
-        public async Task<IEnumerable<IWebProxyDetails>> ListWebProxies()
+        public async Task<IEnumerable<IWebProxyDetails>> ListWebProxiesAsync()
         {
             using (var client = BuildWebShareClient())
             {
                 var results = new List<IWebProxyDetails>();
                 var url = $"{BaseUri}/v2/proxy/list/?mode=direct&page={1}&page_size={MaxPageSize}";
-                
-                while(url != null)
+
+                while (url != null)
                 {
                     var response = await client.GetAsync(url);
                     response.EnsureSuccessStatusCode();
@@ -35,7 +34,7 @@ namespace SCMM.Webshare.Proxy.Client
                         results.AddRange(responseJson.Results);
                     }
 
-                    url = !String.IsNullOrEmpty(responseJson.Next)
+                    url = !string.IsNullOrEmpty(responseJson.Next)
                         ? responseJson.Next
                         : null;
                 }

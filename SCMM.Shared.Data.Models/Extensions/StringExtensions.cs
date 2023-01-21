@@ -40,6 +40,17 @@ namespace SCMM.Shared.Data.Models.Extensions
             return value;
         }
 
+        public static string IsoCountryCodeToFlagEmoji(this string value)
+        {
+            if (String.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+            return string.Concat(
+                value.ToUpper().Trim().Select(x => char.ConvertFromUtf32(x + 0x1F1A5))
+            );
+        }
+
         public static string FirstCharToUpper(this string value)
         {
             if (String.IsNullOrEmpty(value))
@@ -98,6 +109,17 @@ namespace SCMM.Shared.Data.Models.Extensions
                 }
             }
             return value;
+        }
+
+        public static string MaskIpAddress(this string value)
+        {
+            if (String.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            var parts = value.Split('.', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return $"{parts.FirstOrDefault()}.{parts.Skip(1).FirstOrDefault()}.***.***";
         }
 
         public static T As<T>(this string value)
