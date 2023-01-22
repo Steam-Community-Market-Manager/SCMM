@@ -112,27 +112,32 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 messageLimit: 10
             );
 
-            var latestSystemChanges = messages.Select(m => new TextMessage()
-            {
-                Id = m.Id,
-                AuthorId = m.AuthorId,
-                // Remove all Discord mentions/channels/users tags from the message content
-                Content = Regex.Replace(m.Content, @"<[@&#]*[0-9]+>", String.Empty, RegexOptions.IgnoreCase).Trim().FirstCharToUpper(),
-                Attachments = m.Attachments?.Select(a => new MessageAttachment()
+            var latestSystemChanges = messages
+                .Where(x => !String.IsNullOrEmpty(x.Content))
+                .Select(m => new TextMessage()
                 {
-                    Id = a.Id,
-                    Url = a.Url,
-                    FileName = a.FileName,
-                    ContentType = a.ContentType,
-                    Description = a.Description
-                })?.ToArray(),
-                Timestamp = m.Timestamp
-            });
+                    Id = m.Id,
+                    AuthorId = m.AuthorId,
+                    // Remove all Discord mentions/channels/users tags from the message content
+                    Content = Regex.Replace(m.Content, @"<[@&#]*[0-9]+>", String.Empty, RegexOptions.IgnoreCase).Trim().FirstCharToUpper(),
+                    Attachments = m.Attachments?.Select(a => new MessageAttachment()
+                    {
+                        Id = a.Id,
+                        Url = a.Url,
+                        FileName = a.FileName,
+                        ContentType = a.ContentType,
+                        Description = a.Description
+                    })?.ToArray(),
+                    Timestamp = m.Timestamp
+                });
 
-            await _cache.SetJsonAsync(
-                SCMM.Steam.Data.Models.Constants.LatestSystemUpdatesCacheKey,
-                latestSystemChanges.ToArray()
-            );
+            if (latestSystemChanges.Any())
+            {
+                await _cache.SetJsonAsync(
+                    SCMM.Steam.Data.Models.Constants.LatestSystemUpdatesCacheKey,
+                    latestSystemChanges.ToArray()
+                );
+            }
         }
     }
 
