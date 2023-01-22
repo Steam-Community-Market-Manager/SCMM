@@ -1,6 +1,4 @@
-﻿using SCMM.Shared.Data.Models.Extensions;
-
-namespace SCMM.Web.Data.Models.UI.System;
+﻿namespace SCMM.Web.Data.Models.UI.System;
 
 public class SystemStatusDTO
 {
@@ -15,8 +13,7 @@ public class SystemStatusDTO
         get
         {
             if (
-                Alerts?.Any(x => x.Severity >= SystemStatusAlertSeverity.Error) == true ||
-                (WebProxies?.Count(x => x.Status >= SystemStatusSeverity.Degraded) ?? 0).ToPercentage(WebProxies?.Count() ?? 0) >= 90 // 90% or more
+                Alerts?.Any(x => x.Severity >= SystemStatusAlertSeverity.Error) == true
             )
             {
                 return SystemStatusSeverity.Critical;
@@ -25,8 +22,7 @@ public class SystemStatusDTO
                 Alerts?.Any(x => x.Severity >= SystemStatusAlertSeverity.Warning) == true ||
                 SteamApp?.AssetDescriptionsUpdates?.IsOnTarget == false ||
                 SteamApp?.MarketOrderUpdates?.IsOnTarget == false ||
-                SteamApp?.MarketSaleUpdates?.IsOnTarget == false ||
-                (WebProxies?.Count(x => x.Status >= SystemStatusSeverity.Degraded) ?? 0).ToPercentage(WebProxies?.Count() ?? 0) >= 60 // 60% or more
+                SteamApp?.MarketSaleUpdates?.IsOnTarget == false
             )
             {
                 return SystemStatusSeverity.Degraded;

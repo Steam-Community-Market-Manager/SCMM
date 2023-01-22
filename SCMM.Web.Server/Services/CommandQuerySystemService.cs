@@ -14,11 +14,12 @@ public class CommandQuerySystemService : ISystemService
         _queryProcessor = queryProcessor;
     }
 
-    public async Task<SystemStatusDTO> GetSystemStatusAsync(ulong appId)
+    public async Task<SystemStatusDTO> GetSystemStatusAsync(ulong appId, bool includeWebProxiesStatus = false)
     {
         var systemStatus = await _queryProcessor.ProcessAsync(new GetSystemStatusRequest()
         {
-            AppId = appId
+            AppId = appId,
+            IncludeWebProxies = includeWebProxiesStatus
         });
 
         return systemStatus?.Status;

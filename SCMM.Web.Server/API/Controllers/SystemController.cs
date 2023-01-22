@@ -28,8 +28,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get system status
         /// </summary>
-        /// <returns>The system status for the current app</returns>
-        /// <response code="200">The system status for the current app.</response>
+        /// <param name="appId">The app to check the status of</param>
+        /// <param name="includeWebProxiesStatus">If true, status details for web proxies will be included</param>
+        /// <returns>The system status for the requested app</returns>
+        /// <response code="200">The system status for the requested app.</response>
         /// <response code="404">If the system status is not currently available.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -37,11 +39,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(SystemStatusDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSystemStatus([FromQuery] ulong? appId = null)
+        public async Task<IActionResult> GetSystemStatus([FromQuery] ulong? appId = null, [FromQuery] bool includeWebProxiesStatus = false)
         {
             var systemStatus = await _queryProcessor.ProcessAsync(new GetSystemStatusRequest()
             {
-                AppId = appId ?? this.App().Id
+                AppId = appId ?? this.App().Id,
+                IncludeWebProxies = true
             });
             if (systemStatus?.Status == null)
             {

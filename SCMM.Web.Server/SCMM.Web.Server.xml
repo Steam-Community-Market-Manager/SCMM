@@ -725,12 +725,14 @@
             <response code="400">If the current app does not support store rotations.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetSystemStatus(System.Nullable{System.UInt64})">
+        <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetSystemStatus(System.Nullable{System.UInt64},System.Boolean)">
             <summary>
             Get system status
             </summary>
-            <returns>The system status for the current app</returns>
-            <response code="200">The system status for the current app.</response>
+            <param name="appId">The app to check the status of</param>
+            <param name="includeWebProxiesStatus">If true, status details for web proxies will be included</param>
+            <returns>The system status for the requested app</returns>
+            <response code="200">The system status for the requested app.</response>
             <response code="404">If the system status is not currently available.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>

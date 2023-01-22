@@ -1,4 +1,5 @@
 ﻿@page "/system"
+@inherits PersistentComponent
 @inject ILogger<SystemPage> Logger
 @inject ISnackbar Snackbar
 @inject ISystemService SystemService
@@ -304,13 +305,27 @@
 
     private SystemStatusDTO SystemStatus { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnLoadStateAsync()
     {
-        SystemStatus = State.SystemStatus;
-        if (SystemStatus == null)
+        SystemStatus = await RestoreFromStateOrLoad(nameof(SystemStatus), async () =>
         {
-            await RefreshSystemStatusAsync();
-        }
+            try
+            {
+                return await SystemService.GetSystemStatusAsync(State.AppId, includeWebProxiesStatus: true);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading system status");
+                Snackbar.Add($"Unable to loading system status. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(SystemStatus), SystemStatus);
+        return Task.CompletedTask;
     }
 
     public async Task RefreshSystemStatusAsync()
@@ -320,7 +335,7 @@
             SystemStatus = null;
             StateHasChanged();
 
-            SystemStatus = await SystemService.GetSystemStatusAsync(State.AppId);
+            SystemStatus = await SystemService.GetSystemStatusAsync(State.AppId, includeWebProxiesStatus: true);
             if (SystemStatus != null)
             {
                 State.SystemStatus = SystemStatus;

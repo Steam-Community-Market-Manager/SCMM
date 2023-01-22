@@ -12,6 +12,8 @@ namespace SCMM.Web.Server.Queries
     public class GetSystemStatusRequest : IQuery<GetSystemStatusResponse>
     {
         public ulong AppId { get; set; }
+
+        public bool IncludeWebProxies { get; set; } = false;
     }
 
     public class GetSystemStatusResponse
@@ -92,12 +94,16 @@ namespace SCMM.Web.Server.Queries
                 steamApp.MarketSaleUpdates.TargetDelta = TimeSpan.FromHours(3);
             }
 
-            var webProxies = _mapper.Map<IEnumerable<WebProxyStatistic>, IEnumerable<SystemStatusWebProxyDTO>>(
-                (await _statisticsService.GetDictionaryAsync<string, WebProxyStatistic>(StatisticKeys.WebProxies) ?? new Dictionary<string, WebProxyStatistic>())
-                    .Select(x => x.Value)
-                    .OrderByDescending(x => x.LastAccessedOn)
-                    .ToArray()
-            );
+            var webProxies = (IEnumerable<SystemStatusWebProxyDTO>)null;
+            if (request.IncludeWebProxies)
+            {
+                webProxies = _mapper.Map<IEnumerable<WebProxyStatistic>, IEnumerable<SystemStatusWebProxyDTO>>(
+                    (await _statisticsService.GetDictionaryAsync<string, WebProxyStatistic>(StatisticKeys.WebProxies) ?? new Dictionary<string, WebProxyStatistic>())
+                        .Select(x => x.Value)
+                        .OrderByDescending(x => x.LastAccessedOn)
+                        .ToArray()
+                );
+            }
 
             return new GetSystemStatusResponse()
             {
