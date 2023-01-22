@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using System.Net;
 
 namespace SCMM.Shared.Client;
@@ -7,9 +9,10 @@ namespace SCMM.Shared.Client;
 public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByHost
 {
     private readonly ILogger<RotatingWebProxy> _logger;
+    private readonly IStatisticsService _statisticsService;
     private WebProxyWithCooldown[] _proxies;
 
-    public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IEnumerable<WebProxyEndpoint> webProxyEndpoints)
+    public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IEnumerable<WebProxyEndpoint> webProxyEndpoints, IStatisticsService statisticsService)
     {
         var proxies = new List<WebProxyWithCooldown>();
         if (webProxyEndpoints != null)
@@ -33,6 +36,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         }
 
         _logger = logger;
+        _statisticsService = statisticsService;
         _proxies = proxies.ToArray();
     }
 
@@ -56,6 +60,26 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         return proxy;
     }
 
+    public void UpdateRequestStatistics(Uri address, HttpStatusCode responseStatusCode)
+    {
+        var proxy = GetNextAvailableProxy(address);
+        if (proxy != null)
+        {
+            UpdateProxyStatistics(proxy, (value) =>
+            {
+                value.LastUsedOn = DateTimeOffset.Now;
+                if (responseStatusCode >= HttpStatusCode.OK && responseStatusCode < HttpStatusCode.Ambiguous)
+                {
+                    value.RequestSuccessCount++;
+                }
+                else
+                {
+                    value.RequestFailCount++;
+                }
+            });
+        }
+    }
+
     public void RotateProxy(Uri address, TimeSpan cooldown)
     {
         var proxy = GetNextAvailableProxy(address);
@@ -63,7 +87,14 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         {
             proxy.IncrementHostCooldown(address, cooldown);
             var newProxy = GetNextAvailableProxy(address);
+            
             _logger.LogWarning($"'{address?.Host}' has entered a {cooldown.TotalSeconds}s cooldown on '{proxy?.Address?.Host ?? "default"}' proxy. Requests will now rotate to '{newProxy?.Address?.Host ?? "default"}' proxy.");
+
+            UpdateProxyStatistics(proxy, (value) =>
+            {
+                value.DomainRateLimits ??= new Dictionary<string, DateTimeOffset>();
+                value.DomainRateLimits[address.Host] = proxy.GetHostCooldown(address);
+            });
         }
     }
 
@@ -74,7 +105,22 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         {
             proxy.IsEnabled = false;
             _logger.LogWarning($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled.");
+
+            UpdateProxyStatistics(proxy, (value) =>
+            {
+                value.IsAvailable = false;
+            });
         }
+    }
+
+    private void UpdateProxyStatistics(WebProxyWithCooldown proxy, Action<WebProxyStatistic> updateAction)
+    {
+        // Update statistics in the background
+        _ = _statisticsService.UpdateDictionaryValueAsync<string, WebProxyStatistic>(
+            StatisticKeys.WebProxies,
+            $"{proxy.Address.Host}:{proxy.Address.Port}",
+            updateAction
+        );
     }
 
     Uri IWebProxy.GetProxy(Uri destination)

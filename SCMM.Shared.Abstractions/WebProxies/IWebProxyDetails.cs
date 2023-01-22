@@ -2,6 +2,8 @@
 
 public interface IWebProxyDetails
 {
+    public string Source { get; }
+
     string Id { get; }
 
     string Address { get; }
@@ -19,6 +21,4 @@ public interface IWebProxyDetails
     bool IsAvailable { get; }
 
     DateTimeOffset LastCheckedOn { get; }
-
-    IDictionary<string, DateTimeOffset> DomainRateLimits { get; }
 }

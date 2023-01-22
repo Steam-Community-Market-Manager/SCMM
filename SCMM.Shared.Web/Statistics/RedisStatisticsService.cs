@@ -77,6 +77,20 @@ public class RedisStatisticsService : IStatisticsService
         return results;
     }
 
+    public async Task<TValue> GetDictionaryValueAsync<TKey, TValue>(string key, TKey field)
+    {
+        var entry = await _redis.HashGetAsync(
+            new RedisKey(String.Format(KeyFormat, key)),
+            new RedisValue(JsonSerializer.Serialize(field))
+        );
+        if (!entry.HasValue)
+        {
+            return default(TValue);
+        }
+
+        return JsonSerializer.Deserialize<TValue>(entry.ToString());
+    }
+
     public async Task SetAsync<T>(string key, T value)
     {
         await _redis.StringSetAsync(
@@ -124,5 +138,29 @@ public class RedisStatisticsService : IStatisticsService
             new RedisKey(String.Format(KeyFormat, key)),
             entries.ToArray()
         );
+    }
+
+    public async Task SetDictionaryValueAsync<TKey, TValue>(string key, TKey field, TValue value)
+    {
+        await _redis.HashSetAsync(
+            new RedisKey(String.Format(KeyFormat, key)),
+            new HashEntry[]
+            {
+                new HashEntry(
+                    new RedisValue(JsonSerializer.Serialize(field)),
+                    new RedisValue(JsonSerializer.Serialize(value))
+                )
+            }
+        );
+    }
+
+    public async Task UpdateDictionaryValueAsync<TKey, TValue>(string key, TKey field, Action<TValue> updateValue)
+    {
+        var value = await GetDictionaryValueAsync<TKey, TValue>(key, field);
+        if (!Object.Equals(value, default(TValue)))
+        {
+            updateValue.Invoke(value);
+            await SetDictionaryValueAsync<TKey, TValue>(key, field, value);
+        }
     }
 }

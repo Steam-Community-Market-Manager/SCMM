@@ -5,6 +5,8 @@ namespace SCMM.Webshare.Client;
 
 public class WebshareProxyDetails : IWebProxyDetails
 {
+    public string Source => "proxy.webshare.io";
+
     [JsonPropertyName("id")]
     public string Id { get; set; }
 
@@ -34,6 +36,4 @@ public class WebshareProxyDetails : IWebProxyDetails
 
     [JsonPropertyName("created_at")]
     public DateTimeOffset CreatedOn { get; set; }
-
-    public IDictionary<string, DateTimeOffset> DomainRateLimits { get; set; }
 }

@@ -32,6 +32,7 @@ using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Media;
 using SCMM.Shared.Abstractions.Statistics;
+using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
 using SCMM.Shared.Client.Configuration;
@@ -42,6 +43,8 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
+using SCMM.Webshare.Client;
+using SCMM.Webshare.Client.Extensions;
 using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
@@ -145,6 +148,12 @@ public static class HostExtensions
             }
 
             // Web proxies
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetWebshareConfiguration();
+            });
+            services.AddSingleton<IWebProxyManagementService, WebshareWebClient>();
             services.AddSingleton<IWebProxy, RotatingWebProxy>();
             services.AddSingleton((services) =>
             {

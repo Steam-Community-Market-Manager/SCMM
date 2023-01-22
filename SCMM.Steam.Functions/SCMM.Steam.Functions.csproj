@@ -48,6 +48,7 @@
 		<ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />
 		<ProjectReference Include="..\SCMM.SteamCMD\SCMM.SteamCMD.csproj" />
+		<ProjectReference Include="..\SCMM.Webshare.Client\SCMM.Webshare.Client.csproj" />
 	</ItemGroup>
 	
 	<ItemGroup>

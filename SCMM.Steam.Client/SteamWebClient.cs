@@ -108,10 +108,21 @@ namespace SCMM.Steam.Client
                 }
 
                 // Zhu Li, do the thing...
-                return await Get(request);
+                var response = await Get(request);
+                if (response != null)
+                {
+                    UpdateRequestStatistics(request?.Uri, response.StatusCode);
+                }
+
+                return response;
             }
             catch (SteamRequestException ex)
             {
+                if (ex.StatusCode != null)
+                {
+                    UpdateRequestStatistics(request?.Uri, ex.StatusCode.Value);
+                }
+
                 // Check if the content has not been modified since the last request
                 // 304: Not Modified
                 if (ex.IsNotModified)
@@ -143,7 +154,7 @@ namespace SCMM.Steam.Client
                 }
 
                 // Check if the request failed due to missing proxy authentication
-                // 429: TooManyRequests
+                // 407: ProxyAuthenticationRequired
                 if (ex.IsProxyAuthenticationRequired)
                 {
                     // Disable the current web proxy and rotate to the next proxy if possible

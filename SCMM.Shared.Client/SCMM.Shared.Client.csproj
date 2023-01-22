@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	<ProjectReference Include="..\SCMM.Shared.Abstractions\SCMM.Shared.Abstractions.csproj" />
 	<ProjectReference Include="..\SCMM.Shared.Data.Models\SCMM.Shared.Data.Models.csproj" />
   </ItemGroup>
 

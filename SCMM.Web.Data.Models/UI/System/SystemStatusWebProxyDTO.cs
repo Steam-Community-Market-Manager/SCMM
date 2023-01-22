@@ -16,5 +16,32 @@ public class SystemStatusWebProxyDTO
 
     public DateTimeOffset LastCheckedOn { get; set; }
 
+    public DateTimeOffset? LastUsedOn { get; set; }
+
+    public int RequestSuccessCount { get; set; }
+
+    public int RequestFailCount { get; set; }
+
     public IDictionary<string, DateTimeOffset> DomainRateLimits { get; set; }
+
+    public SystemStatusSeverity Status
+    {
+        get
+        {
+            var now = DateTimeOffset.Now;
+            if (!IsAvailable)
+            {
+                return SystemStatusSeverity.Critical;
+            }
+            else if (DomainRateLimits.Any(x => x.Value > now))
+            {
+                return SystemStatusSeverity.Degraded;
+            }
+            else
+            {
+                return SystemStatusSeverity.Normal;
+            }
+        }
+    }
+
 }

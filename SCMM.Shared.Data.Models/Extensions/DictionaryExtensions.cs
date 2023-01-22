@@ -14,5 +14,14 @@
                 return defaultValue;
             }
         }
+
+        public static void RemoveAll<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<KeyValuePair<TKey, TValue>> match)
+        {
+            var toBeRemoved = dictionary.Where(x => match.Invoke(x)).ToArray();
+            foreach (var item in toBeRemoved)
+            {
+                dictionary.Remove(item);
+            }
+        }
     }
 }

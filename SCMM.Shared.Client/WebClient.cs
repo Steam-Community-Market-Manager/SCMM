@@ -115,6 +115,11 @@ public class WebClient : IDisposable
         return httpClient;
     }
 
+    public void UpdateRequestStatistics(Uri address, HttpStatusCode responseStatusCode)
+    {
+        (_webProxy as IRotatingWebProxy)?.UpdateRequestStatistics(address, responseStatusCode);
+    }
+
     public void RotateWebProxy(Uri address, TimeSpan cooldown)
     {
         (_webProxy as IRotatingWebProxy)?.RotateProxy(address, cooldown);

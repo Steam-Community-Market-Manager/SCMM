@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using SCMM.Shared.Abstractions.WebProxies;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.System;
+using SCMM.Web.Server.Extensions;
 
 namespace SCMM.Web.Server.Queries
 {
@@ -22,15 +23,13 @@ namespace SCMM.Web.Server.Queries
     public class GetSystemStatus : IQueryHandler<GetSystemStatusRequest, GetSystemStatusResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly IDistributedCache _cache;
-        private readonly IWebProxyManagementService _webProxies;
+        private readonly IStatisticsService _statisticsService;
         private readonly IMapper _mapper;
 
-        public GetSystemStatus(SteamDbContext db, IDistributedCache cache, IWebProxyManagementService webProxies, IMapper mapper)
+        public GetSystemStatus(SteamDbContext db, IStatisticsService statisticsService, IMapper mapper)
         {
             _db = db;
-            _cache = cache;
-            _webProxies = webProxies;
+            _statisticsService = statisticsService;
             _mapper = mapper;
         }
 
@@ -89,13 +88,15 @@ namespace SCMM.Web.Server.Queries
             {
                 // TODO: Make these configurable
                 steamApp.AssetDescriptionsUpdates.TargetDelta = TimeSpan.FromHours(24);
-                steamApp.MarketOrderUpdates.TargetDelta = TimeSpan.FromHours(1);
-                steamApp.MarketSaleUpdates.TargetDelta = TimeSpan.FromHours(1);
+                steamApp.MarketOrderUpdates.TargetDelta = TimeSpan.FromHours(3);
+                steamApp.MarketSaleUpdates.TargetDelta = TimeSpan.FromHours(3);
             }
 
-            // TODO: Cache these
-            var webProxies = _mapper.Map<IEnumerable<IWebProxyDetails>, IEnumerable<SystemStatusWebProxyDTO>>(
-                await _webProxies.ListWebProxiesAsync()
+            var webProxies = _mapper.Map<IEnumerable<WebProxyStatistic>, IEnumerable<SystemStatusWebProxyDTO>>(
+                (await _statisticsService.GetDictionaryAsync<string, WebProxyStatistic>(StatisticKeys.WebProxies) ?? new Dictionary<string, WebProxyStatistic>())
+                    .Select(x => x.Value)
+                    .OrderByDescending(x => x.LastUsedOn)
+                    .ToArray()
             );
 
             return new GetSystemStatusResponse()
