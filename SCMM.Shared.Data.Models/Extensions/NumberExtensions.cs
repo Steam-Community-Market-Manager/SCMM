@@ -1,4 +1,7 @@
-﻿namespace SCMM.Shared.Data.Models.Extensions
+﻿using System;
+using System.Net;
+
+namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class NumberExtensions
     {
@@ -68,6 +71,20 @@
             return $"{movement.ToString($"#,##0{(decimals > 0 ? "." : string.Empty)}{string.Empty.PadRight(decimals, '0')}")}%".Trim();
         }
 
+        public static decimal ToPercentage(this int value, int max, int decimals = 0)
+        {
+            return ToPercentage((long)value, (long)max, decimals: decimals);
+        }
+
+        public static decimal ToPercentage(this long value, long max, int decimals = 0)
+        {
+            if (value == 0 || max == 0)
+            {
+                return 0;
+            }
+            return Math.Round((decimal)value / max * 100, decimals);
+        }
+
         public static string ToPercentageString(this int value, int max, int decimals = 0, bool dense = false)
         {
             return ToPercentageString((long)value, (long)max, decimals: decimals, dense: dense);
@@ -79,7 +96,7 @@
             {
                 return null;
             }
-            var percentage = Math.Round((decimal)value / max * 100, decimals);
+            var percentage = value.ToPercentage(max, decimals);
             var percentageString = percentage.ToString($"#,##0{(decimals > 0 ? "." : string.Empty)}{string.Empty.PadRight(decimals, '0')}");
             return ($"{percentageString}{(!dense ? "%" : null)}").Trim();
         }
