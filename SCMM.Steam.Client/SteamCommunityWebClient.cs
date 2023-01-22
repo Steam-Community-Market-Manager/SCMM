@@ -21,15 +21,6 @@ namespace SCMM.Steam.Client
         {
         }
 
-        #region Profile
-
-        public async Task<SteamProfileXmlResponse> GetProfileById(SteamProfileByIdPageRequest request, bool useCache = true)
-        {
-            return await GetXml<SteamProfileByIdPageRequest, SteamProfileXmlResponse>(request, useCache);
-        }
-
-        #endregion
-
         #region Item Store
 
         public async Task<XElement> GetStorePage(SteamItemStorePageRequest request, bool useCache = false)
@@ -75,6 +66,15 @@ namespace SCMM.Steam.Client
             DefaultHeaders.Add("X-Requested-With", "XMLHttpRequest");
         }
 
+        #region Profile
+
+        public async Task<SteamProfileXmlResponse> GetProfileById(SteamProfileByIdPageRequest request, bool useCache = true)
+        {
+            return await GetXml<SteamProfileByIdPageRequest, SteamProfileXmlResponse>(request, useCache);
+        }
+
+        #endregion
+
         #region Inventory
 
         public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request, bool useCache = true)
@@ -99,12 +99,10 @@ namespace SCMM.Steam.Client
 
         #region Market
 
-        /*
         public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request, bool useCache = false)
         {
             return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request, useCache);
         }
-        */
 
         public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request, string appId, string marketNameHash, bool useCache = false)
         {
