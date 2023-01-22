@@ -93,16 +93,16 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                // Retry up to 5 times, then give up
-                if (retryAttempt >= 5)
+                // Retry up to 30 times, then give up
+                if (retryAttempt >= 30)
                 {
                     throw new SteamRequestException($"Request failed after {retryAttempt} attempts");
                 }
 
-                // Use a back-off delay between retry attempts to avoid further rate-limiting
+                // Use a small delay between retry attempts to avoid further rate-limiting
                 if (retryAttempt > 1)
                 {
-                    var delay = TimeSpan.FromSeconds(Math.Pow(3, retryAttempt));
+                    var delay = TimeSpan.FromSeconds(1);
                     _logger.LogWarning($"Request is delaying for {delay.TotalSeconds} seconds (retry attempt: {retryAttempt})");
                     await Task.Delay(delay);
                 }
@@ -148,7 +148,7 @@ namespace SCMM.Steam.Client
                     // Steam web API terms of use (https://steamcommunity.com/dev/apiterms)
                     //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
                     // Steam community web site rate-limits observed from personal testing:
-                    //  - You are limited to 20 requests within 20 seconds, which resets after 60 seconds.
+                    //  - You are limited to 25 requests within 30 seconds, which resets after ???.
                     RotateWebProxy(request?.Uri, cooldown: TimeSpan.FromMinutes(60));
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
