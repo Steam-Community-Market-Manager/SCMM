@@ -16,7 +16,7 @@ public class SystemStatusDTO
         {
             if (
                 Alerts?.Any(x => x.Severity >= SystemStatusAlertSeverity.Error) == true ||
-                (WebProxies?.Count(x => x.Status >= SystemStatusSeverity.Degraded) ?? 0).ToPercentage(WebProxies?.Count() ?? 0) >= 0.9m // 90% or more
+                (WebProxies?.Count(x => x.Status >= SystemStatusSeverity.Degraded) ?? 0).ToPercentage(WebProxies?.Count() ?? 0) >= 90 // 90% or more
             )
             {
                 return SystemStatusSeverity.Critical;
@@ -26,7 +26,7 @@ public class SystemStatusDTO
                 SteamApp?.AssetDescriptionsUpdates?.IsOnTarget == false ||
                 SteamApp?.MarketOrderUpdates?.IsOnTarget == false ||
                 SteamApp?.MarketSaleUpdates?.IsOnTarget == false ||
-                (WebProxies?.Count(x => x.Status >= SystemStatusSeverity.Degraded) ?? 0).ToPercentage(WebProxies?.Count() ?? 0) >= 0.6m // 60% or more
+                (WebProxies?.Count(x => x.Status >= SystemStatusSeverity.Degraded) ?? 0).ToPercentage(WebProxies?.Count() ?? 0) >= 60 // 60% or more
             )
             {
                 return SystemStatusSeverity.Degraded;
