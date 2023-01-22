@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
+﻿
 namespace SCMM.Shared.Data.Models.Statistics
 {
     public class WebProxyStatistic
@@ -20,11 +19,11 @@ namespace SCMM.Shared.Data.Models.Statistics
 
         public DateTimeOffset? LastCheckedOn { get; set; }
 
-        public DateTimeOffset? LastUsedOn { get; set; }
+        public DateTimeOffset? LastAccessedOn { get; set; }
 
-        public int RequestSuccessCount { get; set; }
+        public int RequestsSucceededCount { get; set; }
 
-        public int RequestFailCount { get; set; }
+        public int RequestsFailedCount { get; set; }
 
         public IDictionary<string, DateTimeOffset> DomainRateLimits { get; set; }
     }

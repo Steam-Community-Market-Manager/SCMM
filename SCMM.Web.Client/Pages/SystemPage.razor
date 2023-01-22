@@ -221,9 +221,9 @@
                                             <span><small>(@webProxy.Address)</small></span>
                                         </td>
                                         <td>
-                                            @if (webProxy.LastUsedOn != null)
+                                            @if (webProxy.LastAccessedOn != null)
                                             {
-                                                <span>@((now - webProxy.LastUsedOn.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                <span>@((now - webProxy.LastAccessedOn.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                             }
                                             else
                                             {
@@ -231,8 +231,8 @@
                                             }
                                         </td>
                                         <td>
-                                            <span>@webProxy.RequestSuccessCount.ToQuantityString() <span class="mud-secondary-text">hits</span></span><br/>
-                                            <span>@webProxy.RequestFailCount.ToQuantityString() <span class="mud-secondary-text">misses</span></span>
+                                            <span>@webProxy.RequestsSucceededCount.ToQuantityString() <span class="mud-secondary-text">hits</span></span><br/>
+                                            <span>@webProxy.RequestsFailedCount.ToQuantityString() <span class="mud-secondary-text">misses</span></span>
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.inherit" Color="@(webProxy.DomainRateLimits?.Any(x => x.Value > now) == true ? Color.Warning : Color.Success)">

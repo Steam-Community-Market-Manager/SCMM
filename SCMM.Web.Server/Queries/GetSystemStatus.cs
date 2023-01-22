@@ -6,7 +6,6 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.System;
-using SCMM.Web.Server.Extensions;
 
 namespace SCMM.Web.Server.Queries
 {
@@ -37,6 +36,7 @@ namespace SCMM.Web.Server.Queries
         {
             // TODO: Make these configurable
             var alerts = new List<SystemStatusAlertDTO>();
+
             /*
             alerts.Add(
                 new SystemStatusAlertDTO()
@@ -95,7 +95,7 @@ namespace SCMM.Web.Server.Queries
             var webProxies = _mapper.Map<IEnumerable<WebProxyStatistic>, IEnumerable<SystemStatusWebProxyDTO>>(
                 (await _statisticsService.GetDictionaryAsync<string, WebProxyStatistic>(StatisticKeys.WebProxies) ?? new Dictionary<string, WebProxyStatistic>())
                     .Select(x => x.Value)
-                    .OrderByDescending(x => x.LastUsedOn)
+                    .OrderByDescending(x => x.LastAccessedOn)
                     .ToArray()
             );
 

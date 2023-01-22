@@ -67,14 +67,14 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         {
             UpdateProxyStatistics(proxy, (value) =>
             {
-                value.LastUsedOn = DateTimeOffset.Now;
+                value.LastAccessedOn = DateTimeOffset.Now;
                 if (responseStatusCode >= HttpStatusCode.OK && responseStatusCode < HttpStatusCode.Ambiguous)
                 {
-                    value.RequestSuccessCount++;
+                    value.RequestsSucceededCount++;
                 }
                 else
                 {
-                    value.RequestFailCount++;
+                    value.RequestsFailedCount++;
                 }
             });
         }

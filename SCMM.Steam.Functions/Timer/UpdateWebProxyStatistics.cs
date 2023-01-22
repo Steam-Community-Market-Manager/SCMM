@@ -3,8 +3,6 @@ using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
-using SteamWebAPI2.Interfaces;
-using System.Collections;
 
 namespace SCMM.Steam.Functions.Timer;
 
