@@ -1,5 +1,6 @@
 ﻿@page "/help"
 @inject ILogger<HelpPage> Logger
+@inject AppState State
 
 <PageContainer Title="SCMM - Help">
     <MudGrid Spacing="4">
@@ -18,11 +19,11 @@
 
                 <MudItem xs="12">
                     <MudText Typo="Typo.h6" Color="Color.Default">
-                        <span>Rust Communities</span>
+                        <span>@State.App.Name Communities</span>
                     </MudText>
                     <MudDivider />
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
-                        <p>Want to discuss Rust skins and the Steam Community Market with other like minded people? Consider joining these Discord communities.</p>
+                        <p>Want to discuss @State.App.Name skins and the Steam Community Market with other like minded people? Consider joining these Discord communities.</p>
                     </MudText>
                 </MudItem>
                 <MudItem xs="12">
@@ -70,11 +71,11 @@
                 </MudItem>
                 <MudItem xs="12">
                     <MudText Typo="Typo.h6" Color="Color.Default">
-                        <span>Rust Economy</span>
+                        <span>@State.App.Name Economy</span>
                     </MudText>
                     <MudDivider />
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
-                        <p>Want to learn more about the Rust and Steam Community Market economy? Watch these videos.</p>
+                        <p>Want to learn more about the @State.App.Name and Steam Community Market economy? Watch these videos.</p>
                     </MudText>
                     <MudGrid Spacing="2">
                         <MudItem xs="12" md="12" lg="6" xl="4">
