@@ -33,6 +33,11 @@ namespace SCMM.Steam.API.Commands
         /// Optional, removes the need to lookup AssetClassId if supplied
         /// </summary>
         public SteamAssetClass AssetClass { get; set; }
+
+        /// <summary>
+        /// If true, any additional or missing item info will be looked up. If false, only the supplied info will be used.
+        /// </summary>
+        public bool LookupAdditionalItemInfo { get; set; } = true;
     }
 
     public class ImportSteamAssetDescriptionResponse
@@ -72,25 +77,22 @@ namespace SCMM.Steam.API.Commands
 
             // Get asset class info
             var assetClass = (AssetClassInfoModel)null;
-            if (request.AssetClass == null)
+            if (request.AssetClass == null && request.AssetClassId > 0 && request.LookupAdditionalItemInfo)
             {
-                if (request.AssetClassId > 0)
-                {
-                    // We need to fetch it from Steam...
-                    var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
-                    var assetClassInfoResponse = await steamEconomy.GetAssetClassInfoAsync(
-                        (uint)request.AppId,
-                        new List<ulong>()
-                        {
-                        request.AssetClassId
-                        }
-                    );
-                    if (assetClassInfoResponse?.Data?.Success != true)
+                // We need to fetch it from Steam...
+                var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
+                var assetClassInfoResponse = await steamEconomy.GetAssetClassInfoAsync(
+                    (uint)request.AppId,
+                    new List<ulong>()
                     {
-                        throw new Exception($"Failed to get class info for asset {request.AssetClassId}, request failed");
+                    request.AssetClassId
                     }
-                    assetClass = assetClassInfoResponse.Data.AssetClasses.FirstOrDefault(x => x.ClassId == request.AssetClassId);
+                );
+                if (assetClassInfoResponse?.Data?.Success != true)
+                {
+                    throw new Exception($"Failed to get class info for asset {request.AssetClassId}, request failed");
                 }
+                assetClass = assetClassInfoResponse.Data.AssetClasses.FirstOrDefault(x => x.ClassId == request.AssetClassId);
             }
             else
             {
@@ -186,7 +188,7 @@ namespace SCMM.Steam.API.Commands
                 var workshopFileIdGroups = Regex.Match(viewWorkshopAction.Link, Constants.SteamActionViewWorkshopItemRegex).Groups;
                 publishedFileId = (workshopFileIdGroups.Count > 1) ? ulong.Parse(workshopFileIdGroups[1].Value) : 0;
             }
-            if (publishedFileId > 0)
+            if (publishedFileId > 0 && request.LookupAdditionalItemInfo)
             {
                 // Get file details
                 var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
@@ -260,7 +262,7 @@ namespace SCMM.Steam.API.Commands
             );
             var needsDescription = ((!assetClassHasItemDescription && string.IsNullOrEmpty(assetDescription.Description)) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
             var needsNameId = (assetDescription.NameId == null);
-            if (assetIsMarketable && (needsDescription || needsNameId))
+            if (assetIsMarketable && (needsDescription || needsNameId) && request.LookupAdditionalItemInfo)
             {
                 marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
                 {
@@ -272,7 +274,7 @@ namespace SCMM.Steam.API.Commands
             // Get store details from Steam (if item description is missing and it is a recently accepted store item)
             var storeItemPageHtml = (XElement)null;
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
-            if (assetIsRecentlyAccepted && (needsDescription))
+            if (assetIsRecentlyAccepted && needsDescription && request.LookupAdditionalItemInfo)
             {
                 var storeItems = await _communityClient.GetStorePaginated(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
                 {
@@ -316,7 +318,7 @@ namespace SCMM.Steam.API.Commands
             if (!assetDescription.IsTransient)
             {
                 // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
-                if (publishedFileId > 0 && (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl)) && !assetDescription.WorkshopFileIsUnavailable)
+                if (publishedFileId > 0 && (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl)) && !assetDescription.WorkshopFileIsUnavailable && request.LookupAdditionalItemInfo)
                 {
                     var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString());
                     if (app?.IsActive == true)

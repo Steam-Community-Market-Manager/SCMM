@@ -147,7 +147,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                         var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                         {
                             AppId = appId,
-                            AssetClass = item.AssetDescription
+                            AssetClass = item.AssetDescription,
+                            LookupAdditionalItemInfo = false
                         });
 
                         var assetDescription = importedAssetDescription?.AssetDescription;
