@@ -1,5 +1,6 @@
 using Azure.Identity;
 using CommandQuery.DependencyInjection;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -192,8 +193,11 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton<IImageAnalysisService, AzureAiClient>();
 
         builder.Services.AddScoped<SteamWebApiClient>();
+        builder.Services.AddScoped<SteamStoreWebClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
+        builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
         builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
+        builder.Services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
         builder.Services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 

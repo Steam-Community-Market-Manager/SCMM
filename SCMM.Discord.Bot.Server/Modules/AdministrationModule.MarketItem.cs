@@ -189,7 +189,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             var itemCount = (searchResults?.TotalCount.ToString() ?? "???");
             await message.ModifyAsync(
-                x => x.Content = $"Importing market items {itemCount}/{itemCount}"
+                x => x.Content = $"Imported market items {itemCount}/{itemCount}"
             );
 
             return CommandResult.Success();

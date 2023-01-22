@@ -1,6 +1,6 @@
-﻿namespace SCMM.Steam.Data.Models.Community.Requests.Json
+﻿namespace SCMM.Steam.Data.Models.Store.Requests.Json
 {
-    public abstract class SteamPaginatedJsonRequest : SteamRequest
+    public abstract class SteamStorePaginatedJsonRequest : SteamRequest
     {
         public int Start { get; set; }
 

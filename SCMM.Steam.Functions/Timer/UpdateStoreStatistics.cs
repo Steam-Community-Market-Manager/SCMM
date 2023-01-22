@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Store.Requests.Html;
 using SCMM.Steam.Data.Store;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
@@ -18,14 +18,14 @@ public class UpdateStoreStatistics
     private readonly SteamConfiguration _steamConfiguration;
     private readonly SteamDbContext _db;
     private readonly ICommandProcessor _commandProcessor;
-    private readonly SteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamStoreWebClient _steamStoreWebClient;
 
-    public UpdateStoreStatistics(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
+    public UpdateStoreStatistics(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, SteamStoreWebClient steamStoreWebClient)
     {
         _steamConfiguration = steamConfiguration;
         _commandProcessor = commandProcessor;
         _db = db;
-        _steamCommunityWebClient = steamCommunityWebClient;
+        _steamStoreWebClient = steamStoreWebClient;
     }
 
     [Function("Update-Store-Statistics")]
@@ -52,7 +52,7 @@ public class UpdateStoreStatistics
     private async Task UpdateItemStoreTopSellers(ILogger logger, SteamItemStore itemStore)
     {
         logger.LogTrace($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
-        var storePage = await _steamCommunityWebClient.GetStorePage(new SteamItemStorePageRequest()
+        var storePage = await _steamStoreWebClient.GetStorePage(new SteamItemStorePageRequest()
         {
             AppId = itemStore.App.SteamId,
             Start = 0,

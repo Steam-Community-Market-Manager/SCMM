@@ -177,8 +177,11 @@ public static class HostExtensions
             services.AddSingleton<IImageAnalysisService, AzureAiClient>();
 
             services.AddScoped<SteamWebApiClient>();
+            services.AddScoped<SteamStoreWebClient>();
             services.AddScoped<SteamCommunityWebClient>();
+            services.AddScoped<ProxiedSteamStoreWebClient>();
             services.AddScoped<ProxiedSteamCommunityWebClient>();
+            services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
             services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 

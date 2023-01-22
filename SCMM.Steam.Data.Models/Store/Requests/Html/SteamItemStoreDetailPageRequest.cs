@@ -1,4 +1,4 @@
-﻿namespace SCMM.Steam.Data.Models.Community.Requests.Html
+﻿namespace SCMM.Steam.Data.Models.Store.Requests.Html
 {
     public class SteamItemStoreDetailPageRequest : SteamRequest
     {

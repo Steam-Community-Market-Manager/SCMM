@@ -9,7 +9,8 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
-using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Store.Requests.Html;
+using SCMM.Steam.Data.Models.Store.Requests.Json;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
 using SCMM.Steam.Data.Store;
@@ -55,17 +56,19 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _cfg;
         private readonly SteamWebApiClient _apiClient;
         private readonly SteamCommunityWebClient _communityClient;
+        private readonly SteamStoreWebClient _storeClient;
         private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, SteamStoreWebClient storeClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _apiClient = apiClient;
             _communityClient = communityClient;
+            _storeClient = storeClient;
             _serviceBus = serviceBus;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
@@ -276,7 +279,7 @@ namespace SCMM.Steam.API.Commands
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
             if (assetIsRecentlyAccepted && needsDescription && request.LookupAdditionalItemInfo)
             {
-                var storeItems = await _communityClient.GetStorePaginated(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
+                var storeItems = await _storeClient.GetStorePaginated(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
                 {
                     AppId = request.AppId.ToString(),
                     Filter = SteamItemStoreGetItemDefsPaginatedJsonRequest.FilterAll,
@@ -292,7 +295,7 @@ namespace SCMM.Steam.API.Commands
                             ? itemIdMatchGroup[1].Value.Trim()
                             : null;
 
-                        storeItemPageHtml = await _communityClient.GetHtml(new SteamItemStoreDetailPageRequest()
+                        storeItemPageHtml = await _storeClient.GetStoreDetailPage(new SteamItemStoreDetailPageRequest()
                         {
                             AppId = request.AppId.ToString(),
                             ItemId = itemId,

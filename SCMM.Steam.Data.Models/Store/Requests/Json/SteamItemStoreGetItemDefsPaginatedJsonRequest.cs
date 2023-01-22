@@ -1,6 +1,6 @@
-﻿namespace SCMM.Steam.Data.Models.Community.Requests.Json
+﻿namespace SCMM.Steam.Data.Models.Store.Requests.Json
 {
-    public class SteamItemStoreGetItemDefsPaginatedJsonRequest : SteamPaginatedJsonRequest
+    public class SteamItemStoreGetItemDefsPaginatedJsonRequest : SteamStorePaginatedJsonRequest
     {
         public const int MaxPageSize = 100;
 

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SCMM.Steam.Data.Models.Community.Responses.Json
+namespace SCMM.Steam.Data.Models.Store.Responses.Json
 {
     public class SteamItemStoreGetItemDefsPaginatedJsonResponse
     {

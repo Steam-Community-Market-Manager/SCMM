@@ -7,6 +7,7 @@ using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Store.Requests.Html;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;

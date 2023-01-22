@@ -6,40 +6,26 @@ using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
 using System.Net;
-using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
 {
     /// <summary>
-    /// Client for https://steamcommunity.com/
-    /// Some requests require a valid Steam session cookie
+    /// Client for https://steamcommunity.com/.
+    /// Most requests can be done anonymous, some require a valid Steam session cookie.
     /// </summary>
+    /// <remarks>
+    /// Steam community web site rate-limits observed from personal testing:
+    ///  - You are limited to 25 requests within 30 seconds, which resets after ???.
+    /// </remarks>
     public class SteamCommunityWebClient : SteamWebClient
     {
         public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache)
             : base(logger, cache)
         {
         }
-
-        #region Item Store
-
-        public async Task<XElement> GetStorePage(SteamItemStorePageRequest request, bool useCache = false)
-        {
-            return await GetHtml<SteamItemStorePageRequest>(request, useCache);
-        }
-
-        public async Task<SteamItemStoreGetItemDefsPaginatedJsonResponse> GetStorePaginated(SteamItemStoreGetItemDefsPaginatedJsonRequest request, bool useCache = false)
-        {
-            return await GetJson<SteamItemStoreGetItemDefsPaginatedJsonRequest, SteamItemStoreGetItemDefsPaginatedJsonResponse>(request, useCache);
-        }
-
-        #endregion
     }
 
-    /// <summary>
-    /// Client for https://steamcommunity.com/
-    /// Some requests require a valid Steam session cookie
-    /// </summary>
+    /// <inheritdoc />
     public class ProxiedSteamCommunityWebClient : SteamWebClient
     {
         public ProxiedSteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, IWebProxy proxy)
@@ -143,10 +129,7 @@ namespace SCMM.Steam.Client
         #endregion
     }
 
-    /// <summary>
-    /// Client for https://steamcommunity.com/
-    /// Some requests require a valid Steam session cookie
-    /// </summary>
+    /// <inheritdoc />
     public class AuthenticatedProxiedSteamCommunityWebClient : SteamWebClient
     {
         public AuthenticatedProxiedSteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
