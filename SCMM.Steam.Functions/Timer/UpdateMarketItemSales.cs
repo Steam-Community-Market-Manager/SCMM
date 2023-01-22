@@ -81,7 +81,7 @@ public class UpdateMarketItemSales
             }
             finally
             {
-                item.LastCheckedSalesOn = DateTimeOffset.Now;
+                //item.LastCheckedSalesOn = DateTimeOffset.Now;
                 await _db.SaveChangesAsync();
                 Thread.Sleep(1000);
             }
