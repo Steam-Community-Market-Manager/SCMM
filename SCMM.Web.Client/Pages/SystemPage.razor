@@ -89,10 +89,10 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Item Asset Descriptions</td>
                                         <td>
-                                            <span class="mud-secondary-text">Newest item is </span>
+                                            <span class="mud-secondary-text">Latest item update is </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
                                             <br />
-                                            <span class="mud-secondary-text">Oldest item is </span>
+                                            <span class="mud-secondary-text">Oldest item update is </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
                                         </td>
                                         <td>@SystemStatus.SteamApp.AssetDescriptionsUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -116,10 +116,10 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Buy/Sell Orders</td>
                                         <td>
-                                            <span class="mud-secondary-text">Newest item is </span>
+                                            <span class="mud-secondary-text">Latest item update is </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
                                             <br />
-                                            <span class="mud-secondary-text">Oldest item is </span>
+                                            <span class="mud-secondary-text">Oldest item update is </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
                                         </td>
                                         <td>@SystemStatus.SteamApp.MarketOrderUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -143,10 +143,10 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Sales History</td>
                                         <td>
-                                            <span class="mud-secondary-text">Newest item is </span>
+                                            <span class="mud-secondary-text">Latest item update is </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
                                             <br/>
-                                            <span class="mud-secondary-text">Oldest item is </span>
+                                            <span class="mud-secondary-text">Oldest item update is </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
                                         </td>
                                         <td>@SystemStatus.SteamApp.MarketSaleUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -243,7 +243,7 @@
                                                         {
                                                             <span>
                                                                 <i class="fas fa-fw fa-circle-exclamation mr-1"></i>
-                                                                <span><strong>@domainRateLimit.Key</strong> is rate-limited for @((domainRateLimit.Value - now).Duration().ToDurationString(maxGranularity: 2))</span>
+                                                                <span><strong>@domainRateLimit.Key</strong> rate-limited for @((domainRateLimit.Value - now).Duration().ToDurationString(maxGranularity: 2))</span>
                                                             </span>
                                                         }
                                                     </MudStack>
