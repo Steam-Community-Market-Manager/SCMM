@@ -29,7 +29,7 @@
             <returns>Image data</returns>
             <response code="410"></response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.Nullable{System.UInt64}[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.Nullable{System.UInt64}[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
             <summary>
             Search for items
             </summary>
@@ -44,6 +44,7 @@
             <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
             <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
             <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
+            <param name="commodity">If <code>true</code>, only commodity items are returned</param>
             <param name="marketable">If <code>true</code>, only marketable items are returned</param>
             <param name="tradable">If <code>true</code>, only tradable items are returned</param>
             <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>

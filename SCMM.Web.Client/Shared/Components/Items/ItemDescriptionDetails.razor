@@ -101,6 +101,18 @@
                             </MudText>
                         </div>
                     }
+                    <div class="mt-3">
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                            @if (Item.IsCommodity)
+                            {
+                                <span>This item is a commodity, where all the individual items are effectively identical.</span>
+                            }
+                            else
+                            {
+                                <span>The appearance of items in the individual listings may vary slightly from the one above. For example, items could have custom names, descriptions, or colors.</span>
+                            }
+						</MudText>
+                    </div>
                     @if (Item.Notes != null)
                     {
                         @foreach (var note in Item.Notes)
@@ -149,7 +161,7 @@
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-piggy-bank mud-secondary-text"></i>
                                 <span>
-                                    <MudLink @onclick="@(() => ShowItemTypeDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.MarketRankIndex cheaper @Item.ItemType.Split(" ").LastOrDefault().FirstCharToLower().Pluralise((int)Item.MarketRankTotal.Value)</MudLink>
+                                    <MudLink @onclick="@(() => ShowItemTypeDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.MarketRankIndex cheaper @Item.ItemType.Pluralise((int)Item.MarketRankTotal.Value)</MudLink>
                                     <span class="mud-secondary-text"> on the market (@Item.MarketRankTotal total)</span>
                                 </span>
                             </MudText>
@@ -461,6 +473,20 @@
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
+                        @if (Item.IsCommodity == true)
+                        {
+                            <MudTooltip Text="This item is a commodity, where all the individual items are effectively identical.">
+                                <MudChip Size="MudBlazor.Size.Small" Text="Commodity" Icon="fas fa-fw fa-coins mr-2" 
+                                         Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudTooltip Text="The appearance of items in the individual listings may vary slightly from the one above. For example, items could have custom names, descriptions, or colors.">
+                                <MudChip Size="MudBlazor.Size.Small" Text="Unique" Icon="fas fa-fw fa-fingerprint mr-2"
+                                         Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                            </MudTooltip>
+                        }
                     </div>
                     
                     @if (Item.Tags.Any())
@@ -721,59 +747,94 @@
 		        </MudItem>
             }
             
-            @if(Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null || Item.MarketSellOrderCount > 0)
+            @if(Item.IsAvailableOnMarket)
             {
                 <MudItem xs="12" sm="6" xl="3">
                     <MudPaper Outlined="true" Class="d-flex flex-column text-centered full-height">
-                        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
-                            @if (Item.MarketSellOrderCount > 0) 
-                            {
-                                <span>@((Item.MarketSellOrderCount ?? 0).ToQuantityString())</span>
-                                <span class="mud-secondary-text"> for sale </span>
-                                @if (Item.MarketSellOrderLowestPrice > 0)
+                        @if (Item.IsCommodity && (Item.MarketLastSaleOn != null || Item.MarketSellOrderCount > 0))
+                        {
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
+                                @if (Item.MarketSellOrderCount > 0) 
                                 {
-                                    <span class="mud-secondary-text"> starting at </span>
-                                    <span>@State.Currency.ToPriceString(Item.MarketSellOrderLowestPrice.Value)</span>
+                                    <span>@((Item.MarketSellOrderCount ?? 0).ToQuantityString())</span>
+                                    <span class="mud-secondary-text"> for sale </span>
+                                    @if (Item.MarketSellOrderLowestPrice > 0)
+                                    {
+                                        <span class="mud-secondary-text"> starting at </span>
+                                        <span>@State.Currency.ToPriceString(Item.MarketSellOrderLowestPrice.Value)</span>
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                <span class="mud-secondary-text">There are no active listings for this item</span>
-                            } 
-                        </MudText>
-                        <MudDivider />
-                        <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;" Class="flex-grow-1">
-                            <thead>
-                                <tr>
-                                    <th class="no-wrap text-centered">Price</th>
-                                    <th class="no-wrap text-centered">Quantity</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <Virtualize ItemsProvider="LoadItemSellOrders" Context="item">
-                                    <ItemContent>
-                                        <tr class="hover-darken">
-                                            <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">
-                                                    <span>@State.Currency.ToPriceString(item.Price)</span>
-                                                </MudText>
-                                            </td>
-                                            <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">
-                                                    <span>@item.Quantity.ToQuantityString()</span>
-                                                </MudText>
-                                            </td>
-                                        </tr>
-                                    </ItemContent>
-                                    <Placeholder>
-                                        <tr>
-                                            <td class="text-centered">—</td>
-                                            <td class="text-centered">—</td>
-                                        </tr>
-                                    </Placeholder>
-                                </Virtualize>
-                            </tbody>
-                        </MudSimpleTable>
+                                else
+                                {
+                                    <span class="mud-secondary-text">There are no listings for this item</span>
+                                } 
+                            </MudText>
+                            <MudDivider />
+                            <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;" Class="flex-grow-1">
+                                <thead>
+                                    <tr>
+                                        <th class="no-wrap text-centered">Price</th>
+                                        <th class="no-wrap text-centered">Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <Virtualize ItemsProvider="LoadItemSellOrders" Context="item">
+                                        <ItemContent>
+                                            <tr class="hover-darken">
+                                                <td class="text-centered">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">
+                                                        <span>@State.Currency.ToPriceString(item.Price)</span>
+                                                    </MudText>
+                                                </td>
+                                                <td class="text-centered">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">
+                                                        <span>@item.Quantity.ToQuantityString()</span>
+                                                    </MudText>
+                                                </td>
+                                            </tr>
+                                        </ItemContent>
+                                        <Placeholder>
+                                            <tr>
+                                                <td class="text-centered">—</td>
+                                                <td class="text-centered">—</td>
+                                            </tr>
+                                        </Placeholder>
+                                    </Virtualize>
+                                </tbody>
+                            </MudSimpleTable>
+                        }
+                        else if (!Item.IsCommodity)
+                        {
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
+                                @if (Item.MarketSellOrderCount > 0) 
+                                {
+                                    <span>@((Item.MarketSellOrderCount ?? 0).ToQuantityString())</span>
+                                    <span class="mud-secondary-text"> listing(s) </span>
+                                    @if (Item.MarketSellOrderLowestPrice > 0)
+                                    {
+                                        <span class="mud-secondary-text"> starting at </span>
+                                        <span>@State.Currency.ToPriceString(Item.MarketSellOrderLowestPrice.Value)</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="mud-secondary-text">There are no listings for this item</span>
+                                } 
+                            </MudText>
+                            <MudDivider />
+                            <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;" Class="flex-grow-1">
+                                <thead>
+                                    <tr>
+                                        <th class="no-wrap text-centered">Name</th>
+                                        <th class="no-wrap text-centered">Seller</th>
+                                        <th class="no-wrap text-centered">Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @* TODO: Add support for listings *@
+                                </tbody>
+                            </MudSimpleTable>
+                        }
 				    </MudPaper>
                 </MudItem>
             }
@@ -796,7 +857,7 @@
                             }
                             else
                             {
-                                <span class="mud-secondary-text">There are no active buy requests for this item</span>
+                                <span class="mud-secondary-text">There are no buy requests for this item</span>
                             }
                         </MudText>
                         <MudDivider />

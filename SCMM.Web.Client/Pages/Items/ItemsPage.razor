@@ -123,6 +123,7 @@
                     {
                         <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
+                    <MudSwitch T="bool" Checked="@Commodity" CheckedChanged="@((x) => { Commodity = x; _ = RefreshItems(); })" Label="Commodity " Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
@@ -204,6 +205,10 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public bool TwitchDrop { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Commodity { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -307,7 +312,11 @@
             StateHasChanged();
 
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradable={Tradable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}" +
+                $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}" +
+                $"&glow={(Glow ? true : (bool?)null)}&glowsight={(Glowsight ? true : (bool?)null)}&cutout={(Cutout ? true : (bool?)null)}&craftable={(Craftable ? true : (bool?)null)}" +
+                $"&specialDrop={(SpecialDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +
+                $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}"
             );
         }
         catch (Exception ex)

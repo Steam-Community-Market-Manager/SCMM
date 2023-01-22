@@ -51,6 +51,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
+        /// <param name="commodity">If <code>true</code>, only commodity items are returned</param>
         /// <param name="marketable">If <code>true</code>, only marketable items are returned</param>
         /// <param name="tradable">If <code>true</code>, only tradable items are returned</param>
         /// <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>
@@ -75,8 +76,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null,
-                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false, [FromQuery] bool tradable = false,
-                                                  [FromQuery] bool returning = false, [FromQuery] bool banned = false, [FromQuery] bool specialDrop = false, [FromQuery] bool twitchDrop = false, [FromQuery] bool craftable = false,
+                                                  [FromQuery] bool? glow = null, [FromQuery] bool? glowsight = null, [FromQuery] bool? cutout = null, [FromQuery] bool? commodity = null, [FromQuery] bool? marketable = null, [FromQuery] bool? tradable = null,
+                                                  [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? specialDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? craftable = null,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
             id = (id ?? new ulong?[0]);
@@ -129,45 +130,49 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()));
             }
-            if (glow)
+            if (glow != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.HasGlow == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.HasGlow == glow.Value);
             }
-            if (glowsight)
+            if (glowsight != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.HasGlowSights == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.HasGlowSights == glowsight.Value);
             }
-            if (cutout)
+            if (cutout != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.HasCutout == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.HasCutout == cutout.Value);
             }
-            if (marketable)
+            if (commodity != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || (x.IsMarketable == true || x.MarketableRestrictionDays > 0));
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsCommodity == commodity.Value);
             }
-            if (tradable)
+            if (marketable != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || (x.IsTradable == true || x.TradableRestrictionDays > 0 || (x.IsTradable && x.TradableRestrictionDays == null)));
+                query = query.Where(x => id.Contains(x.ClassId) || (x.IsMarketable == marketable.Value || x.MarketableRestrictionDays > 0));
             }
-            if (returning)
+            if (tradable != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || (x.StoreItem != null && x.StoreItem.HasReturnedToStore));
+                query = query.Where(x => id.Contains(x.ClassId) || (x.IsTradable == tradable.Value || x.TradableRestrictionDays > 0 || (x.IsTradable && x.TradableRestrictionDays == null)));
             }
-            if (banned)
+            if (returning != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.IsBanned == true);
+                query = query.Where(x => id.Contains(x.ClassId) || (x.StoreItem != null && x.StoreItem.HasReturnedToStore == returning.Value));
             }
-            if (specialDrop)
+            if (banned != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.IsSpecialDrop == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsBanned == banned.Value);
             }
-            if (twitchDrop)
+            if (specialDrop != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.IsTwitchDrop == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsSpecialDrop == specialDrop.Value);
             }
-            if (craftable)
+            if (twitchDrop != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.IsCraftable == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsTwitchDrop == twitchDrop.Value);
+            }
+            if (craftable != null)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsCraftable == craftable.Value);
             }
 
             // Join

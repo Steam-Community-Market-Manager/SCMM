@@ -278,7 +278,7 @@ else if (StoreList.Any())
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-piggy-bank mud-secondary-text"></i>
                                                     <span>
-                                                        <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketRankIndex cheaper @item.ItemType.Split(" ").LastOrDefault().FirstCharToLower().Pluralise(item.MarketRankTotal)</MudLink>
+                                                        <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketRankIndex cheaper @item.ItemType.Pluralise(item.MarketRankTotal)</MudLink>
                                                         <span class="mud-secondary-text"> on the market</span>
                                                     </span>
                                                 </MudText>
@@ -447,6 +447,20 @@ else if (StoreList.Any())
                                                 {
                                                     <MudTooltip Text="This item has returned from a previous store release">
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Returning Item" Icon="fas fa-fw fa-redo mr-3" 
+                                                                 Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                                    </MudTooltip>
+                                                }
+                                                @if (item.IsCommodity == true)
+                                                {
+                                                    <MudTooltip Text="This item is a commodity, where all the individual items are effectively identical.">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Commodity" Icon="fas fa-fw fa-coins mr-2" 
+                                                                 Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                                    </MudTooltip>
+                                                }
+                                                else
+                                                {
+                                                    <MudTooltip Text="The appearance of items in the individual listings may vary slightly from the one above. For example, items could have custom names, descriptions, or colors.">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Unique" Icon="fas fa-fw fa-fingerprint mr-2" 
                                                                  Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                                                     </MudTooltip>
                                                 }

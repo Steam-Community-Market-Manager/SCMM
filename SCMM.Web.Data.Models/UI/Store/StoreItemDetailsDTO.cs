@@ -86,6 +86,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public long? Subscriptions { get; set; }
 
+        public bool IsCommodity { get; set; }
+
         public bool IsMarketable { get; set; }
 
         public int? MarketableRestrictionDays { get; set; }
