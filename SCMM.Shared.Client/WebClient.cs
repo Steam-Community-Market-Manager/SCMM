@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Shared.Client;
 
@@ -26,55 +27,6 @@ public class WebClient : IDisposable
             AllowAutoRedirect = true,
             MaxAutomaticRedirections = 3
         };
-    }
-    
-    protected HttpClient BuildWebBrowserHttpClient(Uri referer = null)
-    {
-        var httpClient = BuildHttpClient();
-
-        // We are a normal looking web browser, honest (helps with WAF rules that block bots)
-        if (!httpClient.DefaultRequestHeaders.UserAgent.Any())
-        {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppleWebKit", "537.36"));
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(KHTML, like Gecko)"));
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
-        }
-
-        // We made this request from a web browser, honest (helps with WAF rules that enforce OWASP)
-        if (!httpClient.DefaultRequestHeaders.Contains("X-Requested-With"))
-        {
-            httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-        }
-
-        if (referer != null)
-        {
-            // We made this request from your website, honest...
-            httpClient.DefaultRequestHeaders.Referrer = referer;
-        }
-
-        return httpClient;
-    }
-
-    protected HttpClient BuildWebApiHttpClient()
-    {
-        return BuildWebApiHttpClient(null, null, null);
-    }
-
-    protected HttpClient BuildWebApiHttpClient(string authHeaderName, string authHeaderFormat, string authKey = null)
-    {
-        var httpClient = BuildHttpClient();
-        if (!string.IsNullOrEmpty(authHeaderName) && !string.IsNullOrEmpty(authHeaderFormat) && !string.IsNullOrEmpty(authKey))
-        {
-            if (!httpClient.DefaultRequestHeaders.Contains(authHeaderName))
-            {
-                httpClient.DefaultRequestHeaders.Add(authHeaderName, String.Format(authHeaderFormat, authKey));
-            }
-        }
-
-        return httpClient;
     }
 
     protected HttpClient BuildHttpClient()
@@ -106,26 +58,157 @@ public class WebClient : IDisposable
             httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en-US"));
             httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 0.9));
         }
-        /*
         if (httpClient.DefaultRequestHeaders.IfModifiedSince == null && IfModifiedSinceTimeAgo != null)
         {
             httpClient.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.UtcNow.Subtract(IfModifiedSinceTimeAgo.Value);
         }
-        */
+        
         return httpClient;
     }
 
-    public void UpdateRequestStatistics(Uri address, HttpStatusCode responseStatusCode)
+    protected HttpClient BuildWebApiHttpClient()
+    {
+        return BuildWebApiHttpClient(null, null, null);
+    }
+
+    protected HttpClient BuildWebApiHttpClient(string authHeaderName, string authHeaderFormat, string authKey = null)
+    {
+        var httpClient = BuildHttpClient();
+        if (!string.IsNullOrEmpty(authHeaderName) && !string.IsNullOrEmpty(authHeaderFormat) && !string.IsNullOrEmpty(authKey))
+        {
+            if (!httpClient.DefaultRequestHeaders.Contains(authHeaderName))
+            {
+                httpClient.DefaultRequestHeaders.Add(authHeaderName, String.Format(authHeaderFormat, authKey));
+            }
+        }
+
+        return httpClient;
+    }
+
+    protected HttpClient BuildWebBrowserHttpClient(Uri referer = null)
+    {
+        var httpClient = BuildHttpClient();
+
+        // We are a normal looking web browser, honest (helps with WAF rules that block bots)
+        if (!httpClient.DefaultRequestHeaders.UserAgent.Any())
+        {
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppleWebKit", "537.36"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(KHTML, like Gecko)"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
+        }
+
+        // We made this request from a web browser, honest (helps with WAF rules that enforce OWASP)
+        if (!httpClient.DefaultRequestHeaders.Contains("X-Requested-With"))
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        }
+
+        if (referer != null)
+        {
+            // We made this request from your website, honest...
+            httpClient.DefaultRequestHeaders.Referrer = referer;
+        }
+
+        return httpClient;
+    }
+
+    protected async Task<HttpResponseMessage> PostAsync<TRequest>(HttpClient client, TRequest request, HttpContent? content = null, CancellationToken cancellationToken = default(CancellationToken))
+        where TRequest : IWebRequest
+    {
+        return HandleRequestAndAssertWasSuccess(request,
+            await client.PostAsync(request.Uri, content, cancellationToken)
+        );
+    }
+
+    protected async Task<HttpResponseMessage> GetAsync<TRequest>(HttpClient client, TRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        where TRequest : IWebRequest
+    {
+        return HandleRequestAndAssertWasSuccess(request,
+            await client.GetAsync(request.Uri, cancellationToken)
+        );
+    }
+
+    protected HttpResponseMessage HandleRequestAndAssertWasSuccess(IWebRequest request, HttpResponseMessage response)
+    {
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException($"Response did not indicate success. {response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
+            }
+
+            UpdateRequestStatisticsForHost(request.Uri, response.StatusCode);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode != null)
+            {
+                UpdateRequestStatisticsForHost(request.Uri, ex.StatusCode.Value);
+            }
+
+            /*
+            // Check if the content has not been modified since the last request
+            // 304: Not Modified
+            if (ex.IsNotModified)
+            {
+                throw new SteamNotModifiedException();
+            }
+
+            // Check if the request failed due to a temporary or network related error
+            // 408: RequestTimeout
+            // 504: GatewayTimeout
+            // 502: BadGateway
+            if (ex.IsTemporaryError)
+            {
+                _logger.LogWarning($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
+                return await GetWithRetry(request, (retryAttempt + 1));
+            }
+
+            // Check if the request failed due to rate limiting
+            // 429: TooManyRequests
+            if (ex.IsRateLimited)
+            {
+                // Add a cooldown to the current web proxy and rotate to the next proxy if possible
+                // Steam web API terms of use (https://steamcommunity.com/dev/apiterms)
+                //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
+                // Steam community web site rate-limits observed from personal testing:
+                //  - You are limited to 25 requests within 30 seconds, which resets after ???.
+                RotateWebProxyForHost(request?.Uri, cooldown: TimeSpan.FromMinutes(60));
+                return await GetWithRetry(request, (retryAttempt + 1));
+            }
+
+            // Check if the request failed due to missing proxy authentication
+            // 407: ProxyAuthenticationRequired
+            if (ex.IsProxyAuthenticationRequired)
+            {
+                // Disable the current web proxy and rotate to the next proxy if possible
+                DisableWebProxyForHost(request?.Uri);
+                return await GetWithRetry(request, (retryAttempt + 1));
+            }
+
+            // Legitimate error, bubble the error up to the caller
+            throw;
+            */
+        }
+
+        return response;
+    }
+
+    protected void UpdateRequestStatisticsForHost(Uri address, HttpStatusCode responseStatusCode)
     {
         (_webProxy as IRotatingWebProxy)?.UpdateRequestStatistics(address, responseStatusCode);
     }
 
-    public void RotateWebProxy(Uri address, TimeSpan cooldown)
+    protected void RotateWebProxyForHost(Uri address, TimeSpan cooldown)
     {
         (_webProxy as IRotatingWebProxy)?.RotateProxy(address, cooldown);
     }
 
-    public void DisableWebProxy(Uri address)
+    protected void DisableWebProxyForHost(Uri address)
     {
         (_webProxy as IRotatingWebProxy)?.DisableProxy(address);
     }

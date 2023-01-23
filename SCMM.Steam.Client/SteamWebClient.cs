@@ -111,7 +111,7 @@ namespace SCMM.Steam.Client
                 var response = await Get(request);
                 if (response != null)
                 {
-                    UpdateRequestStatistics(request?.Uri, response.StatusCode);
+                    UpdateRequestStatisticsForHost(request?.Uri, response.StatusCode);
                 }
 
                 return response;
@@ -120,7 +120,7 @@ namespace SCMM.Steam.Client
             {
                 if (ex.StatusCode != null)
                 {
-                    UpdateRequestStatistics(request?.Uri, ex.StatusCode.Value);
+                    UpdateRequestStatisticsForHost(request?.Uri, ex.StatusCode.Value);
                 }
 
                 // Check if the content has not been modified since the last request
@@ -149,7 +149,7 @@ namespace SCMM.Steam.Client
                     //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
                     // Steam community web site rate-limits observed from personal testing:
                     //  - You are limited to 25 requests within 30 seconds, which resets after ???.
-                    RotateWebProxy(request?.Uri, cooldown: TimeSpan.FromMinutes(60));
+                    RotateWebProxyForHost(request?.Uri, cooldown: TimeSpan.FromMinutes(60));
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
@@ -158,7 +158,7 @@ namespace SCMM.Steam.Client
                 if (ex.IsProxyAuthenticationRequired)
                 {
                     // Disable the current web proxy and rotate to the next proxy if possible
-                    DisableWebProxy(request?.Uri);
+                    DisableWebProxyForHost(request?.Uri);
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
