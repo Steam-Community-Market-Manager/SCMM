@@ -1,10 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
     public class iTradeggWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://itrade.gg/ajax/";
+
+        public iTradeggWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {

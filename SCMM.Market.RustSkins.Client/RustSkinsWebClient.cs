@@ -1,10 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.RustSkins.Client
 {
     public class RustSkinsWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://rustskins.com/api/v1/";
+
+        public RustSkinsWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<RustSkinsMarketListingsResponse> GetMarketListingsAsync(int page = 1)
         {

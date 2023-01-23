@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.SkinsMonkey.Client
 {
@@ -7,6 +8,8 @@ namespace SCMM.Market.SkinsMonkey.Client
         private const string ApiUri = "https://skinsmonkey.com/api/public/v1/";
 
         private readonly SkinsMonkeyConfiguration _configuration;
+
+        public SkinsMonkeyWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public SkinsMonkeyWebClient(SkinsMonkeyConfiguration configuration)
         {

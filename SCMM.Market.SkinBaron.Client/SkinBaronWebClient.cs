@@ -1,10 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.SkinBaron.Client
 {
     public class SkinBaronWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://skinbaron.de/api/v2/";
+
+        public SkinBaronWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<SkinBaronFilterOffersResponse> GetBrowsingFilterOffersAsync(string appId, int page = 1)
         {

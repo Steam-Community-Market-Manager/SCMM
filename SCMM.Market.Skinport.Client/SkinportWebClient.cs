@@ -1,10 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.Skinport.Client
 {
     public class SkinportWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://api.skinport.com/v1/";
+
+        public SkinportWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<SkinportItem>> GetItemsAsync(string appId, string currency = null)
         {

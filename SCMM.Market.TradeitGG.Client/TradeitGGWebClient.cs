@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace SCMM.Market.TradeitGG.Client
@@ -8,6 +9,8 @@ namespace SCMM.Market.TradeitGG.Client
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
         public const int MaxPageLimit = 200;
+
+        public TradeitGGWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {

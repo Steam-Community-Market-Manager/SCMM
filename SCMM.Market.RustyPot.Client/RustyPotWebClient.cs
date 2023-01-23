@@ -3,6 +3,7 @@ using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SocketIOClient;
 using SocketIOClient.Transport;
+using System.Net;
 
 namespace SCMM.Market.RustyPot.Client
 {
@@ -13,6 +14,8 @@ namespace SCMM.Market.RustyPot.Client
         private readonly ICollection<string> _steamIds;
 
         private const string WebsiteHostname = "rustypot.com";
+
+        public RustyPotWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public RustyPotWebClient(ILogger<RustyPotWebClient> logger, IServiceBus serviceBus)
         {

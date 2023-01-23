@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.CSDeals.Client
 {
@@ -6,6 +7,8 @@ namespace SCMM.Market.CSDeals.Client
     {
         private const string BaseUri = "https://cs.deals/";
         private const string BaseApiUri = "https://cs.deals/API/";
+
+        public CSDealsWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<CSDealsItemPrice>> GetPricingGetLowestPricesAsync(string appId)
         {

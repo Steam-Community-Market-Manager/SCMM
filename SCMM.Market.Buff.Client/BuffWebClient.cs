@@ -9,7 +9,7 @@ namespace SCMM.Market.Buff.Client
 
         public const int MaxPageLimit = 80;
 
-        public BuffWebClient(BuffConfiguration configuration) : base(cookieContainer: new CookieContainer())
+        public BuffWebClient(BuffConfiguration configuration, IWebProxy webProxy) : base(cookieContainer: new CookieContainer(), webProxy: webProxy)
         {
             Cookies.Add(new Uri(BaseUri), new Cookie("session", configuration.SessionId));
         }

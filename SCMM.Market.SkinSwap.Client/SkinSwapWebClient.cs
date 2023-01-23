@@ -1,10 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.SkinSwap.Client
 {
     public class SkinSwapWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://skinswap.com/api/v1/";
+
+        public SkinSwapWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IDictionary<string, SkinSwapItem[]>> GetSiteInventoryAsync()
         {

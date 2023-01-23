@@ -50,7 +50,7 @@ public class UpdateMarketItemSales
             return;
         }
 
-        _steamCommunityWebClient.IfModifiedSinceTimeAgo = TimeSpan.FromHours(1);
+        //_steamCommunityWebClient.IfModifiedSinceTimeAgo = TimeSpan.FromHours(1);
 
         var id = Guid.NewGuid();
         logger.LogTrace($"Updating market item sales information (id: {id}, count: {items.Count()})");

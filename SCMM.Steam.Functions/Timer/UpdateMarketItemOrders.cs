@@ -44,7 +44,7 @@ public class UpdateMarketItemOrders
             return;
         }
 
-        _steamCommunityWebClient.IfModifiedSinceTimeAgo = TimeSpan.FromHours(1);
+        //_steamCommunityWebClient.IfModifiedSinceTimeAgo = TimeSpan.FromHours(1);
 
         var id = Guid.NewGuid();
         logger.LogTrace($"Updating market item orders information (id: {id}, count: {items.Count()})");

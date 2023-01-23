@@ -1,10 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.CSTrade.Client
 {
     public class CSTradeWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://cdn.cs.trade:8443/api/";
+
+        public CSTradeWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<CSTradeItem>> GetInventoryAsync()
         {

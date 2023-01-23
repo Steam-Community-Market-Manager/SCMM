@@ -1,10 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.LootFarm.Client
 {
     public class LootFarmWebClient : Shared.Client.WebClient
     {
         private const string BaseUri = "https://loot.farm/";
+
+        public LootFarmWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<LootFarmItemPrice>> GetItemPricesAsync(string appName)
         {

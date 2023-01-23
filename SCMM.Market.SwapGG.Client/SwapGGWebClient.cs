@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 
 namespace SCMM.Market.SwapGG.Client
 {
@@ -6,6 +7,8 @@ namespace SCMM.Market.SwapGG.Client
     {
         private const string TradeBaseUri = "https://api.swap.gg/";
         private const string MarketBaseUri = "https://market-api.swap.gg/v1/";
+
+        public SwapGGWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<SwapGGTradeItem>> GetTradeBotInventoryAsync(string appId)
         {

@@ -1,4 +1,5 @@
 ﻿using SCMM.Steam.Data.Models;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.DMarket.Client
@@ -11,6 +12,8 @@ namespace SCMM.Market.DMarket.Client
 
         public const string MarketTypeDMarket = "dmarket";
         public const string MarketTypeF2F = "p2p";
+
+        public DMarketWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string marketType = MarketTypeDMarket, string currencyName = Constants.SteamCurrencyUSD, string cursor = null, int limit = MaxPageLimit)
         {
