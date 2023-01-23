@@ -90,11 +90,11 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Item Asset Descriptions</td>
                                         <td>
-                                            <span class="mud-secondary-text">Latest item update is </span>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
+                                            <span class="mud-secondary-text">Latest item update was </span>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                             <br />
-                                            <span class="mud-secondary-text">Oldest item update is </span>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
+                                            <span class="mud-secondary-text">Oldest item update was </span>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                         </td>
                                         <td>@SystemStatus.SteamApp.AssetDescriptionsUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
                                         <td>Less than @SystemStatus.SteamApp.AssetDescriptionsUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -117,11 +117,11 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Buy/Sell Orders</td>
                                         <td>
-                                            <span class="mud-secondary-text">Latest item update is </span>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
+                                            <span class="mud-secondary-text">Latest item update was </span>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                             <br />
-                                            <span class="mud-secondary-text">Oldest item update is </span>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
+                                            <span class="mud-secondary-text">Oldest item update was </span>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                         </td>
                                         <td>@SystemStatus.SteamApp.MarketOrderUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
                                         <td>Less than @SystemStatus.SteamApp.MarketOrderUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -144,11 +144,11 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Sales History</td>
                                         <td>
-                                            <span class="mud-secondary-text">Latest item update is </span>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
+                                            <span class="mud-secondary-text">Latest item update was </span>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                             <br/>
-                                            <span class="mud-secondary-text">Oldest item update is </span>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "old"))</span>
+                                            <span class="mud-secondary-text">Oldest item update was </span>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                         </td>
                                         <td>@SystemStatus.SteamApp.MarketSaleUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
                                         <td>Less than @SystemStatus.SteamApp.MarketSaleUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>

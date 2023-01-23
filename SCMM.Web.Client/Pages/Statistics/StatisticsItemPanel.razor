@@ -2,8 +2,11 @@
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Statistic
 @using SCMM.Web.Client.Shared.Dialogs.Items
+@using Syncfusion.Blazor.Charts
+@inherits PersistentComponent
 @inject ILogger<StatisticsItemPanel> Logger
 @inject IDialogService Dialogs
+@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
@@ -11,155 +14,71 @@
 
 <MudGrid Spacing="2">
 
-    <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-fire mr-1" Title="Hot Right Now" Subtitle="Which items have been bought/sold the most in the past 24hrs?" Dense="true">
-            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
-                <tbody>
-                    <Virtualize ItemsProvider="LoadItemsMostDemanded" Context="item">
-                        <ItemContent>
-                            <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">
-                                    <MudText Typo="Typo.body2" Class="no-wrap">@item.Demand.ToQuantityString() sold today</MudText>
-                                </td>
-                            </tr>
-                        </ItemContent>
-                        <Placeholder>
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">—</td>
-                            </tr>
-                        </Placeholder>
-                    </Virtualize>
-                </tbody>
-            </MudSimpleTable>
+    <MudItem xs="12">
+        <StatisticsPanel Icon="fas fa-fw fa-tshirt mr-1" Title="Most Popular Item Type" Subtitle="Which item types have the most number of accepted in-game items?" Dense="true">
+            @if (ItemTypeDistributionChartData == null)
+            {
+                <div class="d-flex align-center justify-center full-width full-height pa-2">
+                    <Loading Message="Loading item type distribution..." />
+                </div>
+            }
+            else
+            {
+                <SfChart ID="ItemTypeDistribution" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" EnableSideBySidePlacement="false" Width="100%" Height="100%">
+                    <ChartArea>
+                        <ChartAreaBorder Width="0"></ChartAreaBorder>
+                    </ChartArea>
+                    <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" Interval="1" LabelRotation="45" LabelIntersectAction="LabelIntersectAction.Trim"
+                                       ZoomFactor="0.3" ZoomPosition="0" EnableScrollbarOnZooming="false">
+                        <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                        <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                        <ChartAxisScrollbarSettings Enable="true"></ChartAxisScrollbarSettings>
+                    </ChartPrimaryXAxis>
+                    <ChartPrimaryYAxis Title="Number of items">
+                        <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                        <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                        <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                    </ChartPrimaryYAxis>
+                    <ChartSeriesCollection>
+                        <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.5" XName="ItemType" YName="Total" Name="Total Items" Type="ChartSeriesType.Column">
+                            <ChartMarker>
+                                <ChartDataLabel Visible="true" Alignment="Alignment.Center" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                    <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                </ChartDataLabel>
+                            </ChartMarker>
+                        </ChartSeries>
+                        <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.4" XName="ItemType" YName="Submitted" Name="Submitted Items" Type="ChartSeriesType.Column">
+                            <ChartMarker>
+                                <ChartDataLabel Visible="true" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                    <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                </ChartDataLabel>
+                            </ChartMarker>
+                        </ChartSeries>
+                        <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.3" XName="ItemType" YName="Accepted" Name="Accepted Items" Type="ChartSeriesType.Column">
+                            <ChartMarker>
+                                <ChartDataLabel Visible="true" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                    <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                </ChartDataLabel>
+                            </ChartMarker>
+                        </ChartSeries>
+                    </ChartSeriesCollection>
+                    <ChartCrosshairSettings Enable="true" LineType="LineType.None"></ChartCrosshairSettings>
+                    <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                    <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                </SfChart>
+            }
         </StatisticsPanel>
     </MudItem>
 
-    <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-arrow-up mr-1" Title="Stonking" Subtitle="Which items recently reached their all-time highest value?" Dense="true">
-            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
-                <tbody>
-                    <Virtualize ItemsProvider="LoadItemsAllTimeHigh" Context="item">
-                        <ItemContent>
-                            <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">
-                                    <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice)</MudText>
-                                </td>
-                            </tr>
-                        </ItemContent>
-                        <Placeholder>
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">—</td>
-                            </tr>
-                        </Placeholder>
-                    </Virtualize>
-                </tbody>
-            </MudSimpleTable>
-        </StatisticsPanel>
-    </MudItem>
-
-    <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-arrow-down mr-1" Title="Crashing" Subtitle="Which items recently reached their all-time lowest value?" Dense="true">
-            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
-                <tbody>
-                    <Virtualize ItemsProvider="LoadItemsAllTimeLow" Context="item">
-                        <ItemContent>
-                            <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">
-                                    <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice)</MudText>
-                                </td>
-                            </tr>
-                        </ItemContent>
-                        <Placeholder>
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">—</td>
-                            </tr>
-                        </Placeholder>
-                    </Virtualize>
-                </tbody>
-            </MudSimpleTable>
-        </StatisticsPanel>
-    </MudItem>
-    
-    <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-dollar-sign mr-1" Title="Most Expensive" Subtitle="Which are the most expensive items on the market?" Dense="true">
-            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
-                <tbody>
-                    <Virtualize ItemsProvider="LoadItemMostExpensive" Context="item">
-                        <ItemContent>
-                            <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">
-                                    <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice)</MudText>
-                                </td>
-                            </tr>
-                        </ItemContent>
-                        <Placeholder>
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">—</td>
-                            </tr>
-                        </Placeholder>
-                    </Virtualize>
-                </tbody>
-            </MudSimpleTable>
-        </StatisticsPanel>
-    </MudItem>
-    
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-people-carry mr-1" Title="Highest Estimated Supply" Subtitle="Which items have the highest estimated total supply?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-people-carry mr-1" Title="Highest Estimated Item Supply" Subtitle="Which items have the highest estimated total supply?" Dense="true">
                 <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                     <tbody>
                         <Virtualize ItemsProvider="LoadItemMostSupply" Context="item">
                             <ItemContent>
-                                <tr @onclick="@((_) => ViewItem(item))" class="clickable">
+                                <tr @onclick="@((_) => ShowItemEstimatedSupplyDialog(item))" class="clickable">
                                     <td>
                                         <div class="d-flex flex-row justify-start align-center">
                                             <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
@@ -192,55 +111,7 @@
     }
 
     <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-balance-scale mr-1" Title="Most Saturated" Subtitle="Which items have the largest supply of active listings on the market?"Dense="true">
-            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th class="no-wrap">Market Listings</th>
-                        <th class="no-wrap text-right">Daily Demand</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <Virtualize ItemsProvider="LoadItemsMostSaturated" Context="item">
-                        <ItemContent>
-                            <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                    </div>
-                                </td>
-                                <td>
-                                    <MudText Typo="Typo.body2" Class="no-wrap">@item.Supply.ToQuantityString()</MudText>
-                                </td>
-                                <td class="text-right">
-                                    <MudText Typo="Typo.body2" Class="no-wrap">
-                                        <span>@item.Demand.ToQuantityString() today</span>
-                                    </MudText>
-                                </td>
-                            </tr>
-                        </ItemContent>
-                        <Placeholder>
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                    </div>
-                                </td>
-                                <td>—</td>
-                                <td class="text-right">—</td>
-                            </tr>
-                        </Placeholder>
-                    </Virtualize>
-                </tbody>
-            </MudSimpleTable>
-        </StatisticsPanel>
-    </MudItem>
-    
-    <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-tshirt mr-1" Title="Largest Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
+        <StatisticsPanel Icon="fas fa-fw fa-tshirt mr-1" Title="Largest Item Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
                     <Virtualize ItemsProvider="LoadItemsLargestCollections" Context="item">
@@ -277,7 +148,7 @@
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-user mr-1" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-user mr-1" Title="Largest Item Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
                 <MudSimpleTable Dense="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                     <tbody>
                         <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
@@ -316,9 +187,52 @@
 
 @code {
 
+    private IEnumerable<ItemTypeDistributionChartPointDTO> ItemTypeDistributionChartData { get; set; }
+
+    protected override async Task OnLoadStateAsync()
+    {
+        ItemTypeDistributionChartData = await RestoreFromStateOrLoad(nameof(ItemTypeDistributionChartData), async () =>
+        {
+            try
+            {
+                return await LoadItemTypeDistribution();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Unable to load item type distribution");
+                Snackbar.Add($"Unable to load item type distribution. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(ItemTypeDistributionChartData), ItemTypeDistributionChartData);
+        return Task.CompletedTask;
+    }
+
     private void ViewItem(ItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToItem(item);
+    }
+    
+    private void ShowItemEstimatedSupplyDialog(ItemSupplyStatisticDTO item)
+    {
+        Dialogs.Show<ViewItemEstimatedSupplyDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemName"] = item.Name,
+            ["ItemUrl"] = $"/api/item/{item.Id}"
+        });
+    }
+    
+    private void ShowItemCollectionDialog(DashboardAssetCollectionDTO collection)
+    {
+        Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
+        {
+            ["CollectionName"] = $"{collection.Name} Collection",
+            ["CollectionUrl"] = $"api/item/collection/{collection.Name}?creatorId={collection.CreatorId}"
+        });
     }
     
     private void ShowProfileItemsDialog(ProfileAcceptedItemsStatisticDTO profile)
@@ -332,90 +246,32 @@
         });
     }
 
-    private void ShowItemCollectionDialog(DashboardAssetCollectionDTO collection)
-    {
-        Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
-        {
-            ["CollectionName"] = $"{collection.Name} Collection",
-            ["CollectionUrl"] = $"api/item/collection/{collection.Name}?creatorId={collection.CreatorId}"
-        });
-    }
-    
     private string GetItemStyles(IItemDescription item)
     {
         return $"color: {item.ForegroundColour}";
     }
-    
-    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadItemsMostDemanded(ItemsProviderRequest request)
+
+    protected async Task<IEnumerable<ItemTypeDistributionChartPointDTO>> LoadItemTypeDistribution()
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostDemanded?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
+            ItemTypeDistributionChartData = null;
+            StateHasChanged();
+
+            return ItemTypeDistributionChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemTypeDistributionChartPointDTO>>($"api/stats/items/typeDistribution");
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'most demanded' item statistics");
+            Logger.LogError(ex, $"Unable to load item type distribution");
+            Snackbar.Add($"Unable to load item type distribution. {ex.Message}", MudBlazor.Severity.Error);
             throw;
         }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadItemsMostSaturated(ItemsProviderRequest request)
-    {
-        try
+        finally
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostSaturated?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'most staurated' item statistics");
-            throw;
-        }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadItemsAllTimeHigh(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeHigh?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'all time high' item statistics");
-            throw;
-        }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadItemsAllTimeLow(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeLow?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'all time low' item statistics");
-            throw;
+            StateHasChanged();
         }
     }
 
-    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadItemMostExpensive(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/mostExpensive?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'most expensive' item statistics");
-            throw;
-        }
-    }
-    
     protected async ValueTask<ItemsProviderResult<ItemSupplyStatisticDTO>> LoadItemMostSupply(ItemsProviderRequest request)
     {
         try
@@ -429,7 +285,7 @@
             throw;
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<DashboardAssetCollectionDTO>> LoadItemsLargestCollections(ItemsProviderRequest request)
     {
         try

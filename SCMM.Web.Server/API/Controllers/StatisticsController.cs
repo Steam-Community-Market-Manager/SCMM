@@ -40,7 +40,42 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
-        // Most skinned item
+        // TODO: Most skinned item
+
+        /// <summary>
+        /// Get marketplace totals
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <response code="200">Marketplace totals for the current app.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/totals")]
+        [ProducesResponseType(typeof(MarketTotalsStatisticDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketTotals()
+        {
+            var appGuid = this.App().Guid;
+            var totals = await _db.SteamApps.AsNoTracking()
+                .Where(x => x.Id == appGuid)
+                .Select(x => new
+                {
+                    TotalListings = x.MarketItems.Sum(i => i.SellOrderCount),
+                    TotalListingsMarketValue = x.MarketItems.Sum(i => i.SellOrderCount * i.SellOrderLowestPrice),
+                    TotalVolumeLast24hrs = x.MarketItems.Sum(i => i.Last24hrSales),
+                    TotalVolumeMarketValueLast24hrs = x.MarketItems.Sum(i => i.Last24hrSales * i.Last24hrValue),
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(new MarketTotalsStatisticDTO()
+            {
+                Listings = (int) totals.TotalListings,
+                ListingsMarketValue = this.Currency().CalculateExchange((long)totals.TotalListingsMarketValue),
+                VolumeLast24hrs = (int) totals.TotalVolumeLast24hrs,
+                VolumeMarketValueLast24hrs = this.Currency().CalculateExchange((long)totals.TotalVolumeMarketValueLast24hrs)
+            });
+        }
 
         /// <summary>
         /// Get marketplace index fund chart data, grouped by day (UTC)
@@ -562,6 +597,36 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get distribution of item types from accepted items and workshop submissions
+        /// </summary>
+        /// <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("items/typeDistribution")]
+        [ProducesResponseType(typeof(IEnumerable<ItemTypeDistributionChartPointDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemsTypeDistribution()
+        {
+            var appId = this.App().Guid;
+            var itemTypeDistribution = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .GroupBy(x => x.ItemType)
+                .Where(x => x.Key != null)
+                .Select(x => new ItemTypeDistributionChartPointDTO
+                {
+                    ItemType = x.Key,
+                    Submitted = _db.SteamWorkshopFiles.Count(y => y.ItemType == x.Key), 
+                    Accepted = x.Count(y => y.IsAccepted),
+                })
+                .ToListAsync();
+
+            return Ok(itemTypeDistribution
+                .OrderByDescending(x => x.Accepted)
+                .ToList()
+            );
+        }
+
+        /// <summary>
         /// List items, sorted by highest number of sales in the last 24hrs
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -664,8 +729,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeHighestValue > 0)
-                .Where(x => (x.SellOrderLowestPrice - x.AllTimeHighestValue) >= 0)
-                .OrderBy(x => Math.Abs(x.SellOrderLowestPrice - x.AllTimeHighestValue));
+                .Where(x => x.SellOrderLowestPrice >= x.AllTimeHighestValue)
+                .OrderBy(x => x.SellOrderLowestPrice - x.AllTimeHighestValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
@@ -708,8 +773,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeLowestValue > 0)
-                .Where(x => (x.SellOrderLowestPrice - x.AllTimeLowestValue) <= 0)
-                .OrderBy(x => Math.Abs(x.SellOrderLowestPrice - x.AllTimeLowestValue));
+                .Where(x => x.SellOrderLowestPrice <= x.AllTimeLowestValue)
+                .OrderBy(x => x.AllTimeLowestValue - x.SellOrderLowestPrice);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()

@@ -419,6 +419,16 @@
             <response code="200">The top 10 results that match the search query</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketTotals">
+            <summary>
+            Get marketplace totals
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <response code="200">Marketplace totals for the current app.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketIndexFund(System.Int32)">
             <summary>
             Get marketplace index fund chart data, grouped by day (UTC)
@@ -496,6 +506,13 @@
             <param name="start">Starting from date</param>
             <param name="end">Ending at date</param>
             <response code="200">The store item top seller changes timeline.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsTypeDistribution">
+            <summary>
+            Get distribution of item types from accepted items and workshop submissions
+            </summary>
+            <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostDemanded(System.Int32,System.Int32)">
