@@ -599,23 +599,34 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get distribution of item types from accepted items and workshop submissions
         /// </summary>
+        /// <param name="fromYear">If specified, only items created on or after this year will be counted</param>
+        /// <param name="toYear">If specified, only items created on or before this year will be counted</param>
         /// <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("items/typeDistribution")]
         [ProducesResponseType(typeof(IEnumerable<ItemTypeDistributionChartPointDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsTypeDistribution()
+        public async Task<IActionResult> GetItemsTypeDistribution([FromQuery] int? fromYear = null, [FromQuery] int? toYear = null)
         {
             var appId = this.App().Guid;
+            fromYear = (fromYear ?? DateTime.MinValue.Year);
+            toYear = (toYear ?? DateTime.Now.Year);
+
             var itemTypeDistribution = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == appId)
+                .Where(x => x.IsAccepted)
+                .Where(x => x.TimeAccepted != null && x.TimeAccepted.Value.Year >= fromYear.Value && x.TimeAccepted.Value.Year <= toYear)
                 .GroupBy(x => x.ItemType)
                 .Where(x => x.Key != null)
                 .Select(x => new ItemTypeDistributionChartPointDTO
                 {
                     ItemType = x.Key,
-                    Submitted = _db.SteamWorkshopFiles.Count(y => y.ItemType == x.Key), 
+                    Submitted = _db.SteamWorkshopFiles
+                        .Where(y => y.AppId == appId)
+                        .Where(y => y.ItemType == x.Key)
+                        .Where(y => y.TimeCreated != null && y.TimeCreated.Value.Year >= fromYear.Value && y.TimeCreated.Value.Year <= toYear)
+                        .Count(), 
                     Accepted = x.Count(y => y.IsAccepted),
                 })
                 .ToListAsync();

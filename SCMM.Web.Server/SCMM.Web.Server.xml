@@ -508,10 +508,12 @@
             <response code="200">The store item top seller changes timeline.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsTypeDistribution">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsTypeDistribution(System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Get distribution of item types from accepted items and workshop submissions
             </summary>
+            <param name="fromYear">If specified, only items created on or after this year will be counted</param>
+            <param name="toYear">If specified, only items created on or before this year will be counted</param>
             <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>

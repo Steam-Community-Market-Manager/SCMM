@@ -15,58 +15,76 @@
 <MudGrid Spacing="2">
 
     <MudItem xs="12">
-        <StatisticsPanel Icon="fas fa-fw fa-tshirt mr-1" Title="Most Popular Item Type" Subtitle="Which item types have the most number of accepted in-game items?" Dense="true">
-            @if (ItemTypeDistributionChartData == null)
-            {
-                <div class="d-flex align-center justify-center full-width full-height pa-2">
-                    <Loading Message="Loading item type distribution..." />
-                </div>
-            }
-            else
-            {
-                <SfChart ID="ItemTypeDistribution" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" EnableSideBySidePlacement="false" Width="100%" Height="100%">
-                    <ChartArea>
-                        <ChartAreaBorder Width="0"></ChartAreaBorder>
-                    </ChartArea>
-                    <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" Interval="1" LabelRotation="45" LabelIntersectAction="LabelIntersectAction.Trim"
-                                       ZoomFactor="0.3" ZoomPosition="0" EnableScrollbarOnZooming="false">
-                        <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
-                        <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
-                        <ChartAxisScrollbarSettings Enable="true"></ChartAxisScrollbarSettings>
-                    </ChartPrimaryXAxis>
-                    <ChartPrimaryYAxis Title="Number of items">
-                        <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
-                        <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
-                        <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
-                    </ChartPrimaryYAxis>
-                    <ChartSeriesCollection>
-                        <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.5" XName="ItemType" YName="Total" Name="Total Items" Type="ChartSeriesType.Column">
-                            <ChartMarker>
-                                <ChartDataLabel Visible="true" Alignment="Alignment.Center" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
-                                    <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
-                                </ChartDataLabel>
-                            </ChartMarker>
-                        </ChartSeries>
-                        <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.4" XName="ItemType" YName="Submitted" Name="Submitted Items" Type="ChartSeriesType.Column">
-                            <ChartMarker>
-                                <ChartDataLabel Visible="true" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
-                                    <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
-                                </ChartDataLabel>
-                            </ChartMarker>
-                        </ChartSeries>
-                        <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.3" XName="ItemType" YName="Accepted" Name="Accepted Items" Type="ChartSeriesType.Column">
-                            <ChartMarker>
-                                <ChartDataLabel Visible="true" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
-                                    <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
-                                </ChartDataLabel>
-                            </ChartMarker>
-                        </ChartSeries>
-                    </ChartSeriesCollection>
-                    <ChartCrosshairSettings Enable="true" LineType="LineType.None"></ChartCrosshairSettings>
-                    <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
-                    <ChartLegendSettings Visible="true"></ChartLegendSettings>
-                </SfChart>
-            }
+        <StatisticsPanel Icon="fas fa-fw fa-tshirt mr-1" Title="Most Accepted Item Type" Subtitle="Which item types have the most number of accepted in-game items?" Dense="true">
+            <ActionContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                    <MudDatePicker Date="ItemTypeDistributionDateStart" Label="From Year" OpenTo="OpenTo.Year" DateFormat="yyyy" FixDay="1" FixMonth="1" DateChanged="@(async (x) => await LoadItemTypeDistribution(x, null))" />
+                    <MudText Typo="Typo.h6"><i class="fas fa-fw fa-arrow-right"></i></MudText>
+                    <MudDatePicker Date="ItemTypeDistributionDateEnd" Label="To Year" OpenTo="OpenTo.Year" DateFormat="yyyy" FixDay="31" FixMonth="12" DateChanged="@(async (x) => await LoadItemTypeDistribution(null, x))" />
+                </MudStack>
+            </ActionContent>
+            <ChildContent>
+                @if (ItemTypeDistributionChartData == null)
+                {
+                    <div class="d-flex align-center justify-center full-width full-height pa-2">
+                        <Loading Message="Loading item type distribution..." />
+                    </div>
+                }
+                else
+                {
+                    <SfChart ID="ItemTypeDistribution" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" EnableSideBySidePlacement="false" Width="100%" Height="100%">
+                        <ChartArea>
+                            <ChartAreaBorder Width="0"></ChartAreaBorder>
+                        </ChartArea>
+                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" Interval="1" LabelRotation="45" LabelIntersectAction="LabelIntersectAction.Trim"
+                                           ZoomFactor="0.3" ZoomPosition="0" EnableScrollbarOnZooming="true" EnableAutoIntervalOnZooming="true">
+                            <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                            <ChartAxisScrollbarSettings Enable="true"></ChartAxisScrollbarSettings>
+                        </ChartPrimaryXAxis>
+                        <ChartPrimaryYAxis Title="Number of items">
+                            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                            <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                        </ChartPrimaryYAxis>
+                        <ChartSeriesCollection>
+                            @*
+                            <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.5" XName="ItemType" YName="Total" Name="Total Items" Type="ChartSeriesType.Column">
+                                <ChartMarker>
+                                    <ChartDataLabel Visible="true" Alignment="Alignment.Center" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                        <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                    </ChartDataLabel>
+                                </ChartMarker>
+                            </ChartSeries>
+                            <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.4" XName="ItemType" YName="Submitted" Name="Submitted Items" Type="ChartSeriesType.Column">
+                                <ChartMarker>
+                                    <ChartDataLabel Visible="true" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                        <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                    </ChartDataLabel>
+                                </ChartMarker>
+                            </ChartSeries>
+                            <ChartSeries DataSource="@ItemTypeDistributionChartData" ColumnWidth="0.3" XName="ItemType" YName="Accepted" Name="Accepted Items" Type="ChartSeriesType.Column">
+                                <ChartMarker>
+                                    <ChartDataLabel Visible="true" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                        <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                    </ChartDataLabel>
+                                </ChartMarker>
+                            </ChartSeries>
+                            *@
+                            <ChartSeries DataSource="@ItemTypeDistributionChartData" XName="ItemType" YName="Accepted" Name="Accepted Items" Type="ChartSeriesType.Column">
+                                <ChartMarker>
+                                    <ChartDataLabel Visible="true" EnableRotation="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                        <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                    </ChartDataLabel>
+                                </ChartMarker>
+                            </ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
+                        <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                        <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                    </SfChart>
+                }
+            </ChildContent>
         </StatisticsPanel>
     </MudItem>
 
@@ -189,6 +207,9 @@
 
     private IEnumerable<ItemTypeDistributionChartPointDTO> ItemTypeDistributionChartData { get; set; }
 
+    private DateTime? ItemTypeDistributionDateStart = new DateTime(2015, 1, 1);
+    private DateTime? ItemTypeDistributionDateEnd = DateTime.Now.Date;
+
     protected override async Task OnLoadStateAsync()
     {
         ItemTypeDistributionChartData = await RestoreFromStateOrLoad(nameof(ItemTypeDistributionChartData), async () =>
@@ -216,7 +237,7 @@
     {
         ExternalNavigationManager.NavigateToItem(item);
     }
-    
+
     private void ShowItemEstimatedSupplyDialog(ItemSupplyStatisticDTO item)
     {
         Dialogs.Show<ViewItemEstimatedSupplyDialog>(null, parameters: new DialogParameters()
@@ -225,7 +246,7 @@
             ["ItemUrl"] = $"/api/item/{item.Id}"
         });
     }
-    
+
     private void ShowItemCollectionDialog(DashboardAssetCollectionDTO collection)
     {
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
@@ -234,7 +255,7 @@
             ["CollectionUrl"] = $"api/item/collection/{collection.Name}?creatorId={collection.CreatorId}"
         });
     }
-    
+
     private void ShowProfileItemsDialog(ProfileAcceptedItemsStatisticDTO profile)
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
@@ -251,14 +272,23 @@
         return $"color: {item.ForegroundColour}";
     }
 
-    protected async Task<IEnumerable<ItemTypeDistributionChartPointDTO>> LoadItemTypeDistribution()
+    protected async Task<IEnumerable<ItemTypeDistributionChartPointDTO>> LoadItemTypeDistribution(DateTime? start = null, DateTime? end = null)
     {
         try
         {
             ItemTypeDistributionChartData = null;
+            if (start != null)
+            {
+                ItemTypeDistributionDateStart = start.Value;
+            }
+            if (end != null)
+            {
+                ItemTypeDistributionDateEnd = end.Value;
+            }
+
             StateHasChanged();
 
-            return ItemTypeDistributionChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemTypeDistributionChartPointDTO>>($"api/stats/items/typeDistribution");
+            return ItemTypeDistributionChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemTypeDistributionChartPointDTO>>($"api/stats/items/typeDistribution?fromYear={ItemTypeDistributionDateStart?.Year}&toYear={ItemTypeDistributionDateEnd?.Year}");
         }
         catch (Exception ex)
         {
