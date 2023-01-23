@@ -38,18 +38,16 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamWebApiClient _apiClient;
-        private readonly SteamCommunityWebClient _communityClient;
         private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamItemDefinition(ILogger<ImportSteamItemDefinition> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamItemDefinition(ILogger<ImportSteamItemDefinition> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _apiClient = apiClient;
-            _communityClient = communityClient;
             _serviceBus = serviceBus;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;

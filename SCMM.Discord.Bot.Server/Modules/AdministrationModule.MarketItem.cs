@@ -125,7 +125,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     x => x.Content = $"Importing market items {paginationStart}/{searchResults?.TotalCount.ToString() ?? "???"}..."
                 );
 
-                searchResults = await _proxiedCommunityClient.GetMarketSearchPaginated(new SteamMarketSearchPaginatedJsonRequest()
+                searchResults = await _communityClient.GetMarketSearchPaginated(new SteamMarketSearchPaginatedJsonRequest()
                 {
                     AppId = appId.ToString(),
                     GetDescriptions = true,

@@ -32,9 +32,9 @@ namespace SCMM.Steam.API.Commands
     public class ImportFileData : ICommandHandler<ImportFileDataRequest, ImportFileDataResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly SteamCommunityWebClient _communityClient;
+        private readonly ProxiedSteamCommunityWebClient _communityClient;
 
-        public ImportFileData(SteamDbContext db, SteamCommunityWebClient communityClient)
+        public ImportFileData(SteamDbContext db, ProxiedSteamCommunityWebClient communityClient)
         {
             _db = db;
             _communityClient = communityClient;

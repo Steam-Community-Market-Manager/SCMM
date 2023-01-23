@@ -19,25 +19,6 @@ namespace SCMM.Steam.Client
             : base(logger, cache)
         {
         }
-
-        #region Item Store
-
-        public async Task<XElement> GetStorePage(SteamItemStorePageRequest request, bool useCache = false)
-        {
-            return await GetHtml<SteamItemStorePageRequest>(request, useCache);
-        }
-
-        public async Task<XElement> GetStoreDetailPage(SteamItemStoreDetailPageRequest request, bool useCache = false)
-        {
-            return await GetHtml<SteamItemStoreDetailPageRequest>(request, useCache);
-        }
-
-        public async Task<SteamItemStoreGetItemDefsPaginatedJsonResponse> GetStorePaginated(SteamItemStoreGetItemDefsPaginatedJsonRequest request, bool useCache = false)
-        {
-            return await GetJson<SteamItemStoreGetItemDefsPaginatedJsonRequest, SteamItemStoreGetItemDefsPaginatedJsonResponse>(request, useCache);
-        }
-
-        #endregion
     }
 
     /// <inheritdoc />
@@ -66,6 +47,25 @@ namespace SCMM.Steam.Client
             DefaultHeaders.Add("User-Agent", "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Mobile Safari/537.36");
             DefaultHeaders.Add("X-Requested-With", "XMLHttpRequest");
         }
+
+        #region Item Store
+
+        public async Task<XElement> GetStorePage(SteamItemStorePageRequest request, bool useCache = false)
+        {
+            return await GetHtml<SteamItemStorePageRequest>(request, useCache);
+        }
+
+        public async Task<XElement> GetStoreDetailPage(SteamItemStoreDetailPageRequest request, bool useCache = false)
+        {
+            return await GetHtml<SteamItemStoreDetailPageRequest>(request, useCache);
+        }
+
+        public async Task<SteamItemStoreGetItemDefsPaginatedJsonResponse> GetStorePaginated(SteamItemStoreGetItemDefsPaginatedJsonRequest request, bool useCache = false)
+        {
+            return await GetJson<SteamItemStoreGetItemDefsPaginatedJsonRequest, SteamItemStoreGetItemDefsPaginatedJsonResponse>(request, useCache);
+        }
+
+        #endregion
     }
 
     /// <inheritdoc />

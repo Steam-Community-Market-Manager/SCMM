@@ -18,9 +18,9 @@ public class UpdateStoreStatistics
     private readonly SteamConfiguration _steamConfiguration;
     private readonly SteamDbContext _db;
     private readonly ICommandProcessor _commandProcessor;
-    private readonly SteamStoreWebClient _steamStoreWebClient;
+    private readonly ProxiedSteamStoreWebClient _steamStoreWebClient;
 
-    public UpdateStoreStatistics(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, SteamStoreWebClient steamStoreWebClient)
+    public UpdateStoreStatistics(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, ProxiedSteamStoreWebClient steamStoreWebClient)
     {
         _steamConfiguration = steamConfiguration;
         _commandProcessor = commandProcessor;

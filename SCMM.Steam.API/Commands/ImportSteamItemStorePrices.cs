@@ -24,11 +24,11 @@ namespace SCMM.Steam.API.Commands
     {
         private readonly ILogger<ImportSteamItemStorePrices> _logger;
         private readonly SteamDbContext _db;
-        private readonly SteamCommunityWebClient _client;
+        private readonly ProxiedSteamCommunityWebClient _client;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamItemStorePrices(ILogger<ImportSteamItemStorePrices> logger, SteamDbContext db, SteamCommunityWebClient client, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamItemStorePrices(ILogger<ImportSteamItemStorePrices> logger, SteamDbContext db, ProxiedSteamCommunityWebClient client, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;

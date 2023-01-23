@@ -24,8 +24,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly DiscordDbContext _discordDb;
         private readonly SteamDbContext _steamDb;
         private readonly SteamConfiguration _steamCfg;
-        private readonly SteamCommunityWebClient _communityClient;
-        private readonly ProxiedSteamCommunityWebClient _proxiedCommunityClient;
+        private readonly ProxiedSteamCommunityWebClient _communityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IServiceBus _serviceBus;
@@ -34,13 +33,12 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly IStatisticsService _statisticsService;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ProxiedSteamCommunityWebClient proxiedCommunityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, IStatisticsService statisticsService, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, ProxiedSteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, IStatisticsService statisticsService, CommandService commandService)
         {
             _discordDb = discordDb;
             _steamDb = steamDb;
             _steamCfg = steamCfg;
             _communityClient = communityClient;
-            _proxiedCommunityClient = proxiedCommunityClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _serviceBus = serviceBus;
