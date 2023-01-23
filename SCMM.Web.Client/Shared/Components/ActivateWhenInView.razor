@@ -1,0 +1,20 @@
+﻿@using Ljbc1994.Blazor.IntersectionObserver.Components
+
+<IntersectionObserve>
+    <div @ref="context.Ref.Current" class="full-width full-height">
+        @if (context.IsIntersecting)
+        {
+            @ChildContent
+        }
+    </div>
+</IntersectionObserve>
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+
+}

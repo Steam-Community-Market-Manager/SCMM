@@ -1,3 +1,4 @@
+using Ljbc1994.Blazor.IntersectionObserver;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
@@ -47,6 +48,8 @@ public static class WebAssemblyHostExtensions
 
         services.AddScoped<ExternalNavigationManager>();
         services.AddScoped<DocumentManager>();
+
+        services.AddIntersectionObserver();
 
         services.AddMudServices(config =>
         {
