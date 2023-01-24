@@ -464,8 +464,25 @@ namespace SCMM.Steam.Data.Store
             // Synchronise sales data
             if (newSales != null)
             {
-                SalesHistory.RemoveAll(x => !newSales.Any(y => y.Timestamp == x.Timestamp));
-                SalesHistory.AddRange(newSales.Where(x => !SalesHistory.Any(y => x.Timestamp == y.Timestamp)));
+                // Add or update sales data that is on or after our current highest sales date (if any)
+                // NOTE: This ensures that when Steam consolidates historical sales data, we don't loose any precision
+                var mostRecentSaleTimestamp = (SalesHistory.Any() ? SalesHistory.Max(x => x.Timestamp) : (DateTimeOffset?)null);
+                var salesToBeAddedOrUpdated = newSales.Where(x => mostRecentSaleTimestamp == null || x.Timestamp.Date >= mostRecentSaleTimestamp.Value.Date).ToArray();
+                foreach (var sale in salesToBeAddedOrUpdated)
+                {
+                    var existingSale = SalesHistory.FirstOrDefault(x => x.Timestamp == sale.Timestamp);
+                    if (existingSale != null)
+                    {
+                        // Update existing sales data
+                        existingSale.MedianPrice = sale.MedianPrice;
+                        existingSale.Quantity = sale.Quantity;
+                    }
+                    else
+                    {
+                        // Add new sales data
+                        SalesHistory.Add(sale);
+                    }
+                }
             }
 
             // Sort sales from earliest to latest
