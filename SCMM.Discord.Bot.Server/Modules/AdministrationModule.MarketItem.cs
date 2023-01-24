@@ -36,16 +36,23 @@ namespace SCMM.Discord.Bot.Server.Modules
                     );
                     indexFund[start] = _steamDb.SteamMarketItemSale
                         .AsNoTracking()
-                        .Where(x => x.Item.App.SteamId == appId.ToString())
+                        .Where(x => x.Item.AppId == app.Id)
                         .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
+                        .GroupBy(x => x.ItemId)
+                        .Select(x => new
+                        {
+                            TotalSalesVolume = x.Sum(y => y.Quantity),
+                            TotalSalesValue = x.Sum(y => y.MedianPrice * y.Quantity),
+                            AverageItemValue = x.Average(y => y.MedianPrice)
+                        })
                         .ToList()
                         .GroupBy(x => true)
                         .Select(x => new IndexFundStatistic
                         {
-                            TotalItems = x.GroupBy(x => x.ItemId).Count(),
-                            TotalSalesVolume = x.Sum(y => y.Quantity),
-                            TotalSalesValue = x.Sum(y => y.MedianPrice * y.Quantity),
-                            AverageItemValue = x.GroupBy(x => x.ItemId).Average(y => y.Average(z => z.MedianPrice))
+                            TotalItems = x.Count(),
+                            TotalSalesVolume = x.Sum(y => y.TotalSalesVolume),
+                            TotalSalesValue = x.Sum(y => y.TotalSalesValue),
+                            AverageItemValue = x.Average(y => y.AverageItemValue)
                         })
                         .FirstOrDefault();
 
