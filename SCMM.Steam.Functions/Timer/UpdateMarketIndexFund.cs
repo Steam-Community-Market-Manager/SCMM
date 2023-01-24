@@ -19,7 +19,7 @@ public class UpdateMarketIndexFund
     }
 
     [Function("Update-Market-Index-Fund")]
-    public async Task Run([TimerTrigger("0 0 0 * * *")] /* every 24hrs at midnight */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 30 0 * * *")] /* every day, 30 minutes after midnight */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Index-Fund");
 
