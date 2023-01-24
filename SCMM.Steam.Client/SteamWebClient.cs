@@ -136,6 +136,11 @@ namespace SCMM.Steam.Client
                 // 502: BadGateway
                 if (ex.IsTemporaryError)
                 {
+                    if (retryAttempt > 10)
+                    {
+                        // This proxy is timing out too much, maybe it is offline? Rotate to the next proxy if possible
+                        RotateWebProxyForHost(request?.Uri, cooldown: TimeSpan.FromHours(6));
+                    }
                     _logger.LogWarning($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
