@@ -25,7 +25,12 @@ public class WebClient : IDisposable
             PreAuthenticate = (webProxy != null),
             AutomaticDecompression = DecompressionMethods.All,
             AllowAutoRedirect = true,
-            MaxAutomaticRedirections = 3
+            MaxAutomaticRedirections = 3,
+            ClientCertificateOptions = ClientCertificateOption.Manual,
+            ServerCertificateCustomValidationCallback = (_webProxy == null ? null :
+                // Http web proxy might MiTM the SSL certificate, so ignore invalid certs when using a proxy
+                (httpRequestMessage, cert, cetChain, policyErrors) => true
+            )
         };
     }
 
