@@ -51,7 +51,7 @@
                             {
                                 <MudSkeleton SkeletonType="MudBlazor.SkeletonType.Text"></MudSkeleton>
                             }
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">is the current total value of all market listings</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">is the current total value of all listed market items</MudText>
                         </MudStack>
                     </MudStack>
                 </MudPaper>
@@ -364,7 +364,7 @@
         return $"color: {item.ForegroundColour}";
     }
 
-    protected async Task<IEnumerable<MarketIndexFundChartPointDTO>> LoadMarketIndexFund(int maxDays = 30)
+    protected async Task<IEnumerable<MarketIndexFundChartPointDTO>> LoadMarketIndexFund(int maxDays = 365)
     {
         try
         {

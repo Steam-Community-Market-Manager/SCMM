@@ -6,10 +6,10 @@
 <PageContainer Title="@($"{State?.App?.Name} Market Statistics")">
     <MudTabs Elevation="0" Class="mud-tabs-transparent mt-n3">
         <ChildContent>
-            <MudTabPanel Icon="fas fa-fw fa-balance-scale-right mr-2" Text="Market" Disabled="State.IsPrerendering">
+            <MudTabPanel Icon="fas fa-fw fa-balance-scale-right mr-3" Text="@($"{State.App.Name} Market")" Disabled="State.IsPrerendering">
                 <StatisticsMarketPanel />
             </MudTabPanel>
-            <MudTabPanel Icon="fas fa-fw fa-list-ol mr-2" Text="Items" Disabled="State.IsPrerendering">
+            <MudTabPanel Icon="fas fa-fw fa-list-ol mr-3" Text="@($"{State.App.Name} Items")" Disabled="State.IsPrerendering">
                 <StatisticsItemPanel />
             </MudTabPanel>
 		</ChildContent>

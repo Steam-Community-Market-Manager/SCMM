@@ -30,7 +30,7 @@
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
         <MudNavLink Href="/workshop" Icon="fas fa-fw fa-tools" Disabled="@State.IsPrerendering">
-            <span class="no-wrap">Workshop</span>
+            <span class="no-wrap">Workshop Submissions</span>
         </MudNavLink>
     }
     @*
@@ -50,7 +50,7 @@
     </MudNavLink>
     *@
     <MudNavLink Href="/stats" Icon="fas fa-fw fa-chart-pie" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Market Statistics</span>
+        <span class="no-wrap">Statistics</span>
     </MudNavLink>
 
     <MudDivider />
@@ -59,15 +59,6 @@
         <span class="no-wrap">Help Me</span>
     </MudNavLink>
     
-    <MudDivider />
-    
-    <MudNavLink Href="/about" Icon="fas fa-fw fa-info-circle" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">About</span>
-    </MudNavLink>
-    <MudNavLink OnClick="ShowDonationDialog" Icon="fas fa-fw fa-fw fa-donate" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Donate</span>
-    </MudNavLink>
-
     @if (State.SystemStatus != null) 
     {
         var systemStatus = State.SystemStatus.Status;
@@ -81,7 +72,7 @@
                 @switch(systemStatus)
                 {
                     case SystemStatusSeverity.Normal:
-                        <span class="no-wrap">Services are OK</span>
+                        <span class="no-wrap">Services are normal</span>
                         break;
                     case SystemStatusSeverity.Degraded:
                         <span class="no-wrap">Services are degraded</span>
