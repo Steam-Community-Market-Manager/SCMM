@@ -263,7 +263,7 @@ namespace SCMM.Steam.API.Commands
                 string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase) || 
                 (string.IsNullOrEmpty(assetClass.Marketable) && !string.IsNullOrEmpty(assetClass.MarketHashName))
             );
-            var needsDescription = ((!assetClassHasItemDescription && string.IsNullOrEmpty(assetDescription.Description)) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
+            var needsDescription = (!assetClassHasItemDescription && string.IsNullOrEmpty(assetDescription.Description));
             var needsNameId = (assetDescription.NameId == null);
             if (assetIsMarketable && (needsDescription || needsNameId) && request.LookupAdditionalItemInfo)
             {
@@ -276,7 +276,7 @@ namespace SCMM.Steam.API.Commands
 
             // Get store details from Steam (if item description is missing and it is a recently accepted store item)
             var storeItemPageHtml = (XElement)null;
-            var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
+            var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(10)));
             if (assetIsRecentlyAccepted && needsDescription && request.LookupAdditionalItemInfo)
             {
                 var storeItems = await _storeClient.GetStorePaginated(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
