@@ -36,7 +36,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     );
                     indexFund[start] = _steamDb.SteamMarketItemSale
                         .AsNoTracking()
-                        .Where(x => x.Item.SteamId == appId.ToString())
+                        .Where(x => x.Item.App.SteamId == appId.ToString())
                         .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
                         .GroupBy(x => x.ItemId)
                         .Select(x => new
