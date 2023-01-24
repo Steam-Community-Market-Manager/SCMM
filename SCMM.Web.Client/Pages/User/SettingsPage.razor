@@ -196,7 +196,7 @@
                                     <MudSwitch T="bool" Checked="@Update.ItemIncludeMarketFees" CheckedChanged="((x) => { Update.ItemIncludeMarketFees = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.ItemIncludeMarketFees ? "Include" : "Exclude")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Item Drops" 
-                                            Description="Should 'free' item drops (e.g. Twitch and Facepunch items) be shown when viewing item inventories and item collections.">  
+                                            Description="@($"Should 'free' item drops (e.g. Twitch and {State.App.PublisherName} items) be shown when viewing item inventories and item collections.")">
                                     <MudSwitch T="bool" Checked="@Update.InventoryShowItemDrops" CheckedChanged="((x) => { Update.InventoryShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.InventoryShowItemDrops ? "Show" : "Hide")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Unmarketable Items" 
@@ -262,7 +262,7 @@
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="Item Updated" 
-                                            Description="Be notified when accepted items are updated. This doesn't happen often, but occasionally Facepunch will modify or fix items after they have been accepted in-game. In rare instances, the appearance of items can be modified. Recommended if you'd like to stay up to day with potential changes to in-game items.">
+                                            Description="@($"Be notified when accepted items are updated. This doesn't happen often, but occasionally {State.App.PublisherName} will modify or fix items after they have been accepted in-game. In rare instances, the appearance of items can be modified. Recommended if you'd like to stay up to day with potential changes to in-game items.")">
                                     <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
                                        <MudSelectItem Value="@("Disabled")" />
                                     </MudSelect>

@@ -1,5 +1,6 @@
 ﻿using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
+using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -17,6 +18,8 @@ namespace SCMM.Steam.Data.Store
             StoreItems = new Collection<SteamStoreItem>();
             ItemStores = new Collection<SteamItemStore>();
             ItemDefinitionArchives = new Collection<SteamItemDefinitionsArchive>();
+            DiscordCommunities = new PersistableStringCollection();
+            EconomyMedia = new PersistableStringCollection();
         }
 
         [NotMapped]
@@ -24,6 +27,8 @@ namespace SCMM.Steam.Data.Store
 
         [Required]
         public string SteamId { get; set; }
+
+        public string PublisherName { get; set; }
 
         [Required]
         public string Name { get; set; }
@@ -64,6 +69,10 @@ namespace SCMM.Steam.Data.Store
         public ICollection<SteamItemStore> ItemStores { get; set; }
 
         public ICollection<SteamItemDefinitionsArchive> ItemDefinitionArchives { get; set; }
+
+        public PersistableStringCollection DiscordCommunities { get; set; }
+
+        public PersistableStringCollection EconomyMedia { get; set; }
 
         public bool IsActive { get; set; }
     }

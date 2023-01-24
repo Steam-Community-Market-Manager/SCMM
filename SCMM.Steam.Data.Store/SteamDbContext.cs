@@ -72,6 +72,10 @@ namespace SCMM.Steam.Data.Store
                 .HasMany(x => x.ItemDefinitionArchives)
                 .WithOne(x => x.App)
                 .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<SteamApp>()
+                .OwnsOne(x => x.DiscordCommunities);
+            builder.Entity<SteamApp>()
+                .OwnsOne(x => x.EconomyMedia);
 
             builder.Entity<SteamAssetFilter>()
                 .OwnsOne(x => x.Options);

@@ -17,37 +17,24 @@
                     <DiscordInvite InviteCode="mkwp9ZSBXk" /><!-- SCMM -->
                 </MudItem>
 
-                <MudItem xs="12">
-                    <MudText Typo="Typo.h6" Color="Color.Default">
-                        <span>@State.App.Name Communities</span>
-                    </MudText>
-                    <MudDivider />
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
-                        <p>Want to discuss @State.App.Name skins and the Steam Community Market with other like minded people? Consider joining these Discord communities.</p>
-                    </MudText>
-                </MudItem>
-                <MudItem xs="12">
-                    <DiscordInvite InviteCode="3yBcVWygjB" /><!-- Rust Skin Making -->
-                </MudItem>
-                <MudItem xs="12">
-                    <DiscordInvite InviteCode="vwRepVrVur" /><!-- RUST RU -->
-                </MudItem>
-                <MudItem xs="12">
-                    <DiscordInvite InviteCode="8zdsZ9Qu3a" /><!-- The Rust Exchange -->
-                </MudItem>
-                <MudItem xs="12">
-                    <DiscordInvite InviteCode="ecM3FYRJQy" /><!-- OMIGHTY -->
-                </MudItem>
-                <MudItem xs="12">
-                    <DiscordInvite InviteCode="MZgQ3966Jb" /><!-- ThatGermanGuy -->
-                </MudItem>
-                <MudItem xs="12">
-                    <DiscordInvite InviteCode="CUtPfdwRUP" /><!-- Hedges Marketplace -->
-                </MudItem>
-                <MudItem xs="12">
-                    <DiscordInvite InviteCode="BEYC3Pt462" /><!-- Skin Earningsite Hustlers -->
-                </MudItem>
-
+                @if (State.App.DiscordCommunities?.Any() == true)
+                {
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Color="Color.Default">
+                            <span>@State.App.Name Communities</span>
+                        </MudText>
+                        <MudDivider />
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
+                            <p>Want to discuss @State.App.Name skins and the Steam Community Market with other like minded people? Consider joining these Discord communities.</p>
+                        </MudText>
+                    </MudItem>
+                    @foreach (var community in State.App.DiscordCommunities)
+                    {
+                        <MudItem xs="12">
+                            <DiscordInvite InviteCode="@community" />
+                        </MudItem>
+                    }
+                }
             </MudGrid>
         </MudItem>
         <MudItem xs="12" md="6" lg="7" xl="9">
@@ -69,38 +56,26 @@
                         </MudItem>
                     </MudGrid>
                 </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.h6" Color="Color.Default">
-                        <span>@State.App.Name Economy</span>
-                    </MudText>
-                    <MudDivider />
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
-                        <p>Want to learn more about the @State.App.Name and Steam Community Market economy? Watch these videos.</p>
-                    </MudText>
-                    <MudGrid Spacing="2">
-                        <MudItem xs="12" md="12" lg="6" xl="4">
-                            <YouTubeVideo VideoId="eZt0Gfq0_IE" /><!-- Rust Economy 101: Rust Store & Skins -->
-                        </MudItem>
-                        <MudItem xs="12" md="12" lg="6" xl="4">
-                            <YouTubeVideo VideoId="CBv8CI0mURU" /><!-- Rust Economy 101: Abnormals and Rust Store Rotation -->
-                        </MudItem>
-                        <MudItem xs="12" md="12" lg="6" xl="4">
-                            <YouTubeVideo VideoId="Jzc6FCfrpSU" /><!-- Rust Economy 101: Christmas Momentum (Long Term Investing Patterns) -->
-                        </MudItem>
-                        <MudItem xs="12" md="12" lg="6" xl="4">
-                            <YouTubeVideo VideoId="RSYdqntKERw" /><!-- Rust Economy 101: Dumping and Oversaturation -->
-                        </MudItem>
-                        <MudItem xs="12" md="12" lg="6" xl="4">
-                            <YouTubeVideo VideoId="Mu9LDr9lmiA" /><!-- Rust Economy 101: Speculation & Anticipation -->
-                        </MudItem>
-                        <MudItem xs="12" md="12" lg="6" xl="4">
-                            <YouTubeVideo VideoId="z1lJERm7VDk" /><!-- PAY TO WIN Rust Skins Clothing & Armour -->
-                        </MudItem>
-                        <MudItem xs="12" md="12" lg="6" xl="4">
-                            <YouTubeVideo VideoId="PiTPEIkHadE" /><!-- All Rust Glowsight Gun Skins | PAY TO WIN! -->
-                        </MudItem>
-                    </MudGrid>
-                </MudItem>
+                @if (State.App.DiscordCommunities?.Any() == true)
+                {
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Color="Color.Default">
+                            <span>@State.App.Name Economy</span>
+                        </MudText>
+                        <MudDivider />
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mt-2" GutterBottom="true">
+                            <p>Want to learn more about the @State.App.Name and Steam Community Market economy? Watch these videos.</p>
+                        </MudText>
+                        <MudGrid Spacing="2">
+                            @foreach (var media in State.App.EconomyMedia)
+                            {
+                                <MudItem xs="12" md="12" lg="6" xl="4">
+                                    <YouTubeVideo VideoId="@media" />
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudItem>
+                }
             </MudGrid>
         </MudItem>
     </MudGrid>
