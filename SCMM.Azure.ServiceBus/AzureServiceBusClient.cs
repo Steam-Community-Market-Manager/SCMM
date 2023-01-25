@@ -23,7 +23,7 @@ namespace SCMM.Azure.ServiceBus
 
         public async Task ScheduleMessageAsync<T>(DateTimeOffset scheduledEnqueueTime, T message, CancellationToken cancellationToken = default) where T : class, IMessage
         {
-            await using var sender = _client.CreateSender<T>();
+            await using var sender = _client.CreateSender(message.GetType());
             await sender.ScheduleMessageAsync(
                 new ServiceBusJsonMessage<T>(message),
                 scheduledEnqueueTime,
@@ -33,7 +33,7 @@ namespace SCMM.Azure.ServiceBus
 
         public async Task SendMessageAsync<T>(T message, CancellationToken cancellationToken = default) where T : class, IMessage
         {
-            await using var sender = _client.CreateSender<T>();
+            await using var sender = _client.CreateSender(message.GetType());
             await sender.SendMessageAsync(
                 new ServiceBusJsonMessage<T>(message),
                 cancellationToken
@@ -42,16 +42,19 @@ namespace SCMM.Azure.ServiceBus
 
         public async Task SendMessagesAsync<T>(IEnumerable<T> messages, CancellationToken cancellationToken = default) where T : class, IMessage
         {
-            await using var sender = _client.CreateSender<T>();
-            using var batch = await sender.CreateMessageBatchAsync(cancellationToken);
-            foreach (var message in messages)
+            foreach (var messageGroup in messages.GroupBy(x => x.GetType()).Where(x => x.Any()))
             {
-                batch.TryAddMessage(
-                    new ServiceBusJsonMessage<T>(message)
-                );
-            }
+                await using var sender = _client.CreateSender(messageGroup.FirstOrDefault().GetType());
+                using var batch = await sender.CreateMessageBatchAsync(cancellationToken);
+                foreach (var message in messages)
+                {
+                    batch.TryAddMessage(
+                        new ServiceBusJsonMessage<T>(message)
+                    );
+                }
 
-            await sender.SendMessagesAsync(batch, cancellationToken);
+                await sender.SendMessagesAsync(batch, cancellationToken);
+            }
         }
 
         public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, int maxTimeToWaitSeconds = 30, CancellationToken cancellationToken = default)
