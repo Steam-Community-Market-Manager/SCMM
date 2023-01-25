@@ -558,7 +558,7 @@ namespace SCMM.Steam.Data.Store
                 var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Min(x => x.MedianPrice));
                 var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Max(x => x.MedianPrice));
                 
-                if (allTimeLow?.Timestamp > AllTimeLowestValueOn && (allTimeLow?.MedianPrice ?? 0) > AllTimeLowestValue)
+                if (allTimeLow?.Timestamp > AllTimeLowestValueOn && (allTimeLow?.MedianPrice ?? 0) < AllTimeLowestValue)
                 {
                     AllTimeLowestValue = allTimeLow.MedianPrice;
                     AllTimeLowestValueOn = allTimeLow.Timestamp;
