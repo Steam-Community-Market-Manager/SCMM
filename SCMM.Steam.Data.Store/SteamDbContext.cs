@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.Data.Store
@@ -29,14 +30,49 @@ namespace SCMM.Steam.Data.Store
 
         public DbSet<FileData> FileData { get; set; }
 
-        public SteamDbContext(DbContextOptions<SteamDbContext> options)
+        private readonly IServiceBus _serviceBus;
+
+        public SteamDbContext(DbContextOptions<SteamDbContext> options, IServiceBus serviceBus)
             : base(options)
         {
+            _serviceBus = serviceBus;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //optionsBuilder.UseLoggerFactory(DebugLoggerFactory);
+
+            SavedChanges += async (s, e) =>
+            {
+                await DispatchRaisedEventsFromSavedEntities(s, e);
+            };
+        }
+
+        private async Task DispatchRaisedEventsFromSavedEntities(object sender, SavedChangesEventArgs e)
+        {
+            if (_serviceBus == null)
+            {
+                return;
+            }
+
+            var eventAwareEntities = ChangeTracker.Entries()
+                .Select(x => x.Entity as IEventAwareEntity)
+                .Where(x => x != null)
+                .ToArray();
+
+            var eventsToSend = eventAwareEntities
+                .SelectMany(x => x.RaisedEvents ?? Enumerable.Empty<IMessage>())
+                .ToArray();
+
+            foreach (var entity in eventAwareEntities)
+            {
+                entity.ClearEvents();
+            }
+
+            if (eventsToSend.Any())
+            {
+                await _serviceBus.SendMessagesAsync(eventsToSend);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

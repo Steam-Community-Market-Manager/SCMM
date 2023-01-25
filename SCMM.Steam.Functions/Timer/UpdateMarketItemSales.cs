@@ -30,12 +30,12 @@ public class UpdateMarketItemSales
 
         var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
         var items = _db.SteamMarketItems
+            .Include(x => x.App)
             .Include(x => x.Currency)
+            .Include(x => x.Description)
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedSalesOn)
-            .Include(x => x.App)
-            .Include(x => x.Description)
             .Take(50) // batch 50 items per minute
             .ToList();
 

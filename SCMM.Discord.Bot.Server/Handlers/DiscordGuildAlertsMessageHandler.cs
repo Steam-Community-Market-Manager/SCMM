@@ -129,12 +129,52 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemPriceAllTimeHighReachedMessage marketItem, IMessageContext context)
         {
-            throw new NotImplementedException();
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceAllTimeHighReached, (guildId, channelId) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"Reached a new **all-time-high** price of **{marketItem.AllTimeHighestValueDescription}** on the {marketItem.AppName} community market.");
+
+                return _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    title: marketItem.ItemName,
+                    url: new SteamMarketListingPageRequest()
+                    {
+                        AppId = marketItem.AppId.ToString(),
+                        MarketHashName = marketItem.ItemName
+                    },
+                    thumbnailUrl: !String.IsNullOrEmpty(marketItem.ItemIconUrl) ? marketItem.ItemIconUrl :
+                                  !String.IsNullOrEmpty(marketItem.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{marketItem.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    color: Color.Green,
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
+                );
+            });
         }
 
         public async Task HandleAsync(MarketItemPriceAllTimeLowReachedMessage marketItem, IMessageContext context)
         {
-            throw new NotImplementedException();
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceAllTimeLowReached, (guildId, channelId) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"Reached a new **all-time-low** price of **{marketItem.AllTimeLowestValueDescription}** on the {marketItem.AppName} community market.");
+
+                return _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    title: marketItem.ItemName,
+                    url: new SteamMarketListingPageRequest()
+                    {
+                        AppId = marketItem.AppId.ToString(),
+                        MarketHashName = marketItem.ItemName
+                    },
+                    thumbnailUrl: !String.IsNullOrEmpty(marketItem.ItemIconUrl) ? marketItem.ItemIconUrl :
+                                  !String.IsNullOrEmpty(marketItem.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{marketItem.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    color: Color.Red,
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
+                );
+            });
         }
 
         public async Task HandleAsync(MarketItemPriceProfitableDealDetectedMessage marketItem, IMessageContext context)

@@ -1,4 +1,5 @@
-﻿using SCMM.Shared.Data.Models.Extensions;
+﻿using SCMM.Shared.API.Events;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -556,11 +557,48 @@ namespace SCMM.Steam.Data.Store
                 var allTimeAverage = (long)Math.Round(salesAfterFirstSevenDays.Length > 0 ? salesAfterFirstSevenDays.Average(x => x.MedianPrice) : 0, 0);
                 var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Min(x => x.MedianPrice));
                 var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Max(x => x.MedianPrice));
+                
+                if (allTimeLow?.Timestamp > AllTimeLowestValueOn && (allTimeLow?.MedianPrice ?? 0) > AllTimeLowestValue)
+                {
+                    AllTimeLowestValue = allTimeLow.MedianPrice;
+                    AllTimeLowestValueOn = allTimeLow.Timestamp;
+                    RaiseEvent(new MarketItemPriceAllTimeLowReachedMessage()
+                    {
+                        AppId = (App != null ? UInt64.Parse(App.SteamId) : 0),
+                        AppName = App?.Name,
+                        ItemId = (Description?.ClassId ?? 0),
+                        ItemType = Description?.ItemType,
+                        ItemShortName = Description?.ItemShortName,
+                        ItemName = Description?.Name,
+                        ItemIconUrl = Description?.IconUrl ?? Description?.IconLargeUrl,
+                        Currency = Currency?.SteamId,
+                        AllTimeLowestValue = allTimeLow.MedianPrice,
+                        AllTimeLowestValueDescription = Currency?.ToPriceString(allTimeLow.MedianPrice),
+                        AllTimeLowestValueOn = allTimeLow.Timestamp
+                    });
+                }
+
+                if (allTimeHigh?.Timestamp > AllTimeHighestValueOn && (allTimeHigh?.MedianPrice ?? 0) > AllTimeHighestValue)
+                {
+                    AllTimeHighestValue = allTimeHigh.MedianPrice;
+                    AllTimeHighestValueOn = allTimeHigh.Timestamp;
+                    RaiseEvent(new MarketItemPriceAllTimeHighReachedMessage()
+                    {
+                        AppId = (App != null ? UInt64.Parse(App.SteamId) : 0),
+                        AppName = App?.Name,
+                        ItemId = (Description?.ClassId ?? 0),
+                        ItemType = Description?.ItemType,
+                        ItemShortName = Description?.ItemShortName,
+                        ItemName = Description?.Name,
+                        ItemIconUrl = Description?.IconUrl ?? Description?.IconLargeUrl,
+                        Currency = Currency?.SteamId,
+                        AllTimeHighestValue = allTimeHigh.MedianPrice,
+                        AllTimeHighestValueDescription = Currency?.ToPriceString(allTimeHigh.MedianPrice),
+                        AllTimeHighestValueOn = allTimeHigh.Timestamp
+                    });
+                }
+
                 AllTimeAverageValue = allTimeAverage;
-                AllTimeHighestValue = (allTimeHigh?.MedianPrice ?? 0);
-                AllTimeHighestValueOn = allTimeHigh?.Timestamp;
-                AllTimeLowestValue = (allTimeLow?.MedianPrice ?? 0);
-                AllTimeLowestValueOn = allTimeLow?.Timestamp;
             }
 
             RecalulateIsBeingManipulated();

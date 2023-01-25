@@ -19,7 +19,7 @@ namespace SCMM.Discord.API.Commands
 
         public async Task HandleAsync(SendMessageRequest request)
         {
-            await _serviceBus.SendMessageAsync<SendDiscordMessage>(request);
+            await _serviceBus.SendMessageAsync(request);
         }
     }
 }
