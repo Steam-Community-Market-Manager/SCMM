@@ -123,6 +123,12 @@ else
                         <span>Game Drop <span class="mud-secondary-text">(Free)</span></span>
                         break;
                     }
+                    case SteamProfileInventoryItemAcquisitionType.Bundle: 
+                    {
+                        <i class="fa fa-fw fa-box mr-1" />
+                            <span>Container <span class="mud-secondary-text">(Bag/Crate/Barrel)</span></span>
+                        break;
+                    }
                     default:
                     {
                         @if (context.BuyCurrency != null && context.BuyPrice != null)
@@ -209,6 +215,10 @@ else
                         <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Trade">
                             <i class="fa fa-fw fa-exchange-alt" />
                             <span>Trade</span>
+                        </MudSelectItem>
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Bundle">
+                            <i class="fa fa-fw fa-box" />
+                            <span>Container <span class="mud-secondary-text">(Bag/Crate/Barrel)</span></span>
                         </MudSelectItem>
                         <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Gambling">
                             <i class="fa fa-fw fa-dice" />

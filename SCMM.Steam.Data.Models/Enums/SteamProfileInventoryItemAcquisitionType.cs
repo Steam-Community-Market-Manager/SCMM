@@ -9,5 +9,6 @@
         Gambling,
         Gift,
         Drop,
+        Bundle
     }
 }
