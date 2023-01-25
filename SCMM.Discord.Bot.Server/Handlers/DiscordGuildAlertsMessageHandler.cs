@@ -124,7 +124,43 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemManipulationDetectedMessage marketItem, IMessageContext context)
         {
-            throw new NotImplementedException();
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemManipulationDetected, (guildId, channelId) =>
+            {
+                var description = new StringBuilder();
+                var fields = (IDictionary<string, string>)null;
+                if (marketItem.IsBeingManipulated)
+                {
+                    description.Append($"Appears to be undergoing market manipulation.");
+                    if (!String.IsNullOrEmpty(marketItem.ManipulationReason))
+                    {
+                        fields = new Dictionary<string, string>()
+                        {
+                            { "Reason", marketItem.ManipulationReason }
+                        };
+                    }
+                }
+                else
+                {
+                    description.Append($"Manipulation on this item appears to have faded, market activity has return to normal level.");
+                }
+
+                return _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    title: marketItem.ItemName,
+                    url: new SteamMarketListingPageRequest()
+                    {
+                        AppId = marketItem.AppId.ToString(),
+                        MarketHashName = marketItem.ItemName
+                    },
+                    thumbnailUrl: !String.IsNullOrEmpty(marketItem.ItemIconUrl) ? marketItem.ItemIconUrl :
+                                  !String.IsNullOrEmpty(marketItem.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{marketItem.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    fields: fields,
+                    color: (marketItem.IsBeingManipulated ? Color.Red : Color.Green),
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
+                );
+            });
         }
 
         public async Task HandleAsync(MarketItemPriceAllTimeHighReachedMessage marketItem, IMessageContext context)

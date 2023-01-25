@@ -7,6 +7,24 @@ namespace SCMM.Shared.API.Events
     [DuplicateDetection(DiscardDuplicatesSentWithinLastMinutes = 1440 /* 1 day */)]
     public class MarketItemManipulationDetectedMessage : Message
     {
+        public override string Id => $"{AppId}/{ItemId}";
 
+        public ulong AppId { get; set; }
+
+        public string AppName { get; set; }
+
+        public ulong ItemId { get; set; }
+
+        public string ItemName { get; set; }
+
+        public string ItemType { get; set; }
+
+        public string ItemShortName { get; set; }
+
+        public string ItemIconUrl { get; set; }
+
+        public bool IsBeingManipulated { get; set; }
+
+        public string ManipulationReason { get; set; }
     }
 }
