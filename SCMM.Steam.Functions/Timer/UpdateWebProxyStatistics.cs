@@ -18,7 +18,7 @@ public class UpdateWebProxyStatistics
     }
 
     [Function("Update-Web-Proxy-Statistics")]
-    public async Task Run([TimerTrigger("0 0 0/6 * * *")] /* every 6 hours, on the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0 * * * *")] /* every hour, on the hour */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Web-Proxy-Statistics");
 
