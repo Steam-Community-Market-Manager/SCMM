@@ -5,6 +5,6 @@ public class TimeRangeWithTargetDTO : TimeRangeDTO
     public TimeSpan? TargetDelta { get; set; }
 
     public bool IsOnTarget => (
-        Newest != null && Oldest != null && (DateTimeOffset.Now - Newest)?.Duration() <= TargetDelta && Delta <= TargetDelta
+        Newest != null && Oldest != null && (DateTimeOffset.Now - Oldest)?.Duration() <= TargetDelta && Delta <= TargetDelta
     );
 }
