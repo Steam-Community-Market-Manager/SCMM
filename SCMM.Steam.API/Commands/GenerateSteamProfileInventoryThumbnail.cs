@@ -52,6 +52,7 @@ namespace SCMM.Steam.API.Commands
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
+                .Where(x => x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0 || x.Description.IsTradable || x.Description.TradableRestrictionDays > 0)
                 .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
                 .Where(x => showUnmarketable || (x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0))
                 .Select(x => new

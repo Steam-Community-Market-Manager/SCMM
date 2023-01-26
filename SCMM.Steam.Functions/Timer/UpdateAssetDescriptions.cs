@@ -1,11 +1,9 @@
 ﻿using CommandQuery;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
-using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;

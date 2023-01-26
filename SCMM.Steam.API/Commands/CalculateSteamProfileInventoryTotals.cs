@@ -77,6 +77,7 @@ namespace SCMM.Steam.API.Commands
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => String.IsNullOrEmpty(request.AppId) || x.App.SteamId == request.AppId)
                 .Where(x => x.Description != null)
+                .Where(x => x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0 || x.Description.IsTradable || x.Description.TradableRestrictionDays > 0)
                 .Select(x => new
                 {
                     x.Quantity,
