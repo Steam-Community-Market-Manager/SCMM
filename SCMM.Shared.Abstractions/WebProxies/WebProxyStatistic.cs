@@ -1,15 +1,23 @@
-﻿
-namespace SCMM.Shared.Data.Models.Statistics
+﻿using System.Text.Json.Serialization;
+
+namespace SCMM.Shared.Abstractions.WebProxies
 {
-    public class WebProxyStatistic
+    public class WebProxyStatistic : IWebProxyEndpoint
     {
         public string Source { get; set; }
 
         public string Id { get; set; }
 
+        [JsonIgnore]
+        public string Url => new UriBuilder(Uri.UriSchemeHttp, Address, Port).Uri.ToString();
+
         public string Address { get; set; }
 
         public int Port { get; set; }
+
+        public string Username { get; set; }
+
+        public string Password { get; set; }
 
         public string CountryCode { get; set; }
 

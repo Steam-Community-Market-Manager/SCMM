@@ -23,9 +23,9 @@ using SCMM.Fixer.Client.Extensions;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Finance;
 using SCMM.Shared.Abstractions.Statistics;
+using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
-using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Middleware;
@@ -174,12 +174,8 @@ public static class WebApplicationExtensions
         }
 
         // Web proxies
+        builder.Services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
         builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
-        builder.Services.AddSingleton((services) =>
-        {
-            var configuration = services.GetService<IConfiguration>();
-            return configuration.GetWebProxyConfiguration().Expand();
-        });
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());

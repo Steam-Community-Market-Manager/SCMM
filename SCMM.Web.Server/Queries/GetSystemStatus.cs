@@ -2,6 +2,7 @@
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Abstractions.Statistics;
+using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Store;
@@ -24,13 +25,13 @@ namespace SCMM.Web.Server.Queries
     public class GetSystemStatus : IQueryHandler<GetSystemStatusRequest, GetSystemStatusResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly IStatisticsService _statisticsService;
+        private readonly IWebProxyStatisticsService _webProxyStatisticsService;
         private readonly IMapper _mapper;
 
-        public GetSystemStatus(SteamDbContext db, IStatisticsService statisticsService, IMapper mapper)
+        public GetSystemStatus(SteamDbContext db, IWebProxyStatisticsService webProxyStatisticsService, IMapper mapper)
         {
             _db = db;
-            _statisticsService = statisticsService;
+            _webProxyStatisticsService = webProxyStatisticsService;
             _mapper = mapper;
         }
 
@@ -98,8 +99,7 @@ namespace SCMM.Web.Server.Queries
             if (request.IncludeWebProxies)
             {
                 webProxies = _mapper.Map<IEnumerable<WebProxyStatistic>, IEnumerable<SystemStatusWebProxyDTO>>(
-                    (await _statisticsService.GetDictionaryAsync<string, WebProxyStatistic>(StatisticKeys.WebProxies) ?? new Dictionary<string, WebProxyStatistic>())
-                        .Select(x => x.Value)
+                    (await _webProxyStatisticsService.GetAllStatisticsAsync())
                         .OrderByDescending(x => x.LastAccessedOn)
                         .ToArray()
                 );

@@ -12,13 +12,11 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
-using SCMM.Market.RustyPot.Client;
 using SCMM.Shared.Abstractions.Analytics;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Statistics;
+using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
-using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Web.Statistics;
 using SCMM.Steam.Abstractions;
@@ -155,12 +153,8 @@ public static class HostExtensions
             }
 
             // Web proxies
+            services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
             services.AddSingleton<IWebProxy, RotatingWebProxy>();
-            services.AddSingleton((services) =>
-            {
-                var configuration = services.GetService<IConfiguration>();
-                return configuration.GetWebProxyConfiguration().Expand();
-            });
 
             // 3rd party clients
             services.AddSingleton((services) =>

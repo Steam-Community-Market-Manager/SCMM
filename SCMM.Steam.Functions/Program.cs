@@ -35,8 +35,8 @@ using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
-using SCMM.Shared.Client.Configuration;
 using SCMM.Shared.Data.Models.Json;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Shared.Web.Statistics;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
@@ -154,12 +154,8 @@ public static class HostExtensions
                 return configuration.GetWebshareConfiguration();
             });
             services.AddSingleton<IWebProxyManagementService, WebshareWebClient>();
+            services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
             services.AddSingleton<IWebProxy, RotatingWebProxy>();
-            services.AddSingleton((services) =>
-            {
-                var configuration = services.GetService<IConfiguration>();
-                return configuration.GetWebProxyConfiguration().Expand();
-            });
 
             // 3rd party clients
             services.AddSingleton((services) =>

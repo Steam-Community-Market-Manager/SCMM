@@ -9,12 +9,12 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateWebProxyStatistics
 {
     private readonly IWebProxyManagementService _webProxies;
-    private readonly IStatisticsService _statisticsService;
+    private readonly IWebProxyStatisticsService _webProxyStatisticsService;
 
-    public UpdateWebProxyStatistics(IWebProxyManagementService webProxies, IStatisticsService statisticsService)
+    public UpdateWebProxyStatistics(IWebProxyManagementService webProxies, IWebProxyStatisticsService webProxyStatisticsService)
     {
         _webProxies = webProxies;
-        _statisticsService = statisticsService;
+        _webProxyStatisticsService = webProxyStatisticsService;
     }
 
     [Function("Update-Web-Proxy-Statistics")]
@@ -27,23 +27,22 @@ public class UpdateWebProxyStatistics
         if (webProxies != null)
         {
             // Get cached list
-            var cachedWebProxies = new Dictionary<string, WebProxyStatistic>(
-                await _statisticsService.GetDictionaryAsync<string, WebProxyStatistic>(StatisticKeys.WebProxies) ?? new Dictionary<string, WebProxyStatistic>()
+            var cachedWebProxies = new List<WebProxyStatistic>(
+                await _webProxyStatisticsService.GetAllStatisticsAsync() ?? Enumerable.Empty<WebProxyStatistic>()
             );
 
             // Remove all proxies that no longer exist
             cachedWebProxies.RemoveAll(x =>
-                !webProxies.Any(y => y.Source == x.Value.Source && y.Id == x.Value.Id)
+                !webProxies.Any(y => y.Source == x.Source && y.Id == x.Id)
             );
 
             // Add or update all existing proxies
             foreach (var webProxy in webProxies)
             {
-                var cachedWebProxy = cachedWebProxies.FirstOrDefault(x => x.Value.Source == webProxy.Source && x.Value.Id == webProxy.Id).Value;
+                var cachedWebProxy = cachedWebProxies.FirstOrDefault(x => x.Source == webProxy.Source && x.Id == webProxy.Id);
                 if (cachedWebProxy == null)
                 {
                     cachedWebProxies.Add(
-                        $"{webProxy.Address}:{webProxy.Port}",
                         cachedWebProxy = new WebProxyStatistic()
                         {
                             Source = webProxy.Source,
@@ -54,6 +53,8 @@ public class UpdateWebProxyStatistics
 
                 cachedWebProxy.Address = webProxy.Address;
                 cachedWebProxy.Port = webProxy.Port;
+                cachedWebProxy.Username = webProxy.Username;
+                cachedWebProxy.Password = webProxy.Password;
                 cachedWebProxy.CountryCode = webProxy.CountryCode;
                 cachedWebProxy.CityName = webProxy.CityName;
                 cachedWebProxy.IsAvailable = webProxy.IsAvailable;
@@ -61,10 +62,8 @@ public class UpdateWebProxyStatistics
             }
 
             // Update cached list
-            await _statisticsService.SetDictionaryAsync(
-                StatisticKeys.WebProxies,
-                cachedWebProxies, 
-                deleteKeyBeforeSet: true
+            await _webProxyStatisticsService.SetAllStatistics(
+                cachedWebProxies
             );
         }
     }

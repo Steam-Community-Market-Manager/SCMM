@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using SCMM.Shared.Abstractions.Statistics;
+using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Models.Statistics;
 using System.Net;
 
 namespace SCMM.Shared.Client;
@@ -9,39 +8,52 @@ namespace SCMM.Shared.Client;
 public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByHost
 {
     private readonly ILogger<RotatingWebProxy> _logger;
-    private readonly IStatisticsService _statisticsService;
+    private readonly IWebProxyStatisticsService _webProxyStatisticsService;
     private WebProxyWithCooldown[] _proxies;
 
-    public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IEnumerable<WebProxyEndpoint> webProxyEndpoints, IStatisticsService statisticsService)
+    public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IWebProxyStatisticsService webProxyStatisticsService)
     {
-        var proxies = new List<WebProxyWithCooldown>();
-        if (webProxyEndpoints != null)
-        {
-            var rnd = new Random();
-            proxies.AddRange(webProxyEndpoints
-                .OrderBy(x => rnd.Next())
-                .Select(x => new WebProxyWithCooldown()
-                {
-                    Priority = webProxyEndpoints.ToList().IndexOf(x) + 1,
-                    Address = new Uri(x.Url),
-                    Credentials = x.Domain == null && x.Username == null && x.Password == null ? null : new NetworkCredential()
-                    {
-                        Domain = x.Domain,
-                        UserName = x.Username,
-                        Password = x.Password
-                    },
-                    IsEnabled = x.IsEnabled
-                })
-            );
-        }
-
         _logger = logger;
-        _statisticsService = statisticsService;
-        _proxies = proxies.ToArray();
+        _webProxyStatisticsService = webProxyStatisticsService;
+        _webProxyStatisticsService.GetAllStatisticsAsync().ContinueWith((x) =>
+        {
+            if (x.IsCompleted)
+            {
+                var proxies = new List<WebProxyWithCooldown>();
+                var endpoints = x.Result;
+                if (endpoints != null)
+                {
+                    var rnd = new Random();
+                    proxies.AddRange(endpoints
+                        .OrderBy(x => rnd.Next())
+                        .Select(x => new WebProxyWithCooldown()
+                        {
+                            Priority = endpoints.ToList().IndexOf(x) + 1,
+                            Address = new Uri(x.Url),
+                            Credentials = x.Username == null && x.Password == null ? null : new NetworkCredential()
+                            {
+                                UserName = x.Username,
+                                Password = x.Password
+                            },
+                            IsEnabled = x.IsAvailable
+                        })
+                    );
+                }
+
+                _proxies = proxies.ToArray();
+            }
+
+            return x.Result;
+        });
     }
 
     private WebProxyWithCooldown GetNextAvailableProxy(Uri address)
     {
+        if (_proxies == null)
+        {
+            return null;
+        }
+
         var now = DateTime.UtcNow;
         var enabledProxies = _proxies.Where(x => x.IsEnabled);
 
@@ -65,7 +77,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         var proxy = GetNextAvailableProxy(address);
         if (proxy != null)
         {
-            UpdateProxyStatistics(proxy, (value) =>
+            _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {
                 value.LastAccessedOn = DateTimeOffset.Now;
                 if (responseStatusCode >= HttpStatusCode.OK && responseStatusCode < HttpStatusCode.Ambiguous)
@@ -90,7 +102,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             
             _logger.LogWarning($"'{address?.Host}' has entered a {cooldown.TotalSeconds}s cooldown on '{proxy?.Address?.Host ?? "default"}' proxy. Requests will now rotate to '{newProxy?.Address?.Host ?? "default"}' proxy.");
 
-            UpdateProxyStatistics(proxy, (value) =>
+            _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {
                 value.DomainRateLimits ??= new Dictionary<string, DateTimeOffset>();
                 value.DomainRateLimits[address.Host] = proxy.GetHostCooldown(address);
@@ -106,21 +118,11 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             proxy.IsEnabled = false;
             _logger.LogWarning($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled.");
 
-            UpdateProxyStatistics(proxy, (value) =>
+            _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {
                 value.IsAvailable = false;
             });
         }
-    }
-
-    private void UpdateProxyStatistics(WebProxyWithCooldown proxy, Action<WebProxyStatistic> updateAction)
-    {
-        // Update statistics in the background
-        _ = _statisticsService.UpdateDictionaryValueAsync<string, WebProxyStatistic>(
-            StatisticKeys.WebProxies,
-            $"{proxy.Address.Host}:{proxy.Address.Port}",
-            updateAction
-        );
     }
 
     Uri IWebProxy.GetProxy(Uri destination)
@@ -153,7 +155,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             throw new ArgumentNullException(nameof(uri));
         }
 
-        var proxy = _proxies.FirstOrDefault(x => x.IsEnabled && x.Address == uri);
+        var proxy = _proxies?.FirstOrDefault(x => x.IsEnabled && x.Address == uri);
         return proxy?.Credentials;
     }
 
@@ -164,7 +166,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             throw new ArgumentNullException(nameof(host));
         }
 
-        var proxy = _proxies.FirstOrDefault(x => x.IsEnabled && x.Address?.Host == host && x.Address?.Port == port);
+        var proxy = _proxies?.FirstOrDefault(x => x.IsEnabled && x.Address?.Host == host && x.Address?.Port == port);
         return proxy?.Credentials;
     }
 
