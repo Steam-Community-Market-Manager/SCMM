@@ -26,6 +26,14 @@ public class RedisStatisticsService : IStatisticsService
             : default(T);
     }
 
+    public async Task SetAsync<T>(string key, T value)
+    {
+        await _redis.StringSetAsync(
+            new RedisKey(String.Format(KeyFormat, key)),
+            new RedisValue(JsonSerializer.Serialize(value))
+        ); ;
+    }
+
     public async Task<IEnumerable<T>> GetListAsync<T>(string key)
     {
         var values = await _redis.ListRangeAsync(
@@ -46,6 +54,25 @@ public class RedisStatisticsService : IStatisticsService
         }
 
         return results;
+    }
+
+    public async Task SetListAsync<T>(string key, IEnumerable<T> value, bool deleteKeyBeforeSet = false)
+    {
+        if (deleteKeyBeforeSet)
+        {
+            await _redis.KeyDeleteAsync(
+                new RedisKey(String.Format(KeyFormat, key))
+            );
+        }
+
+        var values = value.Select(
+            x => new RedisValue(JsonSerializer.Serialize(x))
+        );
+
+        await _redis.ListRightPushAsync(
+            new RedisKey(String.Format(KeyFormat, key)),
+            values.ToArray()
+        );
     }
 
     public async Task<IDictionary<TKey, TValue>> GetDictionaryAsync<TKey, TValue>(string key)
@@ -89,33 +116,6 @@ public class RedisStatisticsService : IStatisticsService
         }
 
         return JsonSerializer.Deserialize<TValue>(entry.ToString());
-    }
-
-    public async Task SetAsync<T>(string key, T value)
-    {
-        await _redis.StringSetAsync(
-            new RedisKey(String.Format(KeyFormat, key)),
-            new RedisValue(JsonSerializer.Serialize(value))
-        );;
-    }
-
-    public async Task SetListAsync<T>(string key, IEnumerable<T> value, bool deleteKeyBeforeSet = false)
-    {
-        if (deleteKeyBeforeSet)
-        {
-            await _redis.KeyDeleteAsync(
-                new RedisKey(String.Format(KeyFormat, key))
-            );
-        }
-
-        var values = value.Select(
-            x => new RedisValue(JsonSerializer.Serialize(x))
-        );
-
-        await _redis.ListRightPushAsync(
-            new RedisKey(String.Format(KeyFormat, key)),
-            values.ToArray()
-        );
     }
 
     public async Task SetDictionaryAsync<TKey, TValue>(string key, IDictionary<TKey,TValue> value, bool deleteKeyBeforeSet = false)
