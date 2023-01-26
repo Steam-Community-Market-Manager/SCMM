@@ -1,9 +1,11 @@
 ﻿using CommandQuery;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
@@ -27,16 +29,15 @@ public class UpdateAssetDescriptions
         var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
         var assetDescriptions = await _db.SteamAssetDescriptions
             .Where(x => x.ClassId != null)
-            .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
             .Where(x => x.App.IsActive)
+            .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
             .OrderBy(x => x.TimeRefreshed)
             .Select(x => new
             {
                 AppId = x.App.SteamId,
-                ClassId = x.ClassId,
-                Name = x.Name
+                ClassId = x.ClassId
             })
-            .Take(30) // batch 30 at a time
+            .Take(300) // batch 300 at a time
             .ToListAsync();
 
         if (!assetDescriptions.Any())
@@ -44,27 +45,31 @@ public class UpdateAssetDescriptions
             return;
         }
 
-        var id = Guid.NewGuid();
-        logger.LogTrace($"Updating asset description information (id: {id}, count: {assetDescriptions.Count()})");
-        foreach (var assetDescription in assetDescriptions)
+        logger.LogTrace($"Updating asset description information (count: {assetDescriptions.Count()})");
+        foreach (var assetDescriptionGroup in assetDescriptions.GroupBy(x => x.AppId))
         {
             try
             {
-                await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionsRequest()
                 {
-                    AppId = ulong.Parse(assetDescription.AppId),
-                    AssetClassId = assetDescription.ClassId.Value
+                    AppId = ulong.Parse(assetDescriptionGroup.Key),
+                    AssetClassIds = assetDescriptionGroup
+                        .Select(x => x.ClassId ?? 0)
+                        .Where(x => x > 0)
+                        .ToArray()
                 });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update asset description for '{assetDescription.ClassId}'. {ex.Message}");
+                logger.LogError(ex, $"Failed to update asset descriptions. {ex.Message}");
                 continue;
+            }
+            finally
+            {
+                await _db.SaveChangesAsync();
             }
         }
 
-        await _db.SaveChangesAsync();
-
-        logger.LogTrace($"Updated asset description information (id: {id})");
+        logger.LogTrace($"Updated asset description information");
     }
 }
