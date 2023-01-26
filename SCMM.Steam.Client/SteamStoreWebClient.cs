@@ -28,8 +28,8 @@ namespace SCMM.Steam.Client
             : base(logger, cache, session: null, proxy: proxy)
         {
             // Transport
-            DefaultHeaders.Add("Host", new Uri(Constants.SteamCommunityUrl).Host);
-            DefaultHeaders.Add("Referer", Constants.SteamCommunityUrl + "/");
+            DefaultHeaders.Add("Host", new Uri(Constants.SteamStoreUrl).Host);
+            DefaultHeaders.Add("Referer", Constants.SteamStoreUrl + "/");
             DefaultHeaders.Add("Connection", "keep-alive");
 
             // Security
