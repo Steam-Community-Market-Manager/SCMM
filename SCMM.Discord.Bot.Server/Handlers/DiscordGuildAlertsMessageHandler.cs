@@ -141,7 +141,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 }
                 else
                 {
-                    description.Append($"Manipulation on this item appears to have faded, market activity has return to normal level.");
+                    description.Append($"Manipulation on this item appears to be settling, market activity has return to predictable levels.");
                 }
 
                 return _client.SendMessageAsync(

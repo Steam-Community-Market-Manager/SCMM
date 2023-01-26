@@ -558,49 +558,71 @@ namespace SCMM.Steam.Data.Store
                 var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Min(x => x.MedianPrice));
                 var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Max(x => x.MedianPrice));
                 
-                if (allTimeLow?.Timestamp > AllTimeLowestValueOn && (allTimeLow?.MedianPrice ?? 0) < AllTimeLowestValue)
+                // Has the all-time-low been surpassed?
+                if (allTimeLow?.Timestamp > AllTimeLowestValueOn && allTimeLow?.MedianPrice > 0 && allTimeLow?.MedianPrice < AllTimeLowestValue)
                 {
-                    AllTimeLowestValue = allTimeLow.MedianPrice;
-                    AllTimeLowestValueOn = allTimeLow.Timestamp;
-                    if (App != null && Description != null)
+                    var previousSale = (salesAfterFirstSevenDays.ElementAtOrDefault(Array.IndexOf(salesAfterFirstSevenDays, allTimeLow) - 1)?.MedianPrice ?? 0);
+                    var priceWasSpikeOrAccidentalSell = (
+                       (allTimeLow.Quantity == 1) && // only one sale
+                       (previousSale > 0 && !allTimeLow.MedianPrice.IsWithinPercentageRangeOf(previousSale, 0.5m)) // sold for 50+% lower than the last sale price
+                    );
+
+                    // Ignore accidental sell spikes
+                    if (!priceWasSpikeOrAccidentalSell)
                     {
-                        RaiseEvent(new MarketItemPriceAllTimeLowReachedMessage()
+                        AllTimeLowestValue = allTimeLow.MedianPrice;
+                        AllTimeLowestValueOn = allTimeLow.Timestamp;
+                        if (App != null && Description != null)
                         {
-                            AppId = (App != null ? UInt64.Parse(App.SteamId) : 0),
-                            AppName = App?.Name,
-                            ItemId = (Description?.ClassId ?? 0),
-                            ItemType = Description?.ItemType,
-                            ItemShortName = Description?.ItemShortName,
-                            ItemName = Description?.Name,
-                            ItemIconUrl = Description?.IconUrl ?? Description?.IconLargeUrl,
-                            Currency = Currency?.SteamId,
-                            AllTimeLowestValue = allTimeLow.MedianPrice,
-                            AllTimeLowestValueDescription = Currency?.ToPriceString(allTimeLow.MedianPrice),
-                            AllTimeLowestValueOn = allTimeLow.Timestamp
-                        });
+                            RaiseEvent(new MarketItemPriceAllTimeLowReachedMessage()
+                            {
+                                AppId = (App != null ? UInt64.Parse(App.SteamId) : 0),
+                                AppName = App?.Name,
+                                ItemId = (Description?.ClassId ?? 0),
+                                ItemType = Description?.ItemType,
+                                ItemShortName = Description?.ItemShortName,
+                                ItemName = Description?.Name,
+                                ItemIconUrl = Description?.IconUrl ?? Description?.IconLargeUrl,
+                                Currency = Currency?.SteamId,
+                                AllTimeLowestValue = allTimeLow.MedianPrice,
+                                AllTimeLowestValueDescription = Currency?.ToPriceString(allTimeLow.MedianPrice),
+                                AllTimeLowestValueOn = allTimeLow.Timestamp
+                            });
+                        }
                     }
                 }
 
-                if (allTimeHigh?.Timestamp > AllTimeHighestValueOn && (allTimeHigh?.MedianPrice ?? 0) > AllTimeHighestValue)
+                // Has the all-time-high been surpassed?
+                if (allTimeHigh?.Timestamp > AllTimeHighestValueOn && allTimeHigh?.MedianPrice > 0 && allTimeHigh?.MedianPrice > AllTimeHighestValue)
                 {
-                    AllTimeHighestValue = allTimeHigh.MedianPrice;
-                    AllTimeHighestValueOn = allTimeHigh.Timestamp;
-                    if (App != null && Description != null)
+                    var previousSale = (salesAfterFirstSevenDays.ElementAtOrDefault(Array.IndexOf(salesAfterFirstSevenDays, allTimeHigh) - 1)?.MedianPrice ?? 0);
+                    var priceWasSpikeOrAccidentalBuy = (
+                       (allTimeHigh.Quantity == 1) && // only one sale
+                       (previousSale > 0 && !allTimeHigh.MedianPrice.IsWithinPercentageRangeOf(previousSale, 0.5m)) // sold for 50+% higher than the last sale price
+                    );
+
+                    // Ignore accidental buy spikes
+                    if (!priceWasSpikeOrAccidentalBuy)
                     {
-                        RaiseEvent(new MarketItemPriceAllTimeHighReachedMessage()
+                        AllTimeHighestValue = allTimeHigh.MedianPrice;
+                        AllTimeHighestValueOn = allTimeHigh.Timestamp;
+                        if (App != null && Description != null)
                         {
-                            AppId = (App != null ? UInt64.Parse(App.SteamId) : 0),
-                            AppName = App?.Name,
-                            ItemId = (Description?.ClassId ?? 0),
-                            ItemType = Description?.ItemType,
-                            ItemShortName = Description?.ItemShortName,
-                            ItemName = Description?.Name,
-                            ItemIconUrl = Description?.IconUrl ?? Description?.IconLargeUrl,
-                            Currency = Currency?.SteamId,
-                            AllTimeHighestValue = allTimeHigh.MedianPrice,
-                            AllTimeHighestValueDescription = Currency?.ToPriceString(allTimeHigh.MedianPrice),
-                            AllTimeHighestValueOn = allTimeHigh.Timestamp
-                        });
+                            RaiseEvent(new MarketItemPriceAllTimeHighReachedMessage()
+                            {
+                                AppId = (App != null ? UInt64.Parse(App.SteamId) : 0),
+                                AppName = App?.Name,
+                                ItemId = (Description?.ClassId ?? 0),
+                                ItemType = Description?.ItemType,
+                                ItemShortName = Description?.ItemShortName,
+                                ItemName = Description?.Name,
+                                ItemIconUrl = Description?.IconUrl ?? Description?.IconLargeUrl,
+                                Currency = Currency?.SteamId,
+                                AllTimeHighestValue = allTimeHigh.MedianPrice,
+                                AllTimeHighestValueDescription = Currency?.ToPriceString(allTimeHigh.MedianPrice),
+                                AllTimeHighestValueOn = allTimeHigh.Timestamp
+                            });
+                        }
                     }
                 }
 
@@ -614,7 +636,9 @@ namespace SCMM.Steam.Data.Store
         {
             var wasBeingManipulated = IsBeingManipulated;
             var marketAge = (FirstSaleOn != null ? (DateTimeOffset.UtcNow - FirstSaleOn) : TimeSpan.Zero);
-            var cheapestPrice = SellOrderLowestPrice;
+            var sellOrderCount = SellOrderCount;
+            var lowestSellOrderPrice = SellOrderLowestPrice;
+            var highestBuyOrderPrice = BuyOrderHighestPrice;
             var salesInLast24hrs = Last24hrSales;
             var medianPriceLastWeek = Last168hrValue;
             var medianSalesLastWeek = (Last168hrSales > 0 ? (Last168hrSales / 7) : 0);
@@ -622,28 +646,45 @@ namespace SCMM.Steam.Data.Store
             // Check for price spike manipulations
             if (!IsBeingManipulated && 
                 (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
-                (cheapestPrice > 0 && medianPriceLastWeek > 0) && // price greater than zero
-                (cheapestPrice / (decimal)medianPriceLastWeek) > 2.5m) // 250% price spike vs median for the week
+                (medianSalesLastWeek > 5) && // weekly volume greater than 5
+                (lowestSellOrderPrice > 0 && highestBuyOrderPrice > 0 && medianPriceLastWeek > 0) && // price greater than zero
+                (lowestSellOrderPrice / (decimal)medianPriceLastWeek) > 2.5m) // 250% price spike vs median for the week
             {
-                ManipulationReason = $"Large spike in price. The current price is {cheapestPrice.ToPercentageString(medianPriceLastWeek)} higher than the median price over the last 7 days. This might be an attempt to buy out current market supply in order to artifically inflate the price.";
+                ManipulationReason = $"Large spike in price. The current price is {lowestSellOrderPrice.ToPercentageString(medianPriceLastWeek)} higher than the median price over the last 7 days. This might be an attempt to buy out current market supply in order to artifically inflate the price.";
                 IsBeingManipulated = true;
             }
 
-            // Check for volume spike manipulations
-            else if (!IsBeingManipulated && 
+            // Check for demand spike manipulations
+            else if (!IsBeingManipulated &&
                 (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
-                (salesInLast24hrs > 10 && medianSalesLastWeek > 0) && // volume greater than 10
+                (salesInLast24hrs > 10 && medianSalesLastWeek > 0) && // 24hr volume greater than 10
                 (salesInLast24hrs / (decimal)medianSalesLastWeek) > 5m) // 500% volume spike vs median for the week
             {
-                ManipulationReason = $"Large spike in number sold. Sales in the last 24hrs is {cheapestPrice.ToPercentageString(medianSalesLastWeek)} higher than the median number of sales over the last 7 days. This might be an attempt to buy out current market supply in order to artifically inflate the price.";
+                ManipulationReason = $"Large increase in demand. Sales in the last 24hrs is {salesInLast24hrs.ToPercentageString(medianSalesLastWeek)} higher than the median number of sales over the last 7 days. This could be due to sudden demand driven by an influencer, meme, or change in the game meta.";
                 IsBeingManipulated = true;
             }
-
-            // Else, doesn't look like this is being manipulated anymore...
+            /*
+            // Check for supply buy out manipulations
+            else if (!IsBeingManipulated &&
+                (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
+                (sellOrderCount > 0) &&
+                (salesInLast24hrs > 10 && medianSalesLastWeek > 0) && // 24hr volume greater than 10
+                (salesInLast24hrs / (decimal)sellOrderCount) > 0.5m) // 50% supply has been purchased in the last 24hrs
+            {
+                ManipulationReason = $"Large supply buy-out. {salesInLast24hrs.ToPercentageString(sellOrderCount)} of the current market supply has been purchased in the last 24hrs. This might be an attempt to artifically inflate the price by creating a supply shortage.";
+                IsBeingManipulated = true;
+            }
+            */
+            // Check if this item was previously manipulated, but is returning to normal market levels
             else if (IsBeingManipulated)
             {
-                ManipulationReason = null;
-                IsBeingManipulated = false;
+                // Lowest price must return to within 50% of the median sales price for the week
+                if ((lowestSellOrderPrice > 0 && medianPriceLastWeek > 0) &&
+                    (lowestSellOrderPrice / (decimal)medianPriceLastWeek) <= 1.5m)
+                {
+                    ManipulationReason = null;
+                    IsBeingManipulated = false;
+                }
             }
 
             // If the state of manipulation has changed, raise an event

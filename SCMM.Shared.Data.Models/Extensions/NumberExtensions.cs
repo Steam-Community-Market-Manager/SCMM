@@ -5,6 +5,12 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class NumberExtensions
     {
+        public static bool IsWithinPercentageRangeOf(this long value, long target, decimal targetPercentRange)
+        {
+            var delta = (target * targetPercentRange);
+            return (value <= (target + delta) && value > (target - delta));
+        }
+
         public static string GetPositionSuffix(this int day)
         {
             switch (day)
