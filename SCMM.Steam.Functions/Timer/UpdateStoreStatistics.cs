@@ -49,6 +49,56 @@ public class UpdateStoreStatistics
         await _db.SaveChangesAsync();
     }
 
+    private async Task UpdateItemStoreSubscribers(ILogger logger, SteamItemStore itemStore)
+    {
+        var assetDescriptions = itemStore.Items
+            .Select(x => x.Item)
+            .Where(x => x.Description?.WorkshopFileId != null)
+            .Select(x => x.Description)
+            .Take(Constants.SteamStoreItemsMax)
+            .ToList();
+
+        var workshopFileIds = assetDescriptions
+            .Select(x => x.WorkshopFileId.Value)
+            .ToList();
+
+        if (!workshopFileIds.Any())
+        {
+            return;
+        }
+
+        logger.LogTrace($"Updating item store workshop statistics (ids: {workshopFileIds.Count})");
+        var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
+        var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
+        var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(workshopFileIds);
+        if (response?.Data?.Any() != true)
+        {
+            logger.LogError("Failed to get published file details");
+            return;
+        }
+
+        var assetWorkshopJoined = response.Data.Join(assetDescriptions,
+            x => x.PublishedFileId,
+            y => y.WorkshopFileId,
+            (x, y) => new
+            {
+                AssetDescription = y,
+                PublishedFile = x
+            }
+        );
+
+        foreach (var item in assetWorkshopJoined)
+        {
+            _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+            {
+                AssetDescription = item.AssetDescription,
+                PublishedFile = item.PublishedFile
+            });
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
     private async Task UpdateItemStoreTopSellers(ILogger logger, SteamItemStore itemStore)
     {
         logger.LogTrace($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
@@ -137,56 +187,6 @@ public class UpdateStoreStatistics
                     item.LastPosition.IsActive = false;
                 }
             }
-        }
-
-        await _db.SaveChangesAsync();
-    }
-
-    private async Task UpdateItemStoreSubscribers(ILogger logger, SteamItemStore itemStore)
-    {
-        var assetDescriptions = itemStore.Items
-            .Select(x => x.Item)
-            .Where(x => x.Description?.WorkshopFileId != null)
-            .Select(x => x.Description)
-            .Take(Constants.SteamStoreItemsMax)
-            .ToList();
-
-        var workshopFileIds = assetDescriptions
-            .Select(x => x.WorkshopFileId.Value)
-            .ToList();
-
-        if (!workshopFileIds.Any())
-        {
-            return;
-        }
-
-        logger.LogTrace($"Updating item store workshop statistics (ids: {workshopFileIds.Count})");
-        var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
-        var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
-        var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(workshopFileIds);
-        if (response?.Data?.Any() != true)
-        {
-            logger.LogError("Failed to get published file details");
-            return;
-        }
-
-        var assetWorkshopJoined = response.Data.Join(assetDescriptions,
-            x => x.PublishedFileId,
-            y => y.WorkshopFileId,
-            (x, y) => new
-            {
-                AssetDescription = y,
-                PublishedFile = x
-            }
-        );
-
-        foreach (var item in assetWorkshopJoined)
-        {
-            _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
-            {
-                AssetDescription = item.AssetDescription,
-                PublishedFile = item.PublishedFile
-            });
         }
 
         await _db.SaveChangesAsync();

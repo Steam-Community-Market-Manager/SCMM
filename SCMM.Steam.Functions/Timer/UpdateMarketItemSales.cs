@@ -36,7 +36,7 @@ public class UpdateMarketItemSales
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedSalesOn)
-            .Take(50) // batch 50 items per minute
+            .Take(100) // batch 100 items per minute
             .ToList();
 
         if (!items.Any())
@@ -81,7 +81,6 @@ public class UpdateMarketItemSales
             }
             finally
             {
-                //item.LastCheckedSalesOn = DateTimeOffset.Now;
                 await _db.SaveChangesAsync();
             }
         }
