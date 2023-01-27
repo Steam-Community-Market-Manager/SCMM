@@ -27,8 +27,9 @@ public class UpdateMarketItemPricesFromSkinBaron
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinBaron");
 
+        var appIds = MarketType.SkinBaron.GetMarketAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
-            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
+            .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())

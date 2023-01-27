@@ -20,56 +20,56 @@ namespace SCMM.Steam.Data.Models.Enums
         SteamCommunityMarket = 2,
 
         [Display(Name = "Skinport")]
-        [Market(Type = PriceTypes.Cash, Color = "#232728")]
+        [Market(Type = PriceTypes.Cash, Color = "#232728", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}")]
         Skinport = 10,
 
         [Display(Name = "LOOT.Farm")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#123E64")]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#123E64", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://loot.farm/")]
         LOOTFarm = 11,
 
         [Display(Name = "Swap.gg")]
-        [Market(Type = PriceTypes.Trade, Color = "#15C7AD")]
+        [Market(Type = PriceTypes.Trade, Color = "#15C7AD", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         //[BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
         [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
         SwapGGTrade = 12,
 
         [Display(Name = "Swap.gg Market")]
-        [Market(Type = PriceTypes.Cash, Color = "#15C7AD")]
+        [Market(Type = PriceTypes.Cash, Color = "#15C7AD", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         //[BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
         [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
         SwapGGMarket = 13,
 
         [Display(Name = "Tradeit.gg")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#27273F")]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#27273F", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
         TradeitGG = 14,
 
         [Display(Name = "CS.Deals Trade")]
-        [Market(Type = PriceTypes.Trade, Color = "#313846")]
+        [Market(Type = PriceTypes.Trade, Color = "#313846", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://cs.deals/trade-skins")]
         CSDealsTrade = 15,
 
         // TODO: Add missing items quantities
         [Display(Name = "CS.Deals Marketplace")]
-        [Market(Type = PriceTypes.Cash, Color = "#313846")]
+        [Market(Type = PriceTypes.Cash, Color = "#313846", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")]
         CSDealsMarketplace = 16,
 
         [Display(Name = "Skin Baron")]
-        [Market(Type = PriceTypes.Cash, Color = "#2A2745")]
+        [Market(Type = PriceTypes.Cash, Color = "#2A2745", Apps = new[] { Constants.CSGOAppId })]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF")]
         SkinBaron = 17,
 
         [Obsolete("Dead? Unable to deposit cash anymore, social links don't work anymore")]
         [Display(Name = "RUST Skins")]
-        [Market(Type = PriceTypes.Cash, Color = "#EF7070")]
+        [Market(Type = PriceTypes.Cash, Color = "#EF7070", Apps = new[] { Constants.RustAppId })]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]
         RUSTSkins = 18,
 
         [Display(Name = "Rust.tm")]
-        [Market(Type = PriceTypes.Cash)]
+        [Market(Type = PriceTypes.Cash, Apps = new[] { Constants.RustAppId })]
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc")] // Unconfirmed
         RustTM = 19,
 
@@ -79,7 +79,7 @@ namespace SCMM.Steam.Data.Models.Enums
         // => 42["requestInventory"]
         // <= 42["requestInventoryResponse",…]
         //[Display(Name = "RUSTVendor")]
-        //[Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
+        //[Market(Type = PriceTypes.Cash | PriceTypes.Trade, Apps = new[] { Constants.RustAppId })]
         //[BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
         //RUSTVendor = 20,
 
@@ -89,52 +89,52 @@ namespace SCMM.Steam.Data.Models.Enums
         // => 42["get bots inv"]
         // <= 42["bots inv",…]
         //[Display(Name = "RustyTrade")]
-        //[Market(Type = PriceTypes.Trade)]
+        //[Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId })]
         //[BuyFrom(Url = "https://rustytrade.com/")] // Unconfirmed
         //RustyTrade = 21,
 
         [Display(Name = "CS.TRADE")]
-        [Market(Type = PriceTypes.Trade)]
+        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader")] // Unconfirmed
         CSTRADE = 22,
 
         [Display(Name = "iTrade.gg")]
-        [Market(Type = PriceTypes.Trade)]
+        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId })]
         [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}")] // Unconfirmed
         iTradegg = 23,
 
         [Obsolete("Dead, redirects to CS.Deals now")]
         [Display(Name = "Trade Skins Fast")]
-        [Market(Type = PriceTypes.Trade)]
+        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://tradeskinsfast.com/")]
         TradeSkinsFast = 24,
 
         [Display(Name = "SkinsMonkey")]
-        [Market(Type = PriceTypes.Trade)]
+        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed
         SkinsMonkey = 25,
 
         [Obsolete("Items not buyable")]
         [Display(Name = "Skin Swap")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://skinswap.com/r/scmm")] // Unconfirmed
         SkinSwap = 26,
 
         // TODO: Find workaround for overly agressive CloudFlare policies
         //[Display(Name = "GAMERALL.com")]
-        //[Market(Type = PriceTypes.Cash)]
+        //[Market(Type = PriceTypes.Cash, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         //[BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
         //GAMERALL = 27,
 
         // TODO: F2F market support
         [Display(Name = "Dmarket")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#49BC74")]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#49BC74", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}")]
         Dmarket = 28,
 
         // TODO: Login support
         [Display(Name = "BUFF")]
-        [Market(Type = PriceTypes.Cash, Color = "#FFFFFF")]
+        [Market(Type = PriceTypes.Cash, Color = "#FFFFFF", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}")] // Unconfirmed
         Buff = 29
 

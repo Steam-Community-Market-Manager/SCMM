@@ -5,6 +5,7 @@ using SCMM.Market.LootFarm.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 
@@ -26,8 +27,9 @@ public class UpdateMarketItemPricesFromLootFarmtJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
 
+        var appIds = MarketType.LOOTFarm.GetMarketAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
-            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
+            .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())

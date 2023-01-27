@@ -7,6 +7,18 @@ namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class MarketExtensions
     {
+        public static bool IsAppSupported(this MarketType marketType, ulong appId)
+        {
+            return GetMarketAppIds(marketType)?.Contains(appId) == true;
+        }
+
+        public static ulong[] GetMarketAppIds(this MarketType marketType)
+        {
+            var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);
+            var market = marketTypeField?.GetCustomAttribute<MarketAttribute>();
+            return market?.Apps ?? new ulong[0];
+        }
+
         public static PriceTypes? GetMarketPriceType(this MarketType marketType)
         {
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);

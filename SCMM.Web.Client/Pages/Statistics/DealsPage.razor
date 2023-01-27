@@ -40,7 +40,7 @@
                                         <MudSelectItem Value="@((MarketType?)null)">
                                             <span>Cheapest offer from <strong>all markets</strong></span>
                                         </MudSelectItem>
-                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => !x.IsObsolete()).Where(x => x > SCMM.Steam.Data.Models.Enums.MarketType.SteamCommunityMarket))
+                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => !x.IsObsolete() && x.IsAppSupported(State.AppId)).Where(x => x > SCMM.Steam.Data.Models.Enums.MarketType.SteamCommunityMarket))
                                         {
                                             <MudSelectItem Value="@((MarketType?)marketType)" Class="d-flex justify-start align-center">
                                                 <span>Cheapest </span>
@@ -148,7 +148,7 @@
                                         <MudSelectItem Value="@((MarketType?)null)">
                                             <span>Buy it from the <strong>cheapest market</strong></span>
                                         </MudSelectItem>
-                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => !x.IsObsolete()).Where(x => x > SCMM.Steam.Data.Models.Enums.MarketType.SteamCommunityMarket))
+                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => !x.IsObsolete() && x.IsAppSupported(State.AppId)).Where(x => x > SCMM.Steam.Data.Models.Enums.MarketType.SteamCommunityMarket))
                                         {
                                             <MudSelectItem Value="@((MarketType?)marketType)" Class="d-flex justify-start align-center">
                                                 <span>Buy it from </span>

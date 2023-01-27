@@ -210,8 +210,9 @@ namespace SCMM.Steam.Data.Store
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {
             // Strip out obsolete prices
-            BuyPrices = new PersistableMarketPriceDictionary(
-                BuyPrices.Where(x => !x.Key.IsObsolete()).ToDictionary(k => k.Key, v => v.Value)
+            BuyPrices = new PersistableMarketPriceDictionary(BuyPrices
+                .Where(x => !x.Key.IsObsolete() && (App == null || x.Key.IsAppSupported(UInt64.Parse(App.SteamId))))
+                .ToDictionary(k => k.Key, v => v.Value)
             );
 
             if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
@@ -287,8 +288,9 @@ namespace SCMM.Steam.Data.Store
         public void UpdateSellPrices(MarketType type, PriceWithSupply? price)
         {
             // Strip out obsolete prices
-            SellPrices = new PersistableMarketPriceDictionary(
-                SellPrices.Where(x => !x.Key.IsObsolete()).ToDictionary(k => k.Key, v => v.Value)
+            SellPrices = new PersistableMarketPriceDictionary(SellPrices
+                .Where(x => !x.Key.IsObsolete() && (App == null || x.Key.IsAppSupported(UInt64.Parse(App.SteamId))))
+                .ToDictionary(k => k.Key, v => v.Value)
             );
 
             if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
