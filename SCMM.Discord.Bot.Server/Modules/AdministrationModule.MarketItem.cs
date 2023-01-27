@@ -3,7 +3,6 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client.Commands;
 using SCMM.Shared.Abstractions.Analytics;
-using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.API.Commands;
@@ -13,7 +12,9 @@ using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using System.Linq;
+using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Client.Exceptions;
+using System.Globalization;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -22,23 +23,27 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("rebuild-market-index-fund-stats")]
         public async Task<RuntimeResult> RebuildMarketIndexFundStats(ulong appId)
         {
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var start = _steamDb.SteamMarketItemSale.Min(x => x.Timestamp).Date;
-            var end = _steamDb.SteamMarketItemSale.Max(x => x.Timestamp).Date;
             var indexFund = new Dictionary<DateTime, IndexFundStatistic>();
+            var dates = await _steamDb.SteamMarketItemSale
+                .Where(x => x.Item.App.SteamId == appId.ToString())
+                .Select(x => x.Timestamp)
+                .Distinct()
+                .ToListAsync();
 
             try
             {
                 var message = await Context.Message.ReplyAsync("Rebuilding market index fund...");
-                while (start < end)
+                foreach (var date in dates.OrderBy(x => x.Date))
                 {
                     await message.ModifyAsync(
-                        x => x.Content = $"Rebuilding market index fund {start.Date.ToString()}..."
+                        x => x.Content = $"Rebuilding market index fund {date.Date.ToString()}..."
                     );
-                    indexFund[start] = _steamDb.SteamMarketItemSale
+                    var start = date.Date;
+                    var end = date.Date.AddDays(1);
+                    var stats = _steamDb.SteamMarketItemSale
                         .AsNoTracking()
                         .Where(x => x.Item.App.SteamId == appId.ToString())
-                        .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
+                        .Where(x => x.Timestamp >= start && x.Timestamp < end)
                         .GroupBy(x => x.ItemId)
                         .Select(x => new
                         {
@@ -57,7 +62,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                         })
                         .FirstOrDefault();
 
-                    start = start.AddDays(1);
+                    if (stats != null)
+                    {
+                        indexFund[date.Date] = stats;
+                    }
                 }
 
                 await message.ModifyAsync(
@@ -199,6 +207,144 @@ namespace SCMM.Discord.Bot.Server.Modules
             );
 
             return CommandResult.Success();
+        }
+
+        [Command("import-market-items-price-history")]
+        public async Task<RuntimeResult> ImportMarketItemsPriceHostyr(ulong appId)
+        {
+            var message = await Context.Message.ReplyAsync("Importing market items price history...");
+
+            var app = await _steamDb.SteamApps
+                .FirstOrDefaultAsync(x => x.SteamId == appId.ToString());
+
+            var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
+            var items = _steamDb.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Where(x => x.LastCheckedSalesOn == null)
+                //.Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
+                //.Where(x => x.App.IsActive)
+                .OrderBy(x => x.LastCheckedSalesOn)
+                .ToArray();
+
+            if (!items.Any())
+            {
+                return CommandResult.Success(); ;
+            }
+
+            var nzdCurrency = _steamDb.SteamCurrencies.FirstOrDefault(x => x.Name == "NZD");
+            if (nzdCurrency == null)
+            {
+                return CommandResult.Success(); ;
+            }
+
+            int unsavedBufferCount = 0;
+            foreach (var item in items)
+            {
+                try
+                {
+                    await message.ModifyAsync(
+                        x => x.Content = $"Importing market items price history {Array.IndexOf(items, item)}/{items.Length}..."
+                    );
+
+                    var response = await _authenticatedCommunityClient.GetMarketPriceHistory(
+                        new SteamMarketPriceHistoryJsonRequest()
+                        {
+                            AppId = item.App.SteamId,
+                            MarketHashName = item.Description.Name,
+                            //CurrencyId = item.Currency.SteamId
+                        }
+                    );
+
+                    // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
+                    // TODO: Find/buy a Steam account that is locked to USD for better accuracy
+                    await UpdateMarketItemSalesHistory(item, response, nzdCurrency);
+                }
+                catch (SteamRequestException ex)
+                {
+                    if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        continue;
+                    }
+                }
+                finally
+                {
+                    if (unsavedBufferCount >= 100)
+                    {
+                        await _steamDb.SaveChangesAsync();
+                        unsavedBufferCount = 0;
+                    }
+                    else
+                    {
+                        unsavedBufferCount++;
+                    }
+                }
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported market items price history {items.Length}/{items.Length}"
+            );
+
+            return CommandResult.Success();
+        }
+
+        private async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, SteamMarketPriceHistoryJsonResponse sales, SteamCurrency salesCurrency = null)
+        {
+            if (item == null || sales?.Success != true)
+            {
+                return item;
+            }
+
+            // Lazy-load sales history if missing, required for recalculation
+            if (item.SalesHistory?.Any() != true)
+            {
+                item = await _steamDb.SteamMarketItems
+                    .Include(x => x.SalesHistory)
+                    .AsSplitQuery()
+                    .SingleOrDefaultAsync(x => x.Id == item.Id);
+            }
+
+            // If the sales are not already in our items currency, exchange them now
+            var itemSales = ParseMarketItemSalesFromGraph(sales.Prices, item.LastCheckedSalesOn);
+            if (itemSales != null && salesCurrency != null && salesCurrency.Id != item.CurrencyId)
+            {
+                foreach (var sale in itemSales)
+                {
+                    sale.MedianPrice = item.Currency.CalculateExchange(sale.MedianPrice, salesCurrency);
+                }
+            }
+
+            item.LastCheckedSalesOn = DateTimeOffset.Now;
+            item.RecalculateSales(itemSales);
+
+            return item;
+        }
+
+        private SteamMarketItemSale[] ParseMarketItemSalesFromGraph(string[][] salesGraph, DateTimeOffset? ignoreSalesBefore = null)
+        {
+            var sales = new List<SteamMarketItemSale>();
+            if (salesGraph == null)
+            {
+                return sales.ToArray();
+            }
+
+            var totalQuantity = 0;
+            for (var i = 0; i < salesGraph.Length; i++)
+            {
+                var timeStamp = DateTime.ParseExact(salesGraph[i][0], "MMM dd yyyy HH: z", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                var medianPrice = salesGraph[i][1].SteamPriceAsInt();
+                var quantity = salesGraph[i][2].SteamQuantityValueAsInt();
+                sales.Add(new SteamMarketItemSale()
+                {
+                    Timestamp = timeStamp,
+                    MedianPrice = medianPrice,
+                    Quantity = quantity,
+                });
+                totalQuantity += quantity;
+            }
+
+            return sales.ToArray();
         }
     }
 }
