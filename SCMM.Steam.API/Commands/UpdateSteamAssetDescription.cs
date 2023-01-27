@@ -119,7 +119,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset description (if any)
-                if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrEmpty(itemDefinition.Description))
+                if (!string.IsNullOrEmpty(itemDefinition.Description))
                 {
                     // Strip any HTML and BBCode tags, just get the plain-text
                     assetDescription.Description = itemDefinition.Description.ToSafeMarkup().Trim();
