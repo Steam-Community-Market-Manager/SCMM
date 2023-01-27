@@ -263,8 +263,9 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
                 catch (SteamRequestException ex)
                 {
-                    if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    if (ex.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
+                        item.LastCheckedSalesOn = DateTimeOffset.Now;
                         continue;
                     }
                 }
