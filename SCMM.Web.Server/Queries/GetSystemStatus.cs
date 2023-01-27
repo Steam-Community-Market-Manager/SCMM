@@ -90,7 +90,7 @@ namespace SCMM.Web.Server.Queries
             if (steamApp != null)
             {
                 // TODO: Make these configurable
-                steamApp.AssetDescriptionsUpdates.TargetDelta = TimeSpan.FromDays(3);
+                steamApp.AssetDescriptionsUpdates.TargetDelta = TimeSpan.FromDays(1);
                 steamApp.MarketOrderUpdates.TargetDelta = TimeSpan.FromHours(3);
                 steamApp.MarketSaleUpdates.TargetDelta = TimeSpan.FromHours(3);
             }
