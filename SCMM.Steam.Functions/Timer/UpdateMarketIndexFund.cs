@@ -39,7 +39,7 @@ public class UpdateMarketIndexFund
             {
                 while (start < end)
                 {
-                    indexFund[start] = _db.SteamMarketItemSale
+                    var stats = _db.SteamMarketItemSale
                         .AsNoTracking()
                         .Where(x => x.Item.AppId == app.Id)
                         .Where(x => x.Timestamp >= start && x.Timestamp < start.AddDays(1))
@@ -60,6 +60,11 @@ public class UpdateMarketIndexFund
                             AverageItemValue = x.Average(y => y.AverageItemValue)
                         })
                         .FirstOrDefault();
+
+                    if (stats != null)
+                    {
+                        indexFund[start] = stats;
+                    }
 
                     start = start.AddDays(1);
                 }
