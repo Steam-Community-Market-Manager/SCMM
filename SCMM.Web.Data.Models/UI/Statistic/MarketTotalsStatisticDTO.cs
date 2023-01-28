@@ -6,8 +6,8 @@
 
         public long ListingsMarketValue { get; set; }
 
-        public int VolumeLast24hrs { get; set; }
+        public int? VolumeLast24hrs { get; set; }
 
-        public long VolumeMarketValueLast24hrs { get; set; }
+        public long? VolumeMarketValueLast24hrs { get; set; }
     }
 }

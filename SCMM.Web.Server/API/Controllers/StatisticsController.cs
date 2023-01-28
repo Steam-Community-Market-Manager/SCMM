@@ -65,15 +65,17 @@ namespace SCMM.Web.Server.API.Controllers
                     TotalListingsMarketValue = x.MarketItems.Sum(i => i.SellOrderCount * i.SellOrderLowestPrice),
                     TotalVolumeLast24hrs = x.MarketItems.Sum(i => i.Last24hrSales),
                     TotalVolumeMarketValueLast24hrs = x.MarketItems.Sum(i => i.Last24hrSales * i.Last24hrValue),
+                    OldestItemSalesUpdate = x.MarketItems.Min(i => i.LastCheckedSalesOn)
                 })
                 .FirstOrDefaultAsync();
 
+            var last24hrSalesDataIsComplete = (totals?.OldestItemSalesUpdate != null && (DateTimeOffset.Now - totals.OldestItemSalesUpdate.Value).Duration() < TimeSpan.FromDays(1));
             return Ok(new MarketTotalsStatisticDTO()
             {
-                Listings = (int) totals.TotalListings,
-                ListingsMarketValue = this.Currency().CalculateExchange((long)totals.TotalListingsMarketValue),
-                VolumeLast24hrs = (int) totals.TotalVolumeLast24hrs,
-                VolumeMarketValueLast24hrs = this.Currency().CalculateExchange((long)totals.TotalVolumeMarketValueLast24hrs)
+                Listings = (int)(totals?.TotalListings ?? 0),
+                ListingsMarketValue = this.Currency().CalculateExchange((long)(totals?.TotalListingsMarketValue ?? 0L)),
+                VolumeLast24hrs = last24hrSalesDataIsComplete ? (int) totals.TotalVolumeLast24hrs : null,
+                VolumeMarketValueLast24hrs = last24hrSalesDataIsComplete ? this.Currency().CalculateExchange((long)totals.TotalVolumeMarketValueLast24hrs) : null
             });
         }
 

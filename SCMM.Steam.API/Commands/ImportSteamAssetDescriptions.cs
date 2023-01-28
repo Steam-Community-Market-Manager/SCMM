@@ -6,6 +6,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
+using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
@@ -109,19 +110,23 @@ namespace SCMM.Steam.API.Commands
                 .Where(x => x.Value > 0)
                 .ToArray();
 
-            var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
-            var publishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(
-                (uint)publishedFileIds.Length,
-                publishedFileIds.Select(x => x.Value).ToArray()
-            );
-            if (publishedFileDetails?.Data == null)
+            var publishedFiles = (IEnumerable<PublishedFileDetailsModel>)null;
+            if (publishedFileIds.Any())
             {
-                throw new Exception($"Failed to get workshop files for assets, response was empty");
-            }
-            var publishedFiles = publishedFileDetails.Data.ToArray();
-            if (assetClasses == null)
-            {
-                throw new Exception($"Failed to get workshop files for assets, files were not found");
+                var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
+                var publishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(
+                    (uint)publishedFileIds.Length,
+                    publishedFileIds.Select(x => x.Value).ToArray()
+                );
+                if (publishedFileDetails?.Data == null)
+                {
+                    throw new Exception($"Failed to get workshop files for assets, response was empty");
+                }
+                publishedFiles = publishedFileDetails.Data.ToArray();
+                if (assetClasses == null)
+                {
+                    throw new Exception($"Failed to get workshop files for assets, files were not found");
+                }
             }
 
             // Update each asset description
@@ -131,7 +136,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     AssetDescription = assetDescription,
                     AssetClass = assetClasses.FirstOrDefault(x => x.ClassId == assetDescription.ClassId),
-                    PublishedFile = publishedFiles.FirstOrDefault(x =>
+                    PublishedFile = publishedFiles?.FirstOrDefault(x =>
                         x.PublishedFileId == publishedFileIds.FirstOrDefault(y =>
                             y.Key == assetClasses.FirstOrDefault(z => 
                                 z.ClassId == assetDescription.ClassId

@@ -55,42 +55,34 @@
                         </MudStack>
                     </MudStack>
                 </MudPaper>
-                <MudPaper Elevation="0" Class="ma-2">
-                    <MudStack Row="true">
-                        <MudText Typo="Typo.h3" Color="Color.Secondary">
-                            <i class="fas fa-fw fa-people-arrows"></i>
-                        </MudText>
-                        <MudStack Spacing="0">
-                            @if (MarketTotals?.VolumeLast24hrs != null)
-                            {
-                                <MudText Typo="Typo.h6" Color="Color.Default">@MarketTotals.VolumeLast24hrs.ToQuantityString()</MudText>
-                            }
-                            else
-                            {
-                                <MudSkeleton SkeletonType="MudBlazor.SkeletonType.Text"></MudSkeleton>
-                            }
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">items have been brought/sold on the market in the last 24hrs</MudText>
+                @if (MarketTotals?.VolumeLast24hrs != null)
+                {
+                    <MudPaper Elevation="0" Class="ma-2">
+                        <MudStack Row="true">
+                            <MudText Typo="Typo.h3" Color="Color.Secondary">
+                                <i class="fas fa-fw fa-people-arrows"></i>
+                            </MudText>
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.h6" Color="Color.Default">@MarketTotals.VolumeLast24hrs.Value.ToQuantityString()</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">items have been brought/sold on the market in the last 24hrs</MudText>
+                            </MudStack>
                         </MudStack>
-                    </MudStack>
-                </MudPaper>
-                <MudPaper Elevation="0" Class="ma-2">
-                    <MudStack Row="true">
-                        <MudText Typo="Typo.h3" Color="Color.Secondary">
-                            <i class="fas fa-fw fa-money-bill-transfer"></i>
-                        </MudText>
-                        <MudStack Spacing="0">
-                            @if (MarketTotals?.VolumeMarketValueLast24hrs != null)
-                            {
-                                <MudText Typo="Typo.h6" Color="Color.Default">@State.Currency.ToPriceString(MarketTotals.VolumeMarketValueLast24hrs)</MudText>
-                            }
-                            else
-                            {
-                                <MudSkeleton SkeletonType="MudBlazor.SkeletonType.Text"></MudSkeleton>
-                            }
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">has been spent buying/selling items on the market in the last 24hrs</MudText>
+                    </MudPaper>
+                }
+                @if (MarketTotals?.VolumeLast24hrs != null)
+                {
+                    <MudPaper Elevation="0" Class="ma-2">
+                        <MudStack Row="true">
+                            <MudText Typo="Typo.h3" Color="Color.Secondary">
+                                <i class="fas fa-fw fa-money-bill-transfer"></i>
+                            </MudText>
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.h6" Color="Color.Default">@State.Currency.ToPriceString(MarketTotals.VolumeMarketValueLast24hrs.Value)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">has been spent buying/selling items on the market in the last 24hrs</MudText>
+                            </MudStack>
                         </MudStack>
-                    </MudStack>
-                </MudPaper>
+                    </MudPaper>
+                }
             </MudStack>
         </StatisticsPanel>
     </MudItem>

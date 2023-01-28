@@ -24,26 +24,22 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> RebuildMarketIndexFundStats(ulong appId)
         {
             var indexFund = new Dictionary<DateTime, IndexFundStatistic>();
-            var dates = await _steamDb.SteamMarketItemSale
-                .Where(x => x.Item.App.SteamId == appId.ToString())
-                .Select(x => x.Timestamp)
-                .Distinct()
-                .ToListAsync();
+            var appGuid = (await _steamDb.SteamApps.FirstOrDefaultAsync(x => x.SteamId == appId.ToString()))?.Id;
+            var start = _steamDb.SteamMarketItemSale.Min(x => x.Timestamp).Date;
+            var end = _steamDb.SteamMarketItemSale.Max(x => x.Timestamp).Date;
 
             try
             {
                 var message = await Context.Message.ReplyAsync("Rebuilding market index fund...");
-                foreach (var date in dates.OrderBy(x => x.Date))
+                while (start < end)
                 {
                     await message.ModifyAsync(
-                        x => x.Content = $"Rebuilding market index fund {date.Date.ToString()}..."
+                        x => x.Content = $"Rebuilding market index fund {start.Date.ToString()}..."
                     );
-                    var start = date.Date;
-                    var end = date.Date.AddDays(1);
                     var stats = _steamDb.SteamMarketItemSale
                         .AsNoTracking()
-                        .Where(x => x.Item.App.SteamId == appId.ToString())
-                        .Where(x => x.Timestamp >= start && x.Timestamp < end)
+                        .Where(x => x.Item.AppId == appGuid)
+                        .Where(x => x.Timestamp >= start && x.Timestamp < start.Date.AddDays(1))
                         .GroupBy(x => x.ItemId)
                         .Select(x => new
                         {
@@ -64,8 +60,10 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                     if (stats != null)
                     {
-                        indexFund[date.Date] = stats;
+                        indexFund[start.Date] = stats;
                     }
+
+                    start = start.AddDays(1);
                 }
 
                 await message.ModifyAsync(
@@ -210,22 +208,22 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-market-items-price-history")]
-        public async Task<RuntimeResult> ImportMarketItemsPriceHostyr(ulong appId)
+        public async Task<RuntimeResult> ImportMarketItemsPriceHistory(ulong appId)
         {
             var message = await Context.Message.ReplyAsync("Importing market items price history...");
 
             var app = await _steamDb.SteamApps
                 .FirstOrDefaultAsync(x => x.SteamId == appId.ToString());
 
-            var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
+            var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
             var items = _steamDb.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.LastCheckedSalesOn == null)
-                //.Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
                 //.Where(x => x.App.IsActive)
-                .OrderBy(x => x.LastCheckedSalesOn)
+                .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
+                .OrderBy(x => x.LastCheckedSalesOn == null)
+                .ThenBy(x => x.LastCheckedSalesOn)
                 .ToArray();
 
             if (!items.Any())
@@ -282,6 +280,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
             }
+
+            await _steamDb.SaveChangesAsync();
 
             await message.ModifyAsync(
                 x => x.Content = $"Imported market items price history {items.Length}/{items.Length}"
