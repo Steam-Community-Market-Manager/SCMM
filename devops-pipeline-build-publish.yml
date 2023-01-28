@@ -8,6 +8,7 @@ pool:
 
 variables:
   solution: '**/*.sln'
+  projects: '**/*.csproj'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   buildTargetFramework: '6.0.x'
@@ -28,18 +29,42 @@ steps:
   displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: '$(solution)'
-- task: VSBuild@1
+- task: Assembly-Info-NetCore@3
+  displayName: 'Set Assembly Metadata'
+  inputs:
+    Path: '$(Build.SourcesDirectory)'
+    FileNames: '$(projects)'
+    InsertAttributes: true
+    IgnoreNetFrameworkProjects: true
+    FileEncoding: 'auto'
+    WriteBOM: false
+    Authors: 'Rhys Koedijk'
+    Product: 'SCMM'
+    Copyright: 'Copyright © 2022-$(date:YYYY) Rhys Koedijk'
+    PackageProjectUrl: 'https://scmm.app'
+    VersionNumber: '$(appVersion)'
+    FileVersionNumber: '$(appVersion)'
+    InformationalVersion: '$(appVersion)'
+    PackageVersion: '$(appVersion)'
+    LogLevel: 'verbose'
+    FailOnWarning: false
+    DisableTelemetry: true
+    UpdateBuildNumber: '$(appVersion)'
+    AddBuildTag: '$(appVersion)'
+- task: DotNetCoreCLI@2
   displayName: 'Build Solution'
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.ArtifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-    clean: true
-    msbuildArchitecture: 'x64'
+    command: 'build'
+    projects: '$(projects)'
+- task: DotNetCoreCLI@2
+  displayName: 'Publish Solution'
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    workingDirectory: '$(Build.ArtifactStagingDirectory)'
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish Build Artifacts'
+  displayName: 'Publish Artifacts'
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
+    ArtifactName: 'packages'
     publishLocation: 'Container'
