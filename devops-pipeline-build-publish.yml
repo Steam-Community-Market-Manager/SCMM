@@ -63,7 +63,7 @@ steps:
   inputs:
     SourceFolder: '$(System.DefaultWorkingDirectory)'
     Contents: |
-      **/SCMM.Discord.Bot/**/*.zip
+      **/SCMM.Discord.Bot.Server/**/*.zip
       **/SCMM.Steam.Functions/**/*.zip
       **/SCMM.Web.Server/**/*.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
