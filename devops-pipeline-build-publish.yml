@@ -42,26 +42,26 @@ steps:
     Product: 'SCMM'
     Copyright: 'Copyright © 2022-$(date:YYYY) Rhys Koedijk'
     PackageProjectUrl: 'https://scmm.app'
-    VersionNumber: '$(appVersion)'
-    FileVersionNumber: '$(appVersion)'
-    InformationalVersion: '$(appVersion)'
-    PackageVersion: '$(appVersion)'
+    VersionNumber: '$(app.Version)'
+    FileVersionNumber: '$(app.Version)'
+    InformationalVersion: '$(app.Version)'
+    PackageVersion: '$(app.Version)'
     LogLevel: 'verbose'
     FailOnWarning: false
     DisableTelemetry: true
-    UpdateBuildNumber: '$(appVersion)'
-    AddBuildTag: '$(appVersion)'
-- task: DotNetCoreCLI@2
-  displayName: 'Build Solution'
-  inputs:
-    command: 'build'
-    projects: '$(projects)'
+    UpdateBuildNumber: '$(app.Version)'
+    AddBuildTag: '$(app.Version)'
 - task: DotNetCoreCLI@2
   displayName: 'Publish Solution'
   inputs:
     command: 'publish'
     publishWebProjects: true
-    workingDirectory: '$(Build.ArtifactStagingDirectory)'
+- task: CopyFiles@2
+  displayName: 'Copy Artifacts'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
+    Contents: '**/*.zip'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifacts'
   inputs:
