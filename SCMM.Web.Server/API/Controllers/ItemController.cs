@@ -664,7 +664,6 @@ namespace SCMM.Web.Server.API.Controllers
             var itemDefinitionArchive = await _db.SteamItemDefinitionsArchive.AsNoTracking()
                 .Where(x => x.AppId == appId)
                 .Where(x => x.Digest == digest)
-                .OrderByDescending(x => x.TimePublished)
                 .Select(x => x.ItemDefinitions)
                 .FirstOrDefaultAsync();
             if (String.IsNullOrEmpty(itemDefinitionArchive))
