@@ -187,13 +187,11 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.MarketableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketMarketableRestriction) ? (int?)null : int.Parse(assetClass.MarketMarketableRestriction);
                 assetDescription.IsMarketable = (
                     string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase) ||
-                    (string.IsNullOrEmpty(assetClass.Marketable) && !string.IsNullOrEmpty(assetClass.MarketHashName)) ||
-                    assetDescription.MarketableRestrictionDays != null
+                    (string.IsNullOrEmpty(assetClass.Marketable) && !string.IsNullOrEmpty(assetClass.MarketHashName))
                 );
                 assetDescription.TradableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketTradableRestriction) ? (int?)null : int.Parse(assetClass.MarketTradableRestriction);
                 assetDescription.IsTradable = (
-                    string.Equals(assetClass.Tradable, "1", StringComparison.InvariantCultureIgnoreCase) ||
-                    assetDescription.TradableRestrictionDays != null
+                    string.Equals(assetClass.Tradable, "1", StringComparison.InvariantCultureIgnoreCase)
                 );
                 assetDescription.IsCommodity = string.Equals(assetClass.Commodity, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.IsAccepted = true;
