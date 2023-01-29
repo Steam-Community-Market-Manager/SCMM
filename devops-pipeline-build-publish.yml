@@ -55,12 +55,17 @@ steps:
   displayName: 'Publish Solution'
   inputs:
     command: 'publish'
-    publishWebProjects: true
+    publishWebProjects: false
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
 - task: CopyFiles@2
   displayName: 'Copy Artifacts'
   inputs:
     SourceFolder: '$(System.DefaultWorkingDirectory)'
-    Contents: '**/*.zip'
+    Contents: |
+      **/SCMM.Discord.Bot/**/*.zip
+      **/SCMM.Steam.Functions/**/*.zip
+      **/SCMM.Web.Server/**/*.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifacts'
