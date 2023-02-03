@@ -18,5 +18,11 @@ namespace SCMM.Market.LootFarm.Client
 
         [JsonPropertyName("rate")]
         public string Rate { get; set; }
+
+        [JsonPropertyName("tr")]
+        public int? Tradable { get; set; }
+
+        [JsonPropertyName("res")]
+        public int? Reservable { get; set; }
     }
 }

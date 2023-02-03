@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.LootFarm.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -11,15 +13,17 @@ using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromLootFarmtJob
+public class UpdateMarketItemPricesFromLootFarmJob
 {
     private readonly SteamDbContext _db;
     private readonly LootFarmWebClient _lootFarmWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromLootFarmtJob(SteamDbContext db, LootFarmWebClient lootFarmWebClient)
+    public UpdateMarketItemPricesFromLootFarmJob(SteamDbContext db, LootFarmWebClient lootFarmWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _lootFarmWebClient = lootFarmWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-LootFarm")]
@@ -47,6 +51,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -67,10 +72,11 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                     var item = items.FirstOrDefault(x => x.Name == lootFarmItem.Name)?.Item;
                     if (item != null)
                     {
+                        var available = lootFarmItem.Have;
                         item.UpdateBuyPrices(MarketType.LOOTFarm, new PriceWithSupply
                         {
-                            Price = lootFarmItem.Have > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
-                            Supply = lootFarmItem.Have
+                            Price = available > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
+                            Supply = available
                         });
                     }
                 }
@@ -81,11 +87,32 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                     missingItem.Item.UpdateBuyPrices(MarketType.LOOTFarm, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.LOOTFarm, x =>
+                {
+                    x.TotalItems = lootFarmItems.Count();
+                    x.TotalListings = lootFarmItems.Sum(i => i.Have);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.LOOTFarm, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
+                }
                 continue;
             }
         }

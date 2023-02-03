@@ -27,9 +27,8 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", AffiliateCode = "scmm")]
         Skinport = 10,
 
-
         [Display(Name = "LOOT.Farm")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade | PriceTypes.Cash, Color = "#123E64")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto, Color = "#123E64")]
         [BuyFrom(Url = "https://loot.farm/")]
         LOOTFarm = 11,
 

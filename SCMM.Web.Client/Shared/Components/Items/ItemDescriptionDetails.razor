@@ -671,13 +671,17 @@
                                             }
 									    </MudText>
                                         <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                            @if (price.Type.HasFlag(PriceTypes.Cash))
-                                            {
-                                                <i class="fa fa-fw fa-credit-card mr-1" title="Cash or credit"></i>
-                                            }
                                             @if (price.Type.HasFlag(PriceTypes.Trade))
                                             {
-                                                <i class="fa fa-fw fa-exchange-alt mr-1" title="Trade or exchange"></i>
+                                                <i class="fa fa-fw fa-exchange-alt mr-1" title="This market accepts item trades as payment"></i>
+                                            }
+                                            @if (price.Type.HasFlag(PriceTypes.Cash))
+                                            {
+                                                <i class="fa fa-fw fa-credit-card mr-1" title="This market accepts credit/debit cards as payment"></i>
+                                            }
+                                            @if (price.Type.HasFlag(PriceTypes.Crypto))
+                                            {
+                                                <i class="fab fa-fw fa-bitcoin mr-1" title="This market accepts crypto currencies as payment"></i>
                                             }
                                             <span>@price.MarketType.GetDisplayName()</span>
                                             @if (price.MarketType == MarketType.SteamStore && Item.Stores?.Any() == true)
