@@ -27,7 +27,7 @@ public class UpdateMarketItemPricesFromSkinsMonkey
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinsMonkey");
 
-        var appIds = MarketType.SkinsMonkey.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.SkinsMonkey.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

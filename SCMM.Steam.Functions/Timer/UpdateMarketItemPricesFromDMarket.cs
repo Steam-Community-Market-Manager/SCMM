@@ -34,7 +34,7 @@ public class UpdateMarketItemPricesFromDMarketJob
 
         // TODO: Enable CSGO support
         // TODO: Needs optimisation, too slow
-        var appIds = MarketType.Dmarket.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.Dmarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

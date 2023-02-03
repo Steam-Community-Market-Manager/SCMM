@@ -13,13 +13,15 @@ public class SystemStatusDTO
         get
         {
             if (
-                Alerts?.Any(x => x.Severity >= SystemStatusAlertSeverity.Error) == true
+                Alerts?.Any(x => x.Severity >= SystemStatusAlertSeverity.Error) == true ||
+                SteamApp?.Markets?.Any(x => x.Value.Status >= SystemStatusSeverity.Critical) == true
             )
             {
                 return SystemStatusSeverity.Critical;
             }
             else if (
                 Alerts?.Any(x => x.Severity >= SystemStatusAlertSeverity.Warning) == true ||
+                SteamApp?.Markets?.Any(x => x.Value.Status >= SystemStatusSeverity.Degraded) == true ||
                 SteamApp?.AssetDescriptionsUpdates?.IsOnTarget == false ||
                 SteamApp?.MarketOrderUpdates?.IsOnTarget == false ||
                 SteamApp?.MarketSaleUpdates?.IsOnTarget == false

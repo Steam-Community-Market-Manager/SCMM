@@ -27,7 +27,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-iTradegg");
 
-        var appIds = MarketType.iTradegg.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.iTradegg.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

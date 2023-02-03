@@ -9,11 +9,24 @@ namespace SCMM.Market.Skinport.Client
 
         public SkinportWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
-        public async Task<IEnumerable<SkinportItem>> GetItemsAsync(string appId, string currency = null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <see cref="https://docs.skinport.com/#items"/>
+        /// <remarks>
+        /// No Authorization required.
+        /// Rate Limit 8 requests / 5 Minutes.
+        /// Endpoint is cached by 5 minutes.
+        /// </remarks>
+        /// <param name="appId"></param>
+        /// <param name="currency"></param>
+        /// <param name="tradable"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<SkinportItem>> GetItemsAsync(string appId, string currency = null, bool tradable = false)
         {
             using (var client = BuildWebBrowserHttpClient())
             {
-                var url = $"{BaseUri}items?app_id={Uri.EscapeDataString(appId)}&currency={Uri.EscapeDataString(currency)}";
+                var url = $"{BaseUri}items?app_id={Uri.EscapeDataString(appId)}&currency={Uri.EscapeDataString(currency)}&tradable={tradable.ToString().ToLower()}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 

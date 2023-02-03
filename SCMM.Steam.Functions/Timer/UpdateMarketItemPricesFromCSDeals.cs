@@ -27,7 +27,7 @@ public class UpdateMarketItemPricesFromCSDeals
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
 
-        var appIds = MarketType.CSDealsTrade.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.CSDealsTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

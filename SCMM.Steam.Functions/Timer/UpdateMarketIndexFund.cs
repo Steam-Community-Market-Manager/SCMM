@@ -29,7 +29,7 @@ public class UpdateMarketIndexFund
 
         foreach (var app in apps)
         {
-            var indexFund = new Dictionary<DateTime, IndexFundStatistic>();
+            var indexFund = new Dictionary<DateTime, MarketIndexFundStatistic>();
             var end = _db.SteamMarketItemSale.Max(x => x.Timestamp).Date;
             var start = end.AddDays(-3);
 
@@ -52,7 +52,7 @@ public class UpdateMarketIndexFund
                         })
                         .ToList()
                         .GroupBy(x => true)
-                        .Select(x => new IndexFundStatistic
+                        .Select(x => new MarketIndexFundStatistic
                         {
                             TotalItems = x.Count(),
                             TotalSalesVolume = x.Sum(y => y.TotalSalesVolume),
@@ -78,7 +78,7 @@ public class UpdateMarketIndexFund
                 if (indexFund.Any())
                 {
                     await _statisticsService.SetDictionaryAsync(
-                        String.Format(StatisticKeys.IndexFundByAppId, app.SteamId),
+                        String.Format(StatisticKeys.MarketIndexFundByAppId, app.SteamId),
                         indexFund
                             .OrderBy(x => x.Key)
                             .ToDictionary(x => x.Key, x => x.Value)

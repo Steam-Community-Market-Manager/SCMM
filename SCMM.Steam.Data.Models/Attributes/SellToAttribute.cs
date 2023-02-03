@@ -8,4 +8,8 @@ public class SellToAttribute : Attribute
     public float FeeRate { get; set; }
 
     public long FeeSurcharge { get; set; }
+
+    public string AffiliateCode { get; set; }
+
+    public bool HasAffiliateProgram => !String.IsNullOrEmpty(AffiliateCode);
 }

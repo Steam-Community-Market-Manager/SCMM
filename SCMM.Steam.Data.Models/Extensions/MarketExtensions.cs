@@ -9,24 +9,24 @@ namespace SCMM.Steam.Data.Models.Extensions
     {
         public static bool IsAppSupported(this MarketType marketType, ulong appId)
         {
-            return GetMarketAppIds(marketType)?.Contains(appId) == true;
+            return GetSupportedAppIds(marketType)?.Contains(appId) == true;
         }
 
-        public static ulong[] GetMarketAppIds(this MarketType marketType)
+        public static ulong[] GetSupportedAppIds(this MarketType marketType)
         {
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);
             var market = marketTypeField?.GetCustomAttribute<MarketAttribute>();
-            return market?.Apps ?? new ulong[0];
+            return market?.SupportedAppIds ?? new ulong[0];
         }
 
-        public static PriceTypes? GetMarketPriceType(this MarketType marketType)
+        public static PriceTypes? GetPriceType(this MarketType marketType)
         {
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);
             var market = marketTypeField?.GetCustomAttribute<MarketAttribute>();
             return market?.Type;
         }
 
-        public static long GetMarketBuyFees(this MarketType marketType, long price)
+        public static long GetBuyerFees(this MarketType marketType, long price)
         {
             var fee = 0L;
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);

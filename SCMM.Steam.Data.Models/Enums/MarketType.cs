@@ -3,142 +3,115 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Models.Enums
 {
+    /// <summary>
+    /// All known game item markets
+    /// </summary>
     public enum MarketType : byte
     {
         [Display(Name = "Unknown")]
         Unknown = 0,
 
         [Display(Name = "Steam Store")]
-        [Market(Type = PriceTypes.Cash, Color = "#171A21", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId })]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId, Type = PriceTypes.Cash, Color = "#171A21")]
         [BuyFrom(Url = "https://store.steampowered.com/itemstore/{0}/")]
         SteamStore = 1,
 
         [Display(Name = "Steam Community Market")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#171A21", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId })]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId, Type = PriceTypes.Cash, Color = "#171A21")]
         [BuyFrom(Url = "https://steamcommunity.com/market/listings/{0}/{3}")]
-        [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", FeeRate = 13f)]
+        [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", FeeRate = 13.0f)]
         SteamCommunityMarket = 2,
 
         [Display(Name = "Skinport")]
-        [Market(Type = PriceTypes.Cash, Color = "#232728", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
-        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Cash, Color = "#232728")]
+        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", AffiliateCode = "scmm")]
         Skinport = 10,
 
+
         [Display(Name = "LOOT.Farm")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#123E64", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade | PriceTypes.Cash, Color = "#123E64")]
         [BuyFrom(Url = "https://loot.farm/")]
         LOOTFarm = 11,
 
-        [Display(Name = "Swap.gg")]
-        [Market(Type = PriceTypes.Trade, Color = "#15C7AD", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
+        [Display(Name = "Swap.gg Trade")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade, Color = "#15C7AD")]
         //[BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
-        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
+        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}", AffiliateCode = "326")]
         SwapGGTrade = 12,
 
         [Display(Name = "Swap.gg Market")]
-        [Market(Type = PriceTypes.Cash, Color = "#15C7AD", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Cash, Color = "#15C7AD")]
         //[BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
-        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
+        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}", AffiliateCode = "326")]
         SwapGGMarket = 13,
 
         [Display(Name = "Tradeit.gg")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#27273F", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade | PriceTypes.Cash, Color = "#27273F")]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AffiliateCode = "scmm")]
         TradeitGG = 14,
 
         [Display(Name = "CS.Deals Trade")]
-        [Market(Type = PriceTypes.Trade, Color = "#313846", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade, Color = "#313846")]
         [BuyFrom(Url = "https://cs.deals/trade-skins")]
         CSDealsTrade = 15,
 
-        // TODO: Add missing items quantities
-        [Display(Name = "CS.Deals Marketplace")]
-        [Market(Type = PriceTypes.Cash, Color = "#313846", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
+        // TODO: Items quantities are not currently supported
+        [Display(Name = "CS.Deals Market")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Cash, Color = "#313846")]
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")]
         CSDealsMarketplace = 16,
 
         [Display(Name = "Skin Baron")]
-        [Market(Type = PriceTypes.Cash, Color = "#2A2745", Apps = new[] { Constants.CSGOAppId })]
+        [Market(Constants.CSGOAppId, Type = PriceTypes.Cash, Color = "#2A2745")]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF")]
         SkinBaron = 17,
 
-        [Obsolete("Dead? Unable to deposit cash anymore, social links don't work anymore")]
-        [Display(Name = "RUST Skins")]
-        [Market(Type = PriceTypes.Cash, Color = "#EF7070", Apps = new[] { Constants.RustAppId })]
-        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]
-        RUSTSkins = 18,
-
         [Display(Name = "Rust.tm")]
-        [Market(Type = PriceTypes.Cash, Apps = new[] { Constants.RustAppId })]
+        [Market(Constants.RustAppId, Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc")] // Unconfirmed
         RustTM = 19,
 
-        // NOTE: Dead website, dead
-        // TODO: Implement web socket client support
-        // wss://rustvendor.com/socket.io/?EIO=4&transport=websocket&sid=xxx
-        // => 42["requestInventory"]
-        // <= 42["requestInventoryResponse",…]
-        //[Display(Name = "RUSTVendor")]
-        //[Market(Type = PriceTypes.Cash | PriceTypes.Trade, Apps = new[] { Constants.RustAppId })]
-        //[BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
-        //RUSTVendor = 20,
-
-        // NOTE: Very inactive website, remove
-        // TODO: Implement web socket client support
-        // wss://rustytrade.com/socket.io/?EIO=3&transport=websocket&sid=xxx
-        // => 42["get bots inv"]
-        // <= 42["bots inv",…]
-        //[Display(Name = "RustyTrade")]
-        //[Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId })]
-        //[BuyFrom(Url = "https://rustytrade.com/")] // Unconfirmed
-        //RustyTrade = 21,
-
         [Display(Name = "CS.TRADE")]
-        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
-        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader")] // Unconfirmed
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AffiliateCode = "SCMM")] // Unconfirmed
         CSTRADE = 22,
 
         [Display(Name = "iTrade.gg")]
-        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId })]
-        [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}")] // Unconfirmed
+        [Market(Constants.RustAppId, Type = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AffiliateCode = "scmm")] // Unconfirmed
         iTradegg = 23,
 
-        [Obsolete("Dead, redirects to CS.Deals now")]
-        [Display(Name = "Trade Skins Fast")]
-        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
-        [BuyFrom(Url = "https://tradeskinsfast.com/")]
-        TradeSkinsFast = 24,
-
         [Display(Name = "SkinsMonkey")]
-        [Market(Type = PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed
         SkinsMonkey = 25,
 
-        [Obsolete("Items not buyable")]
+        //[Obsolete("Items not buyable")]
         [Display(Name = "Skin Swap")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
-        [BuyFrom(Url = "https://skinswap.com/r/scmm")] // Unconfirmed
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade | PriceTypes.Cash)]
+        [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm")] // Unconfirmed
         SkinSwap = 26,
-
-        // TODO: Find workaround for overly agressive CloudFlare policies
-        //[Display(Name = "GAMERALL.com")]
-        //[Market(Type = PriceTypes.Cash, Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
-        //[BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
-        //GAMERALL = 27,
 
         // TODO: F2F market support
         [Display(Name = "Dmarket")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#49BC74", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
-        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade | PriceTypes.Cash, Color = "#49BC74")]
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}", AffiliateCode = "6tlej6xqvD")]
         Dmarket = 28,
 
         // TODO: Login support
         [Display(Name = "BUFF")]
-        [Market(Type = PriceTypes.Cash, Color = "#FFFFFF", Apps = new[] { Constants.RustAppId, Constants.CSGOAppId })]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Cash, Color = "#FFFFFF")]
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}")] // Unconfirmed
-        Buff = 29
+        Buff = 29,
 
         /*
+        BUY:  https://lis-skins.ru/market/rust/
+        BUY:  https://waxpeer.com/rust
+        BUY:  https://shadowpay.com/en/rust-items
+        BUY:  https://mannco.store/market
+        BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale
+        BUY:  https://buff.market/ (is this an alias for https://buff.163.com/?)
+        BUY:  https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
         BUY:  https://www.rustreaper.com/marketplace/RUST
         BUY:  https://rustysaloon.com/withdraw
         BUY:  https://bandit.camp/
@@ -148,5 +121,37 @@ namespace SCMM.Steam.Data.Models.Enums
         SELL: https://skincashier.com/
         SELL: https://skins.cash/
         */
+
+        #region Deprecated Markets
+
+        //[Display(Name = "RUST Skins")]
+        //[Market(Constants.RustAppId, Type = PriceTypes.Cash, Color = "#EF7070")]
+        //[BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]
+        [Obsolete("Domain is dead. Unable to deposit cash. Social links are dead")]
+        RUSTSkins = 18,
+
+        //[Display(Name = "RUSTVendor")]
+        //[Market(Constants.RustAppId, Type = PriceTypes.Trade | PriceTypes.Cash)]
+        //[BuyFrom(Url = "https://rustvendor.com/trade")]
+        [Obsolete("Domain is dead. Unable to deposit cash. Social links are dead")]
+        RUSTVendor = 20,
+
+        // TODO: Implement web socket client support
+        //       wss://rustytrade.com/socket.io/?EIO=3&transport=websocket&sid=xxx
+        //          => 42["get bots inv"]
+        //          <= 42["bots inv",…]
+        //[Display(Name = "RustyTrade")]
+        //[Market(Constants.RustAppId, Type = PriceTypes.Trade)]
+        //[BuyFrom(Url = "https://rustytrade.com/")] // Unconfirmed
+        [Obsolete("Very inactive website, bot inventory doesn't load")]
+        RustyTrade = 21,
+
+        //[Display(Name = "Trade Skins Fast")]
+        //[Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade)]
+        //[BuyFrom(Url = "https://tradeskinsfast.com/")]
+        [Obsolete("Domain is dead. Redirects to CS.Deals")]
+        TradeSkinsFast = 24,
+
+        #endregion
     }
 }

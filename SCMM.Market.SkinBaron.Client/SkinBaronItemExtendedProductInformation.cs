@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.SkinBaron.Client
 {
-    public class SkinBaronItemExtendedProductInfomation
+    public class SkinBaronItemExtendedProductInformation
     {
         [JsonPropertyName("localizedName")]
         public string LocalizedName { get; set; }

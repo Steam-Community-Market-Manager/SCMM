@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.Skinport.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromSkinport
 {
     private readonly SteamDbContext _db;
     private readonly SkinportWebClient _skinportWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromSkinport(SteamDbContext db, SkinportWebClient skinportWebClient)
+    public UpdateMarketItemPricesFromSkinport(SteamDbContext db, SkinportWebClient skinportWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _skinportWebClient = skinportWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-Skinport")]
@@ -27,7 +31,7 @@ public class UpdateMarketItemPricesFromSkinport
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Skinport");
 
-        var appIds = MarketType.Skinport.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.Skinport.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)
@@ -47,10 +51,11 @@ public class UpdateMarketItemPricesFromSkinport
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from Skinport (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
-                var skinportItems = (await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name)) ?? new List<SkinportItem>();
+                var skinportItems = (await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name, tradable: true)) ?? new List<SkinportItem>();
 
                 var items = await _db.SteamMarketItems
                    .Where(x => x.AppId == app.Id)
@@ -81,11 +86,32 @@ public class UpdateMarketItemPricesFromSkinport
                     missingItem.Item.UpdateBuyPrices(MarketType.Skinport, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Skinport, x =>
+                {
+                    x.TotalItems = skinportItems.Count();
+                    x.TotalListings = skinportItems.Sum(i => i.Quantity);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from Skinport (appId: {app.SteamId}). {ex.Message}");
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from Skinport (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Skinport, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch(Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for Skinport (appId: {app.SteamId}). {ex.Message}");
+                }
                 continue;
             }
         }

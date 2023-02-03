@@ -98,8 +98,8 @@ namespace SCMM.Web.Server.API.Controllers
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
 
             var appId = this.App().Id;
-            var indexFund = await _statisticsService.GetDictionaryAsync<DateTime, IndexFundStatistic>(
-                String.Format(StatisticKeys.IndexFundByAppId, appId)
+            var indexFund = await _statisticsService.GetDictionaryAsync<DateTime, MarketIndexFundStatistic>(
+                String.Format(StatisticKeys.MarketIndexFundByAppId, appId)
             );
             if ((indexFund?.Count ?? 0) <= 0)
             {
@@ -210,7 +210,7 @@ namespace SCMM.Web.Server.API.Controllers
                              x.CurrencyExchangeRateMultiplier
                         ),
                         BuyFee = this.Currency().CalculateExchange(
-                            (includeFees ? market.Value.GetMarketBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            (includeFees ? market.Value.GetBuyerFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
                             x.CurrencyExchangeRateMultiplier
                         ),
                         BuyUrl = market.Value.GetMarketBuyUrl(
@@ -322,7 +322,7 @@ namespace SCMM.Web.Server.API.Controllers
                              x.CurrencyExchangeRateMultiplier
                         ),
                         BuyFee = this.Currency().CalculateExchange(
-                            (includeFees ? market.Value.GetMarketBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            (includeFees ? market.Value.GetBuyerFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
                             x.CurrencyExchangeRateMultiplier
                         ),
                         BuyUrl = market.Value.GetMarketBuyUrl(

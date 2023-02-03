@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.Buff.Client
 {
-    public class BuffItemExtendedProductInfomation
+    public class BuffItemExtendedProductInformation
     {
         [JsonPropertyName("localizedName")]
         public string LocalizedName { get; set; }

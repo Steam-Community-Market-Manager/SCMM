@@ -8,7 +8,7 @@ namespace SCMM.Market.SkinBaron.Client
         public ulong AppId { get; set; }
 
         [JsonPropertyName("extendedProductInformation")]
-        public SkinBaronItemExtendedProductInfomation ExtendedProductInformation { get; set; }
+        public SkinBaronItemExtendedProductInformation ExtendedProductInformation { get; set; }
 
         [JsonPropertyName("id")]
         public ulong Id { get; set; }

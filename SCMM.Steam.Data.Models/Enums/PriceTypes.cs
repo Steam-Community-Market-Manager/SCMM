@@ -4,7 +4,8 @@
     public enum PriceTypes : byte
     {
         None = 0x00,
-        Cash = 0x01,
-        Trade = 0x02
+        Trade = 0x01,
+        Cash = 0x02,
+        Crypto = 0x04
     }
 }

@@ -27,7 +27,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
 
-        var appIds = MarketType.LOOTFarm.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.LOOTFarm.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

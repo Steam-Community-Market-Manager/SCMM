@@ -5,6 +5,7 @@ using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.System;
 
@@ -13,6 +14,8 @@ namespace SCMM.Web.Server.Queries
     public class GetSystemStatusRequest : IQuery<GetSystemStatusResponse>
     {
         public ulong AppId { get; set; }
+
+        public bool IncludeAppMarkets { get; set; } = false;
 
         public bool IncludeWebProxies { get; set; } = false;
     }
@@ -25,12 +28,14 @@ namespace SCMM.Web.Server.Queries
     public class GetSystemStatus : IQueryHandler<GetSystemStatusRequest, GetSystemStatusResponse>
     {
         private readonly SteamDbContext _db;
+        private readonly IStatisticsService _statisticsService;
         private readonly IWebProxyStatisticsService _webProxyStatisticsService;
         private readonly IMapper _mapper;
 
-        public GetSystemStatus(SteamDbContext db, IWebProxyStatisticsService webProxyStatisticsService, IMapper mapper)
+        public GetSystemStatus(SteamDbContext db, IStatisticsService statisticsService, IWebProxyStatisticsService webProxyStatisticsService, IMapper mapper)
         {
             _db = db;
+            _statisticsService = statisticsService;
             _webProxyStatisticsService = webProxyStatisticsService;
             _mapper = mapper;
         }
@@ -93,6 +98,15 @@ namespace SCMM.Web.Server.Queries
                 steamApp.AssetDescriptionsUpdates.TargetDelta = TimeSpan.FromDays(1);
                 steamApp.MarketOrderUpdates.TargetDelta = TimeSpan.FromHours(3);
                 steamApp.MarketSaleUpdates.TargetDelta = TimeSpan.FromHours(3);
+                if (request.IncludeAppMarkets)
+                {
+                    // TODO: Add target "ast updated" time for markets
+                    steamApp.Markets = _mapper.Map<IDictionary<MarketType, MarketStatusStatistic>, IDictionary<MarketType, SystemStatusAppMarketDTO>>(
+                        await _statisticsService.GetDictionaryAsync<MarketType, MarketStatusStatistic>(
+                            String.Format(StatisticKeys.MarketStatusByAppId, request.AppId.ToString())
+                        )
+                    );
+                }
             }
 
             var webProxies = (IEnumerable<SystemStatusWebProxyDTO>)null;

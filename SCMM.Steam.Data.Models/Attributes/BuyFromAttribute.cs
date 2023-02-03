@@ -8,4 +8,8 @@ public class BuyFromAttribute : Attribute
     public long FeeSurcharge { get; set; }
 
     public float FeeRate { get; set; }
+
+    public string AffiliateCode { get; set; }
+
+    public bool HasAffiliateProgram => !String.IsNullOrEmpty(AffiliateCode);
 }

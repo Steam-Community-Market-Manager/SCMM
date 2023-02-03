@@ -306,7 +306,7 @@ namespace SCMM.Steam.Data.Store
             if (MarketItem != null && MarketItem.Currency != null)
             {
                 var app = (MarketItem.App ?? App);
-                foreach (var marketPrice in MarketItem.BuyPrices.Where(x => !x.Key.IsObsolete() && (app == null || x.Key.IsAppSupported(UInt64.Parse(app.SteamId)))))
+                foreach (var marketPrice in MarketItem.BuyPrices.Where(x => x.Key.IsEnabled() && (app == null || x.Key.IsAppSupported(UInt64.Parse(app.SteamId)))))
                 {
                     var lowestPrice = 0L;
                     if (currency != null)
@@ -320,11 +320,11 @@ namespace SCMM.Steam.Data.Store
                     }
                     yield return new MarketPrice
                     {
-                        Type = (marketPrice.Key.GetMarketPriceType() ?? PriceTypes.None),
+                        Type = (marketPrice.Key.GetPriceType() ?? PriceTypes.None),
                         MarketType = marketPrice.Key,
                         Currency = currency,
                         Price = lowestPrice,
-                        Fee = marketPrice.Key.GetMarketBuyFees(lowestPrice),
+                        Fee = marketPrice.Key.GetBuyerFees(lowestPrice),
                         Supply = marketPrice.Value.Supply,
                         IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Supply != 0),
                         Url = marketPrice.Key.GetMarketBuyUrl(

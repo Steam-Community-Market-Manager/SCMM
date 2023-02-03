@@ -29,7 +29,7 @@ public class UpdateMarketItemPricesFromBuff
 
         // TODO: Enable CSGO support
         // TODO: Needs optimisation, too slow
-        var appIds = MarketType.Buff.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.Buff.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

@@ -5,7 +5,12 @@ namespace SCMM.Steam.Data.Models.Attributes;
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
 public class MarketAttribute : Attribute
 {
-    public ulong[] Apps { get; set; }
+    public MarketAttribute(params ulong[] supportAppIds)
+    {
+        SupportedAppIds = supportAppIds;
+    }
+
+    public ulong[] SupportedAppIds { get; set; }
 
     public PriceTypes Type { get; set; }
 

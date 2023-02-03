@@ -14,9 +14,10 @@ namespace SCMM.Shared.Data.Models.Extensions
                             .GetName();
         }
 
-        public static bool IsObsolete(this Enum enumValue)
+        public static bool IsEnabled(this Enum enumValue)
         {
-            return enumValue.GetType()
+            return enumValue.GetDisplayName() != null && 
+                   enumValue.GetType()
                             .GetMember(enumValue.ToString())
                             .FirstOrDefault()?
                             .GetCustomAttribute<ObsoleteAttribute>() != null;

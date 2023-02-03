@@ -28,7 +28,7 @@ public class UpdateMarketItemPricesFromRustSkins
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-RustSkins");
 
-        var appIds = MarketType.RUSTSkins.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.RUSTSkins.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

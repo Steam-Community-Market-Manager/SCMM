@@ -27,7 +27,7 @@ public class UpdateMarketItemPricesFromSwapGG
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SwapGG");
 
-        var appIds = MarketType.SwapGGTrade.GetMarketAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = MarketType.SwapGGTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .Where(x => x.IsActive)

@@ -34,6 +34,16 @@ public class RedisStatisticsService : IStatisticsService
         ); ;
     }
 
+    public async Task UpdateAsync<T>(string key, Action<T> updateValue)
+    {
+        var value = await GetAsync<T>(key);
+        if (!Object.Equals(value, default(T)))
+        {
+            updateValue.Invoke(value);
+            await SetAsync<T>(key, value);
+        }
+    }
+
     public async Task<IEnumerable<T>> GetListAsync<T>(string key)
     {
         var values = await _redis.ListRangeAsync(

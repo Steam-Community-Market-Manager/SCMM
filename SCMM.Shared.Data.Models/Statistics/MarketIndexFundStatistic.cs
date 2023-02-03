@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Shared.Data.Models.Statistics
 {
-    public class IndexFundStatistic
+    public class MarketIndexFundStatistic
     {
         public int TotalItems { get; set; }
 

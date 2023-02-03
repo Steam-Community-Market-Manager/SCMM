@@ -1,4 +1,6 @@
-﻿namespace SCMM.Web.Data.Models.UI.System;
+﻿using SCMM.Steam.Data.Models.Enums;
+
+namespace SCMM.Web.Data.Models.UI.System;
 
 public class SystemStatusSteamAppDTO
 {
@@ -15,4 +17,6 @@ public class SystemStatusSteamAppDTO
     public TimeRangeWithTargetDTO MarketOrderUpdates { get; set; }
 
     public TimeRangeWithTargetDTO MarketSaleUpdates { get; set; }
+
+    public IDictionary<MarketType, SystemStatusAppMarketDTO> Markets { get; set; }
 }

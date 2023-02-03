@@ -311,7 +311,7 @@
         {
             try
             {
-                return await SystemService.GetSystemStatusAsync(State.AppId, includeWebProxiesStatus: true);
+                return await SystemService.GetSystemStatusAsync(State.AppId, includeAppMarkets: true, includeWebProxiesStatus: true);
             }
             catch (Exception ex)
             {
@@ -335,7 +335,7 @@
             SystemStatus = null;
             StateHasChanged();
 
-            SystemStatus = await SystemService.GetSystemStatusAsync(State.AppId, includeWebProxiesStatus: true);
+            SystemStatus = await SystemService.GetSystemStatusAsync(State.AppId, includeAppMarkets: true, includeWebProxiesStatus: true);
             if (SystemStatus != null)
             {
                 State.SystemStatus = SystemStatus;

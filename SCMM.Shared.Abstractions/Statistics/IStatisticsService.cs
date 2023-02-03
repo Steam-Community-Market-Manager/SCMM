@@ -4,6 +4,7 @@ public interface IStatisticsService
 {
     Task<T> GetAsync<T>(string key);
     Task SetAsync<T>(string key, T value);
+    Task UpdateAsync<T>(string key, Action<T> updateValue);
 
     Task<IEnumerable<T>> GetListAsync<T>(string key);
     Task SetListAsync<T>(string key, IEnumerable<T> value, bool deleteKeyBeforeSet = false);

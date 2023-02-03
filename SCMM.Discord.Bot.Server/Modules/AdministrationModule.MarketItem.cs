@@ -23,7 +23,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("rebuild-market-index-fund-stats")]
         public async Task<RuntimeResult> RebuildMarketIndexFundStats(ulong appId)
         {
-            var indexFund = new Dictionary<DateTime, IndexFundStatistic>();
+            var indexFund = new Dictionary<DateTime, MarketIndexFundStatistic>();
             var appGuid = (await _steamDb.SteamApps.FirstOrDefaultAsync(x => x.SteamId == appId.ToString()))?.Id;
             var start = _steamDb.SteamMarketItemSale.Min(x => x.Timestamp).Date;
             var end = _steamDb.SteamMarketItemSale.Max(x => x.Timestamp).Date;
@@ -49,7 +49,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                         })
                         .ToList()
                         .GroupBy(x => true)
-                        .Select(x => new IndexFundStatistic
+                        .Select(x => new MarketIndexFundStatistic
                         {
                             TotalItems = x.Count(),
                             TotalSalesVolume = x.Sum(y => y.TotalSalesVolume),
@@ -77,7 +77,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 if (indexFund.Any())
                 {
                     await _statisticsService.SetDictionaryAsync(
-                        String.Format(StatisticKeys.IndexFundByAppId, appId),
+                        String.Format(StatisticKeys.MarketIndexFundByAppId, appId),
                         indexFund
                             .OrderBy(x => x.Key)
                             .ToDictionary(x => x.Key, x => x.Value)
