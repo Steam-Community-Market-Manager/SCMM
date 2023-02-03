@@ -34,14 +34,12 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Swap.gg Trade")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Trade, Color = "#15C7AD")]
-        //[BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
-        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}", AffiliateCode = "326")]
+        [BuyFrom(Url = "https://swap.gg/?r=iHUYPlp5ehjhrD5DXf0FF&game={0}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF")]
         SwapGGTrade = 12,
 
         [Display(Name = "Swap.gg Market")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Type = PriceTypes.Cash, Color = "#15C7AD")]
-        //[BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
-        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}", AffiliateCode = "326")]
+        [BuyFrom(Url = "https://market.swap.gg/{1}?r=iHUYPlp5ehjhrD5DXf0FF&search={3}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF")]
         SwapGGMarket = 13,
 
         [Display(Name = "Tradeit.gg")]

@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.SwapGG.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromSwapGG
 {
     private readonly SteamDbContext _db;
     private readonly SwapGGWebClient _swapGGWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromSwapGG(SteamDbContext db, SwapGGWebClient swapGGWebClient)
+    public UpdateMarketItemPricesFromSwapGG(SteamDbContext db, SwapGGWebClient swapGGWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _swapGGWebClient = swapGGWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-SwapGG")]
@@ -47,6 +51,7 @@ public class UpdateMarketItemPricesFromSwapGG
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -81,11 +86,32 @@ public class UpdateMarketItemPricesFromSwapGG
                     missingItem.Item.UpdateBuyPrices(MarketType.SwapGGTrade, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGTrade, x =>
+                {
+                    x.TotalItems = swapggTradeItems.Count();
+                    x.TotalListings = swapggTradeItems.Sum(i => i.ItemIds?.Length ?? 0);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
+                try
+                {
+                    logger.LogError(ex, $"Failed to update trade item price information from swap.gg (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGTrade, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update trade item price statistics for swap.gg (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
+                }
             }
 
             try
@@ -121,11 +147,32 @@ public class UpdateMarketItemPricesFromSwapGG
                     missingItem.Item.UpdateBuyPrices(MarketType.SwapGGMarket, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGMarket, x =>
+                {
+                    x.TotalItems = swapggMarketItems.Count();
+                    x.TotalListings = swapggMarketItems.Sum(i => i.Value.Quantity);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGMarket, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
+                }
             }
         }
     }

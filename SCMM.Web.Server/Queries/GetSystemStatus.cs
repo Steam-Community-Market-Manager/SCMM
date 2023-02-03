@@ -110,6 +110,7 @@ namespace SCMM.Web.Server.Queries
 
                     steamApp.Markets = markets
                         .Where(x => x.Type.IsEnabled())
+                        .OrderBy(x => x.Type)
                         .ToArray();
                 }
             }

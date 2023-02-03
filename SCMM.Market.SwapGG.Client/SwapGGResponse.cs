@@ -7,7 +7,7 @@ namespace SCMM.Market.SwapGG.Client
         public const string StatusOk = "OK";
 
         [JsonPropertyName("time")]
-        public long Time { get; set; }
+        public long? Time { get; set; }
 
         [JsonPropertyName("status")]
         public string Status { get; set; }

@@ -9,6 +9,15 @@ namespace SCMM.Market.LootFarm.Client
 
         public LootFarmWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// Updated every minute
+        /// </remarks>
+        /// <see cref="https://loot.farm/en/pricelist.html"/>
+        /// <param name="appName"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<LootFarmItemPrice>> GetItemPricesAsync(string appName)
         {
             using (var client = BuildWebBrowserHttpClient())
