@@ -20,7 +20,7 @@ namespace SCMM.Shared.Data.Models.Extensions
                    enumValue.GetType()
                             .GetMember(enumValue.ToString())
                             .FirstOrDefault()?
-                            .GetCustomAttribute<ObsoleteAttribute>() != null;
+                            .GetCustomAttribute<ObsoleteAttribute>() == null;
         }
     }
 }

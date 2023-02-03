@@ -34,14 +34,11 @@ public class RedisStatisticsService : IStatisticsService
         ); ;
     }
 
-    public async Task UpdateAsync<T>(string key, Action<T> updateValue)
+    public async Task UpdateAsync<T>(string key, Action<T> updateValue) where T : new()
     {
-        var value = await GetAsync<T>(key);
-        if (!Object.Equals(value, default(T)))
-        {
-            updateValue.Invoke(value);
-            await SetAsync<T>(key, value);
-        }
+        var value = (await GetAsync<T>(key)) ?? new T();
+        updateValue.Invoke(value);
+        await SetAsync<T>(key, value);
     }
 
     public async Task<IEnumerable<T>> GetListAsync<T>(string key)
@@ -164,13 +161,10 @@ public class RedisStatisticsService : IStatisticsService
         );
     }
 
-    public async Task UpdateDictionaryValueAsync<TKey, TValue>(string key, TKey field, Action<TValue> updateValue)
+    public async Task UpdateDictionaryValueAsync<TKey, TValue>(string key, TKey field, Action<TValue> updateValue) where TValue : new()
     {
-        var value = await GetDictionaryValueAsync<TKey, TValue>(key, field);
-        if (!Object.Equals(value, default(TValue)))
-        {
-            updateValue.Invoke(value);
-            await SetDictionaryValueAsync<TKey, TValue>(key, field, value);
-        }
+        var value = (await GetDictionaryValueAsync<TKey, TValue>(key, field)) ?? new TValue();
+        updateValue.Invoke(value);
+        await SetDictionaryValueAsync<TKey, TValue>(key, field, value);
     }
 }

@@ -8,6 +8,7 @@ using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.System;
+using SCMM.Web.Server.Extensions;
 
 namespace SCMM.Web.Server.Queries
 {
@@ -101,11 +102,15 @@ namespace SCMM.Web.Server.Queries
                 if (request.IncludeAppMarkets)
                 {
                     // TODO: Add target "ast updated" time for markets
-                    steamApp.Markets = _mapper.Map<IDictionary<MarketType, MarketStatusStatistic>, IDictionary<MarketType, SystemStatusAppMarketDTO>>(
+                    var markets = _mapper.Map<IEnumerable<SystemStatusAppMarketDTO>>(
                         await _statisticsService.GetDictionaryAsync<MarketType, MarketStatusStatistic>(
                             String.Format(StatisticKeys.MarketStatusByAppId, request.AppId.ToString())
                         )
                     );
+
+                    steamApp.Markets = markets
+                        .Where(x => x.Type.IsEnabled())
+                        .ToArray();
                 }
             }
 

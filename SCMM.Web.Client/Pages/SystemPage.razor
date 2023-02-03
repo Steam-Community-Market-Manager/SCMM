@@ -171,7 +171,95 @@
                     </MudPaper>
                 </MudItem>
             }
-
+            
+            @if (SystemStatus.SteamApp?.Markets?.Any() == true)
+            {
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <MudStack Row="true" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween">
+                            <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Default" GutterBottom>
+                                <i class="fas fa-fw fa-shop" />
+                                <span>Third Party Market Services</span>
+                            </MudText>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center" Class="mb-2">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Success">
+                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-check mr-1" /> Normal <strong>(@SystemStatus.SteamApp.Markets.Count(x => x.Status == SystemStatusSeverity.Normal))</strong></span>
+                                </MudText>
+                                <MudText Typo="Typo.subtitle1" Color="Color.Warning">
+                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-exclamation mr-1" /> Degraded <strong>(@SystemStatus.SteamApp.Markets.Count(x => x.Status == SystemStatusSeverity.Degraded))</strong></span>
+                                </MudText>
+                                <MudText Typo="Typo.subtitle1" Color="Color.Error">
+                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-xmark mr-1" /> Unavailable <strong>(@SystemStatus.SteamApp.Markets.Count(x => x.Status == SystemStatusSeverity.Critical))</strong></span>
+                                </MudText>
+                            </MudStack>
+                            <MudIconButton Size="Size.Small" Variant="Variant.Text" Icon="fas fa-fw fa-rotate" Color="Color.Secondary" Title="Refresh system status" Disabled="State.IsPrerendering"
+                                           OnClick="@(async () => await RefreshSystemStatusAsync())"></MudIconButton>
+                        </MudStack>
+                        <MudSimpleTable Elevation="0" FixedHeader="true" Dense="true">
+                            <thead>
+                                <tr>
+                                    <th>Market</th>
+                                    <th>Last Updated</th>
+                                    <th>Total Items Tracked</th>
+                                    <th>Total Market Listings</th>
+                                    <th class="text-right">Overall Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var now = DateTimeOffset.Now;
+                                }
+                                @foreach (var market in SystemStatus.SteamApp.Markets)
+                                {
+                                    <tr>
+                                        <td>
+                                            <MudStack Spacing="2" Row="true" AlignItems="AlignItems.Center">
+                                                <img src="@($"/images/app/{State.App.Id}/markets/{market.Type.ToString().ToLower()}.png")" style="width:1.5em; height:1.5em" />
+                                                <span>@market.Type.GetDisplayName()</span>
+                                            </MudStack>
+                                        </td>
+                                        <td>
+                                            @if (market.LastUpdatedItemsOn != null)
+                                            {
+                                                <span>@((now - market.LastUpdatedItemsOn.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        </td>
+                                        <td>@market.TotalItems.ToQuantityString()</td>
+                                        <td>@market.TotalListings.ToQuantityString()</td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.inherit" Color="@(market.Status == SystemStatusSeverity.Normal ? Color.Success : (market.Status == SystemStatusSeverity.Degraded) ? Color.Warning : Color.Error)">
+                                                @switch (market.Status)
+                                                {
+                                                    case SystemStatusSeverity.Normal:
+                                                        <span class="no-wrap"><i class="fas fa-fw fa-circle-check mr-1" /> Normal</span>
+                                                        break;
+                                                    case SystemStatusSeverity.Degraded:
+                                                        <span class="no-wrap"><i class="fas fa-fw fa-circle-exclamation mr-1" /> Degraded</span>
+                                                        break;
+                                                    case SystemStatusSeverity.Critical:
+                                                        <span class="no-wrap"><i class="fas fa-fw fa-circle-xmark mr-1" /> Unavailable</span>
+                                                        break;
+                                                }
+                                            </MudText>
+                                            @if (market.HasError)
+                                            {
+                                                <MudText Typo="Typo.caption" Color="@(market.Status == SystemStatusSeverity.Degraded ? Color.Warning : Color.Error)">
+                                                    <span>@market.LastUpdateError</span>
+                                                </MudText>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudPaper>
+                </MudItem>
+            }
+        
             @if (SystemStatus.WebProxies?.Any() == true)
             {
                 <MudItem xs="12">
@@ -279,24 +367,6 @@
                 </MudItem>
             }
         
-            @*
-            <MudItem xs="12">
-                <MudPaper Outlined="true" Class="pa-4">
-                    <MudStack Row="true" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween">
-                        <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Default" GutterBottom>
-                            <i class="fas fa-fw fa-shapes" />
-                            <span>3rd Party Services</span>
-                        </MudText>
-                        <MudIconButton Size="Size.Small" Variant="Variant.Text" Icon="fas fa-fw fa-rotate" Color="Color.Secondary" Title="Refresh system status" Disabled="State.IsPrerendering"
-                                       OnClick="@(async () => await RefreshSystemStatusAsync())"></MudIconButton>
-                    </MudStack>
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                        <span>Under construction</span>
-                    </MudText>
-                </MudPaper>
-            </MudItem>
-            *@
-
         </MudGrid> 
     }
 </PageContainer>

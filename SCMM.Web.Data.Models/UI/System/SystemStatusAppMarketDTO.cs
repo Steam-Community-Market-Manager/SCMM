@@ -1,7 +1,11 @@
-﻿namespace SCMM.Web.Data.Models.UI.System;
+﻿using SCMM.Steam.Data.Models.Enums;
+
+namespace SCMM.Web.Data.Models.UI.System;
 
 public class SystemStatusAppMarketDTO
 {
+    public MarketType Type { get; set; }
+
     public int TotalItems { get; set; }
 
     public long TotalListings { get; set; }
@@ -11,6 +15,8 @@ public class SystemStatusAppMarketDTO
     public DateTimeOffset? LastUpdateErrorOn { get; set; }
 
     public string LastUpdateError { get; set; }
+
+    public bool HasError => !String.IsNullOrEmpty(LastUpdateError);
 
     public SystemStatusSeverity Status
     {

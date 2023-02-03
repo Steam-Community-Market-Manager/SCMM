@@ -15,7 +15,7 @@ public class HttpSystemService : ISystemService
 
     public Task<SystemStatusDTO> GetSystemStatusAsync(ulong appId, bool includeAppMarkets = false, bool includeWebProxiesStatus = false)
     {
-        return _http.GetFromJsonWithDefaultsAsync<SystemStatusDTO>($"api/system/status?appId={appId}&includeAppMarkets={includeAppMarkets}&includeWebProxiesStatus ={includeWebProxiesStatus}");
+        return _http.GetFromJsonWithDefaultsAsync<SystemStatusDTO>($"api/system/status?appId={appId}&includeAppMarkets={includeAppMarkets}&includeWebProxiesStatus={includeWebProxiesStatus}");
     }
 
     public Task<IEnumerable<SystemUpdateMessageDTO>> ListLatestSystemUpdateMessagesAsync()

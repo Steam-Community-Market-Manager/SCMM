@@ -18,5 +18,5 @@ public class SystemStatusSteamAppDTO
 
     public TimeRangeWithTargetDTO MarketSaleUpdates { get; set; }
 
-    public IDictionary<MarketType, SystemStatusAppMarketDTO> Markets { get; set; }
+    public IEnumerable<SystemStatusAppMarketDTO> Markets { get; set; }
 }
