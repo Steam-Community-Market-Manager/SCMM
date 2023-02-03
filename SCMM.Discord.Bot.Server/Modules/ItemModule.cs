@@ -114,7 +114,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             .OrderBy(x => x.Price)
             .ToList();
 
-        var description = new StringBuilder(item.Description);
+        var description = new StringBuilder(item.Description.ToPlainText());
         if (steamStorePrice != null && item.TimeAccepted != null)
         {
             if (!description.ToString().EndsWith("."))
