@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.iTradegg.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromiTradeggJob
 {
     private readonly SteamDbContext _db;
     private readonly iTradeggWebClient _iTradeggWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromiTradeggJob(SteamDbContext db, iTradeggWebClient iTradeggWebClient)
+    public UpdateMarketItemPricesFromiTradeggJob(SteamDbContext db, iTradeggWebClient iTradeggWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _iTradeggWebClient = iTradeggWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-iTradegg")]
@@ -47,6 +51,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from iTrade.gg (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -81,7 +86,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
                     missingItem.Item.UpdateBuyPrices(MarketType.iTradegg, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
             }
             catch (Exception ex)
             {

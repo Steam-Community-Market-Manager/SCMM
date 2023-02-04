@@ -59,8 +59,6 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsMarketplace = 16,
 
-        /// ----------------------------------------------------------------------------------------------------------------- \\\
-
         [Display(Name = "Skin Baron")]
         [Market(Constants.CSGOAppId, Color = "#2A2745")]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", AcceptedPaymentTypes = PriceTypes.Cash)]
@@ -68,12 +66,14 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Rust.tm")]
         [Market(Constants.RustAppId)]
-        [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc", AcceptedPaymentTypes = PriceTypes.Cash)] // Unconfirmed
+        [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         RustTM = 19,
+
+        /// ----------------------------------------------------------------------------------------------------------------- \\\
 
         [Display(Name = "CS.TRADE")]
         [Market(Constants.RustAppId, Constants.CSGOAppId)]
-        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AffiliateCode = "SCMM", AcceptedPaymentTypes = PriceTypes.Trade)] // Unconfirmed
+        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AffiliateCode = "SCMM", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         CSTRADE = 22,
 
         [Display(Name = "iTrade.gg")]

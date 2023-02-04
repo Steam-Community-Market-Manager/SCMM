@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.RustTM.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromRustTM
 {
     private readonly SteamDbContext _db;
     private readonly RustTMWebClient _rustTMWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromRustTM(SteamDbContext db, RustTMWebClient rustTMWebClient)
+    public UpdateMarketItemPricesFromRustTM(SteamDbContext db, RustTMWebClient rustTMWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _rustTMWebClient = rustTMWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-RustTM")]
@@ -47,6 +51,7 @@ public class UpdateMarketItemPricesFromRustTM
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from Rust.tm (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -81,12 +86,32 @@ public class UpdateMarketItemPricesFromRustTM
                     missingItem.Item.UpdateBuyPrices(MarketType.RustTM, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.RustTM, x =>
+                {
+                    x.TotalItems = rustTMItems.Count();
+                    x.TotalListings = rustTMItems.Sum(i => i.Volume);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from Rust.tm (appId: {app.SteamId}). {ex.Message}");
-                continue;
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from Rust.tm (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.RustTM, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for Rust.tm (appId: {app.SteamId}). {ex.Message}");
+                }
             }
         }
     }

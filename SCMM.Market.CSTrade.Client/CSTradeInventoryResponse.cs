@@ -8,6 +8,6 @@ namespace SCMM.Market.CSTrade.Client
         public string Status { get; set; }
 
         [JsonPropertyName("inventory")]
-        public IEnumerable<CSTradeItem> Inventory { get; set; }
+        public IEnumerable<CSTradeInventoryItem> Inventory { get; set; }
     }
 }

@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.DMarket.Client;
 using SCMM.Shared.Abstractions.Messaging;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -19,12 +21,14 @@ public class UpdateMarketItemPricesFromDMarketJob
     private readonly SteamDbContext _db;
     private readonly DMarketWebClient _dMarketWebClient;
     private readonly IServiceBus _serviceBus;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromDMarketJob(SteamDbContext db, DMarketWebClient dMarketWebClient, IServiceBus serviceBus)
+    public UpdateMarketItemPricesFromDMarketJob(SteamDbContext db, DMarketWebClient dMarketWebClient, IServiceBus serviceBus, IStatisticsService statisticsService)
     {
         _db = db;
         _dMarketWebClient = dMarketWebClient;
         _serviceBus = serviceBus;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-DMarket")]
@@ -54,6 +58,7 @@ public class UpdateMarketItemPricesFromDMarketJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from DMarket (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -102,7 +107,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                     missingItem.Item.UpdateBuyPrices(MarketType.Dmarket, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
                 var dMarketItemHolders = dMarketItems
                     .Where(x => !String.IsNullOrEmpty(x.Extra?.ViewAtSteam))

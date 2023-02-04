@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.SkinsMonkey.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromSkinsMonkey
 {
     private readonly SteamDbContext _db;
     private readonly SkinsMonkeyWebClient _skinsMonkeyWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromSkinsMonkey(SteamDbContext db, SkinsMonkeyWebClient skinsMonkeyWebClient)
+    public UpdateMarketItemPricesFromSkinsMonkey(SteamDbContext db, SkinsMonkeyWebClient skinsMonkeyWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _skinsMonkeyWebClient = skinsMonkeyWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-SkinsMonkey")]
@@ -47,6 +51,7 @@ public class UpdateMarketItemPricesFromSkinsMonkey
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinsMonkey (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -81,7 +86,7 @@ public class UpdateMarketItemPricesFromSkinsMonkey
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinsMonkey, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
             }
             catch (Exception ex)
             {

@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.Buff.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromBuff
 {
     private readonly SteamDbContext _db;
     private readonly BuffWebClient _buffWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromBuff(SteamDbContext db, BuffWebClient buffWebClient)
+    public UpdateMarketItemPricesFromBuff(SteamDbContext db, BuffWebClient buffWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _buffWebClient = buffWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-Buff")]
@@ -49,6 +53,7 @@ public class UpdateMarketItemPricesFromBuff
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from Buff (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -93,7 +98,7 @@ public class UpdateMarketItemPricesFromBuff
                     missingItem.Item.UpdateBuyPrices(MarketType.Buff, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
             }
             catch (Exception ex)
             {

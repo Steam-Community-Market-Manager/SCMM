@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.CSTrade.Client
 {
-    public class CSTradeItem
+    public class CSTradeInventoryItem
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }

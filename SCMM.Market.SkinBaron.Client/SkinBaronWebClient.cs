@@ -5,15 +5,15 @@ namespace SCMM.Market.SkinBaron.Client
 {
     public class SkinBaronWebClient : Shared.Client.WebClient
     {
-        private const string BaseUri = "https://skinbaron.de/api/v2/";
+        private const string ApiBaseUri = "https://skinbaron.de/api/v2/";
 
         public SkinBaronWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<SkinBaronFilterOffersResponse> GetBrowsingFilterOffersAsync(string appId, int page = 1)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebApiHttpClient())
             {
-                var url = $"{BaseUri}Browsing/FilterOffers?appId={Uri.EscapeDataString(appId)}&sort=EF&language=en&page={page}";
+                var url = $"{ApiBaseUri}Browsing/FilterOffers?appId={Uri.EscapeDataString(appId)}&sort=EF&language=en&page={page}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 

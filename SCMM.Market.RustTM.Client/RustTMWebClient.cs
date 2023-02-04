@@ -6,15 +6,15 @@ namespace SCMM.Market.RustTM.Client
 {
     public class RustTMWebClient : Shared.Client.WebClient
     {
-        private const string BaseUri = "https://rust.tm/api/v2/";
+        private const string ApiBaseUri = "https://rust.tm/api/v2/";
 
         public RustTMWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<RustTMItem>> GetPricesAsync(string currencyName = Constants.SteamCurrencyUSD)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebApiHttpClient())
             {
-                var url = $"{BaseUri}prices/{currencyName.ToUpper()}.json";
+                var url = $"{ApiBaseUri}prices/{currencyName.ToUpper()}.json";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 

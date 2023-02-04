@@ -231,8 +231,8 @@ namespace SCMM.Steam.Data.Store
                     Type = x.Key,
                     Supply = x.Value.Supply,
                     Price = x.Value.Price,
-                    BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>(),
-                    SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>()
+                    BuyFrom = x.Key.GetBuyFromOptions()?.FirstOrDefault(),
+                    SellTo = x.Key.GetSellToOptions()?.FirstOrDefault()
                 })
                 .ToArray();
 
@@ -245,8 +245,8 @@ namespace SCMM.Steam.Data.Store
                     .Select(x => new
                     {
                         From = x.Type,
-                        Price = x.Price,
-                        Fee = (x.BuyFrom.FeeRate != 0 ? x.Price.MarketSaleFeeComponentAsInt(x.BuyFrom.FeeRate) : 0) + x.BuyFrom.FeeSurcharge
+                        Price = x.BuyFrom?.CalculateBuyPrice(x.Price) ?? 0,
+                        Fee = x.BuyFrom?.CalculateBuyFees(x.Price) ?? 0
                     })
                     .MinBy(x => x.Price + x.Fee);
                 BuyNowFrom = lowestBuyPrice.From;
@@ -267,8 +267,8 @@ namespace SCMM.Steam.Data.Store
                     .Select(x => new
                     {
                         From = x.Type,
-                        Price = (x.Price - 1),
-                        Fee = (x.SellTo.FeeRate != 0 ? (x.Price - 1).MarketSaleFeeComponentAsInt(x.SellTo.FeeRate) : 0) + x.SellTo.FeeSurcharge
+                        Price = x.SellTo?.CalculateSellPrice(x.Price - 1) ?? 0,
+                        Fee = x.SellTo?.CalculateSellFees(x.Price - 1) ?? 0,
                     })
                     .MaxBy(x => x.Price);
                 SellLaterTo = highestSellPrice.From;

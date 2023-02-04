@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.SkinSwap.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +17,13 @@ public class UpdateMarketItemPricesFromSkinSwap
 {
     private readonly SteamDbContext _db;
     private readonly SkinSwapWebClient _skinSwapWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromSkinSwap(SteamDbContext db, SkinSwapWebClient skinSwapWebClient)
+    public UpdateMarketItemPricesFromSkinSwap(SteamDbContext db, SkinSwapWebClient skinSwapWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _skinSwapWebClient = skinSwapWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-SkinSwap")]
@@ -48,6 +52,7 @@ public class UpdateMarketItemPricesFromSkinSwap
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinSwap (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -83,7 +88,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinSwap, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
             }
             catch (Exception ex)
             {

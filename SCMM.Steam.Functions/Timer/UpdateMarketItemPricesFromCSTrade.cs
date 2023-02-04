@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.CSTrade.Client;
-using SCMM.Shared.Abstractions.Messaging;
-using SCMM.Shared.API.Messages;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -17,13 +17,13 @@ public class UpdateMarketItemPricesFromCSTrade
 {
     private readonly SteamDbContext _db;
     private readonly CSTradeWebClient _csTradeWebClient;
-    private readonly IServiceBus _serviceBus;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromCSTrade(SteamDbContext db, CSTradeWebClient csTradeWebClient, IServiceBus serviceBus)
+    public UpdateMarketItemPricesFromCSTrade(SteamDbContext db, CSTradeWebClient csTradeWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _csTradeWebClient = csTradeWebClient;
-        _serviceBus = serviceBus;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-CSTrade")]
@@ -48,15 +48,15 @@ public class UpdateMarketItemPricesFromCSTrade
             return;
         }
 
-        var csTradeItems = (await _csTradeWebClient.GetInventoryAsync()) ?? new List<CSTradeItem>();
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from CS.TRADE (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
-                var csTradeAppItems = csTradeItems.Where(x => x.AppId == app.SteamId).Where(x => x.Price != null).ToList();
-
+                var csTradeAppItems = (await _csTradeWebClient.GetPricesAsync(app.Name)) ?? new List<CSTradeItemPrice>();
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new
@@ -67,49 +67,51 @@ public class UpdateMarketItemPricesFromCSTrade
                     })
                     .ToListAsync();
 
-                foreach (var csTradeItem in csTradeAppItems.GroupBy(x => x.MarketHashName))
+                foreach (var csTradeItem in csTradeAppItems)
                 {
-                    var item = items.FirstOrDefault(x => x.Name == csTradeItem.Key)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == csTradeItem.Name)?.Item;
                     if (item != null)
                     {
-                        var supply = csTradeItem.Count();
                         item.UpdateBuyPrices(MarketType.CSTRADE, new PriceWithSupply
                         {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(csTradeItem.Min(x => x.Price).ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Supply = supply
+                            Price = csTradeItem.Have > 0 ? item.Currency.CalculateExchange(csTradeItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                            Supply = csTradeItem.Have
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !csTradeItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.CSTRADE));
+                var missingItems = items.Where(x => !csTradeAppItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.CSTRADE));
                 foreach (var missingItem in missingItems)
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.CSTRADE, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
-                var csTradeBots = csTradeAppItems
-                    .Where(x => !String.IsNullOrEmpty(x.Bot))
-                    .Select(x => x.BotId)
-                    .Distinct()
-                    .ToArray();
-                /*
-                var importTradeBotInventoryMessages = csTradeBots.Select(x => new ImportProfileInventoryMessage()
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSTRADE, x =>
                 {
-                    ProfileId = x,
-                    AppIds = new[] { app.SteamId }
+                    x.TotalItems = csTradeAppItems.Count();
+                    x.TotalListings = csTradeAppItems.Sum(i => i.Have);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
                 });
-                if (importTradeBotInventoryMessages.Any())
-                {
-                    await _serviceBus.SendMessagesAsync(importTradeBotInventoryMessages);
-                }
-                */
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from CS.TRADE (appId: {app.SteamId}). {ex.Message}");
-                continue;
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from CS.TRADE (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSTRADE, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for CS.TRADE (appId: {app.SteamId}). {ex.Message}");
+                }
             }
         }
     }

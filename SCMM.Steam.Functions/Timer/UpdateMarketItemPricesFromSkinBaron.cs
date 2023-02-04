@@ -2,7 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.SkinBaron.Client;
+using SCMM.Market.TradeitGG.Client;
+using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -15,11 +18,13 @@ public class UpdateMarketItemPricesFromSkinBaron
 {
     private readonly SteamDbContext _db;
     private readonly SkinBaronWebClient _skinBaronWebClient;
+    private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromSkinBaron(SteamDbContext db, SkinBaronWebClient skinBaronWebClient)
+    public UpdateMarketItemPricesFromSkinBaron(SteamDbContext db, SkinBaronWebClient skinBaronWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _skinBaronWebClient = skinBaronWebClient;
+        _statisticsService = statisticsService;
     }
 
     [Function("Update-Market-Item-Prices-From-SkinBaron")]
@@ -47,6 +52,7 @@ public class UpdateMarketItemPricesFromSkinBaron
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinBaron (appId: {app.SteamId})");
+            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
 
             try
             {
@@ -95,12 +101,32 @@ public class UpdateMarketItemPricesFromSkinBaron
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinBaron, null);
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SkinBaron, x =>
+                {
+                    x.TotalItems = skinBaronItems.Count();
+                    x.TotalListings = skinBaronItems.Sum(i => i.NumberOfOffers);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from SkinBaron (appId: {app.SteamId}). {ex.Message}");
-                continue;
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from SkinBaron (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SkinBaron, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for SkinBaron (appId: {app.SteamId}). {ex.Message}");
+                }
             }
         }
     }

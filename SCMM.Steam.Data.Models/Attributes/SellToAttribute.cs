@@ -19,19 +19,25 @@ public class SellToAttribute : Attribute
 
     public float FeeRate { get; set; }
 
-    public long CalculateBuyFees(long price)
+    public long CalculateSellPrice(long price)
     {
-        var fee = 0L;
+        var sellPrice = price;
+        return Math.Max(0, sellPrice);
+    }
+
+    public long CalculateSellFees(long price)
+    {
+        var sellFees = 0L;
         if (FeeRate != 0 && price > 0)
         {
-            fee += price.MarketSaleFeeComponentAsInt(FeeRate);
+            sellFees += price.MarketSaleFeeComponentAsInt(FeeRate);
         }
         if (FeeSurcharge != 0 && price > 0)
         {
-            fee += FeeSurcharge;
+            sellFees += FeeSurcharge;
         }
 
-        return fee;
+        return sellFees;
     }
 
     public string GenerateBuyUrl(string appId, string appName, ulong? classId, string name)
