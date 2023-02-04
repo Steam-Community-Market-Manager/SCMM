@@ -5,16 +5,16 @@ namespace SCMM.Market.CSDeals.Client
 {
     public class CSDealsWebClient : Shared.Client.WebClient
     {
-        private const string BaseUri = "https://cs.deals/";
-        private const string BaseApiUri = "https://cs.deals/API/";
+        private const string WebsiteBaseUri = "https://cs.deals/";
+        private const string ApiBaseUri = "https://cs.deals/API/";
 
         public CSDealsWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<CSDealsItemPrice>> GetPricingGetLowestPricesAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebApiHttpClient())
             {
-                var url = $"{BaseApiUri}IPricing/GetLowestPrices/v1?appid={Uri.EscapeDataString(appId)}";
+                var url = $"{ApiBaseUri}IPricing/GetLowestPrices/v1?appid={Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
@@ -26,9 +26,9 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> PostMarketplaceSearchAsync(string appId, int page = 0)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebsiteBaseUri)))
             {
-                var url = $"{BaseUri}ajax/marketplace-search";
+                var url = $"{WebsiteBaseUri}ajax/marketplace-search";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
                     { "appid", appId },
                     { "page", page.ToString() }
@@ -45,9 +45,9 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebsiteBaseUri)))
             {
-                var url = $"{BaseUri}ajax/botsinventory";
+                var url = $"{WebsiteBaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
                     { "appid", appId }
                 });

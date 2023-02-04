@@ -48,18 +48,18 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto, DiscountMultiplier = 0.25f /* 25% */)]
         TradeitGG = 14,
 
-        /// ----------------------------------------------------------------------------------------------------------------- \\\
-
-        [Display(Name = "CS.Deals Trade")]
+        [Display(Name = "CS.Deals")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#313846")]
-        [BuyFrom(Url = "https://cs.deals/trade-skins", AcceptedPaymentTypes = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://cs.deals/trade-skins?appid={0}", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsTrade = 15,
 
         // TODO: Items quantities are not currently supported
-        [Display(Name = "CS.Deals Market")]
+        [Display(Name = "CS.Deals - Marketplace")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#313846")]
-        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPaymentTypes = PriceTypes.Cash)]
+        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsMarketplace = 16,
+
+        /// ----------------------------------------------------------------------------------------------------------------- \\\
 
         [Display(Name = "Skin Baron")]
         [Market(Constants.CSGOAppId, Color = "#2A2745")]

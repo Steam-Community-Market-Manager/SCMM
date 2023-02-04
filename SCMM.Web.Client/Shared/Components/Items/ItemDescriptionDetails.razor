@@ -690,7 +690,7 @@
                                             }
                                             else if (price.MarketType != MarketType.SteamStore && price.Supply > 0)
                                             {
-                                                <span> (@price.Supply.Value.ToQuantityString())</span>
+                                                <span> (@(price.Supply != null ? price.Supply.Value.ToQuantityString() : "???"))</span>
                                             }
                                         </MudText>
                                     </div>

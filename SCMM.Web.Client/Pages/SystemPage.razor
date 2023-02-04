@@ -229,7 +229,7 @@
                                             }
                                         </td>
                                         <td>@market.TotalItems.ToQuantityString()</td>
-                                        <td>@market.TotalListings.ToQuantityString()</td>
+                                        <td>@(market.TotalListings != null ? market.TotalListings.Value.ToQuantityString() : "???")</td>
                                         <td class="text-right">
                                             <MudText Typo="Typo.inherit" Color="@(market.Status == SystemStatusSeverity.Normal ? Color.Success : (market.Status == SystemStatusSeverity.Degraded) ? Color.Warning : Color.Error)">
                                                 @switch (market.Status)
