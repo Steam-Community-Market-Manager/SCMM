@@ -26,7 +26,8 @@ public class UpdateMarketItemPricesFromSkinSwap
         _statisticsService = statisticsService;
     }
 
-    [Function("Update-Market-Item-Prices-From-SkinSwap")]
+    // Item prices can only be checked 60 at a time, too slow
+    //[Function("Update-Market-Item-Prices-From-SkinSwap")]
     public async Task Run([TimerTrigger("0 13-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinSwap");
@@ -48,7 +49,6 @@ public class UpdateMarketItemPricesFromSkinSwap
             return;
         }
 
-        var skinSwapItems = (await _skinSwapWebClient.GetSiteInventoryAsync()) ?? new Dictionary<string, SkinSwapItem[]>();
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinSwap (appId: {app.SteamId})");
@@ -56,7 +56,8 @@ public class UpdateMarketItemPricesFromSkinSwap
 
             try
             {
-                var skinSwapAppItems = skinSwapItems.Where(x => x.Key == app.SteamId).SelectMany(x => x.Value).ToList();
+                var skinSwapItems = (await _skinSwapWebClient.GetInventoryAsync(app.SteamId)) ?? new List<SkinSwapItem>();
+                var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
 
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
@@ -68,32 +69,52 @@ public class UpdateMarketItemPricesFromSkinSwap
                     })
                     .ToListAsync();
 
-                foreach (var skinSwapItemGroup in skinSwapAppItems.GroupBy(x => x.MarketName))
+                foreach (var skinSwapItemGroup in skinSwapItemGroups)
                 {
                     var item = items.FirstOrDefault(x => x.Name == skinSwapItemGroup.Key)?.Item;
                     if (item != null)
                     {
-                        var supply = skinSwapItemGroup.Count();
+                        var supply = skinSwapItemGroup.Sum(x => x.Amount);
                         item.UpdateBuyPrices(MarketType.SkinSwap, new PriceWithSupply
                         {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => x.PriceListed).ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                            Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => x.TradePrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Supply = supply
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !skinSwapAppItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.SkinSwap));
+                var missingItems = items.Where(x => !skinSwapItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.SkinSwap));
                 foreach (var missingItem in missingItems)
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinSwap, null);
                 }
 
                 await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SkinSwap, x =>
+                {
+                    x.TotalItems = skinSwapItemGroups.Count();
+                    x.TotalListings = skinSwapItemGroups.Sum(i => i.Sum(z => z.Amount));
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from SkinSwap (appId: {app.SteamId}). {ex.Message}");
-                continue;
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from SkinSwap (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SkinSwap, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for SkinSwap (appId: {app.SteamId}). {ex.Message}");
+                }
             }
         }
     }

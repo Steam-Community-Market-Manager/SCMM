@@ -79,18 +79,18 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade)] // Unconfirmed
         iTradegg = 23,
 
-        /// ----------------------------------------------------------------------------------------------------------------- \\\
-
         [Display(Name = "SkinsMonkey")]
         [Market(Constants.RustAppId, Constants.CSGOAppId)]
         [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinsMonkey = 25,
 
-        //[Obsolete("Items not buyable")]
+        [Obsolete("Item prices can only be checked 60 at a time, too slow")]
         [Display(Name = "Skin Swap")]
         [Market(Constants.RustAppId, Constants.CSGOAppId)]
-        [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash)] // Unconfirmed
+        [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinSwap = 26,
+
+        /// ----------------------------------------------------------------------------------------------------------------- \\\
 
         // TODO: F2F market support
         [Display(Name = "Dmarket")]

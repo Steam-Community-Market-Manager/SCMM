@@ -5,7 +5,7 @@ namespace SCMM.Market.SkinsMonkey.Client
 {
     public class SkinsMonkeyWebClient : Shared.Client.WebClient
     {
-        private const string ApiUri = "https://skinsmonkey.com/api/public/v1/";
+        private const string ApiBaseUri = "https://skinsmonkey.com/api/public/v1/";
 
         private readonly SkinsMonkeyConfiguration _configuration;
 
@@ -18,7 +18,7 @@ namespace SCMM.Market.SkinsMonkey.Client
         {
             using (var client = BuildSkinsMoneyClient())
             {
-                var url = $"{ApiUri}price/{Uri.EscapeDataString(appId)}";
+                var url = $"{ApiBaseUri}price/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
