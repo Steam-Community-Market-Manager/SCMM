@@ -24,7 +24,7 @@ namespace SCMM.Market.Skinport.Client
         /// <returns></returns>
         public async Task<IEnumerable<SkinportItem>> GetItemsAsync(string appId, string currency = null, bool tradable = false)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{BaseUri}items?app_id={Uri.EscapeDataString(appId)}&currency={Uri.EscapeDataString(currency)}&tradable={tradable.ToString().ToLower()}";
                 var response = await client.GetAsync(url);

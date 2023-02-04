@@ -5,6 +5,7 @@ namespace SCMM.Market.SwapGG.Client
 {
     public class SwapGGWebClient : Shared.Client.WebClient
     {
+        private const string WebsiteBaseUri = "https://swap.gg/";
         private const string TradeApiBaseUri = "https://api.swap.gg/";
         private const string MarketApiBaseUri = "https://market-api.swap.gg/v1/";
 
@@ -18,7 +19,7 @@ namespace SCMM.Market.SwapGG.Client
         /// <returns></returns>
         public async Task<IEnumerable<SwapGGTradeItem>> GetTradeBotInventoryAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebsiteBaseUri)))
             {
                 var url = $"{TradeApiBaseUri}inventory/bot/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
