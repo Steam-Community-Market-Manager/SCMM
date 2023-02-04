@@ -31,8 +31,6 @@ public class UpdateMarketItemPricesFromBuff
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Buff");
 
-        // TODO: Enable CSGO support
-        // TODO: Needs optimisation, too slow
         var appIds = MarketType.Buff.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
@@ -99,11 +97,31 @@ public class UpdateMarketItemPricesFromBuff
                 }
 
                 await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Buff, x =>
+                {
+                    x.TotalItems = buffItems.Count();
+                    x.TotalListings = buffItems.Sum(i => i.SellNum);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from Buff (appId: {app.SteamId}). {ex.Message}");
-                continue;
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from Buff (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Buff, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for Buff (appId: {app.SteamId}). {ex.Message}");
+                }
             }
         }
     }

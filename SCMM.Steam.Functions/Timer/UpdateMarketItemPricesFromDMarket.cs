@@ -2,9 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.DMarket.Client;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Statistics;
-using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models;
@@ -12,7 +10,6 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -20,14 +17,12 @@ public class UpdateMarketItemPricesFromDMarketJob
 {
     private readonly SteamDbContext _db;
     private readonly DMarketWebClient _dMarketWebClient;
-    private readonly IServiceBus _serviceBus;
     private readonly IStatisticsService _statisticsService;
 
-    public UpdateMarketItemPricesFromDMarketJob(SteamDbContext db, DMarketWebClient dMarketWebClient, IServiceBus serviceBus, IStatisticsService statisticsService)
+    public UpdateMarketItemPricesFromDMarketJob(SteamDbContext db, DMarketWebClient dMarketWebClient, IStatisticsService statisticsService)
     {
         _db = db;
         _dMarketWebClient = dMarketWebClient;
-        _serviceBus = serviceBus;
         _statisticsService = statisticsService;
     }
 
@@ -36,8 +31,6 @@ public class UpdateMarketItemPricesFromDMarketJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-DMarket");
 
-        // TODO: Enable CSGO support
-        // TODO: Needs optimisation, too slow
         var appIds = MarketType.Dmarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
@@ -66,6 +59,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 var marketItemsResponse = (DMarketMarketItemsResponse)null;
                 do
                 {
+                    // TODO: Optimise this if/when the API allows it, 100 items per read is way too slow
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
                     marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
                         app.Name, marketType: DMarketWebClient.MarketTypeDMarket, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
@@ -109,28 +103,30 @@ public class UpdateMarketItemPricesFromDMarketJob
 
                 await _db.SaveChangesAsync();
 
-                var dMarketItemHolders = dMarketItems
-                    .Where(x => !String.IsNullOrEmpty(x.Extra?.ViewAtSteam))
-                    .Select(x => Regex.Match(x.Extra.ViewAtSteam, Constants.SteamProfileUrlSteamId64Regex).Groups.OfType<Capture>().LastOrDefault()?.Value)
-                    .Where(x => x != null)
-                    .Distinct()
-                    .ToArray();
-                /*
-                var importInventoryMessages = dMarketItemHolders.Select(x => new ImportProfileInventoryMessage()
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Dmarket, x =>
                 {
-                    ProfileId = x,
-                    AppIds = new[] { app.SteamId },
+                    x.TotalItems = dMarketItemGroups.Count();
+                    x.TotalListings = dMarketItemGroups.Sum(i => i.Sum(z => z.Amount));
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
                 });
-                if (importInventoryMessages.Any())
-                {
-                    await _serviceBus.SendMessagesAsync(importInventoryMessages);
-                }
-                */
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}). {ex.Message}");
-                continue;
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Dmarket, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}). {ex.Message}");
+                }
             }
         }
     }
