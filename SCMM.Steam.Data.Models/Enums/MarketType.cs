@@ -83,7 +83,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "SkinsMonkey")]
         [Market(Constants.RustAppId, Constants.CSGOAppId)]
-        [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade)] // Unconfirmed
+        [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinsMonkey = 25,
 
         //[Obsolete("Items not buyable")]

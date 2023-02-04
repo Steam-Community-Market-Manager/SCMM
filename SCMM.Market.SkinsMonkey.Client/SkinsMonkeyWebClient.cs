@@ -9,9 +9,7 @@ namespace SCMM.Market.SkinsMonkey.Client
 
         private readonly SkinsMonkeyConfiguration _configuration;
 
-        public SkinsMonkeyWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
-
-        public SkinsMonkeyWebClient(SkinsMonkeyConfiguration configuration)
+        public SkinsMonkeyWebClient(SkinsMonkeyConfiguration configuration, IWebProxy webProxy) : base(webProxy: webProxy)
         {
             _configuration = configuration;
         }
