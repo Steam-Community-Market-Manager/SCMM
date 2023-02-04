@@ -20,7 +20,6 @@ using SCMM.Market.CSTrade.Client;
 using SCMM.Market.DMarket.Client;
 using SCMM.Market.iTradegg.Client;
 using SCMM.Market.LootFarm.Client;
-using SCMM.Market.RustSkins.Client;
 using SCMM.Market.RustTM.Client;
 using SCMM.Market.SkinBaron.Client;
 using SCMM.Market.Skinport.Client;
@@ -187,7 +186,6 @@ public static class HostExtensions
             services.AddSingleton<DMarketWebClient>();
             services.AddSingleton<iTradeggWebClient>();
             services.AddSingleton<LootFarmWebClient>();
-            services.AddSingleton<RustSkinsWebClient>();
             services.AddSingleton<RustTMWebClient>();
             services.AddSingleton<SkinBaronWebClient>();
             services.AddSingleton<SkinSwapWebClient>();

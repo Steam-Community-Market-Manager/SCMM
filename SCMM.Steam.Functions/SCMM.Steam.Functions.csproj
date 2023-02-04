@@ -34,7 +34,6 @@
 		<ProjectReference Include="..\SCMM.Market.DMarket.Client\SCMM.Market.DMarket.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.iTradegg.Client\SCMM.Market.iTradegg.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.LootFarm.Client\SCMM.Market.LootFarm.Client.csproj" />
-		<ProjectReference Include="..\SCMM.Market.RustSkins.Client\SCMM.Market.RustSkins.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.RustTM.Client\SCMM.Market.RustTM.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SkinBaron.Client\SCMM.Market.SkinBaron.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.Skinport.Client\SCMM.Market.Skinport.Client.csproj" />
