@@ -87,11 +87,31 @@ public class UpdateMarketItemPricesFromiTradeggJob
                 }
 
                 await _db.SaveChangesAsync();
+
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.iTradegg, x =>
+                {
+                    x.TotalItems = iTradeggItems.Count();
+                    x.TotalListings = iTradeggItems.Sum(i => i.Same);
+                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdateErrorOn = null;
+                    x.LastUpdateError = null;
+                });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from iTrade.gg (appId: {app.SteamId}). {ex.Message}");
-                continue;
+                try
+                {
+                    logger.LogError(ex, $"Failed to update market item price information from iTrade.gg (appId: {app.SteamId}). {ex.Message}");
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.iTradegg, x =>
+                    {
+                        x.LastUpdateErrorOn = DateTimeOffset.Now;
+                        x.LastUpdateError = ex.Message;
+                    });
+                }
+                catch (Exception)
+                {
+                    logger.LogError(ex, $"Failed to update market item price statistics for iTrade.gg (appId: {app.SteamId}). {ex.Message}");
+                }
             }
         }
     }

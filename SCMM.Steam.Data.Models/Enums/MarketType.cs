@@ -69,8 +69,6 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         RustTM = 19,
 
-        /// ----------------------------------------------------------------------------------------------------------------- \\\
-
         [Display(Name = "CS.TRADE")]
         [Market(Constants.RustAppId, Constants.CSGOAppId)]
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AffiliateCode = "SCMM", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
@@ -80,6 +78,8 @@ namespace SCMM.Steam.Data.Models.Enums
         [Market(Constants.RustAppId)]
         [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade)] // Unconfirmed
         iTradegg = 23,
+
+        /// ----------------------------------------------------------------------------------------------------------------- \\\
 
         [Display(Name = "SkinsMonkey")]
         [Market(Constants.RustAppId, Constants.CSGOAppId)]

@@ -5,15 +5,15 @@ namespace SCMM.Market.iTradegg.Client
 {
     public class iTradeggWebClient : Shared.Client.WebClient
     {
-        private const string BaseUri = "https://itrade.gg/ajax/";
+        private const string WebBaseUri = "https://itrade.gg/";
 
         public iTradeggWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebBaseUri)))
             {
-                var url = $"{BaseUri}getInventory?game={appId}&type=bot";
+                var url = $"{WebBaseUri}ajax/getInventory?game={appId}&type=bot";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
