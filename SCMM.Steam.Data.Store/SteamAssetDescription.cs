@@ -289,17 +289,23 @@ namespace SCMM.Steam.Data.Store
                         AppId = appId
                     };
                 }
-                yield return new MarketPrice
+                var steamStoreMarket = MarketType.SteamStore;
+                foreach (var buyFromOption in steamStoreMarket.GetBuyFromOptions())
                 {
-                    Type = PriceTypes.Cash,
-                    MarketType = MarketType.SteamStore,
-                    Currency = currency,
-                    Price = lowestPrice,
-                    Fee = 0,
-                    Supply = (!StoreItem.IsAvailable ? 0 : null),
-                    IsAvailable = (StoreItem.IsAvailable && lowestPrice > 0),
-                    Url = buyUrl
-                };
+                    yield return new MarketPrice
+                    {
+                        MarketType = steamStoreMarket,
+                        AcceptedPaymentTypes = buyFromOption.AcceptedPaymentTypes,
+                        Currency = currency,
+                        Price = buyFromOption.CalculateBuyPrice(lowestPrice),
+                        Fee = buyFromOption.CalculateBuyFees(lowestPrice),
+                        Supply = (!StoreItem.IsAvailable ? 0 : null),
+                        IsAvailable = (StoreItem.IsAvailable && lowestPrice > 0),
+                        Url = buyUrl ?? buyFromOption.GenerateBuyUrl(
+                            app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash
+                        )
+                    };
+                }
             }
 
             // Market prices
@@ -318,19 +324,22 @@ namespace SCMM.Steam.Data.Store
                         currency = MarketItem.Currency;
                         lowestPrice = marketPrice.Value.Price;
                     }
-                    yield return new MarketPrice
+                    foreach (var buyFromOption in marketPrice.Key.GetBuyFromOptions())
                     {
-                        Type = (marketPrice.Key.GetPriceType() ?? PriceTypes.None),
-                        MarketType = marketPrice.Key,
-                        Currency = currency,
-                        Price = lowestPrice,
-                        Fee = marketPrice.Key.GetBuyerFees(lowestPrice),
-                        Supply = marketPrice.Value.Supply,
-                        IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Supply != 0),
-                        Url = marketPrice.Key.GetMarketBuyUrl(
-                            app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash
-                        )
-                    };
+                        yield return new MarketPrice
+                        {
+                            MarketType = marketPrice.Key,
+                            AcceptedPaymentTypes = buyFromOption.AcceptedPaymentTypes,
+                            Currency = currency,
+                            Price = buyFromOption.CalculateBuyPrice(lowestPrice),
+                            Fee = buyFromOption.CalculateBuyFees(lowestPrice),
+                            Supply = marketPrice.Value.Supply,
+                            IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Supply != 0),
+                            Url = buyFromOption.GenerateBuyUrl(
+                                app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash
+                            )
+                        };
+                    }
                 }
             }
         }

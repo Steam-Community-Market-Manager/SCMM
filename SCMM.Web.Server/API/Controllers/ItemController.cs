@@ -711,27 +711,31 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List all item prices across all known markets
+        /// List the price(s) of all items
         /// </summary>
-        /// <response code="200">List of item prices</response>
+        /// <param name="includeAllMarkets">If true, item prices from all markets will be included. If false, only the cheapest market item price will be returned. Default is false. </param>
+        /// <response code="200">If <paramref name="includeAllMarkets"/> is <code>true</code>, the response will be a list of <see cref="ItemMarketPricesDTO"/>. If <code>false</code>, the response will be a list of <see cref="ItemBestMarketPriceDTO"/></response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("prices")]
-        [ProducesResponseType(typeof(IEnumerable<ItemMarketPricingDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ItemBestMarketPriceDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ItemMarketPricesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemPrices()
+        public async Task<IActionResult> GetItemPrices([FromQuery] bool includeAllMarkets = false)
         {
             var appId = this.App().Guid;
             var items = await _db.SteamAssetDescriptions
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .Where(x => x.AppId == appId)
+                .Where(x => x.AppId == appId && x.ClassId > 0)
                 .OrderBy(x => x.ClassId)
                 .ToArrayAsync();
 
-            return Ok(
-                _mapper.Map<SteamAssetDescription, ItemMarketPricingDTO>(items, this)
+            return Ok(includeAllMarkets
+                ? _mapper.Map<SteamAssetDescription, ItemMarketPricesDTO>(items, this)
+                : _mapper.Map<SteamAssetDescription, ItemBestMarketPriceDTO>(items, this)
             );
         }
     }

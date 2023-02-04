@@ -166,11 +166,12 @@
             <response code="200">List of unique item types</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemPrices">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemPrices(System.Boolean)">
             <summary>
-            List all item prices across all known markets
+            List the price(s) of all items
             </summary>
-            <response code="200">List of item prices</response>
+            <param name="includeAllMarkets">If true, item prices from all markets will be included. If false, only the cheapest market item price will be returned. Default is false. </param>
+            <response code="200">If <paramref name="includeAllMarkets"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemMarketPricesDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemBestMarketPriceDTO"/></response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.LanguageController.Get(System.Boolean)">

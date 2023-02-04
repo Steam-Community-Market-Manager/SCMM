@@ -206,14 +206,14 @@ namespace SCMM.Web.Server.API.Controllers
                         Name = x.Name,
                         BuyFrom = market.Value,
                         BuyPrice = this.Currency().CalculateExchange(
-                             x.Prices.FirstOrDefault(x => x.Key == market).Value.Price,
+                             market.Value.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) ?? 0,
                              x.CurrencyExchangeRateMultiplier
                         ),
                         BuyFee = this.Currency().CalculateExchange(
-                            (includeFees ? market.Value.GetBuyerFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            (includeFees ? market.Value.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) ?? 0 : 0),
                             x.CurrencyExchangeRateMultiplier
                         ),
-                        BuyUrl = market.Value.GetMarketBuyUrl(
+                        BuyUrl = market.Value.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(
                             x.AppId, x.AppName, x.Id, x.Name
                         ),
                         SellTo = MarketType.SteamCommunityMarket,
@@ -318,14 +318,14 @@ namespace SCMM.Web.Server.API.Controllers
                         Name = x.Name,
                         BuyFrom = market.Value,
                         BuyPrice = this.Currency().CalculateExchange(
-                             x.Prices.FirstOrDefault(x => x.Key == market).Value.Price,
+                             market.Value.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) ?? 0,
                              x.CurrencyExchangeRateMultiplier
                         ),
                         BuyFee = this.Currency().CalculateExchange(
-                            (includeFees ? market.Value.GetBuyerFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            (includeFees ? market.Value.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) ?? 0 : 0),
                             x.CurrencyExchangeRateMultiplier
                         ),
-                        BuyUrl = market.Value.GetMarketBuyUrl(
+                        BuyUrl = market.Value.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(
                             x.AppId, x.AppName, x.Id, x.Name
                         ),
                         ReferenceFrom = MarketType.SteamCommunityMarket,

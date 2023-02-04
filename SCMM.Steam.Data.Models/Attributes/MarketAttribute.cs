@@ -12,7 +12,5 @@ public class MarketAttribute : Attribute
 
     public ulong[] SupportedAppIds { get; set; }
 
-    public PriceTypes Type { get; set; }
-
     public string Color { get; set; }
 }
