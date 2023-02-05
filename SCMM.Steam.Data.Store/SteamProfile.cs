@@ -76,7 +76,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public StoreTopSellerRankingType StoreTopSellers
         {
-            get { return Enum.Parse<StoreTopSellerRankingType>(Preferences.GetOrDefault(nameof(StoreTopSellers), StoreTopSellerRankingType.HighestTotalSales.ToString())); }
+            get { return Enum.Parse<StoreTopSellerRankingType>(Preferences.GetOrDefault(nameof(StoreTopSellers), StoreTopSellerRankingType.HighestTotalSales.ToString()), true); }
             set { Preferences[nameof(StoreTopSellers)] = value.ToString(); }
         }
 
@@ -84,7 +84,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public MarketValueType MarketValue
         {
-            get { return Enum.Parse<MarketValueType>(Preferences.GetOrDefault(nameof(MarketValue), MarketValueType.SellOrderPrices.ToString())); }
+            get { return Enum.Parse<MarketValueType>(Preferences.GetOrDefault(nameof(MarketValue), MarketValueType.SellOrderPrices.ToString()), true); }
             set { Preferences[nameof(MarketValue)] = value.ToString(); }
         }
 
@@ -100,7 +100,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public ItemInfoWebsiteType ItemInfoWebsite
         {
-            get { return Enum.Parse<ItemInfoWebsiteType>(Preferences.GetOrDefault(nameof(ItemInfoWebsite), ItemInfoWebsiteType.External.ToString())); }
+            get { return Enum.Parse<ItemInfoWebsiteType>(Preferences.GetOrDefault(nameof(ItemInfoWebsite), ItemInfoWebsiteType.External.ToString()), true); }
             set { Preferences[nameof(ItemInfoWebsite)] = value.ToString(); }
         }
 
@@ -132,7 +132,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public InventoryValueMovementDisplayType InventoryValueMovementDisplay
         {
-            get { return Enum.Parse<InventoryValueMovementDisplayType>(Preferences.GetOrDefault(nameof(InventoryValueMovementDisplay), InventoryValueMovementDisplayType.Price.ToString())); }
+            get { return Enum.Parse<InventoryValueMovementDisplayType>(Preferences.GetOrDefault(nameof(InventoryValueMovementDisplay), InventoryValueMovementDisplayType.Price.ToString()), true); }
             set { Preferences[nameof(InventoryValueMovementDisplay)] = value.ToString(); }
         }
 

@@ -132,7 +132,7 @@ namespace SCMM.Shared.Data.Models.Extensions
             var baseType = (underlyingType == null ? typeof(T) : underlyingType);
             if (baseType.IsEnum)
             {
-                return ((T)Enum.Parse(baseType, value));
+                return ((T)Enum.Parse(baseType, value, true));
             }
             else
             {

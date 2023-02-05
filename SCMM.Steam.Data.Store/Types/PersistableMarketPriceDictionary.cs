@@ -20,7 +20,7 @@ namespace SCMM.Steam.Data.Store.Types
         protected override MarketType ConvertSingleKeyToRuntime(string rawKey)
         {
             MarketType key = MarketType.Unknown;
-            Enum.TryParse<MarketType>(rawKey, out key);
+            Enum.TryParse<MarketType>(rawKey, true, out key);
             return key;
         }
 
