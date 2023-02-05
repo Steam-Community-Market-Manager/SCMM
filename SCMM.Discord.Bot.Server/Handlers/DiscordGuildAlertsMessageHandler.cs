@@ -31,13 +31,15 @@ namespace SCMM.Discord.Bot.Server.Handlers
         IMessageHandler<WorkshopFilePublishedMessage>,
         IMessageHandler<WorkshopFileUpdatedMessage>
     {
+        private readonly ILogger<DiscordGuildAlertsMessageHandler> _logger;
         private readonly IConfiguration _configuration;
         private readonly SteamDbContext _steamDb;
         private readonly DiscordDbContext _discordDb;
         private readonly DiscordClient _client;
 
-        public DiscordGuildAlertsMessageHandler(IConfiguration configuration, SteamDbContext steamDb, DiscordDbContext discordDb, DiscordClient client)
+        public DiscordGuildAlertsMessageHandler(ILogger<DiscordGuildAlertsMessageHandler> logger, IConfiguration configuration, SteamDbContext steamDb, DiscordDbContext discordDb, DiscordClient client)
         {
+            _logger = logger;
             _configuration = configuration;
             _steamDb = steamDb;
             _discordDb = discordDb;
@@ -264,25 +266,32 @@ namespace SCMM.Discord.Bot.Server.Handlers
                                   !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
                     description: description.ToString(),
                     color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    linkButtons: linkButtons,
+                    // TODO: Enable this if/when Discord allows us to add components to cross-posted messages
+                    //linkButtons: linkButtons, 
                     crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
-
-                await _client.SendMessageAsync(
-                    guildId,
-                    channelId,
-                    threadName: marketName,
-                    title: $"Get {discountPercentage}% off {assetDescription.Name}",
-                    authorName: marketName,
-                    authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
-                    url: marketUrl,
-                    thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
-                                  !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
-                    description: description.ToString(),
-                    color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    linkButtons: linkButtons,
-                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
-                );
+                
+                try
+                {
+                    await _client.SendMessageAsync(
+                        guildId,
+                        channelId,
+                        threadName: marketName,
+                        title: $"Get {discountPercentage}% off {assetDescription.Name}",
+                        authorName: marketName,
+                        authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
+                        url: marketUrl,
+                        thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
+                                      !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
+                        description: description.ToString(),
+                        color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
+                        linkButtons: linkButtons
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to post 'market item price profitable buy deal detected' (id: {marketItem.Id} ) to channel thread");
+                }
             });
         }
 

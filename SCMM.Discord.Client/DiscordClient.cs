@@ -293,6 +293,7 @@ namespace SCMM.Discord.Client
             var messageChannel = (IMessageChannel) channel;
             if (!String.IsNullOrEmpty(threadName))
             {
+                crossPost = false; // cross-posting is only allowed in news channels, not threads
                 messageChannel = channel.Threads.FirstOrDefault(x => x.Name == threadName);
                 if (messageChannel == null)
                 {
