@@ -62,6 +62,7 @@ public class UpdateMarketItemPricesFromBuff
                 var marketGoodsResponse = (BuffMarketGoodsResponse)null;
                 do
                 {
+                    // TODO: Optimise this if/when the API allows it, 80 items per read is too slow
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
                     marketGoodsResponse = await _buffWebClient.GetMarketGoodsAsync(app.Name, (marketGoodsResponse?.PageNum ?? 0) + 1);
                     if (marketGoodsResponse?.Items?.Any() == true)

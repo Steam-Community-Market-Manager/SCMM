@@ -27,8 +27,7 @@ public class UpdateMarketItemPricesFromSkinSwap
         _statisticsService = statisticsService;
     }
 
-    // Item prices can only be checked 60 at a time, too slow
-    //[Function("Update-Market-Item-Prices-From-SkinSwap")]
+    [Function("Update-Market-Item-Prices-From-SkinSwap")]
     public async Task Run([TimerTrigger("0 20/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinSwap");
@@ -59,8 +58,20 @@ public class UpdateMarketItemPricesFromSkinSwap
             try
             {
                 stopwatch.Restart();
-                var skinSwapItems = (await _skinSwapWebClient.GetInventoryAsync(app.SteamId, 0)) ?? new List<SkinSwapItem>();
-                var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
+                var skinSwapItems = new List<SkinSwapItem>();
+                var inventoryItemsResponse = (IEnumerable<SkinSwapItem>)null;
+                var offset = 0;
+                do
+                {
+                    // TODO: Optimise this if/when the API allows it, 60 items per read is too slow
+                    // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
+                    inventoryItemsResponse = await _skinSwapWebClient.GetInventoryAsync(app.SteamId, offset);
+                    if (inventoryItemsResponse?.Any() == true)
+                    {
+                        skinSwapItems.AddRange(inventoryItemsResponse);
+                    }
+                    offset += (inventoryItemsResponse?.Count() ?? 0);
+                } while (inventoryItemsResponse != null && inventoryItemsResponse.Count() > 0);
 
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
@@ -72,6 +83,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                     })
                     .ToListAsync();
 
+                var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
                 foreach (var skinSwapItemGroup in skinSwapItemGroups)
                 {
                     var item = items.FirstOrDefault(x => x.Name == skinSwapItemGroup.Key)?.Item;

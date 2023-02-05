@@ -72,11 +72,11 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Item Asset Descriptions</td>
                                         <td>
-                                            <span class="mud-secondary-text">Latest item update was </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (most recent item update) </small>
                                             <br />
-                                            <span class="mud-secondary-text">Oldest item update was </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (oldest item update) </small>
                                         </td>
                                         <td>@SystemStatus.SteamApp.AssetDescriptionsUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
                                         <td>Less than @SystemStatus.SteamApp.AssetDescriptionsUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -99,11 +99,11 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Buy/Sell Orders</td>
                                         <td>
-                                            <span class="mud-secondary-text">Latest item update was </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (most recent item update) </small>
                                             <br />
-                                            <span class="mud-secondary-text">Oldest item update was </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (oldest item update) </small>
                                         </td>
                                         <td>@SystemStatus.SteamApp.MarketOrderUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
                                         <td>Less than @SystemStatus.SteamApp.MarketOrderUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -126,11 +126,11 @@
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Sales History</td>
                                         <td>
-                                            <span class="mud-secondary-text">Latest item update was </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (most recent item update) </small>
                                             <br/>
-                                            <span class="mud-secondary-text">Oldest item update was </span>
                                             <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (oldest item update) </small>
                                         </td>
                                         <td>@SystemStatus.SteamApp.MarketSaleUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
                                         <td>Less than @SystemStatus.SteamApp.MarketSaleUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
@@ -206,7 +206,7 @@
                                                 <span>@((now - market.LastUpdatedItemsOn.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
                                                 @if (market.LastUpdatedItemsDuration != null)
                                                 {
-                                                    <span>, @market.LastUpdatedItemsDuration.Value.ToDurationString(prefix: "completed in", maxGranularity: 2)</span>
+                                                    <small class="mud-secondary-text">, @market.LastUpdatedItemsDuration.Value.ToDurationString(prefix: "completed in", maxGranularity: 2)</small>
                                                 }
                                             }
                                             else
@@ -308,8 +308,8 @@
                                             }
                                         </td>
                                         <td>
-                                            <span>@webProxy.RequestsSucceededCount.ToQuantityString() <span class="mud-secondary-text">hits</span></span><br/>
-                                            <span>@webProxy.RequestsFailedCount.ToQuantityString() <span class="mud-secondary-text">misses</span></span>
+                                            <span>@webProxy.RequestsSucceededCount.ToQuantityString() <small class="mud-secondary-text">hits</small></span><br/>
+                                            <span>@webProxy.RequestsFailedCount.ToQuantityString() <small class="mud-secondary-text">misses</small></span>
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.inherit" Color="@(webProxy.DomainRateLimits?.Any(x => x.Value > now) == true ? Color.Warning : Color.Success)">

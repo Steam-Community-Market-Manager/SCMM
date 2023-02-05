@@ -6,7 +6,7 @@ namespace SCMM.Market.DMarket.Client
 {
     public class DMarketWebClient : Shared.Client.WebClient
     {
-        private const string ApiBaseUri = "https://api.dmarket.com/exchange/v1/";
+        private const string ApiBaseUri = "https://api.dmarket.com/";
 
         public const int MaxPageLimit = 100;
 
@@ -26,7 +26,7 @@ namespace SCMM.Market.DMarket.Client
             {
                 using (var client = BuildWebApiHttpClient())
                 {
-                    var url = $"{ApiBaseUri}market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
+                    var url = $"{ApiBaseUri}exchange/v1/market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
                     var response = await client.GetAsync(url);
                     response.EnsureSuccessStatusCode();
 

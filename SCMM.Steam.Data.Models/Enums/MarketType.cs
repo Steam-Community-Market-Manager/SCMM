@@ -84,28 +84,29 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinsMonkey = 25,
 
-        /// ----------------------------------------------------------------------------------------------------------------- \\\
-
-        // TODO: Restricted to 60 items per query, too slow
-        [Obsolete("Item prices can only be checked 60 at a time, too slow")]
+        // TODO: Restricted to 60 items per query, slow
         [Display(Name = "Skin Swap")]
         [Market(Constants.RustAppId, Constants.CSGOAppId)]
         [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinSwap = 26,
 
-        // TODO: F2F market support
-        // TODO: Restricted to 100 items per query, too slow
-        [Display(Name = "Dmarket")]
+        // TODO: Restricted to 100 items per query, slow
+        [Display(Name = "DMarket")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#49BC74")]
-        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
-        Dmarket = 28,
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=exchange&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
+        DMarket = 28,
 
-        // TODO: Login support
-        // TODO: Restricted to 80 items per query, too slow
+        // TODO: Restricted to 100 items per query, slow
+        [Display(Name = "DMarket Face2Face")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#49BC74")]
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=f2fOffers&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
+        DMarketF2F = 29,
+
+        // TODO: Restricted to 80 items per query, slow
         [Display(Name = "BUFF")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FFFFFF")]
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}", AcceptedPaymentTypes = PriceTypes.Cash)] // Unconfirmed
-        Buff = 29,
+        Buff = 30,
 
         /*
         BUY:  https://lis-skins.ru/market/rust/
