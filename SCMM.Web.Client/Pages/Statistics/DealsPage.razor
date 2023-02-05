@@ -6,7 +6,9 @@
 @page "/deals/{tab}"
 @inherits PersistentComponent
 @inject ILogger<DealsPage> Logger
+@inject ISnackbar Snackbar
 @inject IDialogService Dialogs
+@inject ISystemService SystemService
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
@@ -68,8 +70,8 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Filled" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2" Disabled="State.IsPrerendering">Buy</MudButton>
+                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center gap-1">
+                                                <MudButton Variant="Variant.Filled" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Disabled="State.IsPrerendering">Buy</MudButton>
                                                 <img src="@($"/images/app/{State.App.Id}/markets/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mx-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
@@ -86,7 +88,7 @@
                                                             }
                                                         </TooltipContent>
                                                         <ChildContent>
-                                                            <i class="fa fa-fw fa-comment-dollar ml-1"></i>
+                                                            <i class="fa fa-fw fa-comment-dollar"></i>
                                                         </ChildContent>
                                                     </MudTooltip>
                                                 }
@@ -95,14 +97,18 @@
                                                         <span>Save @State.Currency.ToPriceString(item.DiscountAmount)</span>
                                                     </TooltipContent>
                                                     <ChildContent>
-                                                        <MudChip Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : ((item.DiscountAmount > 0) ? Color.Success : Color.Secondary))" Size="@Size.Small" Text="@($"-{item.DiscountAmount.ToPercentageString(item.ReferemcePrice) ?? "0%"}")" Class="ml-2" />
+                                                        <MudChip Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : ((item.DiscountAmount > 0) ? Color.Success : Color.Secondary))" Size="@Size.Small" Text="@($"-{item.DiscountAmount.ToPercentageString(item.ReferemcePrice) ?? "0%"}")" />
                                                     </ChildContent>
                                                 </MudTooltip>
+                                                @if (GetTimeSinceLastMarketPriceUpdate(item.BuyFrom) != null)
+                                                {
+                                                    <small class="mud-secondary-text"> @GetTimeSinceLastMarketPriceUpdate(item.BuyFrom).Value.ToDurationString(maxGranularity: 2, prefix: "price checked", suffix: "ago") </small>
+                                                }
                                             </MudText>
                                         </td>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">Compare</MudButton>
+                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center gap-1">
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Disabled="State.IsPrerendering">Compare</MudButton>
                                                 <img src="@($"/images/app/{State.App.Id}/markets/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mx-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.ReferemcePrice)</span>
                                             </MudText>
@@ -188,8 +194,8 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Filled" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2" Disabled="State.IsPrerendering">Buy</MudButton>
+                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center gap-1">
+                                                <MudButton Variant="Variant.Filled" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Disabled="State.IsPrerendering">Buy</MudButton>
                                                 <img src="@($"/images/app/{State.App.Id}/markets/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mx-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
@@ -206,9 +212,13 @@
                                                             }
                                                         </TooltipContent>
                                                         <ChildContent>
-                                                            <i class="fa fa-fw fa-comment-dollar ml-1"></i>
+                                                            <i class="fa fa-fw fa-comment-dollar"></i>
                                                         </ChildContent>
                                                     </MudTooltip>
+                                                }
+                                                @if (GetTimeSinceLastMarketPriceUpdate(item.BuyFrom) != null)
+                                                {
+                                                    <small class="mud-secondary-text"> @GetTimeSinceLastMarketPriceUpdate(item.BuyFrom).Value.ToDurationString(maxGranularity: 2, prefix: "price checked", suffix: "ago") </small>
                                                 }
                                             </MudText>
                                         </td>
@@ -216,8 +226,8 @@
                                             <i class="fa fa-fw fa-arrow-right"></i>
                                         </th>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Filled" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">@(SellNow == true ? "Sell" : "List")</MudButton>
+                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center gap-1">
+                                                <MudButton Variant="Variant.Filled" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Disabled="State.IsPrerendering">@(SellNow == true ? "Sell" : "List")</MudButton>
                                                 <img src="@($"/images/app/{State.App.Id}/markets/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mx-2" style="width:1.5em; height:1.5em" />
                                                 <span>
                                                     <span>@State.Currency.ToPriceString(item.SellPrice)</span>
@@ -227,7 +237,7 @@
                                                     }
                                                     <span class="mud-secondary-text"> for a</span> <span class="@(item.IsBeingManipulated ? "mud-warning-text" : "mud-success-text")">@State.Currency.ToPriceString(item.SellProfit)</span>
                                                 </span>
-                                                <MudChip Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="@Size.Small" Text="@($"{item.SellProfit.ToPercentageString(item.BuyTotal) ?? "0%"}")" Class="mx-2" />
+                                                <MudChip Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="@Size.Small" Text="@($"{item.SellProfit.ToPercentageString(item.BuyTotal) ?? "0%"}")" />
                                                 <span><span class="mud-secondary-text">profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span></span>
                                             </MudText>
                                         </td>
@@ -435,7 +445,7 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
-    
+
     [Parameter]
     public MarketType? MarketType { get; set; }
 
@@ -446,6 +456,8 @@
     private Virtualize<MarketItemListingAnalyticDTO> VirtualiseMarketCheapestListings;
 
     private Virtualize<MarketItemFlipAnalyticDTO> VirtualiseMarketFlips;
+
+    private SystemStatusDTO SystemStatus { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -459,11 +471,25 @@
     protected override async Task OnLoadStateAsync()
     {
         TabIndex = RestoreFromStateOrDefault(nameof(TabIndex), TabIndex);
+        SystemStatus = await RestoreFromStateOrLoad(nameof(SystemStatus), async () =>
+        {
+            try
+            {
+                return await SystemService.GetSystemStatusAsync(State.AppId, includeAppMarkets: true, includeWebProxiesStatus: true);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading system status");
+                Snackbar.Add($"Unable to loading system status. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
     }
 
     protected override Task OnPersistStateAsync()
     {
         PersistToState(nameof(TabIndex), TabIndex);
+        PersistToState(nameof(SystemStatus), SystemStatus);
         return Task.CompletedTask;
     }
 
@@ -496,17 +522,17 @@
             MarketHashName = name
         }.ToString());
     }
-    
+
     private void ViewItem(ItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToItem(item);
     }
-    
+
     private void BuyItem(string buyUrl)
     {
         ExternalNavigationManager.NavigateToNewTab(buyUrl);
     }
-    
+
     private void ShowItemDetailsDialog(string itemName, string itemAssetDescriptionId)
     {
         Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
@@ -529,7 +555,7 @@
             throw;
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<MarketItemListingAnalyticDTO>> LoadMarketCheapestListings(ItemsProviderRequest request)
     {
         try
@@ -557,7 +583,7 @@
             throw;
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<MarketCraftableItemCostAnalyticDTO>> LoadMarketCheapestCraftableContainerCosts(ItemsProviderRequest request)
     {
         try
@@ -571,5 +597,12 @@
             throw;
         }
     }
-    
+
+    protected TimeSpan? GetTimeSinceLastMarketPriceUpdate(MarketType marketType)
+    {
+        var lastUpdate = SystemStatus?.SteamApp?.Markets?.FirstOrDefault(x => x.Type == marketType)?.LastUpdatedItemsOn;
+        return lastUpdate != null
+            ? (DateTimeOffset.Now - lastUpdate.Value).Duration()
+            : null;
+    }
 }

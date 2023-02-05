@@ -165,10 +165,12 @@ namespace SCMM.Web.Server.API.Controllers
                         IconUrl = x.Description.IconUrl,
                         Name = x.Description.Name,
                         BuyFrom = x.BuyNowFrom,
+                        BuyPriceLastUpdatedOn = null,
                         BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
                         BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
                         BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                         SellTo = MarketType.SteamCommunityMarket,
+                        SellPriceLastUpdatedOn = x.LastCheckedOrdersOn,
                         SellPrice = this.Currency().CalculateExchange(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice, x.Currency),
                         SellFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice), x.Currency) : 0),
                         IsBeingManipulated = x.IsBeingManipulated,
@@ -195,7 +197,8 @@ namespace SCMM.Web.Server.API.Controllers
                         SellOrderLowestPrice = x.SellOrderLowestPrice,
                         Prices = x.BuyPrices,
                         IsBeingManipulated = x.IsBeingManipulated,
-                        ManipulationReason = x.ManipulationReason
+                        ManipulationReason = x.ManipulationReason,
+                        LastCheckedOrdersOn = x.LastCheckedOrdersOn
                     })
                     .ToList()
                     .Select(x => new MarketItemFlipAnalyticDTO()
@@ -205,6 +208,7 @@ namespace SCMM.Web.Server.API.Controllers
                         IconUrl = x.IconUrl,
                         Name = x.Name,
                         BuyFrom = market.Value,
+                        BuyPriceLastUpdatedOn = null,
                         BuyPrice = this.Currency().CalculateExchange(
                              market.Value.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) ?? 0,
                              x.CurrencyExchangeRateMultiplier
@@ -217,6 +221,7 @@ namespace SCMM.Web.Server.API.Controllers
                             x.AppId, x.AppName, x.Id, x.Name
                         ),
                         SellTo = MarketType.SteamCommunityMarket,
+                        SellPriceLastUpdatedOn = x.LastCheckedOrdersOn,
                         SellPrice = this.Currency().CalculateExchange(
                             (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice),
                             x.CurrencyExchangeRateMultiplier
@@ -279,10 +284,12 @@ namespace SCMM.Web.Server.API.Controllers
                         IconUrl = x.Description.IconUrl,
                         Name = x.Description.Name,
                         BuyFrom = x.BuyNowFrom,
+                        BuyPriceLastUpdatedOn = null,
                         BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
                         BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
                         BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                         ReferenceFrom = MarketType.SteamCommunityMarket,
+                        ReferencePriceLastUpdatedOn = x.LastCheckedOrdersOn,
                         ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
                         IsBeingManipulated = x.IsBeingManipulated,
                         ManipulationReason = x.ManipulationReason
@@ -307,7 +314,8 @@ namespace SCMM.Web.Server.API.Controllers
                         SellOrderLowestPrice = x.SellOrderLowestPrice,
                         Prices = x.BuyPrices,
                         IsBeingManipulated = x.IsBeingManipulated,
-                        ManipulationReason = x.ManipulationReason
+                        ManipulationReason = x.ManipulationReason,
+                        LastCheckedOrdersOn = x.LastCheckedOrdersOn
                     })
                     .ToList()
                     .Select(x => new MarketItemListingAnalyticDTO()
@@ -317,6 +325,7 @@ namespace SCMM.Web.Server.API.Controllers
                         IconUrl = x.IconUrl,
                         Name = x.Name,
                         BuyFrom = market.Value,
+                        BuyPriceLastUpdatedOn = null,
                         BuyPrice = this.Currency().CalculateExchange(
                              market.Value.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) ?? 0,
                              x.CurrencyExchangeRateMultiplier
@@ -329,6 +338,7 @@ namespace SCMM.Web.Server.API.Controllers
                             x.AppId, x.AppName, x.Id, x.Name
                         ),
                         ReferenceFrom = MarketType.SteamCommunityMarket,
+                        ReferencePriceLastUpdatedOn = x.LastCheckedOrdersOn,
                         ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.CurrencyExchangeRateMultiplier),
                         IsBeingManipulated = x.IsBeingManipulated,
                         ManipulationReason = x.ManipulationReason

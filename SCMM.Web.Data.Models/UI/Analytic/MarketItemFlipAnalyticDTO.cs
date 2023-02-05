@@ -15,6 +15,8 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public MarketType BuyFrom { get; set; }
 
+        public DateTimeOffset? BuyPriceLastUpdatedOn { get; set; }
+
         public long BuyPrice { get; set; }
 
         public long BuyFee { get; set; }
@@ -25,6 +27,8 @@ namespace SCMM.Web.Data.Models.UI.Analytic
         public string BuyUrl { get; set; }
 
         public MarketType SellTo { get; set; }
+
+        public DateTimeOffset? SellPriceLastUpdatedOn { get; set; }
 
         public long SellPrice { get; set; }
 
