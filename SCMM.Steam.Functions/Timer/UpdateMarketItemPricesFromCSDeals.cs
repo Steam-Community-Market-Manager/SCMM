@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.CSDeals.Client;
-using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
@@ -29,7 +28,7 @@ public class UpdateMarketItemPricesFromCSDeals
     }
 
     [Function("Update-Market-Item-Prices-From-CSDeals")]
-    public async Task Run([TimerTrigger("0 2-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 8/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
         var stopwatch = new Stopwatch();

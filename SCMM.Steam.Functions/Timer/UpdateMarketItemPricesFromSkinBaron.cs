@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.SkinBaron.Client;
-using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
@@ -29,7 +28,7 @@ public class UpdateMarketItemPricesFromSkinBaron
     }
 
     [Function("Update-Market-Item-Prices-From-SkinBaron")]
-    public async Task Run([TimerTrigger("0 9-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 10/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinBaron");
         var stopwatch = new Stopwatch();

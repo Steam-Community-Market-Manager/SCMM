@@ -28,7 +28,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
     }
 
     [Function("Update-Market-Item-Prices-From-iTradegg")]
-    public async Task Run([TimerTrigger("0 5-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 16/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-iTradegg");
         var stopwatch = new Stopwatch();

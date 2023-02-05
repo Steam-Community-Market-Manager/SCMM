@@ -29,7 +29,7 @@ public class UpdateMarketItemPricesFromSkinSwap
 
     // Item prices can only be checked 60 at a time, too slow
     //[Function("Update-Market-Item-Prices-From-SkinSwap")]
-    public async Task Run([TimerTrigger("0 13-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 20/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinSwap");
         var stopwatch = new Stopwatch();

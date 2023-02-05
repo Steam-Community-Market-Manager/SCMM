@@ -28,7 +28,7 @@ public class UpdateMarketItemPricesFromBuff
     }
 
     [Function("Update-Market-Item-Prices-From-Buff")]
-    public async Task Run([TimerTrigger("0 1-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 24/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Buff");
         var stopwatch = new Stopwatch();

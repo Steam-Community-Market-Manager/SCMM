@@ -16,6 +16,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.TotalItems, o => o.MapFrom(p => p.Value.TotalItems))
                 .ForMember(x => x.TotalListings, o => o.MapFrom(p => p.Value.TotalListings))
                 .ForMember(x => x.LastUpdatedItemsOn, o => o.MapFrom(p => p.Value.LastUpdatedItemsOn))
+                .ForMember(x => x.LastUpdatedItemsDuration, o => o.MapFrom(p => p.Value.LastUpdatedItemsDuration))
                 .ForMember(x => x.LastUpdateErrorOn, o => o.MapFrom(p => p.Value.LastUpdateErrorOn))
                 .ForMember(x => x.LastUpdateError, o => o.MapFrom(p => p.Value.LastUpdateError));
 

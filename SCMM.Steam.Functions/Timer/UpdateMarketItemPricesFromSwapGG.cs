@@ -28,7 +28,7 @@ public class UpdateMarketItemPricesFromSwapGG
     }
 
     [Function("Update-Market-Item-Prices-From-SwapGG")]
-    public async Task Run([TimerTrigger("0 14-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 4/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SwapGG");
         var stopwatch = new Stopwatch();
@@ -96,6 +96,7 @@ public class UpdateMarketItemPricesFromSwapGG
                     x.TotalItems = swapggTradeItems.Count();
                     x.TotalListings = swapggTradeItems.Sum(i => i.ItemIds?.Length ?? 0);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -116,9 +117,14 @@ public class UpdateMarketItemPricesFromSwapGG
                     logger.LogError(ex, $"Failed to update trade item price statistics for swap.gg (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
                 }
             }
+            finally
+            {
+                stopwatch.Stop();
+            }
 
             try
             {
+                stopwatch.Restart();
                 var swapggMarketItems = (await _swapGGWebClient.GetMarketPricingLowestAsync(app.SteamId)) ?? new Dictionary<string, SwapGGMarketItem>();
 
                 var items = await _db.SteamMarketItems
