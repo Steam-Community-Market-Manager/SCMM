@@ -92,7 +92,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                         var supply = skinSwapItemGroup.Sum(x => x.Amount);
                         item.UpdateBuyPrices(MarketType.SkinSwap, new PriceWithSupply
                         {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => x.TradePrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                            Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => (decimal) x.TradePrice / usdCurrency.ExchangeRateMultiplier)) : 0,
                             Supply = supply
                         });
                     }

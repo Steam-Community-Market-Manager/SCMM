@@ -13,6 +13,9 @@ namespace SCMM.Market.DMarket.Client
         [JsonPropertyName("classId")]
         public string ClassId { get; set; }
 
+        [JsonPropertyName("inMarket")]
+        public bool InMarket { get; set; }
+
         [JsonPropertyName("title")]
         public string Title { get; set; }
 

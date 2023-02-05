@@ -34,7 +34,7 @@ namespace SCMM.Discord.Data.Store
             public const string AlertChannelMarketItemManipulationDetected = "Alert-Channel-Market-Item-Manipulation-Detected";
             public const string AlertChannelMarketItemPriceAllTimeHighReached = "Alert-Channel-Market-Item-Price-All-Time-High-Reached";
             public const string AlertChannelMarketItemPriceAllTimeLowReached = "Alert-Channel-Market-Item-Price-All-Time-Low-Reached";
-            public const string AlertChannelMarketItemPriceProfitableDealDetected = "Alert-Channel-Market-Item-Price-Profitable-Deal-Detected";
+            public const string AlertChannelMarketItemPriceProfitableBuyDealDetected = "Alert-Channel-Market-Item-Price-Profitable-Deal-Detected";
             public const string AlertChannelStoreAdded = "Alert-Channel-Store-Added";
             public const string AlertChannelStoreItemAdded = "Alert-Channel-Store-Item-Added";
             public const string AlertChannelStoreMediaAdded = "Alert-Channel-Store-Media-Added";
@@ -110,8 +110,8 @@ namespace SCMM.Discord.Data.Store
                 },
                 new ConfigurationDefinition()
                 {
-                    Name = AlertChannelMarketItemPriceProfitableDealDetected,
-                    Description =  "The channel where alerts will be posted when cheap deals are detected on third-party markets.",
+                    Name = AlertChannelMarketItemPriceProfitableBuyDealDetected,
+                    Description =  "The channel where alerts will be posted when cheap buy now deals are detected on third-party markets.",
                     RequiredFlags = (int) GuildFlags.Alerts
                 },
                 new ConfigurationDefinition()

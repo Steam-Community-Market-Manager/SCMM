@@ -23,22 +23,22 @@ namespace SCMM.Steam.Data.Models.Enums
         SteamCommunityMarket = 2,
 
         [Display(Name = "Skinport")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#232728")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FA490A")]
         [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Cash)]
         Skinport = 10,
 
         [Display(Name = "LOOT.Farm")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#123E64")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#06FDDE")]
         [BuyFrom(Url = "https://loot.farm/", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         LOOTFarm = 11,
 
         [Display(Name = "Swap.gg")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C7AD")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF")]
         [BuyFrom(Url = "https://swap.gg/?r=iHUYPlp5ehjhrD5DXf0FF&game={0}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash)]
         SwapGGTrade = 12,
 
         [Display(Name = "Swap.gg - Market")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C7AD")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF")]
         [BuyFrom(Url = "https://market.swap.gg/{1}?r=iHUYPlp5ehjhrD5DXf0FF&search={3}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF", AcceptedPaymentTypes = PriceTypes.Cash)]
         SwapGGMarket = 13,
 
@@ -49,13 +49,13 @@ namespace SCMM.Steam.Data.Models.Enums
         TradeitGG = 14,
 
         [Display(Name = "CS.Deals")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#313846")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/trade-skins?appid={0}", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsTrade = 15,
 
         // TODO: Items quantities are not currently supported
         [Display(Name = "CS.Deals - Marketplace")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#313846")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsMarketplace = 16,
 
@@ -65,40 +65,40 @@ namespace SCMM.Steam.Data.Models.Enums
         SkinBaron = 17,
 
         [Display(Name = "Rust.tm")]
-        [Market(Constants.RustAppId)]
+        [Market(Constants.RustAppId, Color = "#4E2918")]
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         RustTM = 19,
 
         [Display(Name = "CS.TRADE")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId)]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#F3C207")]
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AffiliateCode = "SCMM", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         CSTRADE = 22,
 
         [Display(Name = "iTrade.gg")]
-        [Market(Constants.RustAppId)]
+        [Market(Constants.RustAppId, Color = "#EA473B")]
         [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade)] // Unconfirmed
         iTradegg = 23,
 
         [Display(Name = "SkinsMonkey")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId)]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#F5C71B")]
         [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinsMonkey = 25,
 
         // TODO: Restricted to 60 items per query, slow
         [Display(Name = "Skin Swap")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId)]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FF4B4B")]
         [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinSwap = 26,
 
         // TODO: Restricted to 100 items per query, slow
         [Display(Name = "DMarket")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#49BC74")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=exchange&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         DMarket = 28,
 
         // TODO: Restricted to 100 items per query, slow
-        [Display(Name = "DMarket Face2Face")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#49BC74")]
+        [Display(Name = "DMarket - Face2Face")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=f2fOffers&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         DMarketF2F = 29,
 

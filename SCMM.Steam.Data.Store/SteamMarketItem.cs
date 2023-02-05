@@ -207,6 +207,14 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public string ManipulationReason { get; set; }
 
+        public bool IsBuyNowAGoodDeal(bool includeFees = true)
+        {
+            var profit = (long) Math.Round(SellOrderLowestPrice - (SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier) - (BuyNowPrice + (includeFees ? BuyNowFee : 0)), 0);
+            return (BuyNowPrice + (includeFees ? BuyNowFee : 0)) > 0 &&
+                   (SellOrderLowestPrice > 0) &&
+                   (profit > 100 || profit > (SellOrderLowestPrice * 0.5)) /* Profit must be >1.00 USD or >50% of it's Steam value, otherwise it's not worth the effort */; 
+        }
+
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {
             // Strip out obsolete prices
@@ -249,9 +257,26 @@ namespace SCMM.Steam.Data.Store
                         Fee = x.BuyFrom?.CalculateBuyFees(x.Price) ?? 0
                     })
                     .MinBy(x => x.Price + x.Fee);
+                var buyNowDealHasImproved = (
+                    lowestBuyPrice.Price < BuyNowPrice &&
+                    lowestBuyPrice.Price.ToPercentage(BuyNowPrice) < 100
+                );
                 BuyNowFrom = lowestBuyPrice.From;
                 BuyNowPrice = lowestBuyPrice.Price;
                 BuyNowFee = lowestBuyPrice.Fee;
+                if (buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: true))
+                {
+                    RaiseEvent(new MarketItemPriceProfitableBuyDealDetectedMessage()
+                    {
+                        AppId = AppId,
+                        DescriptionId = (DescriptionId ?? Guid.Empty),
+                        CurrencyId = (CurrencyId ?? Guid.Empty),
+                        SellOrderLowestPrice = SellOrderLowestPrice,
+                        BuyNowFrom = lowestBuyPrice.From,
+                        BuyNowPrice = lowestBuyPrice.Price,
+                        BuyNowFee = lowestBuyPrice.Fee
+                    });
+                }
             }
             else
             {
@@ -281,8 +306,6 @@ namespace SCMM.Steam.Data.Store
                 SellLaterPrice = 0;
                 SellLaterFee = 0;
             }
-
-            RecalulateIsBeingManipulated();
         }
 
         public void UpdateSellPrices(MarketType type, PriceWithSupply? price)
@@ -359,8 +382,6 @@ namespace SCMM.Steam.Data.Store
                 BuyLaterPrice = 0;
                 BuyLaterFee = 0;
             }
-
-            RecalulateIsBeingManipulated();
         }
 
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
@@ -410,6 +431,7 @@ namespace SCMM.Steam.Data.Store
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
                 var cumulativeSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
                 var lowestSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Min(x => x.Price) : 0);
+                var previousSellOrderLowestPrice = SellOrderLowestPrice;
 
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //SellOrderCount = sellOrdersSorted.Sum(y => y.Quantity);
@@ -422,6 +444,24 @@ namespace SCMM.Steam.Data.Store
                     Price = SellOrderCount > 0 ? SellOrderLowestPrice : 0,
                     Supply = SellOrderCount
                 });
+
+                var buyNowDealHasImproved = (
+                    SellOrderLowestPrice > previousSellOrderLowestPrice &&
+                    SellOrderLowestPrice.ToPercentage(previousSellOrderLowestPrice) > 100
+                );
+                if (buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: true))
+                {
+                    RaiseEvent(new MarketItemPriceProfitableBuyDealDetectedMessage()
+                    {
+                        AppId = AppId,
+                        DescriptionId = (DescriptionId ?? Guid.Empty),
+                        CurrencyId = (CurrencyId ?? Guid.Empty),
+                        SellOrderLowestPrice = SellOrderLowestPrice,
+                        BuyNowFrom = BuyNowFrom,
+                        BuyNowPrice = BuyNowPrice,
+                        BuyNowFee = BuyNowFee
+                    });
+                }
             }
 
             /*

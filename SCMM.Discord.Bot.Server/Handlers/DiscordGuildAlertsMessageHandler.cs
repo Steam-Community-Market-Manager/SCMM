@@ -8,6 +8,8 @@ using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Store.Requests.Html;
+using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Store;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -22,7 +24,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
         IMessageHandler<MarketItemManipulationDetectedMessage>,
         IMessageHandler<MarketItemPriceAllTimeHighReachedMessage>,
         IMessageHandler<MarketItemPriceAllTimeLowReachedMessage>,
-        IMessageHandler<MarketItemPriceProfitableDealDetectedMessage>,
+        IMessageHandler<MarketItemPriceProfitableBuyDealDetectedMessage>,
         IMessageHandler<StoreAddedMessage>,
         IMessageHandler<StoreItemAddedMessage>,
         IMessageHandler<StoreMediaAddedMessage>,
@@ -30,12 +32,14 @@ namespace SCMM.Discord.Bot.Server.Handlers
         IMessageHandler<WorkshopFileUpdatedMessage>
     {
         private readonly IConfiguration _configuration;
+        private readonly SteamDbContext _steamDb;
         private readonly DiscordDbContext _discordDb;
         private readonly DiscordClient _client;
 
-        public DiscordGuildAlertsMessageHandler(IConfiguration configuration, DiscordDbContext discordDb, DiscordClient client)
+        public DiscordGuildAlertsMessageHandler(IConfiguration configuration, SteamDbContext steamDb, DiscordDbContext discordDb, DiscordClient client)
         {
             _configuration = configuration;
+            _steamDb = steamDb;
             _discordDb = discordDb;
             _client = client;
         }
@@ -173,7 +177,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 return _client.SendMessageAsync(
                     guildId,
                     channelId,
-                    title: marketItem.ItemName,
+                    title: $"📈 {marketItem.ItemName}",
                     url: new SteamMarketListingPageRequest()
                     {
                         AppId = marketItem.AppId.ToString(),
@@ -198,7 +202,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 return _client.SendMessageAsync(
                     guildId,
                     channelId,
-                    title: marketItem.ItemName,
+                    title: $"📉 {marketItem.ItemName}",
                     url: new SteamMarketListingPageRequest()
                     {
                         AppId = marketItem.AppId.ToString(),
@@ -213,9 +217,47 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        public async Task HandleAsync(MarketItemPriceProfitableDealDetectedMessage marketItem, IMessageContext context)
+        public async Task HandleAsync(MarketItemPriceProfitableBuyDealDetectedMessage marketItem, IMessageContext context)
         {
-            throw new NotImplementedException();
+            var currency = await _steamDb.SteamCurrencies
+                .FirstOrDefaultAsync(x => x.Id == marketItem.CurrencyId);
+            var assetDescription = await _steamDb.SteamAssetDescriptions
+                .Include(x => x.App)
+                .FirstOrDefaultAsync(x => x.Id == marketItem.DescriptionId);
+
+            if (currency == null || assetDescription == null)
+            {
+                return;
+            }
+
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceProfitableBuyDealDetected, (guildId, channelId) =>
+            {
+                var marketName = marketItem.BuyNowFrom.GetDisplayName();
+                var marketColor = marketItem.BuyNowFrom.GetColor();
+                var flipProfit = (long) Math.Round(marketItem.SellOrderLowestPrice - (marketItem.SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier) - marketItem.BuyNowPrice - marketItem.BuyNowFee, 0);
+                var description = new StringBuilder();
+                description.Append(
+                    $"This item is selling for **{currency.ToPriceString(marketItem.BuyNowPrice)}** on {marketName}, " +
+                    $"**{Math.Round(100 - marketItem.BuyNowPrice.ToPercentage(marketItem.SellOrderLowestPrice), 0)}% cheaper** compared to the {assetDescription.App.Name} community market ({currency.ToPriceString(marketItem.SellOrderLowestPrice)}). " +
+                    $"You could flip this item and make **{currency.ToPriceString(flipProfit)} profit** (after market fees)."
+                );
+
+                return _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    title: $"Buy {assetDescription.Name} for only {currency.ToPriceString(marketItem.BuyNowPrice)}!",
+                    authorName: marketName,
+                    authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
+                    url: marketItem.BuyNowFrom.GetBuyFromOptions()?.FirstOrDefault()?.GenerateBuyUrl(
+                        assetDescription.App.SteamId, assetDescription.App.Name, assetDescription.ClassId, assetDescription.Name
+                    ),
+                    thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
+                                  !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: false//AppDomain.CurrentDomain.IsReleaseBuild()
+                );
+            });
         }
 
         public async Task HandleAsync(StoreAddedMessage store, IMessageContext context)
