@@ -445,6 +445,9 @@ namespace SCMM.Steam.Data.Store
                     Supply = SellOrderCount
                 });
 
+                // NOTE: This spams too much as Steam market price rises.
+                //       Disabling for now, just keep it to only alerting when the third-party market lowers it price
+                /*
                 var buyNowDealHasImproved = (
                     SellOrderLowestPrice > previousSellOrderLowestPrice &&
                     SellOrderLowestPrice.ToPercentage(previousSellOrderLowestPrice) > 100
@@ -462,6 +465,7 @@ namespace SCMM.Steam.Data.Store
                         BuyNowFee = BuyNowFee
                     });
                 }
+                */
             }
 
             /*
