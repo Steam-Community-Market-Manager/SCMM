@@ -221,7 +221,7 @@ namespace SCMM.Discord.Client
             string authorIconUrl = null, string authorName = null, string authorUrl = null,
             string title = null, string url = null, string thumbnailUrl = null,
             string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false,
-            string imageUrl = null, Color? color = null, string[] reactions = null)
+            string imageUrl = null, Color? color = null, string[] reactions = null, IDictionary<string, string> linkButtons = null)
         {
             WaitUntilClientIsConnected();
 
@@ -246,8 +246,12 @@ namespace SCMM.Discord.Client
                 authorIconUrl, authorName, authorUrl, title, url, thumbnailUrl, description, fields, fieldsInline, imageUrl, color
             );
 
+            var components = BuildComponents(
+                linkButtons
+            );
+
             // Send the message
-            var msg = await dm.SendMessageAsync(text: message, embed: embed);
+            var msg = await dm.SendMessageAsync(text: message, embed: embed, components: components);
             if (msg == null)
             {
                 throw new Exception($"Unable to send message \"{message ?? title}\" (username: {userIdOrName})");
@@ -265,11 +269,12 @@ namespace SCMM.Discord.Client
         }
 
         public async Task<ulong> SendMessageAsync(
-            ulong guildId, ulong channelId, string message = null,
+            ulong guildId, ulong channelId, string threadName = null, string message = null,
             string authorIconUrl = null, string authorName = null, string authorUrl = null,
             string title = null, string url = null, string thumbnailUrl = null,
             string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false,
-            string imageUrl = null, Color? color = null, string[] reactions = null, bool crossPost = false)
+            string imageUrl = null, Color? color = null, string[] reactions = null, IDictionary<string, string> linkButtons = null, 
+            bool crossPost = false)
         {
             WaitUntilClientIsConnected();
 
@@ -285,16 +290,34 @@ namespace SCMM.Discord.Client
                 throw new Exception($"Unable to find guild channel (guildId: {guildId}, channelId: {channelId})");
             }
 
+            var messageChannel = (IMessageChannel) channel;
+            if (!String.IsNullOrEmpty(threadName))
+            {
+                messageChannel = channel.Threads.FirstOrDefault(x => x.Name == threadName);
+                if (messageChannel == null)
+                {
+                    messageChannel = (
+                        await channel.CreateThreadAsync(
+                            threadName, channel.GetChannelType() == ChannelType.News ? ThreadType.NewsThread : ThreadType.PublicThread, invitable: true
+                        ) ?? channel
+                    );
+                }
+            }
+
             var embed = BuildEmbed(
                 authorIconUrl, authorName, authorUrl, title, url, thumbnailUrl, description, fields, fieldsInline, imageUrl, color
             );
 
+            var components = BuildComponents(
+                linkButtons
+            );
+
             // Send the message
-            _logger.LogTrace($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
-            var msg = await channel.SendMessageAsync(text: message, embed: embed);
+            _logger.LogTrace($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {messageChannel.Name})");
+            var msg = await messageChannel.SendMessageAsync(text: message, embed: embed, components: components);
             if (msg == null)
             {
-                throw new Exception($"Unable to send message \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
+                throw new Exception($"Unable to send message \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {messageChannel.Name})");
             }
 
             // React to the message
@@ -360,6 +383,20 @@ namespace SCMM.Discord.Client
             return new DisposableDelegate(
                 () => _client.ReactionAdded -= reactionCallback
             );
+        }
+
+        private MessageComponent BuildComponents(IDictionary<string, string> linkButtons = null)
+        {
+            var components = new ComponentBuilder();
+            if (linkButtons != null)
+            {
+                foreach (var linkButton in linkButtons)
+                {
+                    components = components.WithButton(label: linkButton.Key, url: linkButton.Value, style: ButtonStyle.Link);
+                }
+            }
+
+            return components.Build();
         }
 
         private Embed BuildEmbed(

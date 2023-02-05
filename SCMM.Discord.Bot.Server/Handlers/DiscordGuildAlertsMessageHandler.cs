@@ -230,32 +230,58 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 return;
             }
 
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceProfitableBuyDealDetected, (guildId, channelId) =>
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceProfitableBuyDealDetected, async (guildId, channelId) =>
             {
                 var marketName = marketItem.BuyNowFrom.GetDisplayName();
                 var marketColor = marketItem.BuyNowFrom.GetColor();
-                var flipProfit = (long) Math.Round(marketItem.SellOrderLowestPrice - (marketItem.SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier) - marketItem.BuyNowPrice - marketItem.BuyNowFee, 0);
+                var marketUrl = marketItem.BuyNowFrom.GetBuyFromOptions()?.FirstOrDefault()?.GenerateBuyUrl(
+                    assetDescription.App.SteamId, assetDescription.App.Name, assetDescription.ClassId, assetDescription.Name
+                );
+
+                var discountPercentage = Math.Round(100 - marketItem.BuyNowPrice.ToPercentage(marketItem.SellOrderLowestPrice), 0);
+                var flipProfit = (long)Math.Round(marketItem.SellOrderLowestPrice - (marketItem.SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier) - marketItem.BuyNowPrice - marketItem.BuyNowFee, 0);
                 var description = new StringBuilder();
                 description.Append(
                     $"This item is selling for **{currency.ToPriceString(marketItem.BuyNowPrice)}** on {marketName}, " +
-                    $"**{Math.Round(100 - marketItem.BuyNowPrice.ToPercentage(marketItem.SellOrderLowestPrice), 0)}% cheaper** compared to the {assetDescription.App.Name} community market ({currency.ToPriceString(marketItem.SellOrderLowestPrice)}). " +
+                    $"**{discountPercentage}% cheaper** compared to the {assetDescription.App.Name} community market ({currency.ToPriceString(marketItem.SellOrderLowestPrice)}). " +
                     $"You could flip this item and make **{currency.ToPriceString(flipProfit)} profit** (after market fees)."
                 );
 
-                return _client.SendMessageAsync(
+                var linkButtons = new Dictionary<string, string>()
+                {
+                    { "View Deal", marketUrl },
+                    { "Compare with Steam", new SteamMarketListingPageRequest() { AppId = assetDescription.App.SteamId, MarketHashName = assetDescription.NameHash } }
+                };
+
+                await _client.SendMessageAsync(
                     guildId,
                     channelId,
-                    title: $"Buy {assetDescription.Name} for only {currency.ToPriceString(marketItem.BuyNowPrice)}!",
+                    title: $"Get {discountPercentage}% off {assetDescription.Name}",
                     authorName: marketName,
                     authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
-                    url: marketItem.BuyNowFrom.GetBuyFromOptions()?.FirstOrDefault()?.GenerateBuyUrl(
-                        assetDescription.App.SteamId, assetDescription.App.Name, assetDescription.ClassId, assetDescription.Name
-                    ),
+                    url: marketUrl,
                     thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
                                   !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
                     description: description.ToString(),
                     color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: false//AppDomain.CurrentDomain.IsReleaseBuild()
+                    linkButtons: linkButtons,
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
+                );
+
+                await _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    threadName: marketName,
+                    title: $"Get {discountPercentage}% off {assetDescription.Name}",
+                    authorName: marketName,
+                    authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
+                    url: marketUrl,
+                    thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
+                                  !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    linkButtons: linkButtons,
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
