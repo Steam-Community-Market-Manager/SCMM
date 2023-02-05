@@ -14,24 +14,6 @@
     {
        <MudGrid Spacing="4">
 
-            @*
-            <MudItem xs="12">
-                <MudPaper Outlined="true" Class="pa-4">
-                    <MudStack Row="true" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween">
-                        <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Default" GutterBottom>
-                            <i class="fas fa-fw fa-server" />
-                            <span>SCMM Services</span>
-                        </MudText>
-                        <MudIconButton Size="Size.Small" Variant="Variant.Text" Icon="fas fa-fw fa-rotate" Color="Color.Secondary" Title="Refresh system status" Disabled="State.IsPrerendering"
-                                       OnClick="@(async () => await RefreshSystemStatusAsync())"></MudIconButton>
-                    </MudStack>
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                        <span>Under construction</span>
-                    </MudText>
-                </MudPaper>
-            </MudItem>
-            *@
-
             @if (SystemStatus.SteamApp != null)
             {
                 <MudItem xs="12">
@@ -78,7 +60,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>Update Frequency</th>
+                                    <th>Lasted Updated</th>
                                     <th>Update Delta</th>
                                     <th>Target Delta</th>
                                     <th class="text-right">Status</th>
@@ -222,6 +204,10 @@
                                             @if (market.LastUpdatedItemsOn != null)
                                             {
                                                 <span>@((now - market.LastUpdatedItemsOn.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                @if (market.LastUpdatedItemsDuration != null)
+                                                {
+                                                    <span>, @market.LastUpdatedItemsDuration.Value.ToDurationString(prefix: "completed in", maxGranularity: 2)</span>
+                                                }
                                             }
                                             else
                                             {
@@ -247,9 +233,11 @@
                                             </MudText>
                                             @if (market.HasError)
                                             {
-                                                <MudText Typo="Typo.caption" Color="@(market.Status == SystemStatusSeverity.Degraded ? Color.Warning : Color.Error)">
-                                                    <span>@market.LastUpdateError</span>
-                                                </MudText>
+                                                <div>
+                                                    <MudText Typo="Typo.caption" Color="@(market.Status == SystemStatusSeverity.Degraded ? Color.Warning : Color.Error)">
+                                                        <span>@market.LastUpdateError</span>
+                                                    </MudText>
+                                                </div>
                                             }
                                         </td>
                                     </tr>

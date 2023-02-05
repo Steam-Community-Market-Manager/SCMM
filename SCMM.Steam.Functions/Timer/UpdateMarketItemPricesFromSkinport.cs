@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromSkinport
     public async Task Run([TimerTrigger("0 11-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Skinport");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.Skinport.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromSkinport
 
             try
             {
+                stopwatch.Restart();
                 var skinportItems = (await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name, tradable: true)) ?? new List<SkinportItem>();
 
                 var items = await _db.SteamMarketItems
@@ -93,6 +96,7 @@ public class UpdateMarketItemPricesFromSkinport
                     x.TotalItems = skinportItems.Count();
                     x.TotalListings = skinportItems.Sum(i => i.Quantity);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -113,6 +117,10 @@ public class UpdateMarketItemPricesFromSkinport
                     logger.LogError(ex, $"Failed to update market item price statistics for Skinport (appId: {app.SteamId}). {ex.Message}");
                 }
                 continue;
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

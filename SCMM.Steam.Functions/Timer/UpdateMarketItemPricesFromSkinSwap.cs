@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -31,6 +32,7 @@ public class UpdateMarketItemPricesFromSkinSwap
     public async Task Run([TimerTrigger("0 13-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinSwap");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.SkinSwap.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -56,7 +58,8 @@ public class UpdateMarketItemPricesFromSkinSwap
 
             try
             {
-                var skinSwapItems = (await _skinSwapWebClient.GetInventoryAsync(app.SteamId)) ?? new List<SkinSwapItem>();
+                stopwatch.Restart();
+                var skinSwapItems = (await _skinSwapWebClient.GetInventoryAsync(app.SteamId, 0)) ?? new List<SkinSwapItem>();
                 var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
 
                 var items = await _db.SteamMarketItems
@@ -96,6 +99,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                     x.TotalItems = skinSwapItemGroups.Count();
                     x.TotalListings = skinSwapItemGroups.Sum(i => i.Sum(z => z.Amount));
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -115,6 +119,10 @@ public class UpdateMarketItemPricesFromSkinSwap
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for SkinSwap (appId: {app.SteamId}). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

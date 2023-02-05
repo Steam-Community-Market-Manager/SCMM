@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromTradeitGG
     public async Task Run([TimerTrigger("0 15-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeitGG");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.TradeitGG.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromTradeitGG
 
             try
             {
+                stopwatch.Restart();
                 var tradeitGGItems = new Dictionary<TradeitGGItem, int>();
                 var inventoryDataItems = (IDictionary<TradeitGGItem, int>)null;
                 var inventoryDataOffset = 0;
@@ -106,6 +109,7 @@ public class UpdateMarketItemPricesFromTradeitGG
                     x.TotalItems = tradeitGGItems.Count();
                     x.TotalListings = tradeitGGItems.Sum(i => i.Value);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -125,6 +129,10 @@ public class UpdateMarketItemPricesFromTradeitGG
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

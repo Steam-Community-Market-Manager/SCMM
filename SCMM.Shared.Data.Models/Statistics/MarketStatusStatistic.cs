@@ -8,6 +8,8 @@
 
         public DateTimeOffset? LastUpdatedItemsOn { get; set; }
 
+        public TimeSpan? LastUpdatedItemsDuration { get; set; }
+
         public DateTimeOffset? LastUpdateErrorOn { get; set; }
 
         public string LastUpdateError { get; set; }

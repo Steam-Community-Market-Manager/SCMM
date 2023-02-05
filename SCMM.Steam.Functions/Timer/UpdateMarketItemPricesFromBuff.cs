@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromBuff
     public async Task Run([TimerTrigger("0 1-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Buff");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.Buff.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromBuff
 
             try
             {
+                stopwatch.Restart();
                 var buffItems = new List<BuffItem>();
                 var marketGoodsResponse = (BuffMarketGoodsResponse)null;
                 do
@@ -103,6 +106,7 @@ public class UpdateMarketItemPricesFromBuff
                     x.TotalItems = buffItems.Count();
                     x.TotalListings = buffItems.Sum(i => i.SellNum);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -122,6 +126,10 @@ public class UpdateMarketItemPricesFromBuff
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for Buff (appId: {app.SteamId}). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

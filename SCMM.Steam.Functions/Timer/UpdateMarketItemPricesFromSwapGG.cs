@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromSwapGG
     public async Task Run([TimerTrigger("0 14-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SwapGG");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.SwapGGTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromSwapGG
 
             try
             {
+                stopwatch.Restart();
                 var swapggTradeItems = (await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId)) ?? new List<SwapGGTradeItem>();
 
                 var items = await _db.SteamMarketItems
@@ -154,6 +157,7 @@ public class UpdateMarketItemPricesFromSwapGG
                     x.TotalItems = swapggMarketItems.Count();
                     x.TotalListings = swapggMarketItems.Sum(i => i.Value.Quantity);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -173,6 +177,10 @@ public class UpdateMarketItemPricesFromSwapGG
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

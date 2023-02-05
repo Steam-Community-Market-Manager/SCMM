@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromDMarketJob
     public async Task Run([TimerTrigger("0 30 * * * *")] /* every hour at 30mins past */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-DMarket");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.Dmarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromDMarketJob
 
             try
             {
+                stopwatch.Restart();
                 var dMarketItems = new List<DMarketItem>();
                 var marketItemsResponse = (DMarketMarketItemsResponse)null;
                 do
@@ -108,6 +111,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                     x.TotalItems = dMarketItemGroups.Count();
                     x.TotalListings = dMarketItemGroups.Sum(i => i.Sum(z => z.Amount));
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -127,6 +131,10 @@ public class UpdateMarketItemPricesFromDMarketJob
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

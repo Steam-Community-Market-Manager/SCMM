@@ -11,6 +11,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -31,6 +32,7 @@ public class UpdateMarketItemPricesFromCSDeals
     public async Task Run([TimerTrigger("0 2-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.CSDealsTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -56,6 +58,7 @@ public class UpdateMarketItemPricesFromCSDeals
 
             try
             {
+                stopwatch.Restart();
                 var csDealsInventoryItems = (await _csDealsWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value ?? new CSDealsItemListing[0];
 
                 var items = await _db.SteamMarketItems
@@ -95,6 +98,7 @@ public class UpdateMarketItemPricesFromCSDeals
                     x.TotalItems = csDealsInventoryItems.Count();
                     x.TotalListings = csDealsInventoryItems.Sum(i => i.ItemIds?.Length ?? 0);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -115,9 +119,14 @@ public class UpdateMarketItemPricesFromCSDeals
                     logger.LogError(ex, $"Failed to update trade item price statistics for CS.Deals (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
                 }
             }
+            finally
+            {
+                stopwatch.Stop();
+            }
 
             try
             {
+                stopwatch.Restart();
                 var csDealsLowestPriceItems = (await _csDealsWebClient.GetPricingGetLowestPricesAsync(app.SteamId)) ?? new List<CSDealsItemPrice>();
 
                 var items = await _db.SteamMarketItems
@@ -156,6 +165,7 @@ public class UpdateMarketItemPricesFromCSDeals
                     x.TotalItems = csDealsLowestPriceItems.Count();
                     x.TotalListings = null;
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -175,6 +185,10 @@ public class UpdateMarketItemPricesFromCSDeals
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for CS.Deals (appId: {app.SteamId}, source: lowest price items). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

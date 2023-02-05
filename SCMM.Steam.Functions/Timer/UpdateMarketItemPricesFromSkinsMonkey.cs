@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromSkinsMonkey
     public async Task Run([TimerTrigger("0 12-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinsMonkey");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.SkinsMonkey.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromSkinsMonkey
 
             try
             {
+                stopwatch.Restart();
                 var skinsMonkeyItems = await _skinsMonkeyWebClient.GetItemPricesAsync(app.SteamId);
 
                 var items = await _db.SteamMarketItems
@@ -93,6 +96,7 @@ public class UpdateMarketItemPricesFromSkinsMonkey
                     x.TotalItems = skinsMonkeyItems.Count();
                     x.TotalListings = skinsMonkeyItems.Sum(i => i.Stock);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -112,6 +116,10 @@ public class UpdateMarketItemPricesFromSkinsMonkey
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for SkinsMonkey (appId: {app.SteamId}). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

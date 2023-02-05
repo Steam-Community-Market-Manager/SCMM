@@ -5,7 +5,7 @@ namespace SCMM.Market.Buff.Client
 {
     public class BuffWebClient : Shared.Client.WebClient
     {
-        private const string WebBaseUri = "https://buff.163.com/"
+        private const string WebBaseUri = "https://buff.163.com/";
         private const string ApiBaseUri = "https://buff.163.com/api/";
 
         public const int MaxPageLimit = 80;

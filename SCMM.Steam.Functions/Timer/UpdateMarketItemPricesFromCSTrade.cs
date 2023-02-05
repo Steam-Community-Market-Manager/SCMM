@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromCSTrade
     public async Task Run([TimerTrigger("0 3-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSTrade");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.CSTRADE.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromCSTrade
 
             try
             {
+                stopwatch.Restart();
                 var csTradeAppItems = (await _csTradeWebClient.GetPricesAsync(app.Name)) ?? new List<CSTradeItemPrice>();
                 
                 var items = await _db.SteamMarketItems
@@ -93,6 +96,7 @@ public class UpdateMarketItemPricesFromCSTrade
                     x.TotalItems = csTradeAppItems.Count();
                     x.TotalListings = csTradeAppItems.Sum(i => i.Have);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -112,6 +116,10 @@ public class UpdateMarketItemPricesFromCSTrade
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for CS.TRADE (appId: {app.SteamId}). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }

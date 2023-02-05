@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -30,6 +31,7 @@ public class UpdateMarketItemPricesFromRustTM
     public async Task Run([TimerTrigger("0 8-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-RustTM");
+        var stopwatch = new Stopwatch();
 
         var appIds = MarketType.RustTM.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -55,6 +57,7 @@ public class UpdateMarketItemPricesFromRustTM
 
             try
             {
+                stopwatch.Restart();
                 var rustTMItems = (await _rustTMWebClient.GetPricesAsync(usdCurrency.Name)) ?? new List<RustTMItem>();
 
                 var items = await _db.SteamMarketItems
@@ -93,6 +96,7 @@ public class UpdateMarketItemPricesFromRustTM
                     x.TotalItems = rustTMItems.Count();
                     x.TotalListings = rustTMItems.Sum(i => i.Volume);
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
                     x.LastUpdateError = null;
                 });
@@ -112,6 +116,10 @@ public class UpdateMarketItemPricesFromRustTM
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for Rust.tm (appId: {app.SteamId}). {ex.Message}");
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
         }
     }
