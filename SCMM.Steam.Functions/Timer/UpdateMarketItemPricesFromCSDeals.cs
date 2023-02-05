@@ -70,7 +70,8 @@ public class UpdateMarketItemPricesFromCSDeals
                     })
                     .ToListAsync();
 
-                foreach (var csDealsInventoryItemGroup in csDealsInventoryItems.GroupBy(x => x.MarketName))
+                var csDealsInventoryItemGroups = csDealsInventoryItems.GroupBy(x => x.MarketName);
+                foreach (var csDealsInventoryItemGroup in csDealsInventoryItemGroups)
                 {
                     var item = items.FirstOrDefault(x => x.Name == csDealsInventoryItemGroup.Key)?.Item;
                     if (item != null)
@@ -94,8 +95,8 @@ public class UpdateMarketItemPricesFromCSDeals
 
                 await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSDealsTrade, x =>
                 {
-                    x.TotalItems = csDealsInventoryItems.Count();
-                    x.TotalListings = csDealsInventoryItems.Sum(i => i.ItemIds?.Length ?? 0);
+                    x.TotalItems = csDealsInventoryItemGroups.Count();
+                    x.TotalListings = csDealsInventoryItemGroups.Sum(x => x.Sum(y => y.ItemIds?.Length ?? 0));
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
                     x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;

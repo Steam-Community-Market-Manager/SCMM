@@ -109,7 +109,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.DMarketF2F, x =>
                 {
                     x.TotalItems = dMarketItemGroups.Count();
-                    x.TotalListings = dMarketItemGroups.Sum(i => i.Sum(z => z.Amount));
+                    x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
                     x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
@@ -191,7 +191,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.DMarket, x =>
                 {
                     x.TotalItems = dMarketItemGroups.Count();
-                    x.TotalListings = dMarketItemGroups.Sum(i => i.Sum(z => z.Amount));
+                    x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
                     x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;

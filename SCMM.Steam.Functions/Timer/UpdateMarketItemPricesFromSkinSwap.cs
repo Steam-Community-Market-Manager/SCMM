@@ -109,7 +109,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                 await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SkinSwap, x =>
                 {
                     x.TotalItems = skinSwapItemGroups.Count();
-                    x.TotalListings = skinSwapItemGroups.Sum(i => i.Sum(z => z.Amount));
+                    x.TotalListings = skinSwapItemGroups.Sum(x => x.Sum(y => y.Amount));
                     x.LastUpdatedItemsOn = DateTimeOffset.Now;
                     x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                     x.LastUpdateErrorOn = null;
