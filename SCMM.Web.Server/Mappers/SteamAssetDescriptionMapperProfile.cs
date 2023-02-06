@@ -83,7 +83,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Name))
-                .ForMember(x => x.Price, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.Price));
+                .ForMember(x => x.Price, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.Price))
+                .ForMember(x => x.Supply, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.Supply));
 
             CreateMap<SteamAssetDescription, ItemMarketPricesDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
