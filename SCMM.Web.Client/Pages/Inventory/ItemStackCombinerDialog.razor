@@ -105,7 +105,7 @@
                       Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
     </DialogContent>
     <DialogActions>
-        <div class="mx-4 my-2">
+        <div class="d-flex gap-4 mx-4 my-2">
             <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
             <MudButton OnClick="CombineSelectedItemStacks" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@(IsCombining ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
                        Disabled="@(IsCombining || (SelectedStacks.Count() < 2) || String.IsNullOrEmpty(SteamApiKey))">

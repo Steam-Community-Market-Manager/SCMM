@@ -8,8 +8,10 @@
         <MudText Typo="Typo.body2" Color="Color.Secondary">@Description</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Text" Class="ma-2">@CancelText</MudButton>
-        <MudButton OnClick="Confirm" Variant="Variant.Filled" Color="@ConfirmColor" Class="ma-2">@ConfirmText</MudButton>
+        <div class="d-flex gap-4 mx-4 my-2">
+            <MudButton OnClick="Cancel" Variant="Variant.Text" Class="ma-2">@CancelText</MudButton>
+            <MudButton OnClick="Confirm" Variant="Variant.Filled" Color="@ConfirmColor" Class="ma-2">@ConfirmText</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

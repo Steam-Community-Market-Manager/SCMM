@@ -472,36 +472,48 @@ else if (StoreList.Any())
                                                 @if (item.HasWorkshopFile)
                                                 {
                                                     <div class="d-flex flex-row full-width mb-2">
-                                                        <MudButton OnClick="@(() => ViewItemWorkshopPage(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fas fa-fw fa-tools" Size="@Size.Small" FullWidth Disabled="State.IsPrerendering">     
+                                                        <MudButton OnClick="@(() => ViewItemWorkshopPage(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fas fa-fw fa-tools" Size="@Size.Small" 
+                                                                   FullWidth Disabled="State.IsPrerendering" title="Click to view this item on the Steam workshop">     
                                                             <strong>Workshop</strong>
                                                         </MudButton>
                                                         @if (!String.IsNullOrEmpty(item.WorkshopFileUrl))
                                                         {
-                                                            <MudButton OnClick="@(() => ShowItemModelDialog(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fab fa-fw fa-unity" Size="@Size.Small" Class="ml-2" Disabled="State.IsPrerendering">     
+                                                            <MudButton OnClick="@(() => ShowItemModelDialog(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fab fa-fw fa-unity" Size="@Size.Small" 
+                                                                       Class="ml-2" Disabled="State.IsPrerendering" title="Click to view an interactive 3D render of this item">     
                                                                 <strong>3D</strong>
                                                             </MudButton>
                                                         }
                                                     </div>
                                                 }
-                                                @if ((item.HasMarketListing || item.IsMarketable || (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0 && Store.Start != null)) && !item.IsBanned)
-                                                {
-                                                    <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" Size="@Size.Medium" Class="mb-2" FullWidth Disabled="State.IsPrerendering">
-                                                        <strong>Marketplace</strong>
-                                                    </MudButton>
-                                                }
                                                 @if (item.IsStillAvailableFromStore)
                                                 {
-                                                    <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" Size="@Size.Medium" FullWidth Disabled="State.IsPrerendering">
-                                                        @if (State.AppId > 0)
-                                                        {
-                                                            <img src="/images/app/@(@State.AppId.ToString())/icon.svg" class="store-button-icon" />    
-                                                        }
-                                                        else
-                                                        {
-                                                            <i class="fab fa-fw fa-steam" />
-                                                        }
-                                                        <strong class="ml-2 store-button-label">Store</strong>
-                                                    </MudButton>
+                                                    <div class="d-flex flex-row full-width mb-2">
+                                                        <MudButton OnClick="@(() => ViewItemStorePage(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" Size="@Size.Medium" FullWidth 
+                                                                   Disabled="State.IsPrerendering" title="Click to view this item on the Steam item store">
+                                                            @if (State.AppId > 0)
+                                                            {
+                                                                <img src="/images/app/@(@State.AppId.ToString())/icon.svg" class="store-button-icon" />    
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="fab fa-fw fa-steam" />
+                                                            }
+                                                            <strong class="ml-2 store-button-label">Store</strong>
+                                                        </MudButton>
+                                                        <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-cart-shopping" Size="@Size.Small"
+                                                                   Class="ml-2" Disabled="State.IsPrerendering" title="Click to buy this item from the Steam item store">
+                                                            <span>Buy</span>
+                                                        </MudButton>
+                                                    </div>
+                                                }
+                                                @if ((item.HasMarketListing || item.IsMarketable || (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0 && Store.Start != null)) && !item.IsBanned)
+                                                {
+                                                    <div class="d-flex flex-row full-width">
+                                                        <MudButton OnClick="@(() => ViewItemMarketPage(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" Size="@Size.Medium" FullWidth 
+                                                                   Disabled="State.IsPrerendering" title="Click to view this item on the Steam community market">
+                                                            <strong>Marketplace</strong>
+                                                        </MudButton>
+                                                    </div>
                                                 }
                                             </div>
 
@@ -677,7 +689,31 @@ else
         }
     }
 
-    private void BuyItemFromStore(StoreItemDetailsDTO item)
+    private async Task BuyItemFromStore(StoreItemDetailsDTO item)
+    {
+        if (item?.ItemDefinitionId == null)
+        {
+            return;
+        }
+
+        var dialog = Dialogs.Show<BuyStoreItemDialog>(null, parameters: new DialogParameters()
+        {
+            ["Item"] = item,
+        });
+        
+        var numberToBuy = await dialog.GetReturnValueAsync<int?>();
+        if (numberToBuy > 0)
+        {
+            ExternalNavigationManager.NavigateToNewTab(new SteamBuyItemPageRequest() 
+            {
+                AppId = item.AppId.ToString(),
+                ItemDefinitionId = item.ItemDefinitionId.Value.ToString(),
+                Quantity = numberToBuy.Value
+            });
+        }
+    }
+
+    private void ViewItemStorePage(StoreItemDetailsDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamItemStoreDetailPageRequest() 
         {
@@ -686,25 +722,13 @@ else
         });
     }
 
-    private void BuyItemFromMarket(StoreItemDetailsDTO item)
+    private void ViewItemMarketPage(StoreItemDetailsDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
         {
             AppId = item.AppId.ToString(),
             MarketHashName = item.Name
         });
-    }
-    
-    private void ViewItemMarketPage(StoreItemDetailsDTO item)
-    {
-        if (item.IsMarketable)
-        {
-            ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
-            {
-                AppId = item.AppId.ToString(),
-                MarketHashName = item.Name
-            });
-        }
     }
 
     private void ViewItemWorkshopPage(StoreItemDetailsDTO item)

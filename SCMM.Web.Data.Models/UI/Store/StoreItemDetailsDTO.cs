@@ -12,6 +12,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public ulong? AssetDescriptionId { get; set; }
 
+        public ulong? ItemDefinitionId { get; set; }
+
         public ulong? WorkshopFileId { get; set; }
 
         public string WorkshopFileUrl { get; set; }

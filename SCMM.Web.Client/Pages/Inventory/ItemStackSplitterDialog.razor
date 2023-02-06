@@ -86,7 +86,7 @@
         </div>
     </DialogContent>
     <DialogActions>
-        <div class="mx-4 my-2">
+        <div class="d-flex gap-4 mx-4 my-2">
             <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
             <MudButton OnClick="SplitSelectedItemStacks" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@(IsSplitting ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
                        Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))">

@@ -1,0 +1,43 @@
+﻿@using SCMM.Web.Data.Models.UI.Store
+@inherits ResponsiveDialog
+@inject AppState State
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">Buy @Item?.Name</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" GutterBottom>
+            Enter the quantity you'd like to buy. You will be redirected to the offical @State.App.Name item store to complete the purchase.
+        </MudText>
+        <div class="mt-4">
+            <MudNumericField @bind-Value="Quantity" Label="Enter Quantity" Variant="Variant.Outlined" Min="1" Step="1" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="d-flex gap-4 mx-4 my-2">
+            <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+            <MudButton OnClick="@(() => this.Dialog.Close(Quantity))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-shopping-cart"
+                       Disabled="Quantity == null || Quantity < 1">
+                <span>Checkout</span>
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public StoreItemDetailsDTO Item { get; set; }
+
+    private int? Quantity { get; set; } = 1;
+
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Small;
+        options.FullWidth = true;
+        options.CloseButton = true;
+    }
+
+}
