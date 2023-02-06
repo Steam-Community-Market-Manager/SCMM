@@ -109,11 +109,27 @@ namespace SCMM.Steam.Data.Models.Enums
         Buff = 30,
 
         /*
+         * https://docs.waxpeer.com/?method=prices-get
+         * https://api.waxpeer.com/v1/prices?game=rust&minified=1
+        [Display(Name = "Waxpeer")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FFFFFF")]
+        [BuyFrom(Url = "https://waxpeer.com/rust/r/scmm?game={1}&sort=ASC&order=price&all=0&exact=0&search={3}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Crypto)] // Unconfirmed
+        Waxpeer = 31,
+        */
+
+        /*
+         * https://doc.shadowpay.com/docs/shadowpay/96108be6ddc1e-get-items-on-sale
+         * https://api.shadowpay.com/api/market/get_items?currency=USD&sort_column=price&sort_dir=asc&stack=false&offset=0&limit=50&sort=asc&game=rust
+        [Display(Name = "ShadowPay")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#005BBB")]
+        [BuyFrom(Url = "https://shadowpay.com/en/{1}-items?utm_campaign=e6PlQUT3mUC06NL&price_from=0&price_to=500&currency=USD&search={3}&sort_column=price&sort_dir=asc", AffiliateCode = "e6PlQUT3mUC06NL", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
+        ShadowPay = 32,
+        */
+
+        /*
         BUY:  https://lis-skins.ru/market/rust/
-        BUY:  https://waxpeer.com/rust
-        BUY:  https://shadowpay.com/en/rust-items
         BUY:  https://mannco.store/market
-        BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale
+        BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc
         BUY:  https://buff.market/ (is this an alias for https://buff.163.com/?)
         BUY:  https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
         BUY:  https://www.rustreaper.com/marketplace/RUST
