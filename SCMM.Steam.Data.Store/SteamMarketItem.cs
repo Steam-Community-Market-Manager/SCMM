@@ -714,7 +714,7 @@ namespace SCMM.Steam.Data.Store
             else if (!IsBeingManipulated &&
                 (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
                 (lowestSellOrderPrice > 100 && highestBuyOrderPrice > 0) && // Buy now price is greater than $1.00 USD
-                (lowestSellOrderPrice > (highestBuyOrderPrice * 2.5))) // The lowest sell order is 2.5x the the highest buy order
+                (lowestSellOrderPrice > (highestBuyOrderPrice * 3))) // The lowest sell order is 3x the the highest buy order
             {
                 ManipulationReason = $"Buy price is disproportional to sell price. The lowest sell order price is {lowestSellOrderPrice.ToPercentageString(highestBuyOrderPrice)} more expensive than the highest buy order. The discrepancy suggests that the items buy price is overinflated (price pump).";
                 IsBeingManipulated = true;
