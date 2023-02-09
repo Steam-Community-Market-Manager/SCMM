@@ -212,7 +212,7 @@ namespace SCMM.Steam.Data.Store
             var profit = (long) Math.Round(SellOrderLowestPrice - (SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier) - (BuyNowPrice + (includeFees ? BuyNowFee : 0)), 0);
             return (BuyNowPrice + (includeFees ? BuyNowFee : 0)) > 0 &&
                    (SellOrderLowestPrice > 0) &&
-                   (profit > 100 || profit > (SellOrderLowestPrice * 0.5)) /* Profit must be >1.00 USD or >50% of it's Steam value, otherwise it's not worth the effort */; 
+                   (profit > 100 || profit > (SellOrderLowestPrice * 0.5)) /* Profit must be >3.00 USD or >66% of it's Steam value, otherwise it's not worth the effort */; 
         }
 
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
@@ -694,33 +694,45 @@ namespace SCMM.Steam.Data.Store
                 (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
                 (medianSalesLastWeek > 5) && // weekly volume greater than 5
                 (lowestSellOrderPrice > 0 && highestBuyOrderPrice > 0 && medianPriceLastWeek > 0) && // price greater than zero
-                (lowestSellOrderPrice / (decimal)medianPriceLastWeek) > 2.5m) // 250% price spike vs median for the week
+                (lowestSellOrderPrice / (decimal)medianPriceLastWeek) > 3m) // 300% price spike vs median for the week
             {
-                ManipulationReason = $"Large spike in price. The current price is {lowestSellOrderPrice.ToPercentageString(medianPriceLastWeek)} higher than the median price over the last 7 days. This might be an attempt to buy out current market supply in order to artifically inflate the price.";
+                ManipulationReason = $"Sudden spike in price. The current price is {lowestSellOrderPrice.ToPercentageString(medianPriceLastWeek)} higher than the median price over the last 7 days. This might be an attempt to buy out current market supply in order to artificially inflate the price.";
                 IsBeingManipulated = true;
             }
 
             // Check for demand spike manipulations
             else if (!IsBeingManipulated &&
                 (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
-                (salesInLast24hrs > 10 && medianSalesLastWeek > 0) && // 24hr volume greater than 10
+                (salesInLast24hrs > 30 && medianSalesLastWeek > 0) && // 24hr volume greater than 30
                 (salesInLast24hrs / (decimal)medianSalesLastWeek) > 5m) // 500% volume spike vs median for the week
             {
-                ManipulationReason = $"Large increase in demand. Sales in the last 24hrs is {salesInLast24hrs.ToPercentageString(medianSalesLastWeek)} higher than the median number of sales over the last 7 days. This could be due to sudden demand driven by an influencer, meme, or change in the game meta.";
+                ManipulationReason = $"Sudden increase in demand. Sales in the last 24hrs is {salesInLast24hrs.ToPercentageString(medianSalesLastWeek)} higher than the median number of sales over the last 7 days. This could be an attempt to buy out current market supply in order to artificially inflate the price, or due to a natural increase in the items popularity (influencer, memes, exploits, meta change, etc).";
                 IsBeingManipulated = true;
             }
+
+            // Check for buy order pumps
+            else if (!IsBeingManipulated &&
+                (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
+                (lowestSellOrderPrice > 100 && highestBuyOrderPrice > 0) && // Buy now price is greater than $1.00 USD
+                (lowestSellOrderPrice > (highestBuyOrderPrice * 2.5))) // The lowest sell order is 2.5x the the highest buy order
+            {
+                ManipulationReason = $"Buy price is disproportional to sell price. The lowest sell order price is {lowestSellOrderPrice.ToPercentageString(highestBuyOrderPrice)} more expensive than the highest buy order. The discrepancy suggests that the items buy price is overinflated (price pump).";
+                IsBeingManipulated = true;
+            }
+
             /*
             // Check for supply buy out manipulations
             else if (!IsBeingManipulated &&
                 (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
                 (sellOrderCount > 0) &&
-                (salesInLast24hrs > 10 && medianSalesLastWeek > 0) && // 24hr volume greater than 10
+                (salesInLast24hrs > 30 && medianSalesLastWeek > 0) && // 24hr volume greater than 30
                 (salesInLast24hrs / (decimal)sellOrderCount) > 0.5m) // 50% supply has been purchased in the last 24hrs
             {
-                ManipulationReason = $"Large supply buy-out. {salesInLast24hrs.ToPercentageString(sellOrderCount)} of the current market supply has been purchased in the last 24hrs. This might be an attempt to artifically inflate the price by creating a supply shortage.";
+                ManipulationReason = $"Sudden supply buy-out. {salesInLast24hrs.ToPercentageString(sellOrderCount)} of the current market supply has been purchased in the last 24hrs. This might be an attempt to artifically inflate the price by creating a supply shortage.";
                 IsBeingManipulated = true;
             }
             */
+
             // Check if this item was previously manipulated, but is returning to normal market levels
             else if (IsBeingManipulated)
             {
