@@ -40,6 +40,23 @@ namespace SCMM.Shared.Data.Models.Extensions
             return value;
         }
 
+        public static string RemoveEmptyMarkup(this string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            string lastValue;
+            do
+            {
+                lastValue = value;
+                value = Regex.Replace(value, @"<[^>]*>\s*</[^>]*>", string.Empty).Trim();
+            } while (value != lastValue);
+
+            return value;
+        }
+
         public static string IsoCountryCodeToFlagEmoji(this string value)
         {
             if (String.IsNullOrEmpty(value))

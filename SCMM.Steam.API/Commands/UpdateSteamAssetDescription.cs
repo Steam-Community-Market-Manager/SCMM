@@ -540,6 +540,7 @@ namespace SCMM.Steam.API.Commands
                         if (!string.IsNullOrEmpty(breaksDown))
                         {
                             assetDescription.Description = assetDescription.Description.Replace(breaksDownMatchGroup[0].Value, string.Empty).Trim();
+                            assetDescription.Description = assetDescription.Description.Replace("Breaks down into", string.Empty).Trim();
                             assetDescription.IsBreakable = true;
                             assetDescription.BreaksIntoComponents = new PersistableAssetQuantityDictionary();
 
@@ -547,6 +548,7 @@ namespace SCMM.Steam.API.Commands
                             var componentMatches = Regex.Matches(breaksDown, @"(\d+)\s*x\s*([^\d\.\r\n\<]*)").OfType<Match>();
                             foreach (var componentMatch in componentMatches)
                             {
+                                assetDescription.Description = assetDescription.Description.Replace(componentMatch.Groups[0].Value, string.Empty).Trim();
                                 var componentQuantity = componentMatch.Groups[1].Value;
                                 var componentName = componentMatch.Groups[2].Value;
                                 if (!string.IsNullOrEmpty(componentName))
@@ -610,13 +612,17 @@ namespace SCMM.Steam.API.Commands
                             assetDescription.ItemType = Constants.RustItemTypeUnderwear;
                         }
                     }
-                    else
+
+                    // Remove all empty markup elements
+                    if (!String.IsNullOrEmpty(assetDescription.Description))
                     {
-                        // HACK: Facepunch messed up the LR300 item descriptions (they are empty), so try fill in the blanks
-                        if (assetDescription.ItemShortName == Constants.RustItemShortNameLR300 || assetDescription.Tags.Any(x => x.Value == Constants.RustItemShortNameLR300 || x.Value == Constants.RustItemTypeLR300))
-                        {
-                            assetDescription.ItemType = Constants.RustItemTypeLR300;
-                        }
+                        assetDescription.Description = assetDescription.Description.RemoveEmptyMarkup();
+                    }
+
+                    // HACK: Facepunch messed up the LR300 item descriptions (they are empty), so try fill in the blanks
+                    if (assetDescription.ItemShortName == Constants.RustItemShortNameLR300 || assetDescription.Tags.Any(x => x.Value == Constants.RustItemShortNameLR300 || x.Value == Constants.RustItemTypeLR300))
+                    {
+                        assetDescription.ItemType = Constants.RustItemTypeLR300;
                     }
 
                     // Parse asset item short name
