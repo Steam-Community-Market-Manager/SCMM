@@ -25,6 +25,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
                 {
                     var rnd = new Random();
                     proxies.AddRange(endpoints
+                        .Where(x => !String.IsNullOrEmpty(x.Address) && x.Port > 0)
                         .OrderBy(x => rnd.Next())
                         .Select(x => new WebProxyWithCooldown()
                         {
