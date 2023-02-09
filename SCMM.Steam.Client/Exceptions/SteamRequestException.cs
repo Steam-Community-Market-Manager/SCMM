@@ -44,6 +44,10 @@ namespace SCMM.Steam.Client.Exceptions
             StatusCode == HttpStatusCode.ProxyAuthenticationRequired
         );
 
+        public bool IsConnectionRefused => (
+            StatusCode == 0 && Message?.Contains("No connection could be made because the target machine actively refused it") == true
+        );
+
         public bool IsSteamAuthenticationRequired => (
             StatusCode == HttpStatusCode.BadRequest ||
             StatusCode == HttpStatusCode.Unauthorized ||

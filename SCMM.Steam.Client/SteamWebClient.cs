@@ -158,9 +158,9 @@ namespace SCMM.Steam.Client
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
-                // Check if the request failed due to missing proxy authentication
+                // Check if the request failed due to missing proxy authentication or failure to connect
                 // 407: ProxyAuthenticationRequired
-                if (ex.IsProxyAuthenticationRequired)
+                if (ex.IsProxyAuthenticationRequired || ex.IsConnectionRefused)
                 {
                     // Disable the current web proxy and rotate to the next proxy if possible
                     DisableWebProxyForHost(request?.Uri);
