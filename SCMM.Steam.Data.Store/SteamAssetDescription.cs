@@ -346,6 +346,16 @@ namespace SCMM.Steam.Data.Store
 
         public IEnumerable<ItemInteraction> GetInteractions()
         {
+            if (ClassId > 0)
+            {
+                yield return new ItemInteraction
+                {
+                    Icon = "fa-circle-info",
+                    Name = "View Item Details",
+                    Url = $"/item/{ClassId}"
+                };
+            }
+
             if (WorkshopFileId > 0)
             {
                 yield return new ItemInteraction
