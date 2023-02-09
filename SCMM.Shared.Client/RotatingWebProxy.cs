@@ -100,7 +100,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
             proxy.IncrementHostCooldown(address, cooldown);
             var newProxy = GetNextAvailableProxy(address);
             
-            _logger.LogWarning($"'{address?.Host}' has entered a {cooldown.TotalSeconds}s cooldown on '{proxy?.Address?.Host ?? "default"}' proxy. Requests will now rotate to '{newProxy?.Address?.Host ?? "default"}' proxy.");
+            _logger.LogDebug($"'{address?.Host}' has entered a {cooldown.TotalSeconds}s cooldown on '{proxy?.Address?.Host ?? "default"}' proxy. Requests will now rotate to '{newProxy?.Address?.Host ?? "default"}' proxy.");
 
             _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {
@@ -116,7 +116,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         if (proxy != null)
         {
             proxy.IsEnabled = false;
-            _logger.LogWarning($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled.");
+            _logger.LogDebug($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled.");
 
             _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {

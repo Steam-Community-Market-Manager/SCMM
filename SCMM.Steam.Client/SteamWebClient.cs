@@ -103,7 +103,7 @@ namespace SCMM.Steam.Client
                 if (retryAttempt > 1)
                 {
                     var delay = TimeSpan.FromSeconds(1);
-                    _logger.LogWarning($"Request is delaying for {delay.TotalSeconds} seconds (retry attempt: {retryAttempt})");
+                    _logger.LogDebug($"Request is delaying for {delay.TotalSeconds} seconds (retry attempt: {retryAttempt})");
                     await Task.Delay(delay);
                 }
 
@@ -141,7 +141,7 @@ namespace SCMM.Steam.Client
                         // This proxy is timing out too much, maybe it is offline? Rotate to the next proxy if possible
                         RotateWebProxyForHost(request?.Uri, cooldown: TimeSpan.FromHours(6));
                     }
-                    _logger.LogWarning($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
+                    _logger.LogDebug($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
