@@ -130,6 +130,12 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemManipulationDetectedMessage marketItem, IMessageContext context)
         {
+            // Only send alerts for new/active manipulations
+            if (!marketItem.IsBeingManipulated)
+            {
+                return;
+            }
+
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemManipulationDetected, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
@@ -147,7 +153,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 }
                 else
                 {
-                    description.Append($"Manipulation on this item appears to be settling, market activity has return to predictable levels.");
+                    description.Append($"Manipulation on this item appears to be settling, market activity has returned to predictable levels.");
                 }
 
                 return _client.SendMessageAsync(
