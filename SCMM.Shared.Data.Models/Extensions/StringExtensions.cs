@@ -4,6 +4,17 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class StringExtensions
     {
+        public static string Truncate(this string value, int maxLength)
+        {
+            if (maxLength <= 3)
+            {
+                return value;
+            }
+            return (value.Length >= maxLength)
+                ? value.Substring(0, maxLength - 3) + "..."
+                : value;
+        }
+
         public static string ToPlainText(this string value)
         {
             if (value == null)
