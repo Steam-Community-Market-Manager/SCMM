@@ -42,6 +42,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://market.swap.gg/{1}?r=iHUYPlp5ehjhrD5DXf0FF&search={3}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF", AcceptedPaymentTypes = PriceTypes.Cash)]
         SwapGGMarket = 13,
 
+        [Obsolete("Aggressive CloudFlare anti-scrapping policies")]
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F")]
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
@@ -85,6 +86,7 @@ namespace SCMM.Steam.Data.Models.Enums
         SkinsMonkey = 25,
 
         // TODO: Restricted to 60 items per query, slow
+        [Obsolete("Aggressive CloudFlare anti-scrapping policies")]
         [Display(Name = "Skin Swap")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FF4B4B")]
         [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
