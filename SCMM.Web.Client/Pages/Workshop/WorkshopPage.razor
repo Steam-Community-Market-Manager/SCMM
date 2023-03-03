@@ -41,9 +41,24 @@
                 @foreach (var group in WorkshopFileGroups)
                 {
                     <MudItem xs="12">
-                        <MudText Typo="Typo.h6" Color="Color.Default">
-                            <span>Week @group.Key <small class="mud-secondary-text">@group.Min(x => x.TimeCreated.Value).Date.ToShortDateString()</small></span>
-                        </MudText>
+                        <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center" Justify="Justify.FlexStart">
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.FlexStart">
+                                <MudText Typo="Typo.h6" Color="Color.Default">
+                                    <span>Week @group.Key</span>
+                                </MudText>
+                                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                    <span>@group.Min(x => x.TimeCreated.Value).Date.ToShortDateString()</span>
+                                </MudText>
+                            </MudStack>
+                            <MudDivider Vertical="true" FlexItem="true" />
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                <span>@group.Count() submissions</span>
+                            </MudText>
+                            <MudDivider Vertical="true" FlexItem="true" />
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                <span>@group.GroupBy(x => x.CreatorId).Count() unique authors</span>
+                            </MudText>
+                        </MudStack>
                         <MudDivider />
                     </MudItem>
                     @foreach (var item in group)
