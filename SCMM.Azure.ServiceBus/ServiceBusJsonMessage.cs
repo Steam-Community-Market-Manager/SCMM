@@ -7,12 +7,14 @@ namespace SCMM.Azure.ServiceBus;
 
 internal class ServiceBusJsonMessage<T> : ServiceBusMessage where T : class, IMessage
 {
+    public const int MaxMessageIdLength = 128;
+
     public ServiceBusJsonMessage(T body) : base(body.ToBinaryAsJson())
     {
         ApplicationProperties[ServiceBusConstants.ApplicationPropertyType] = body.GetType().AssemblyQualifiedName;
         if (!String.IsNullOrEmpty(body.Id))
         {
-            MessageId = body.Id.Truncate(128);
+            MessageId = body.Id.Truncate(MaxMessageIdLength);
         }
     }
 }

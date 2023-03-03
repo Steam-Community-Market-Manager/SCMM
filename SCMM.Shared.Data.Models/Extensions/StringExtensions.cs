@@ -6,11 +6,11 @@ namespace SCMM.Shared.Data.Models.Extensions
     {
         public static string Truncate(this string value, int maxLength)
         {
-            if (maxLength <= 3)
+            if (maxLength <= 3 || String.IsNullOrEmpty(value))
             {
                 return value;
             }
-            return (value.Length >= maxLength)
+            return (value.Length > maxLength)
                 ? value.Substring(0, maxLength - 3) + "..."
                 : value;
         }
