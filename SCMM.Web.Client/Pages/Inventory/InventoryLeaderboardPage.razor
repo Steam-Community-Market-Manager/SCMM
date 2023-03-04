@@ -31,73 +31,101 @@
             }
             <MudItem xs="12" md="6">
                 <StatisticsPanel Icon="fas fa-fw fa-trophy" Title="Highest Valued Inventories" Dense="true">
-                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
-                        <tbody>
-                            <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile">
-                                <ItemContent>
-                                    <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)">
-                                        <td>
-                                            <div class="d-flex flex-row justify-start align-center">
-                                                <MudText Typo="Typo.caption" Class="pr-2">#@profile.Rank.ToQuantityString()</MudText>
-                                                <img src="@(!String.IsNullOrEmpty(profile.SteamId) ? profile.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
-                                                <div class="d-flex flex-column">
-                                                    <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
-                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
-                                                        @if (profile.IsBanned)
-                                                        {
-                                                            <span class="no-wrap mud-error-text">
-                                                                <i class="fas fa-fw fa-ban"></i>
-                                                                <span> Banned </span>
-                                                            </span>
-                                                        }
-                                                        @if (profile.IsPrivate)
-                                                        {
-                                                            <span class="no-wrap mud-warning-text">
-                                                                <i class="fas fa-fw fa-lock"></i>
-                                                                <span> Private </span>
-                                                            </span>
-                                                        }
-                                                        @if (profile.IsBot)
-                                                        {
+                    <MudStack Reverse="MyInventoryRankIsBelowTheLine" Spacing="0">
+                        @if (MyInventoryRank != null)
+                        {
+                            <MudStack Row="true" @onclick="@((_) => ViewProfileInventory(MyInventoryRank.SteamId))" Class="clickable mud-theme-dark py-2 px-4">
+                                <div>
+                                    <div class="d-flex flex-row justify-start align-center">
+                                        <MudText Typo="Typo.caption" Class="pr-2">#@MyInventoryRank.Rank.ToQuantityString()</MudText>
+                                        <img src="@(!String.IsNullOrEmpty(MyInventoryRank.SteamId) ? MyInventoryRank.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
+                                        <div class="d-flex flex-column">
+                                            <MudText Typo="Typo.body2">@(MyInventoryRank.Name ?? "Anonymous User")</MudText>
+                                            <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                <span class="no-wrap">
+                                                    <i class="fas fa-fw fa-clock"></i>
+                                                    <span> Synced @((DateTimeOffset.Now - (MyInventoryRank.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1)) </span>
+                                                </span>
+                                            </MudText>
+                                        </div>
+                                    </div>
+                                </div>
+                                <MudSpacer />
+                                <div class="text-right">
+                                    <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(MyInventoryRank.Value)</MudText>
+                                    <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@MyInventoryRank.Items.ToQuantityString() items</small></MudText>
+                                </div>
+                            </MudStack>
+                            <MudDivider />
+                        }
+                        <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
+                            <tbody>
+                                <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile">
+                                    <ItemContent>
+                                        <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)" style="min-height:55px; max-height:55px; height:55px;">
+                                            <td>
+                                                <div class="d-flex flex-row justify-start align-center">
+                                                    <MudText Typo="Typo.caption" Class="pr-2">#@profile.Rank.ToQuantityString()</MudText>
+                                                    <img src="@(!String.IsNullOrEmpty(profile.SteamId) ? profile.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
+                                                    <div class="d-flex flex-column">
+                                                        <MudText Typo="Typo.body2">@(profile.Name ?? "Anonymous User")</MudText>
+                                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                            @if (profile.IsBanned)
+                                                            {
+                                                                <span class="no-wrap mud-error-text">
+                                                                    <i class="fas fa-fw fa-ban"></i>
+                                                                    <span> Banned </span>
+                                                                </span>
+                                                            }
+                                                            @if (profile.IsPrivate)
+                                                            {
+                                                                <span class="no-wrap mud-warning-text">
+                                                                    <i class="fas fa-fw fa-lock"></i>
+                                                                    <span> Private </span>
+                                                                </span>
+                                                            }
+                                                            @if (profile.IsBot)
+                                                            {
+                                                                <span class="no-wrap">
+                                                                    <i class="fas fa-fw fa-robot"></i>
+                                                                    <span> Bot </span>
+                                                                </span>
+                                                            }
                                                             <span class="no-wrap">
-                                                                <i class="fas fa-fw fa-robot"></i>
-                                                                <span> Bot </span>
+                                                                <i class="fas fa-fw fa-clock"></i>
+                                                                <span> Synced @((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1)) </span>
                                                             </span>
-                                                        }
-                                                        <span class="no-wrap">
-                                                            <i class="fas fa-fw fa-clock"></i>
-                                                            <span> Synced @((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1)) </span>
-                                                        </span>
-                                                    </MudText>
+                                                        </MudText>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
-                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
-                                        </td>
-                                    </tr>
-                                </ItemContent>
-                                <Placeholder>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex flex-row justify-start align-center">
-                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                                <div class="d-flex flex-column">
-                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
+                                            </td>
+                                            <td class="text-right">
+                                                <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
+                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
+                                            </td>
+                                        </tr>
+                                    </ItemContent>
+                                    <Placeholder>
+                                        <tr style="min-height:55px; max-height:55px; height:55px;">
+                                            <td>
+                                                <div class="d-flex flex-row justify-start align-center">
+                                                    <MudProgressCircular Indeterminate="true" Class="mr-4" Style="width:32px; height:32px;" />
+                                                    <div class="d-flex flex-column">
+                                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
-                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
-                                        </td>
-                                    </tr>
-                                </Placeholder>
-                            </Virtualize>
-                        </tbody>
-                    </MudSimpleTable>
+                                            </td>
+                                            <td class="text-right">
+                                                <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
+                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
+                                            </td>
+                                        </tr>
+                                    </Placeholder>
+                                </Virtualize>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudStack>
                 </StatisticsPanel>
             </MudItem>
             <MudItem xs="12" md="6">
@@ -106,7 +134,7 @@
                         <tbody>
                             <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)">
+                                    <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)" style="min-height:55px; max-height:55px; height:55px;">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@(!String.IsNullOrEmpty(profile.SteamId) ? profile.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:32px; height:32px;" />
@@ -149,10 +177,10 @@
                                     </tr>
                                 </ItemContent>
                                 <Placeholder>
-                                    <tr>
+                                    <tr style="min-height:55px; max-height:55px; height:55px;">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
-                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <MudProgressCircular Indeterminate="true" Class="mr-4" Style="width:32px; height:32px;" />
                                                 <div class="d-flex flex-column">
                                                     <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                                     <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
@@ -180,13 +208,17 @@
 
     private ProfileInventoryTotalsStatisticDTO Totals { get; set; }
 
+    private ProfileInventoryValueStatisticDTO MyInventoryRank { get; set; }
+
+    private bool MyInventoryRankIsBelowTheLine { get; set; } = true;
+
     protected override async Task OnLoadStateAsync()
     {
         Totals = await RestoreFromStateOrLoad(nameof(Totals), async () =>
         {
             try
             {
-                return await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsStatisticDTO>($"api/stats/profiles/inventories/totals");
+                return await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsStatisticDTO>($"api/stats/profiles/inventories/total");
             }
             catch (Exception ex)
             {
@@ -195,6 +227,22 @@
                 throw;
             }
         });
+        if (State.IsAuthenticated && State.Profile != null)
+        {
+            MyInventoryRank = await RestoreFromStateOrLoad(nameof(Totals), async () =>
+            {
+                try
+                {
+                    return await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryValueStatisticDTO>($"api/stats/profiles/inventories/myRank");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"Error profile inventory ranking");
+                    Snackbar.Add($"Unable to load profile inventory ranking. {ex.Message}", MudBlazor.Severity.Error);
+                    throw;
+                }
+            });
+        }
     }
 
     protected override Task OnPersistStateAsync()
@@ -215,7 +263,13 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/highestValueInventory?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/inventories/highestValue?start={request.StartIndex}&count={request.Count}");
+            if (response != null && MyInventoryRank != null)
+            {
+                MyInventoryRankIsBelowTheLine = (response.Start + (response.Count * 0.5)) <= MyInventoryRank.Rank;
+                StateHasChanged();
+            }
+
             return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -229,7 +283,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/mostRecentInventory?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/inventories/recentlyValued?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

@@ -599,14 +599,23 @@
             <response code="200">Paginated list of profiles matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfileInventoryTotals">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfileInventoriesTotal">
             <summary>
             Get profile inventory total statistics
             </summary>
             <response code="200">The totals across all profile inventories.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesHighestValueInventory(System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesInventoriesMyLeaderboardRank">
+            <summary>
+            Get your profile inventory rank
+            </summary>
+            <remarks>This API requires authentication</remarks>
+            <response code="200">The rank of your inventory.</response>
+            <response code="401">If the request is unauthenticated (login first).</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesInventoriesByHighestValue(System.Int32,System.Int32)">
             <summary>
             List profiles inventory values, sorted by highest value first
             </summary>
@@ -615,7 +624,7 @@
             <response code="200">Paginated list of profiles matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesMostRecentInventory(System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesInventoriesByMostRecentlyValued(System.Int32,System.Int32)">
             <summary>
             List profiles inventory values, sorted by most recently updated first
             </summary>

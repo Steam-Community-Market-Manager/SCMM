@@ -976,10 +976,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">The totals across all profile inventories.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("profiles/inventories/totals")]
+        [HttpGet("profiles/inventories/total")]
         [ProducesResponseType(typeof(ProfileInventoryTotalsStatisticDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProfileInventoryTotals()
+        public async Task<IActionResult> GetProfileInventoriesTotal()
         {
             var appId = this.App().Guid;
             var totals = await _db.SteamProfileInventoryValues
@@ -1004,6 +1004,47 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get your profile inventory rank
+        /// </summary>
+        /// <remarks>This API requires authentication</remarks>
+        /// <response code="200">The rank of your inventory.</response>
+        /// <response code="401">If the request is unauthenticated (login first).</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [Authorize(AuthorizationPolicies.User)]
+        [HttpGet("profiles/inventories/myRank")]
+        [ProducesResponseType(typeof(ProfileInventoryValueStatisticDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProfilesInventoriesMyLeaderboardRank()
+        {
+            var appId = this.App().Guid;
+            var profileId = this.User.Id();
+            var ranking = await _db.SteamProfileInventoryValues
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.ProfileId == profileId)
+                .Select(x => new ProfileInventoryValueStatisticDTO()
+                {
+                    Rank = 1 + _db.SteamProfileInventoryValues
+                        .Where(y => y.AppId == appId)
+                        .Where(y => y.MarketValue > x.MarketValue)
+                        .Count(),
+                    SteamId = x.Profile.SteamId,
+                    Name = x.Profile.Name,
+                    AvatarUrl = x.Profile.AvatarUrl,
+                    IsPrivate = x.Profile.Privacy != SteamVisibilityType.Public,
+                    IsBanned = x.Profile.IsTradeBanned,
+                    IsBot = x.Profile.Roles.Serialised.Contains(Roles.Bot),
+                    Items = x.Items,
+                    Value = x.MarketValue,
+                    LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
+                })
+                .SingleOrDefaultAsync();
+
+            ranking.Value = this.Currency().CalculateExchange(ranking.Value);
+            return Ok(ranking);
+        }
+
+        /// <summary>
         /// List profiles inventory values, sorted by highest value first
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -1011,10 +1052,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">Paginated list of profiles matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("profiles/highestValueInventory")]
+        [HttpGet("profiles/inventories/highestValue")]
         [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryValueStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProfilesHighestValueInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetProfilesInventoriesByHighestValue([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var appId = this.App().Guid;
             var query = _db.SteamProfileInventoryValues
@@ -1058,10 +1099,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">Paginated list of profiles matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("profiles/mostRecentInventory")]
+        [HttpGet("profiles/inventories/recentlyValued")]
         [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryValueStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProfilesMostRecentInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetProfilesInventoriesByMostRecentlyValued([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var appId = this.App().Guid;
             var query = _db.SteamProfileInventoryValues
