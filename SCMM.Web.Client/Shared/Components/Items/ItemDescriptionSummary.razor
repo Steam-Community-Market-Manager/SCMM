@@ -2,7 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
-<MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="full-height d-flex flex-column" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="true" Dense="true" OffsetY Disabled="State.IsPrerendering">
+<MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="full-height d-flex flex-column" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="true" Dense="true" Disabled="State.IsPrerendering">
     <ActivatorContent>
         <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
             @if (PurchasableItem != null && PurchasableItem.BuyNowFrom == MarketType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)

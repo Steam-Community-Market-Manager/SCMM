@@ -82,7 +82,7 @@
                             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
                                           Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
 					    </MudHidden>
-                        <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" OffsetY Disabled="State.IsPrerendering">
+                        <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
                             <MudMenuItem OnTouch="@ViewProfileOnSteam" OnClick="@ViewProfileOnSteam">
                                 <i class="fab fa-fw fa-steam mr-1"></i>
                                 <span>View on Steam</span>
