@@ -26,6 +26,7 @@ using SCMM.Market.Skinport.Client;
 using SCMM.Market.SkinsMonkey.Client;
 using SCMM.Market.SkinsMonkey.Client.Extensions;
 using SCMM.Market.SkinSwap.Client;
+using SCMM.Market.SkinSwap.Client.Extensions;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.Abstractions.Analytics;
@@ -188,6 +189,11 @@ public static class HostExtensions
             services.AddSingleton<LootFarmWebClient>();
             services.AddSingleton<RustTMWebClient>();
             services.AddSingleton<SkinBaronWebClient>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetSkinSwapConfiguration();
+            });
             services.AddSingleton<SkinSwapWebClient>();
             services.AddSingleton<SkinportWebClient>();
             services.AddSingleton<SkinsMonkeyWebClient>();

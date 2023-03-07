@@ -1,20 +1,26 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace SCMM.Market.SkinSwap.Client
 {
     public class SkinSwapWebClient : Shared.Client.WebClient
     {
-        private const string WebBaseUri = "https://skinswap.com/";
-        private const string ApiBaseUri = "https://skinswap.com/api/";
+        private const string ApiBaseUri = "https://skinswap.com/api";
 
-        public SkinSwapWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        private readonly SkinSwapConfiguration _configuration;
 
-        public async Task<IEnumerable<SkinSwapItem>> GetInventoryAsync(string appId, int offset)
+        public SkinSwapWebClient(SkinSwapConfiguration configuration, IWebProxy webProxy) : base(webProxy: webProxy)
         {
-            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebBaseUri)))
+            _configuration = configuration;
+            DefaultHeaders.Add("Accept", "application/json");
+        }
+
+        public async Task<IEnumerable<SkinSwapItem>> GetItemsAsync()
+        {
+            using (var client = BuildSkinsSwapClient())
             {
-                var url = $"{ApiBaseUri}site/inventory?appId={appId}&offset={offset}&sort=price-asc";
+                var url = $"{ApiBaseUri}/v1/items";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
@@ -23,5 +29,11 @@ namespace SCMM.Market.SkinSwap.Client
                 return responseJson?.Data;
             }
         }
+
+        private HttpClient BuildSkinsSwapClient() => BuildWebApiHttpClient(
+            authHeaderName: "Authorization",
+            authHeaderFormat: "Bearer {0}",
+            authKey: _configuration.ApiKey
+        );
     }
 }

@@ -85,8 +85,6 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinsMonkey = 25,
 
-        // TODO: Restricted to 60 items per query, slow
-        [Obsolete("Aggressive CloudFlare anti-scrapping policies")]
         [Display(Name = "Skin Swap")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FF4B4B")]
         [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed

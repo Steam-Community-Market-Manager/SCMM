@@ -50,6 +50,7 @@ public class UpdateMarketItemPricesFromSkinSwap
             return;
         }
 
+        var skinSwapItems = Enumerable.Empty<SkinSwapItem>();
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinSwap (appId: {app.SteamId})");
@@ -58,20 +59,12 @@ public class UpdateMarketItemPricesFromSkinSwap
             try
             {
                 stopwatch.Restart();
-                var skinSwapItems = new List<SkinSwapItem>();
-                var inventoryItemsResponse = (IEnumerable<SkinSwapItem>)null;
-                var offset = 0;
-                do
+
+                if (!skinSwapItems.Any())
                 {
-                    // TODO: Optimise this if/when the API allows it, 60 items per read is too slow
-                    // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    inventoryItemsResponse = await _skinSwapWebClient.GetInventoryAsync(app.SteamId, offset);
-                    if (inventoryItemsResponse?.Any() == true)
-                    {
-                        skinSwapItems.AddRange(inventoryItemsResponse);
-                    }
-                    offset += (inventoryItemsResponse?.Count() ?? 0);
-                } while (inventoryItemsResponse != null && inventoryItemsResponse.Count() > 0);
+                    skinSwapItems = await _skinSwapWebClient.GetItemsAsync();
+                }
+                var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
 
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
@@ -83,7 +76,6 @@ public class UpdateMarketItemPricesFromSkinSwap
                     })
                     .ToListAsync();
 
-                var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
                 foreach (var skinSwapItemGroup in skinSwapItemGroups)
                 {
                     var item = items.FirstOrDefault(x => x.Name == skinSwapItemGroup.Key)?.Item;
@@ -92,7 +84,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                         var supply = skinSwapItemGroup.Sum(x => x.Amount);
                         item.UpdateBuyPrices(MarketType.SkinSwap, new PriceWithSupply
                         {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => (decimal) x.TradePrice / usdCurrency.ExchangeRateMultiplier)) : 0,
+                            Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => (decimal) x.Price / usdCurrency.ExchangeRateMultiplier)) : 0,
                             Supply = supply
                         });
                     }
