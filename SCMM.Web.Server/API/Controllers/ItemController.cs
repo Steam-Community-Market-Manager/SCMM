@@ -190,6 +190,22 @@ namespace SCMM.Web.Server.API.Controllers
             // Sort
             if (!String.IsNullOrEmpty(sortBy))
             {
+                if (sortBy.Contains("MarketItem"))
+                {
+                    query = query.Where(x => x.MarketItem != null);
+                    if (sortBy.Contains("Price"))
+                    {
+                        query = query.Where(x => x.MarketItem.SellOrderLowestPrice > 0);
+                    }
+                }
+                if (sortBy.Contains("StoreItem"))
+                {
+                    query = query.Where(x => x.StoreItem != null);
+                    if (sortBy.Contains("Price"))
+                    {
+                        query = query.Where(x => x.StoreItem.Price > 0);
+                    }
+                }
                 if (String.Equals(sortBy, "PriceMovement", StringComparison.OrdinalIgnoreCase))
                 {
                     query = query.OrderByDirection(x => (x.MarketItem.SellOrderLowestPrice - x.StoreItem.Price) ?? 0, sortDirection);
