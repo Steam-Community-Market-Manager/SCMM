@@ -68,9 +68,10 @@ namespace SCMM.Steam.API.Commands
                 var emissionMapFiles = new List<ZipArchiveEntry>();
 
                 // Analyse the icon file (if present)
-                var iconFile = workshopFileZip.Entries.FirstOrDefault(
-                    x => Regex.IsMatch(x.Name, @"(icon[^\.]*|thumb|thumbnail|template|preview)\s*[0-9]*\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase)
-                );
+                var iconFile = workshopFileZip.Entries
+                    .Where(x => Regex.IsMatch(x.Name, @"(icon[^\.]*|thumb|thumbnail|template|preview)\s*[0-9]*\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase))
+                    .OrderBy(x => x.Name.Length)
+                    .FirstOrDefault();
                 if (iconFile != null)
                 {
                     var iconAlreadyAnalysed = blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !request.Force;
@@ -271,7 +272,7 @@ namespace SCMM.Steam.API.Commands
                 }
                 if (glowRatio != null)
                 {
-                    assetDescription.GlowRatio = glowRatio;
+                    assetDescription.GlowRatio = Math.Max(0, Math.Min(Math.Round(glowRatio ?? 0, 4), 0.9999m));
                 }
                 if (hasCutout != null)
                 {
@@ -279,7 +280,7 @@ namespace SCMM.Steam.API.Commands
                 }
                 if (cutoutRatio != null)
                 {
-                    assetDescription.CutoutRatio = cutoutRatio;
+                    assetDescription.CutoutRatio = Math.Max(0, Math.Min(Math.Round(cutoutRatio ?? 0, 4), 0.9999m));
                 }
                 if (accentColour != null)
                 {

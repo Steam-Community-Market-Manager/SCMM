@@ -10,7 +10,7 @@ namespace SCMM.Steam.API.Extensions
             var alphaCutoffValue = (uint)Math.Round(alphaCutoff * 255, 0);
             var totalPixelCount = image.Width * image.Height;
             var transparentPixelCount = 0L;
-            for (var x = 0; x < image.Width; x += 4)
+            for (var x = 0; x < image.Width; x++)
             {
                 for (var y = 0; y < image.Height; y++)
                 {
@@ -30,22 +30,22 @@ namespace SCMM.Steam.API.Extensions
         public static decimal GetEmissionRatio(this Image<Rgba32> image)
         {
             var totalPixelCount = image.Width * image.Height;
-            var nonBlackPixelCount = 0L;
-            for (var x = 0; x < image.Width; x += 4)
+            var emissivePixelCount = 0L;
+            for (var x = 0; x < image.Width; x++)
             {
                 for (var y = 0; y < image.Height; y++)
                 {
                     var pixel = image[x, y];
-                    if (pixel.R != 0 || pixel.G != 0 || pixel.B != 0)
+                    if (pixel.R > 0 || pixel.G > 0 || pixel.B > 0)
                     {
-                        nonBlackPixelCount++;
+                        emissivePixelCount++;
                     }
                 }
             }
 
-            return nonBlackPixelCount > 0 && totalPixelCount > 0
-                ? nonBlackPixelCount / (decimal)totalPixelCount
-                : nonBlackPixelCount > 0 ? 1 : 0;
+            return emissivePixelCount > 0 && totalPixelCount > 0
+                ? emissivePixelCount / (decimal)totalPixelCount
+                : emissivePixelCount > 0 ? 1 : 0;
         }
     }
 }
