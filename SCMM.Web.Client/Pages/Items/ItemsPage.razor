@@ -248,9 +248,22 @@
 
     protected override void OnInitialized()
     {
-        SortBy = nameof(ItemDescriptionWithPriceDTO.TimeAccepted);
-        SortDirection = Data.Models.SortDirection.Descending.ToString();
-        Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Data.Models.SortDirection.Descending);
+        if (String.IsNullOrEmpty(SortBy))
+        {
+            SortBy = nameof(ItemDescriptionWithPriceDTO.TimeAccepted);
+        }
+        if (String.IsNullOrEmpty(SortDirection))
+        {
+            SortDirection = Data.Models.SortDirection.Descending.ToString();
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!String.IsNullOrEmpty(SortBy) && !String.IsNullOrEmpty(SortDirection))
+        {
+            Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Enum.Parse<Data.Models.SortDirection>(SortDirection, true));
+        }
     }
 
     protected override async Task OnLoadStateAsync()
