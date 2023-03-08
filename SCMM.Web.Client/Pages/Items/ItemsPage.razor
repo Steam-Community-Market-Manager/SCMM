@@ -184,6 +184,10 @@
 
     [Parameter]
     [SupplyParameterFromQuery]
+    public string BreaksIntoComponent { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
     public bool Glow { get; set; }
 
     [Parameter]
@@ -326,7 +330,7 @@
 
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
                 $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}" +
-                $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}" +
+                $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&breaksIntoComponent={Uri.EscapeDataString(BreaksIntoComponent ?? String.Empty)}" +
                 $"&glow={(Glow ? true : (bool?)null)}&glowsight={(Glowsight ? true : (bool?)null)}&cutout={(Cutout ? true : (bool?)null)}&craftable={(Craftable ? true : (bool?)null)}" +
                 $"&specialDrop={(SpecialDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +
                 $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}"

@@ -48,6 +48,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="type">If specified, only items matching the supplied item type are returned</param>
         /// <param name="collection">If specified, only items matching the supplied item collection are returned</param>
         /// <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
+        /// <param name="breaksIntoComponent">If specified, item items that break in to this component are returned</param>
         /// <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
@@ -75,7 +76,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null,
+        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null,
                                                   [FromQuery] bool? glow = null, [FromQuery] bool? glowsight = null, [FromQuery] bool? cutout = null, [FromQuery] bool? commodity = null, [FromQuery] bool? marketable = null, [FromQuery] bool? tradable = null,
                                                   [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? specialDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? craftable = null,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
@@ -129,6 +130,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (creatorId != null)
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()));
+            }
+            if (!String.IsNullOrEmpty(breaksIntoComponent))
+            {
+                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains(breaksIntoComponent));
             }
             if (glow != null)
             {
