@@ -287,7 +287,14 @@
 
     private void OnItemClicked(IItemDescription item)
     {
-        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Id}");
+        if (item.Id > 0)
+        {
+            ExternalNavigationManager.NavigateToNewTab($"/item/{item.Id}");
+        }
+        else
+        {
+            ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");
+        }
     }
 
     private void OnSearch(string text)
