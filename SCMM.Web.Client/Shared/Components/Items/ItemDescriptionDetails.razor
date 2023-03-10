@@ -283,6 +283,17 @@
                                 </span>
                             </MudText>
                         }
+                        @if (Item.TimeCreated != null && Item.TimeAccepted != null)
+                        {
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                <i class="fas fa-fw fa-stopwatch mud-secondary-text"></i>
+                                <span>
+                                    <span class="mud-secondary-text">Waited </span>
+                                <span>@((Item.TimeAccepted.Value - Item.TimeCreated.Value).ToDurationString(maxGranularity: 2))</span>
+                                    <span class="mud-secondary-text"> to be accepted</span>
+                                </span>
+                            </MudText>
+                        }
                         @if (Item.Id > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="pt-2" GutterBottom>

@@ -294,6 +294,17 @@ else if (StoreList.Any())
                                                     </span>
                                                 </MudText>
                                             }
+                                            @if (item.TimeCreated != null && item.TimeAccepted != null)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-stopwatch mud-secondary-text"></i>
+                                                    <span>
+                                                        <span class="mud-secondary-text">Waited </span>
+                                                        <span>@((item.TimeAccepted.Value - item.TimeCreated.Value).ToDurationString(maxGranularity: 2))</span>
+                                                        <span class="mud-secondary-text"> to be accepted</span>
+                                                    </span>
+                                                </MudText>
+                                            }
                                             @if (item.Notes != null)
                                             {
                                                 @foreach (var note in item.Notes)
