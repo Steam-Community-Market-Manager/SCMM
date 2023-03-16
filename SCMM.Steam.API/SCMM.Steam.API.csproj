@@ -11,7 +11,7 @@
     <PackageReference Include="CommandQuery" Version="1.0.0" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
     <PackageReference Include="SteamWebAPI2" Version="4.4.0" />
-	<PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+	<PackageReference Include="SixLabors.ImageSharp" Version="3.0.0" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
 	<PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta19" />
   </ItemGroup>
