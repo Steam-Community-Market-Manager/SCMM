@@ -113,6 +113,7 @@
         {
             try
             {
+                // TODO: Convert to service
                 return String.IsNullOrEmpty(State.Profile?.SteamId) ? null :
                     await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
                         $"api/profile/{State.Profile?.SteamId}/inventory/total"

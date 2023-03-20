@@ -302,6 +302,7 @@ public class AppState : INotifyPropertyChanged
     {
         try
         {
+            // TODO: Convert to service
             _profile = await http.GetFromJsonWithDefaultsAsync<MyProfileDTO>(
                 $"api/profile"
             );

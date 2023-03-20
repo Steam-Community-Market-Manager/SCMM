@@ -48,6 +48,7 @@
         {
             try
             {
+                // TODO: Convert to service
                 return await Http.GetFromJsonWithDefaultsAsync<AppDetailedDTO[]>($"api/app?detailed=true");
             }
             catch (Exception ex)

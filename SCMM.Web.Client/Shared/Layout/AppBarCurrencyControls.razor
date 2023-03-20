@@ -37,6 +37,7 @@
         {
             try
             {
+                // TODO: Convert to service
                 return await Http.GetFromJsonWithDefaultsAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
             }
             catch (Exception ex)
