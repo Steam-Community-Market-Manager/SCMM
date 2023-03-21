@@ -8,6 +8,6 @@
 
         public string Name { get; set; }
 
-        public ItemMarketPriceDTO[] Prices { get; set; }
+        public ItemBasicMarketPriceDTO[] Prices { get; set; }
     }
 }

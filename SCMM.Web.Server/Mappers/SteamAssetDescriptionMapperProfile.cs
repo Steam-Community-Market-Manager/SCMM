@@ -92,6 +92,9 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Name))
                 .ForMember(x => x.Prices, o => o.MapFromAssetBuyPrices(p => p));
 
+            CreateMap<MarketPrice, ItemBasicMarketPriceDTO>()
+                .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Currency));
+
             CreateMap<MarketPrice, ItemMarketPriceDTO>()
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Currency));
 

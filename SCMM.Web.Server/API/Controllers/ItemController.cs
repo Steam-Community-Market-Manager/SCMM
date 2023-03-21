@@ -734,27 +734,47 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List the price(s) of all items
         /// </summary>
-        /// <param name="includeAllMarkets">If true, item prices from all markets will be included. If false, only the cheapest market item price will be returned. Default is false. </param>
-        /// <response code="200">If <paramref name="includeAllMarkets"/> is <code>true</code>, the response will be a list of <see cref="ItemMarketPricesDTO"/>. If <code>false</code>, the response will be a list of <see cref="ItemBestMarketPriceDTO"/></response>
+        /// <param name="markets">If specified, only item prices from these markets will be returned.</param>
+        /// <response code="200">If <paramref name="markets"/> is <code>non-null</code>, the response will be a list of <see cref="ItemMarketPricesDTO"/>. If <code>null</code>, the response will be a list of <see cref="ItemBestMarketPriceDTO"/></response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("prices")]
         [ProducesResponseType(typeof(IEnumerable<ItemBestMarketPriceDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<ItemMarketPricesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemPrices([FromQuery] bool includeAllMarkets = false)
+        public async Task<IActionResult> GetItemPrices([FromQuery] MarketType[] markets = null)
         {
             var appId = this.App().Guid;
-            var items = await _db.SteamAssetDescriptions
+            var query = (IQueryable<SteamAssetDescription>) _db.SteamAssetDescriptions
                 .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .Where(x => x.AppId == appId && x.ClassId > 0)
+                .Include(x => x.App);
+
+            markets ??= new MarketType[0];
+            if (markets.Length == 0 || markets.Contains(MarketType.SteamStore))
+            {
+                query = query.Include(x => x.StoreItem).ThenInclude(x => x.Currency);
+            }
+            if (markets.Length == 0 || markets.Any(x => x >= MarketType.SteamCommunityMarket))
+            {
+                query = query.Include(x => x.MarketItem).ThenInclude(x => x.Currency);
+            }
+
+            var items = await query
                 .OrderBy(x => x.ClassId)
                 .ToArrayAsync();
 
-            return Ok(includeAllMarkets
+            if(markets.Length > 0)
+            {
+                foreach (var item in items.Where(x => x.MarketItem != null))
+                {
+                    item.MarketItem.BuyPrices = new Steam.Data.Store.Types.PersistableMarketPriceDictionary(
+                        item.MarketItem.BuyPrices.Where(x => markets.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value)
+                    );
+                }
+            }
+
+            return Ok(markets.Length > 0
                 ? _mapper.Map<SteamAssetDescription, ItemMarketPricesDTO>(items, this)
                 : _mapper.Map<SteamAssetDescription, ItemBestMarketPriceDTO>(items, this)
             );

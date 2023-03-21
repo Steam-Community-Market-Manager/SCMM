@@ -1,4 +1,6 @@
-﻿namespace SCMM.Web.Data.Models.UI.Item
+﻿using SCMM.Steam.Data.Models.Enums;
+
+namespace SCMM.Web.Data.Models.UI.Item
 {
     public class ItemBestMarketPriceDTO
     {
