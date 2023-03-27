@@ -171,6 +171,9 @@
             <summary>
             List the price(s) of all items
             </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
             <param name="markets">If specified, only item prices from these markets will be returned.</param>
             <response code="200">If <paramref name="markets"/> is <code>non-null</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemMarketPricesDTO"/>. If <code>null</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemBestMarketPriceDTO"/></response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -253,6 +256,7 @@
             Get Steam profile inventory and calculate the market value
             </summary>
             <remarks>
+            Investment totals are only returned if you are authorised to view the specified steam account. 
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             Inventory mosaic images automatically expire after 7 days; After which, the URL will return a 404 response.
             </remarks>

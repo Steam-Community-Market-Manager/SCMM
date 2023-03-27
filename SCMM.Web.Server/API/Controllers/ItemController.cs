@@ -734,6 +734,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List the price(s) of all items
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
         /// <param name="markets">If specified, only item prices from these markets will be returned.</param>
         /// <response code="200">If <paramref name="markets"/> is <code>non-null</code>, the response will be a list of <see cref="ItemMarketPricesDTO"/>. If <code>null</code>, the response will be a list of <see cref="ItemBestMarketPriceDTO"/></response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>

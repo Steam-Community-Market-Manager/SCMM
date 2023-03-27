@@ -340,6 +340,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get Steam profile inventory and calculate the market value
         /// </summary>
         /// <remarks>
+        /// Investment totals are only returned if you are authorised to view the specified steam account. 
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// Inventory mosaic images automatically expire after 7 days; After which, the URL will return a 404 response.
         /// </remarks>
@@ -435,6 +436,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             await _db.SaveChangesAsync();
 
+            var canSeeInvestmentTotals = (User.Is(profile.Id) || User.IsInRole(Roles.Administrator));
             return Ok(
                 new ProfileInventoryValueDTO()
                 {
@@ -443,9 +445,9 @@ namespace SCMM.Web.Server.API.Controllers
                     AvatarUrl = profile.AvatarUrl,
                     InventoryMosaicUrl = inventoryThumbnailImageUrl,
                     Items = inventoryTotals.Items,
-                    Invested = inventoryTotals.Invested,
-                    InvestmentGains = inventoryTotals.InvestmentGains,
-                    InvestmentLosses = inventoryTotals.InvestmentLosses,
+                    Invested = canSeeInvestmentTotals ? inventoryTotals.Invested : null,
+                    InvestmentGains = canSeeInvestmentTotals ? inventoryTotals.InvestmentGains : null,
+                    InvestmentLosses = canSeeInvestmentTotals ? inventoryTotals.InvestmentLosses : null,
                     MarketValue = inventoryTotals.MarketValue,
                     MarketMovementValue = inventoryTotals.MarketMovementValue,
                     MarketMovementTime = inventoryTotals.MarketMovementTime,
@@ -477,17 +479,37 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("ID is invalid");
             }
 
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
+            {
+                Id = id
+            });
+            if (resolvedId?.Exists != true || resolvedId.ProfileId == null)
+            {
+                return NotFound("Profile not found");
+            }
+
             var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
-                ProfileId = id,
+                ProfileId = resolvedId.ProfileId.ToString(),
                 AppId = this.App().Id.ToString(),
                 CurrencyId = this.Currency().Id.ToString()
             });
 
             await _db.SaveChangesAsync();
 
+            var canSeeInvestmentTotals = (User.Is(resolvedId.ProfileId.Value) || User.IsInRole(Roles.Administrator));
             return Ok(
-                _mapper.Map<CalculateSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>(inventoryTotals, this)
+                new ProfileInventoryTotalsDTO()
+                {
+                    Items = inventoryTotals.Items,
+                    Invested = canSeeInvestmentTotals ? inventoryTotals.Invested : null,
+                    InvestmentGains = canSeeInvestmentTotals ? inventoryTotals.InvestmentGains : null,
+                    InvestmentLosses = canSeeInvestmentTotals ? inventoryTotals.InvestmentLosses : null,
+                    InvestmentNetReturn = canSeeInvestmentTotals ? inventoryTotals.InvestmentNetReturn : null,
+                    MarketValue = inventoryTotals.MarketValue,
+                    MarketMovementValue = inventoryTotals.MarketMovementValue,
+                    MarketMovementTime = inventoryTotals.MarketMovementTime,
+                }
             );
         }
 

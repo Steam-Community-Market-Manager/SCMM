@@ -66,11 +66,14 @@
                                 <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Performance" Disabled="@((!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator)) || State.IsPrerendering)">
-                            <MudPaper Outlined="true">
-                                <InventoryInvestmentPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
-                            </MudPaper>
-                        </MudTabPanel>
+                        @if (State.Is(Profile?.SteamId) || State.IsInRole(Roles.Administrator))
+                        {
+                            <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Performance" Disabled="State.IsPrerendering">
+                                <MudPaper Outlined="true">
+                                    <InventoryInvestmentPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
+                                </MudPaper>
+                            </MudTabPanel>
+                        }
                         <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
                                 <InventoryStatisticsPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
