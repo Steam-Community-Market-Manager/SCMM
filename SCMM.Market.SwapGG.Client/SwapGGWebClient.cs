@@ -19,7 +19,7 @@ namespace SCMM.Market.SwapGG.Client
         /// <returns></returns>
         public async Task<IEnumerable<SwapGGTradeItem>> GetTradeBotInventoryAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
+            using (var client = BuildWebApiHttpClient(host: new Uri(TradeApiBaseUri)))
             {
                 var url = $"{TradeApiBaseUri}inventory/bot/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
