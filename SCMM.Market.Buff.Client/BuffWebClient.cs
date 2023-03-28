@@ -17,7 +17,7 @@ namespace SCMM.Market.Buff.Client
 
         public async Task<BuffMarketGoodsResponse> GetMarketGoodsAsync(string appName, int page = 1, int pageSize = MaxPageLimit)
         {
-            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebBaseUri)))
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebBaseUri)))
             {
                 var url = $"{ApiBaseUri}market/goods?game={appName.ToLower()}&page_num={page}&page_size={pageSize}&sort_by=price.desc&trigger=undefined_trigger&_={Random.Shared.NextInt64(1000000000000L, 9999999999999L)}";
                 var response = await client.GetAsync(url);

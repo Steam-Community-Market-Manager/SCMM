@@ -26,7 +26,7 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> PostMarketplaceSearchAsync(string appId, int page = 0)
         {
-            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebsiteBaseUri)))
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
             {
                 var url = $"{WebsiteBaseUri}ajax/marketplace-search";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
@@ -45,7 +45,7 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebsiteBaseUri)))
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
             {
                 var url = $"{WebsiteBaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {

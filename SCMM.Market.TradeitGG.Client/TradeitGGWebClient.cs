@@ -24,7 +24,7 @@ namespace SCMM.Market.TradeitGG.Client
         [Obsolete("This API might stop working at any point, use GetNewInventoryDataAsync() instead")]
         public async Task<IEnumerable<TradeitGGItem>> GetOldInventoryAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient(referer: new Uri(OldWebsiteBaseUri)))
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(OldWebsiteBaseUri)))
             {
                 var url = $"{InventoryBaseUri}sinv/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
@@ -54,7 +54,7 @@ namespace SCMM.Market.TradeitGG.Client
         /// <returns></returns>
         public async Task<IDictionary<TradeitGGItem, int>> GetNewInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
-            using (var client = BuildWebBrowserHttpClient(referer: new Uri(WebsiteBaseUri)))
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
             {
                 try
                 {

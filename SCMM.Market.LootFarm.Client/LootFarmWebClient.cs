@@ -20,7 +20,7 @@ namespace SCMM.Market.LootFarm.Client
         /// <returns></returns>
         public async Task<IEnumerable<LootFarmItemPrice>> GetItemPricesAsync(string appName)
         {
-            using (var client = BuildWebBrowserHttpClient(referer: new Uri(BaseUri)))
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(BaseUri)))
             {
                 if (String.Equals(appName, "CSGO", StringComparison.InvariantCultureIgnoreCase))
                 {

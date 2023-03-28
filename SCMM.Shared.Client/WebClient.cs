@@ -71,14 +71,15 @@ public class WebClient : IDisposable
         return httpClient;
     }
 
-    protected HttpClient BuildWebApiHttpClient()
-    {
-        return BuildWebApiHttpClient(null, null, null);
-    }
-
-    protected HttpClient BuildWebApiHttpClient(string authHeaderName, string authHeaderFormat, string authKey = null)
+    protected HttpClient BuildWebApiHttpClient(Uri host = null, string authHeaderName = null, string authHeaderFormat = null, string authKey = null)
     {
         var httpClient = BuildHttpClient();
+
+        if (host != null)
+        {
+            httpClient.DefaultRequestHeaders.Host = host.Host;
+        }
+
         if (!string.IsNullOrEmpty(authHeaderName) && !string.IsNullOrEmpty(authHeaderFormat) && !string.IsNullOrEmpty(authKey))
         {
             if (!httpClient.DefaultRequestHeaders.Contains(authHeaderName))
@@ -90,7 +91,7 @@ public class WebClient : IDisposable
         return httpClient;
     }
 
-    protected HttpClient BuildWebBrowserHttpClient(Uri referer = null)
+    protected HttpClient BuildWebBrowserHttpClient(Uri referrer = null)
     {
         var httpClient = BuildHttpClient();
 
@@ -111,10 +112,11 @@ public class WebClient : IDisposable
             httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         }
 
-        if (referer != null)
+        if (referrer != null)
         {
             // We made this request from your website, honest...
-            httpClient.DefaultRequestHeaders.Referrer = referer;
+            httpClient.DefaultRequestHeaders.Host = referrer.Host;
+            httpClient.DefaultRequestHeaders.Referrer = referrer;
         }
 
         return httpClient;
