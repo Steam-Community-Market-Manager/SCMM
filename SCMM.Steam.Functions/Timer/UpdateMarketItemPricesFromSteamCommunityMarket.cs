@@ -2,7 +2,6 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.API.Commands;
@@ -14,7 +13,6 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using SteamWebAPI2.Interfaces;
 using System.Diagnostics;
 namespace SCMM.Steam.Functions.Timer;
 
@@ -33,7 +31,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
         _commandProcessor = commandProcessor;
     }
 
-    [Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
+    //[Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
     public async Task Run([TimerTrigger("0 0 0/12 * * *")] /* every 12 hours */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Steam-Community-Market");
