@@ -60,6 +60,8 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsMarketplace = 16,
 
+        // TODO: Needs updating
+        [Obsolete]
         [Display(Name = "Skin Baron")]
         [Market(Constants.CSGOAppId, Color = "#2A2745")]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", AcceptedPaymentTypes = PriceTypes.Cash)]
