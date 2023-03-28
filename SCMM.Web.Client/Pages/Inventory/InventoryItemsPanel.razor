@@ -51,9 +51,19 @@ else
     </div>
     @if (SelectedInventoryItems != null && SelectedInventoryItems.Any(x => x.Value) && State.Is(SteamId))
     {
-        <div class="multi-select-actions d-flex flex-row justify-center align-center pa-2 mud-appbar">
-            <MudButton OnClick="ClearItemSelection" Variant="Variant.Outlined" Color="Color.Secondary" Class="mx-1" Disabled="State.IsPrerendering">Clear</MudButton>
-            <MudButton OnClick="SellSelectedItemsOnMarket" Variant="Variant.Filled" Color="Color.Success" StartIcon="fa fa-fw fa-hand-holding-usd" Class="mx-1" Disabled="State.IsPrerendering">Multi-sell</MudButton>
+        <div class="multi-select-actions mud-appbar pa-2">
+            <MudStack Spacing="2" Justify="Justify.Center" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.body2">
+                    @{
+                        var selectedItemTotals = GetSelectedItemsTotals();
+                    }
+                    <span><strong>@selectedItemTotals.Item1</strong> item(s) selected, worth a total of <strong>@State.Currency.ToPriceString(selectedItemTotals.Item2)</strong></span>
+                </MudText>
+                <MudStack Spacing="2" Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center">
+                    <MudButton OnClick="ClearItemSelection" Variant="Variant.Outlined" Color="Color.Secondary" Class="mx-1" Disabled="State.IsPrerendering">Clear</MudButton>
+                    <MudButton OnClick="SellSelectedItemsOnMarket" Variant="Variant.Filled" Color="Color.Success" StartIcon="fa fa-fw fa-hand-holding-usd" Class="mx-1" Disabled="State.IsPrerendering">Multi-sell</MudButton>
+                </MudStack>
+            </MudStack>
         </div>
     }
 }
@@ -110,6 +120,15 @@ else
         {
             StateHasChanged();
         }
+    }
+
+    private Tuple<int, long> GetSelectedItemsTotals()
+    {
+        var selectedItems = InventoryItems.Where(x => SelectedInventoryItems.Any(y => y.Key == x.Id && y.Value == true)).ToArray();
+        return new Tuple<int, long>(
+            selectedItems.Sum(x => x.Quantity),
+            selectedItems.Sum(x => (x.BuyNowPrice ?? 0) * x.Quantity)
+        );
     }
 
     private void ClearItemSelection()
