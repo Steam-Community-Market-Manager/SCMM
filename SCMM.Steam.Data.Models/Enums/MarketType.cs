@@ -92,19 +92,19 @@ namespace SCMM.Steam.Data.Models.Enums
 
         // TODO: Restricted to 100 items per query, slow
         [Display(Name = "DMarket")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#8dd294")]
+        [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=exchange&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         DMarket = 28,
 
         // TODO: Restricted to 100 items per query, slow
         [Display(Name = "DMarket - Face2Face")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#8dd294")]
+        [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=f2fOffers&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         DMarketF2F = 29,
 
         // TODO: Restricted to 80 items per query, slow
         [Display(Name = "BUFF")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FFFFFF")]
+        [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#FFFFFF")]
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}", AcceptedPaymentTypes = PriceTypes.Cash)] // Unconfirmed
         Buff = 30,
 

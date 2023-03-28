@@ -142,9 +142,9 @@ namespace SCMM.Discord.Bot.Server.Modules
                     Start = paginationStart,
                     Count = paginationCount
                 }, useCache: false);
-                paginationStart += paginationCount;
+                paginationStart += searchResults.Results?.Count ?? 0;
 
-                if (searchResults?.Success == true && searchResults.Results != null)
+                if (searchResults?.Success == true && searchResults?.Results?.Count > 0)
                 {
                     var importedAssetDescriptions = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionsRequest()
                     {
