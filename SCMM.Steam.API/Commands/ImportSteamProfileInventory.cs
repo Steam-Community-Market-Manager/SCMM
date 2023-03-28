@@ -141,8 +141,8 @@ namespace SCMM.Steam.API.Commands
                     if (assetDescription == null)
                     {
                         // NOTE: Only import new assets from apps we know
-                        if (app.IsActive)
-                        {
+                        //if (app.IsActive)
+                        //{
                             var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                             {
                                 AppId = ulong.Parse(app.SteamId),
@@ -156,7 +156,7 @@ namespace SCMM.Steam.API.Commands
                                 ClassId = importAssetDescription.AssetDescription.ClassId,
                                 IsDrop = (importAssetDescription.AssetDescription.IsSpecialDrop || importAssetDescription.AssetDescription.IsTwitchDrop)
                             };
-                        }
+                        //}
                     }
                     if (assetDescription == null)
                     {
