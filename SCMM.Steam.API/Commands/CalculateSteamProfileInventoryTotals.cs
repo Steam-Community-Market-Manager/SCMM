@@ -77,12 +77,12 @@ namespace SCMM.Steam.API.Commands
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => String.IsNullOrEmpty(request.AppId) || x.App.SteamId == request.AppId)
                 .Where(x => x.Description != null)
-                .Where(x => x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0 || x.Description.IsTradable || x.Description.TradableRestrictionDays > 0)
                 .Select(x => new
                 {
                     x.Quantity,
                     x.AcquiredBy,
                     x.BuyPrice,
+                    IsMarketableOrTradable = (x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0 || x.Description.IsTradable || x.Description.TradableRestrictionDays > 0),
                     ExchangeRateMultiplier = x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
                     ItemValue = x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice : x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0,
