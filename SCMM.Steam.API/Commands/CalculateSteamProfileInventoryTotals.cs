@@ -84,10 +84,11 @@ namespace SCMM.Steam.API.Commands
                     x.BuyPrice,
                     IsMarketableOrTradable = (x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0 || x.Description.IsTradable || x.Description.TradableRestrictionDays > 0),
                     ExchangeRateMultiplier = x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0,
-                    // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
-                    ItemValue = x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice : x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0,
-                    ItemValue24hrStable = x.Description.MarketItem != null ? x.Description.MarketItem.Stable24hrSellOrderLowestPrice : x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0,
-                    ItemExchangeRateMultiplier = x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0
+                    ItemStoreValue = x.Description.StoreItem != null ? (x.Description.StoreItem.Price ?? 0) : 0,
+                    ItemStoreValues = x.Description.StoreItem != null ? x.Description.StoreItem.Prices : null,
+                    ItemMarketValue = x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice : 0,
+                    ItemMarketValue24hrStable = x.Description.MarketItem != null ? x.Description.MarketItem.Stable24hrSellOrderLowestPrice : 0,
+                    ItemMarketExchangeRateMultiplier = x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : 0
                 })
                 .ToListAsync();
 
@@ -97,21 +98,21 @@ namespace SCMM.Steam.API.Commands
                 ItemCountWithBuyPrices = profileInventoryItems.Count(x => x.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Other || x.BuyPrice != null),
                 TotalItems = profileInventoryItems
                     .Sum(x => x.Quantity),
-                TotalInvested = profileInventoryItems
+                TotalInvested = profileInventoryItems.Where(x => x.IsMarketableOrTradable)
                     .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
                     .Sum(x => currency.CalculateExchange((decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
-                TotalInvestmentGains = profileInventoryItems
-                    .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0 && x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => Math.Max(0, currency.CalculateExchange((decimal)x.ItemValue / x.ItemExchangeRateMultiplier - (decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity)),
-                TotalInvestmentLosses = profileInventoryItems
-                    .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0 && x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => Math.Min(0, currency.CalculateExchange((decimal)x.ItemValue / x.ItemExchangeRateMultiplier - (decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity)),
-                TotalValue = profileInventoryItems
-                    .Where(x => x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => currency.CalculateExchange((decimal)x.ItemValue / x.ItemExchangeRateMultiplier) * x.Quantity),
-                TotalValue24hrStable = profileInventoryItems
-                    .Where(x => x.ItemValue24hrStable != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => currency.CalculateExchange((decimal)x.ItemValue24hrStable / x.ItemExchangeRateMultiplier) * x.Quantity)
+                TotalInvestmentGains = profileInventoryItems.Where(x => x.IsMarketableOrTradable)
+                    .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0 && ((x.ItemMarketValue > 0 && x.ItemMarketExchangeRateMultiplier != 0) || x.ItemStoreValues?.ContainsKey(currency.Name) == true))
+                    .Sum(x => Math.Max(0, ((x.ItemMarketValue > 0 ? currency.CalculateExchange((decimal)x.ItemMarketValue / x.ItemMarketExchangeRateMultiplier) : x.ItemStoreValues[currency.Name]) * x.Quantity) - (currency.CalculateExchange((decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity))),
+                TotalInvestmentLosses = profileInventoryItems.Where(x => x.IsMarketableOrTradable)
+                    .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0 && ((x.ItemMarketValue > 0 && x.ItemMarketExchangeRateMultiplier != 0) || x.ItemStoreValues?.ContainsKey(currency.Name) == true))
+                    .Sum(x => Math.Min(0, ((x.ItemMarketValue > 0 ? currency.CalculateExchange((decimal)x.ItemMarketValue / x.ItemMarketExchangeRateMultiplier) : x.ItemStoreValues[currency.Name]) * x.Quantity) - (currency.CalculateExchange((decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity))),
+                TotalValue = profileInventoryItems.Where(x => x.IsMarketableOrTradable)
+                    .Where(x => (x.ItemMarketValue > 0 && x.ItemMarketExchangeRateMultiplier != 0) || x.ItemStoreValues?.ContainsKey(currency.Name) == true)
+                    .Sum(x => (x.ItemMarketValue > 0 ? currency.CalculateExchange((decimal)x.ItemMarketValue / x.ItemMarketExchangeRateMultiplier) : x.ItemStoreValues[currency.Name]) * x.Quantity),
+                TotalValue24hrStable = profileInventoryItems.Where(x => x.IsMarketableOrTradable)
+                    .Where(x => (x.ItemMarketValue24hrStable > 0 && x.ItemMarketExchangeRateMultiplier != 0) || x.ItemStoreValues?.ContainsKey(currency.Name) == true)
+                    .Sum(x => (x.ItemMarketValue > 0 ? currency.CalculateExchange((decimal)x.ItemMarketValue24hrStable / x.ItemMarketExchangeRateMultiplier) : x.ItemStoreValues[currency.Name]) * x.Quantity)
             };
 
             // if more than 50% have buy prices set
@@ -141,7 +142,9 @@ namespace SCMM.Steam.API.Commands
 
                 // NOTE: Don't use currency conversion, keep it in system currency
                 inventoryValue.Items = profileInventoryItems.Sum(x => x.Quantity);
-                inventoryValue.MarketValue = profileInventoryItems.Sum(x => x.ItemValue * x.Quantity);
+                inventoryValue.MarketValue = profileInventoryItems
+                    .Where(x => x.IsMarketableOrTradable)
+                    .Sum(x => (x.ItemMarketValue > 0 ? x.ItemMarketValue : x.ItemStoreValue) * x.Quantity);
 
                 // Update "whale" role status
                 const int WhaleInventoryItemCount = 5000;
