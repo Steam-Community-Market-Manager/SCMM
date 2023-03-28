@@ -10,6 +10,8 @@ namespace SCMM.Steam.API.Commands
     {
         public string ProfileId { get; set; }
 
+        public string AppId { get; set; }
+
         public int ItemSize { get; set; } = 64;
 
         public int ItemColumns { get; set; } = 5;
@@ -51,6 +53,7 @@ namespace SCMM.Steam.API.Commands
             var inventoryItemIcons = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => String.IsNullOrEmpty(request.AppId) || x.App.SteamId == request.AppId)
                 .Where(x => x.Description != null)
                 .Where(x => x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0 || x.Description.IsTradable || x.Description.TradableRestrictionDays > 0)
                 .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))

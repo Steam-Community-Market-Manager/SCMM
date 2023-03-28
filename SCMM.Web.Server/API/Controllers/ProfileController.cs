@@ -369,6 +369,9 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("ID is invalid");
             }
 
+            var app = this.App();
+            var currency = this.Currency();
+
             // Load the profile
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
@@ -388,7 +391,7 @@ namespace SCMM.Web.Server.API.Controllers
             var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString(),
-                AppIds = new[] { this.App().Id.ToString() },
+                AppIds = new[] { app.Id.ToString() },
                 Force = force
             });
 
@@ -403,8 +406,8 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = profile.SteamId,
-                AppId = this.App().Id.ToString(),
-                CurrencyId = this.Currency().Id.ToString()
+                AppId = app.Id.ToString(),
+                CurrencyId = currency.Id.ToString()
             });
 
             await _db.SaveChangesAsync();
@@ -422,6 +425,7 @@ namespace SCMM.Web.Server.API.Controllers
                     await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
                     {
                         ProfileId = profile.SteamId,
+                        AppId = app.Id.ToString(),
                         ItemSize = Math.Max(32, Math.Min(mosaicTileSize, 128)),
                         ItemColumns = Math.Max(1, Math.Min(mosaicColumns, 10)),
                         ItemRows = Math.Max(1, Math.Min(mosaicRows, 10)),

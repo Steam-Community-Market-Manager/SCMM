@@ -19,17 +19,18 @@ public class StoreNameAutocompleteHandler : AutocompleteHandler
     public async override Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
         char[] trimCharacters = { ' ', '-' };
-        var value = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
+        var appId = (long)(autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == "app")?.Value ?? 0);
+        var storeName = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
         using var scope = services.CreateScope();
         {
-            var appId = _configuration.AppId;
             var steamDb = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-            var itemNames = await steamDb.SteamItemStores
-                .Where(x => x.App.SteamId == appId.ToString())
+            var storeAppId = appId > 0 ? appId : (long)_configuration.AppId;
+            var storeNames = await steamDb.SteamItemStores
+                .Where(x => x.App.SteamId == storeAppId.ToString())
                 .Where(x =>
-                    (String.IsNullOrEmpty(value)) ||
-                    (!String.IsNullOrEmpty(x.Name) && x.Name.Contains(value)) ||
-                    (x.Start != null && (value.Contains(x.Start.Value.Year.ToString())))
+                    (String.IsNullOrEmpty(storeName)) ||
+                    (!String.IsNullOrEmpty(x.Name) && x.Name.Contains(storeName)) ||
+                    (x.Start != null && (storeName.Contains(x.Start.Value.Year.ToString())))
                 )
                 .OrderByDescending(x => x.Start == null)
                 .ThenByDescending(x => x.Start)
@@ -42,7 +43,7 @@ public class StoreNameAutocompleteHandler : AutocompleteHandler
                 .ToListAsync();
 
             return AutocompletionResult.FromSuccess(
-                itemNames
+                storeNames
             );
         }
     }

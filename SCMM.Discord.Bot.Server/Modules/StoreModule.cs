@@ -35,10 +35,17 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
 
     [SlashCommand("items", "Show store details")]
     public async Task<RuntimeResult> GetItemValueAsync(
+        [Summary("app", "Steam app that the item belongs to")][Autocomplete(typeof(SteamAppAutocompleteHandler))] ulong appId,
         [Summary("from", "The name of the store you want to view items from")][Autocomplete(typeof(StoreNameAutocompleteHandler))] string storeId,
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
     )
     {
+        // If app was not specified, default to the server configured app
+        if (appId <= 0)
+        {
+            appId = _configuration.GetDiscordConfiguration().AppId;
+        }
+
         // If currency was not specified, default to the user or guild currency (if any)
         if (string.IsNullOrEmpty(currencyId) && Context.User != null)
         {
@@ -76,7 +83,6 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         // Find the store
-        var appId = _configuration.GetDiscordConfiguration().AppId;
         var store = _steamDb.SteamItemStores
             .Include(x => x.App)
             .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Currency)
@@ -98,7 +104,7 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
             {
                 var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
                 {
-                    AppId = _configuration.GetDiscordConfiguration().AppId
+                    AppId = appId
                 });
                 if (nextUpdateTime != null)
                 {
@@ -166,11 +172,19 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
     }
 
     [SlashCommand("next", "Show time remaining until the next store update")]
-    public async Task<RuntimeResult> GetStoreNextUpdateExpectedOnAsync()
+    public async Task<RuntimeResult> GetStoreNextUpdateExpectedOnAsync(
+        [Summary("app", "Steam app that the item belongs to")][Autocomplete(typeof(SteamAppAutocompleteHandler))] ulong appId
+    )
     {
+        // If app was not specified, default to the server configured app
+        if (appId <= 0)
+        {
+            appId = _configuration.GetDiscordConfiguration().AppId;
+        }
+
         var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
         {
-            AppId = _configuration.GetDiscordConfiguration().AppId
+            AppId = appId
         });
         if (nextUpdateTime == null || string.IsNullOrEmpty(nextUpdateTime.TimeDescription))
         {

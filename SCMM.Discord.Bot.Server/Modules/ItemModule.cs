@@ -32,12 +32,19 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         _queryProcessor = queryProcessor;
     }
 
-    [SlashCommand("skin", "Show skin details and prices")]
+    [SlashCommand("item", "Show item details and prices")]
     public async Task<RuntimeResult> GetItemValueAsync(
-        [Summary("name", "Name of the skin")][Autocomplete(typeof(ItemNameAutocompleteHandler))] string name,
+        [Summary("app", "Steam app that the item belongs to")][Autocomplete(typeof(SteamAppAutocompleteHandler))] ulong appId,
+        [Summary("name", "Name of the item")][Autocomplete(typeof(ItemNameAutocompleteHandler))] string itemName,
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
     )
     {
+        // If app was not specified, default to the server configured app
+        if (appId <= 0)
+        {
+            appId = _configuration.GetDiscordConfiguration().AppId;
+        }
+        
         // If currency was not specified, default to the user or guild currency (if any)
         if (string.IsNullOrEmpty(currencyId) && Context.User != null)
         {
@@ -78,7 +85,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         var closestItemName = _steamDb.SteamAssetDescriptions
             .Select(x => x.Name)
             .ToList()
-            .Closest(x => x, name, maxDistance: 3);
+            .Closest(x => x, itemName, maxDistance: 3);
 
         if (String.IsNullOrEmpty(closestItemName))
         {
@@ -88,7 +95,6 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         // Load the item
-        var appId = _configuration.GetDiscordConfiguration().AppId;
         var item = await _steamDb.SteamAssetDescriptions
             .Where(x => x.App.SteamId == appId.ToString())
             .Where(x => x.Name == closestItemName)

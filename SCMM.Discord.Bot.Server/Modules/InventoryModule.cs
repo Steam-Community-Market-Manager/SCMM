@@ -4,13 +4,13 @@ using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
 using SCMM.Discord.Client.Commands;
+using SCMM.Discord.Client.Extensions;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Discord.Bot.Server.Modules;
@@ -38,12 +38,12 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
     [SlashCommand("value", "Calculate the market value of a Steam inventory (it must be public)")]
     public async Task<RuntimeResult> GetUserInventoryValueAsync(
         [Summary("steam-id", "Any SteamID or Steam URL")] string steamId = null,
+        [Summary("app", "Any support Steam app")][Autocomplete(typeof(SteamAppAutocompleteHandler))] ulong appId = 0,
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
     )
     {
         var user = (DiscordUser)null;
-        var appId = Constants.RustAppId.ToString();
-
+        
         // If steam id was not specified, default to the user (if any)
         if (string.IsNullOrEmpty(steamId) && Context.User != null)
         {
@@ -81,6 +81,12 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
                 explaination: $"That Steam profile doesn't exist. Supported options are **Steam ID64**, **Custom URL**, or **Profile URL**. You can easily find your Profile URL by viewing your profile in Steam and copying it from the URL bar.",
                 helpImageUrl: $"{_configuration.GetDataStoreUrl()}/images/discord/steam_find_your_profile_id.png"
             );
+        }
+
+        // If app was not specified, default to the server configured app
+        if (appId <= 0)
+        {
+            appId = _configuration.GetDiscordConfiguration().AppId;
         }
 
         // If currency was not specified, default to the user or guild currency (if any)
@@ -124,7 +130,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
         {
             ProfileId = profile.Id.ToString(),
-            AppIds = new[] { appId }
+            AppIds = new[] { appId.ToString() }
         });
 
         await _steamDb.SaveChangesAsync();
@@ -143,7 +149,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
         {
             ProfileId = profile.SteamId,
-            AppId = appId,
+            AppId = appId.ToString(),
             CurrencyId = currency.SteamId,
         });
 
@@ -166,6 +172,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
                 await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
                 {
                     ProfileId = profile.SteamId,
+                    AppId = appId.ToString(),
                     ExpiresOn = DateTimeOffset.Now.AddDays(7)
                 })
             )?.ImageUrl;
