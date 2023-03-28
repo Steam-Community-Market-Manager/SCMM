@@ -7,7 +7,8 @@ namespace SCMM.Market.Skinport.Client
     {
         private const string BaseUri = "https://api.skinport.com/v1/";
 
-        public SkinportWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public SkinportWebClient(IWebProxy webProxy) : base(webProxy: webProxy) {
+        }
 
         /// <summary>
         /// 
@@ -24,7 +25,7 @@ namespace SCMM.Market.Skinport.Client
         /// <returns></returns>
         public async Task<IEnumerable<SkinportItem>> GetItemsAsync(string appId, string currency = null, bool tradable = false)
         {
-            using (var client = BuildWebApiHttpClient())
+            using (var client = BuildSkinPortClient())
             {
                 var url = $"{BaseUri}items?app_id={Uri.EscapeDataString(appId)}&currency={Uri.EscapeDataString(currency)}&tradable={tradable.ToString().ToLower()}";
                 var response = await client.GetAsync(url);
@@ -35,5 +36,9 @@ namespace SCMM.Market.Skinport.Client
                 return responseJson;
             }
         }
+
+        private HttpClient BuildSkinPortClient() => BuildWebApiHttpClient(
+            host: new Uri(BaseUri)
+        );
     }
 }
