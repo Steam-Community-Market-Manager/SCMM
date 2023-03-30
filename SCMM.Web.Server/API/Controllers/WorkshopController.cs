@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="collection">If specified, only items matching the supplied item collection are returned</param>
         /// <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data). Use -1 to return all items</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 5000.</param>
         /// <param name="sortBy">Sort item property name from <see cref="ItemDetailedDTO"/></param>
         /// <param name="sortDirection">Sort item direction</param>
         /// <response code="200">Paginated list of workshop files matching the request parameters.</response>
@@ -121,6 +121,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Paginate
+            count = Math.Max(0, Math.Min(5000, count));
             return Ok(
                 await query.PaginateAsync(start, count, x => _mapper.Map<SteamWorkshopFile, WorkshopFileDTO>(x, this))
             );

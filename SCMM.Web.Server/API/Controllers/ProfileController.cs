@@ -766,7 +766,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="filter">Optional search filter. Matches against item name or description</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <param name="sortBy">Sort item property name from <see cref="ProfileInventoryInvestmentItemDTO"/></param>
         /// <param name="sortDirection">Sort item direction</param>
         /// <response code="200">Profile inventory investment information.</response>
@@ -851,6 +851,7 @@ namespace SCMM.Web.Server.API.Controllers
                     break;
             }
 
+            count = Math.Max(0, Math.Min(100, count));
             var results = await query.PaginateAsync(start, count,
                 x => _mapper.Map<SteamProfileInventoryItem, ProfileInventoryInvestmentItemDTO>(x, this)
             );

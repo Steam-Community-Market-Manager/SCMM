@@ -61,7 +61,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param>
         /// <param name="craftable">If <code>true</code>, only craftable items are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data). Use -1 to return all items</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 5000</param>
         /// <param name="sortBy">Sort item property name from <see cref="ItemDetailedDTO"/></param>
         /// <param name="sortDirection">Sort item direction</param>
         /// <param name="detailed">If <code>true</code>, the response will be a paginated list of <see cref="ItemDetailedDTO"/>. If <code>false</code>, the response will be a paginated list of <see cref="ItemDescriptionWithPriceDTO"/></param>
@@ -221,6 +221,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Paginate
+            count = Math.Max(0, Math.Min(5000, count));
             return Ok(!detailed
                 ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this))
                 : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this))
@@ -313,7 +314,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="id">Item GUID, ID64, or name</param>
         /// <param name="start">Return item sell orders starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If the request item cannot be found.</response>
@@ -355,6 +356,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ItemId == item.Id)
                 .OrderBy(x => x.Price);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count, x => _mapper.Map<SteamMarketItemOrder, ItemOrderDTO>(x, this))
             );
@@ -365,7 +367,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="id">Item GUID, ID64, or name</param>
         /// <param name="start">Return item buy orders starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If the request item cannot be found.</response>
@@ -407,6 +409,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ItemId == item.Id)
                 .OrderByDescending(x => x.Price);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count, x => _mapper.Map<SteamMarketItemOrder, ItemOrderDTO>(x, this))
             );

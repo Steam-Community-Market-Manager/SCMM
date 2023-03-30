@@ -3,6 +3,7 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -134,7 +135,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
         /// <param name="sellNow">If true, sell prices are based on highest buy order. If false, sell prices are based on lowest sell order. Default is true.</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [HttpGet("market/flips")]
@@ -157,6 +158,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
                     .OrderByDescending(x => (decimal)((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((decimal)(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)(x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)));
 
+                count = Math.Max(0, Math.Min(100, count));
                 return Ok(
                     await query.PaginateAsync(start, count, x => new MarketItemFlipAnalyticDTO()
                     {
@@ -238,6 +240,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.SellPrice - (x.SellPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
                     .OrderByDescending(x => (decimal)(x.SellPrice - ((decimal)(x.SellPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)(x.BuyPrice + (includeFees ? x.BuyFee : 0)));
 
+                count = Math.Max(0, Math.Min(100, count));
                 return Ok(
                     query.Paginate(start, count)
                 );
@@ -253,7 +256,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [HttpGet("market/cheapestListings")]
@@ -276,6 +279,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.SellOrderLowestPrice > 0)
                     .OrderByDescending(x => (decimal)(x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.SellOrderLowestPrice);
 
+                count = Math.Max(0, Math.Min(100, count));
                 return Ok(
                     await query.PaginateAsync(start, count, x => new MarketItemListingAnalyticDTO()
                     {
@@ -348,6 +352,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.ReferemcePrice > 0)
                     .OrderByDescending(x => (decimal)(x.ReferemcePrice - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)x.ReferemcePrice);
 
+                count = Math.Max(0, Math.Min(100, count));
                 return Ok(
                     query.Paginate(start, count)
                 );
@@ -358,7 +363,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get the chespest method of aquiring crafting components, sorted by lowest cost
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -392,6 +397,7 @@ namespace SCMM.Web.Server.API.Controllers
                 })
                 .OrderBy(x => x.Resource.MarketItem.SellOrderLowestPrice);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 query.Paginate(start, count, x => new MarketCraftingItemCostAnalyticDTO
                 {
@@ -423,7 +429,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get the cheapest method of aquiring craftable item containers, sorted by lowest cost
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -467,6 +473,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.MarketItem != null)
                 .OrderBy(x => x.MarketItem.SellOrderLowestPrice);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 query.Paginate(start, count, x => new MarketCraftableItemCostAnalyticDTO
                 {
@@ -514,7 +521,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="filter">Optional filter, matches against the buyer name, seller name, or item name</param>
         /// <param name="item">Optional filter, matches against the item name</param>
         /// <param name="start">Return activity starting at this specific index (pagination)</param>
-        /// <param name="count">Number activity to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number activity to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of activity matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -533,6 +540,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => string.IsNullOrEmpty(item) || x.Description.Name.Contains(item))
                 .OrderByDescending(x => x.Timestamp);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemActivityStatisticDTO()
                 {
@@ -653,7 +661,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List items, sorted by highest number of sales in the last 24hrs
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -682,6 +690,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Demand = x.Last24hrSales
                 });
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count)
             );
@@ -691,7 +700,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List items, sorted by highest supply
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -720,6 +729,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Demand = x.Last24hrSales
                 });
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count)
             );
@@ -732,7 +742,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -755,6 +765,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.SellOrderLowestPrice >= x.AllTimeHighestValue)
                 .OrderBy(x => x.SellOrderLowestPrice - x.AllTimeHighestValue);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
@@ -776,7 +787,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -799,6 +810,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.SellOrderLowestPrice <= x.AllTimeLowestValue)
                 .OrderBy(x => x.AllTimeLowestValue - x.SellOrderLowestPrice);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
@@ -820,7 +832,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -839,6 +851,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.SellOrderLowestPrice > 0)
                 .OrderByDescending(x => x.SellOrderLowestPrice);
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
@@ -857,7 +870,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List items, sorted by highest estimated total supply
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -884,6 +897,7 @@ namespace SCMM.Web.Server.API.Controllers
                     SupplyTotalEstimated = x.SupplyTotalEstimated.Value
                 });
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count)
             );
@@ -893,7 +907,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List items, grouped by collection name, sorted by highest item count
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -927,6 +941,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .ThenByDescending(x => x.Sum(y => y.BuyNowPrice ?? 0))
                 .AsQueryable();
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 query.Paginate(start, count, x => new DashboardAssetCollectionDTO
                 {
@@ -943,7 +958,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List profiles with accepted workshop items, sorted by highest number of items
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of profiles matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -965,6 +980,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Items = x.AssetDescriptions.Count(y => y.TimeAccepted != null),
                 });
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count)
             );
@@ -1048,7 +1064,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List profiles inventory values, sorted by highest value first
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of profiles matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -1076,6 +1092,7 @@ namespace SCMM.Web.Server.API.Controllers
                     LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
                 });
 
+            count = Math.Max(0, Math.Min(100, count));
             var profiles = await query.PaginateAsync(start, count, x =>
             {
                 x.Value = this.Currency().CalculateExchange(x.Value);
@@ -1096,7 +1113,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of profiles matching the request parameters.</response>
+        /// <response code="200">Paginated list of profiles matching the request parameters. Max 100.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("profiles/inventories/recentlyValued")]
@@ -1123,6 +1140,7 @@ namespace SCMM.Web.Server.API.Controllers
                     LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
                 });
 
+            count = Math.Max(0, Math.Min(100, count));
             return Ok(
                 await query.PaginateAsync(start, count, x =>
                 {
