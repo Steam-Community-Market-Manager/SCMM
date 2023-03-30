@@ -10,7 +10,7 @@ namespace SCMM.Shared.Web.Formatters
 
         public string ListDelimiter { get; set; } = ";";
 
-        public bool IncludeExcelDelimiterHeader { get; set; } = true;
+        public bool IncludeExcelDelimiterHeader { get; set; } = false;
 
         public bool IncludeColumnNameHeader { get; set; } = true;
 
