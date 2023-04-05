@@ -12,10 +12,10 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="MudBlazor" Version="6.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	<PackageReference Include="Syncfusion.Blazor.Themes" Version="20.4.0.43" />
-	<PackageReference Include="Syncfusion.Blazor.Charts" Version="20.4.0.43" />
-    <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="20.4.0.43" />
-	<PackageReference Include="Syncfusion.Blazor.RangeNavigator" Version="20.4.0.43" />
+	<PackageReference Include="Syncfusion.Blazor.Themes" Version="21.1.38" />
+	<PackageReference Include="Syncfusion.Blazor.Charts" Version="21.1.38" />
+    <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="21.1.38" />
+	<PackageReference Include="Syncfusion.Blazor.RangeNavigator" Version="21.1.38" />
   </ItemGroup>
 
   <ItemGroup>
