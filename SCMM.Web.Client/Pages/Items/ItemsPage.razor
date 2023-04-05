@@ -95,6 +95,7 @@
                                     <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
                                 <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Manipulated" CheckedChanged="@((x) => { Manipulated = x; _ = RefreshItems(); })" Label="Manipulated" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                             </div>
                         </ChildContent>
                     </MudExpansionPanel>
@@ -131,6 +132,7 @@
                         <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
                     <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Manipulated" CheckedChanged="@((x) => { Manipulated = x; _ = RefreshItems(); })" Label="Manipulated" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                 </MudPaper>
             </MudHidden>
         </MudItem>
@@ -229,6 +231,10 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Banned { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Manipulated { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -340,7 +346,7 @@
                 $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&breaksIntoComponent={Uri.EscapeDataString(BreaksIntoComponent ?? String.Empty)}" +
                 $"&glow={(Glow ? true : (bool?)null)}&glowsight={(Glowsight ? true : (bool?)null)}&cutout={(Cutout ? true : (bool?)null)}&craftable={(Craftable ? true : (bool?)null)}" +
                 $"&specialDrop={(SpecialDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +
-                $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}"
+                $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}&manipulated={(Manipulated ? true : (bool?)null)}"
             );
         }
         catch (Exception ex)

@@ -60,6 +60,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="specialDrop">If <code>true</code>, only special drops are returned</param>
         /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param>
         /// <param name="craftable">If <code>true</code>, only craftable items are returned</param>
+        /// <param name="manipulated">If <code>true</code>, only items currently flagged as undergoing price manipulation are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Max 5000</param>
         /// <param name="sortBy">Sort item property name from <see cref="ItemDetailedDTO"/></param>
@@ -78,7 +79,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null,
                                                   [FromQuery] bool? glow = null, [FromQuery] bool? glowsight = null, [FromQuery] bool? cutout = null, [FromQuery] bool? commodity = null, [FromQuery] bool? marketable = null, [FromQuery] bool? tradable = null,
-                                                  [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? specialDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? craftable = null,
+                                                  [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? specialDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? craftable = null, [FromQuery] bool? manipulated = null,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
             id = (id ?? new ulong?[0]);
@@ -178,6 +179,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (craftable != null)
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsCraftable == craftable.Value);
+            }
+            if (manipulated != null)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || (x.MarketItem != null && x.MarketItem.IsBeingManipulated == manipulated.Value));
             }
 
             // Join
