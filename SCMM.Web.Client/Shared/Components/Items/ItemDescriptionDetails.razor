@@ -793,7 +793,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <Virtualize ItemsProvider="LoadItemSellOrders" Context="item">
+                                    <Virtualize ItemsProvider="LoadItemSellOrders" Context="item" SpacerElement="tr">
                                         <ItemContent>
                                             <tr class="hover-darken">
                                                 <td class="text-centered">
@@ -884,7 +884,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <Virtualize ItemsProvider="LoadItemBuyOrders" Context="item">
+                                <Virtualize ItemsProvider="LoadItemBuyOrders" Context="item" SpacerElement="tr">
                                     <ItemContent>
                                         <tr class="hover-darken">
                                             <td class="text-centered">
@@ -1010,7 +1010,7 @@
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
-                        <Virtualize ItemsProvider="LoadItemActivity" Context="item">
+            <Virtualize ItemsProvider="LoadItemActivity" Context="item" SpacerElement="tr">
                             <ItemContent>
                                 <div class="@($"{(item.IsSale ? "mud-theme-dark" : null)} hover-darken pa-1")">
                                     <div class="d-flex flex-row flex-wrap justify-start align-center">

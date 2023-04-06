@@ -289,6 +289,8 @@ public static class WebApplicationExtensions
 
         });
 
+        builder.Services.AddRequestDecompression();
+
         return builder;
     }
 
@@ -363,6 +365,8 @@ public static class WebApplicationExtensions
             config.InjectStylesheet("/css/scmm-swagger-theme.css");
             config.OAuth2RedirectUrl("/signin");
         });
+
+        app.UseRequestDecompression();
 
         app.UseHttpsRedirection();
 

@@ -94,7 +94,7 @@
             <StatisticsPanel Icon="fas fa-fw fa-people-carry mr-1" Title="Highest Estimated Item Supply" Subtitle="Which items have the highest estimated total supply?" Dense="true">
                 <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                     <tbody>
-                        <Virtualize ItemsProvider="LoadItemMostSupply" Context="item">
+                        <Virtualize ItemsProvider="LoadItemMostSupply" Context="item" SpacerElement="tr">
                             <ItemContent>
                                 <tr @onclick="@((_) => ShowItemEstimatedSupplyDialog(item))" class="clickable">
                                     <td>
@@ -132,7 +132,7 @@
         <StatisticsPanel Icon="fas fa-fw fa-tshirt mr-1" Title="Largest Item Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
-                    <Virtualize ItemsProvider="LoadItemsLargestCollections" Context="item">
+                    <Virtualize ItemsProvider="LoadItemsLargestCollections" Context="item" SpacerElement="tr">
                         <ItemContent>
                             <tr @onclick="@((_) => ShowItemCollectionDialog(item))" class="clickable">
                                 <td>
@@ -169,7 +169,7 @@
             <StatisticsPanel Icon="fas fa-fw fa-user mr-1" Title="Largest Item Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
                 <MudSimpleTable Dense="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                     <tbody>
-                        <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
+                        <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item" SpacerElement="tr">
                             <ItemContent>
                                 <tr @onclick="@((_) => ShowProfileItemsDialog(item))" class="clickable">
                                     <td>

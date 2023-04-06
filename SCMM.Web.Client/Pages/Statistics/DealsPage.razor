@@ -56,7 +56,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseMarketCheapestListings" ItemsProvider="LoadMarketCheapestListings" Context="item">
+                            <Virtualize @ref="VirtualiseMarketCheapestListings" ItemsProvider="LoadMarketCheapestListings" Context="item" SpacerElement="tr">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -180,7 +180,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseMarketFlips" ItemsProvider="LoadMarketFlips" Context="item">
+                            <Virtualize @ref="VirtualiseMarketFlips" ItemsProvider="LoadMarketFlips" Context="item" SpacerElement="tr">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -278,7 +278,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftableContainerCosts" Context="item">
+                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftableContainerCosts" Context="item" SpacerElement="tr">
                                             <ItemContent>
                                                 <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
                                                     <td class="align-top">
@@ -366,7 +366,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftingResourceCosts" Context="item">
+                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftingResourceCosts" Context="item" SpacerElement="tr">
                                             <ItemContent>
                                                 <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
                                                     <td class="align-top">

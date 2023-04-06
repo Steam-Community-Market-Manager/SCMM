@@ -7,7 +7,8 @@ namespace SCMM.Market.Skinport.Client
     {
         private const string BaseUri = "https://api.skinport.com/v1/";
 
-        public SkinportWebClient(IWebProxy webProxy) : base(webProxy: webProxy) {
+        public SkinportWebClient(IWebProxy webProxy) : base(webProxy: webProxy)
+        {
         }
 
         /// <summary>

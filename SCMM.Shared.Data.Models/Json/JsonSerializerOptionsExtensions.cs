@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace SCMM.Shared.Data.Models.Json;
 
@@ -13,11 +14,14 @@ public static class JsonSerializerOptionsExtensions
     /// </summary>
     public static void SetDefaultOptions()
     {
-        UseDefaults(
-            (JsonSerializerOptions)typeof(JsonSerializerOptions)
-                ?.GetField("s_defaultOptions", BindingFlags.Static | BindingFlags.NonPublic)
-                ?.GetValue(null)
-        );
+        var defaultOptions = UseDefaults(new JsonSerializerOptions()
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        });
+
+        typeof(JsonSerializerOptions)
+            ?.GetField("s_defaultOptions", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, defaultOptions);
     }
 
     public static JsonSerializerOptions UseDefaults(this JsonSerializerOptions options)
