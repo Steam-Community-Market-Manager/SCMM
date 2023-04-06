@@ -66,12 +66,12 @@ namespace SCMM.Steam.API.Commands
                 AppId = request.AppId,
                 ClassIds = new [] { request.AssetClassId }
             });
-            if (assetClassInfoResponse?.Any() != true)
+            if (assetClassInfoResponse?.Success != true)
             {
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, request failed");
             }
 
-            var assetClass = assetClassInfoResponse.FirstOrDefault(x => x.Value.ClassId == request.AssetClassId).Value;
+            var assetClass = assetClassInfoResponse.Assets.FirstOrDefault(x => x.ClassId == request.AssetClassId);
             if (assetClass == null)
             {
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, asset was not found");

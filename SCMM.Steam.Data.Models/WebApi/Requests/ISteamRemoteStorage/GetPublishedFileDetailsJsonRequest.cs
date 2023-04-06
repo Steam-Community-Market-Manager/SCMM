@@ -27,6 +27,7 @@ namespace SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage
                         data[$"publishedfileids[{i}]"] = PublishedFileIds[i].ToString();
                     }
                 }
+
                 return data;
             }
         }
