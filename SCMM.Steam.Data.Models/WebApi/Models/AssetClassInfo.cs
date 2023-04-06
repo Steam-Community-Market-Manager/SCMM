@@ -1,105 +1,115 @@
-﻿namespace SCMM.Steam.Data.Models.WebApi.Models
+﻿using System.Text.Json.Serialization;
+
+namespace SCMM.Steam.Data.Models.WebApi.Models
 {
     public class AssetClassDescription
     {
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
+        [JsonPropertyName("value")]
         public string Value { get; set; }
 
+        [JsonPropertyName("color")]
         public string Color { get; set; }
-
-        public string AppData { get; set; }
     }
 
     public class AssetClassAction
     {
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        [JsonPropertyName("link")]
         public string Link { get; set; }
     }
 
     public class AssetClassMarketAction
     {
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        [JsonPropertyName("link")]
         public string Link { get; set; }
     }
 
     public class AssetClassTag
     {
+        [JsonPropertyName("internal_name")]
         public string InternalName { get; set; }
 
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        [JsonPropertyName("category")]
         public string Category { get; set; }
 
+        [JsonPropertyName("color")]
         public string Color { get; set; }
 
+        [JsonPropertyName("category_name")]
         public string CategoryName { get; set; }
-    }
-
-    public class AssetClassAppDataFilter
-    {
-        public IList<ulong> ElementIds { get; set; }
-    }
-
-    public class AssetClassAppData
-    {
-        public uint DefIndex { get; set; }
-
-        public string Quality { get; set; }
-
-        public string Slot { get; set; }
-
-        public IList<AssetClassAppDataFilter> FilterData { get; set; }
-
-        public IList<ulong> PlayerClassIds { get; set; }
-
-        public string HighlightColor { get; set; }
     }
 
     public class AssetClassInfo
     {
+        [JsonPropertyName("icon_url")]
         public string IconUrl { get; set; }
 
+        [JsonPropertyName("icon_url_large")]
         public string IconUrlLarge { get; set; }
 
+        [JsonPropertyName("icon_drag_url")]
         public string IconDragUrl { get; set; }
 
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        [JsonPropertyName("market_hash_name")]
         public string MarketHashName { get; set; }
 
+        [JsonPropertyName("market_name")]
         public string MarketName { get; set; }
 
+        [JsonPropertyName("name_color")]
         public string NameColor { get; set; }
 
+        [JsonPropertyName("background_color")]
         public string BackgroundColor { get; set; }
 
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
+        [JsonPropertyName("tradable")]
         public string Tradable { get; set; }
 
+        [JsonPropertyName("marketable")]
         public string Marketable { get; set; }
 
+        [JsonPropertyName("commodity")]
         public string Commodity { get; set; }
 
+        [JsonPropertyName("market_tradable_restriction")]
         public string MarketTradableRestriction { get; set; }
 
+        [JsonPropertyName("market_marketable_restriction")]
         public string MarketMarketableRestriction { get; set; }
 
+        [JsonPropertyName("fraud_warnings")]
         public string FraudWarnings { get; set; }
 
-        public IList<AssetClassDescription> Descriptions { get; set; }
+        [JsonPropertyName("descriptions")]
+        public IDictionary<string, AssetClassDescription> Descriptions { get; set; }
 
-        public IList<AssetClassAction> Actions { get; set; }
+        [JsonPropertyName("actions")]
+        public IDictionary<string, AssetClassAction> Actions { get; set; }
 
-        public IList<AssetClassMarketAction> MarketActions { get; set; }
+        [JsonPropertyName("market_actions")]
+        public IDictionary<string, AssetClassMarketAction> MarketActions { get; set; }
 
-        public IList<AssetClassTag> Tags { get; set; }
+        [JsonPropertyName("tags")]
+        public IDictionary<string, AssetClassTag> Tags { get; set; }
 
-        public AssetClassAppData AppData { get; set; }
-
-        public ulong ClassId { get; set; }
+        [JsonPropertyName("classid")]
+        public string ClassId { get; set; }
     }
 }

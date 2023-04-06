@@ -174,7 +174,7 @@ namespace SCMM.Steam.API.Commands
             if (request.AssetClass != null)
             {
                 var assetClass = request.AssetClass;
-                assetDescription.ClassId = assetClass.ClassId;
+                assetDescription.ClassId = UInt64.Parse(assetClass.ClassId);
                 assetDescription.ItemType = ((String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetClass.Type)) ? assetClass.Type : assetDescription.ItemType);
                 assetDescription.Name = assetClass.MarketName;
                 assetDescription.NameHash = assetClass.MarketHashName ?? assetClass.Name;
@@ -209,7 +209,7 @@ namespace SCMM.Steam.API.Commands
                 // Parse asset description (if any)
                 if (assetClass.Descriptions != null)
                 {
-                    var itemDescription = ParseItemDescriptionText(assetClass.Descriptions);
+                    var itemDescription = ParseItemDescriptionText(assetClass.Descriptions.Select(x => x.Value));
                     if (!string.IsNullOrEmpty(itemDescription))
                     {
                         assetDescription.Description = itemDescription;
@@ -220,7 +220,7 @@ namespace SCMM.Steam.API.Commands
                 if (assetClass.Tags != null)
                 {
                     assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                    foreach (var tag in assetClass.Tags)
+                    foreach (var tag in assetClass.Tags.Select(x => x.Value))
                     {
                         assetDescription.Tags[tag.Category] = tag.Name;
                     }

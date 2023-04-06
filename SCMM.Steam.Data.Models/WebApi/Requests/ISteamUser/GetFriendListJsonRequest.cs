@@ -9,10 +9,10 @@
 
         public string SteamId { get; set; }
 
-        public string Relationship { get; set; }
+        public string Relationship { get; set; } = "friend";
 
         public override Uri Uri => new Uri(
-            $"{Constants.SteamWebApiUrl}/ISteamUser/GetFriendList/v1/?key={Uri.EscapeDataString(Key)}&steamid={Uri.EscapeDataString(SteamId)}&relationship={Uri.EscapeDataString(Relationship)}"
+            $"{Constants.SteamWebApiUrl}/ISteamUser/GetFriendList/v1/?key={Uri.EscapeDataString(Key)}&steamid={Uri.EscapeDataString(SteamId)}&relationship={Uri.EscapeDataString(Relationship ?? String.Empty)}"
         );
     }
 }

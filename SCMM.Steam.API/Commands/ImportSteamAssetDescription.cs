@@ -71,15 +71,15 @@ namespace SCMM.Steam.API.Commands
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, request failed");
             }
 
-            var assetClass = assetClassInfoResponse.Assets.FirstOrDefault(x => x.ClassId == request.AssetClassId);
+            var assetClass = assetClassInfoResponse.Assets.FirstOrDefault(x => x.ClassId == request.AssetClassId.ToString());
             if (assetClass == null)
             {
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, asset was not found");
             }
 
             // Does this asset already exist?
-            var assetDescription = (await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId == assetClass.ClassId)) ??
-                                   (_db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId == assetClass.ClassId));
+            var assetDescription = (await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId.ToString() == assetClass.ClassId)) ??
+                                   (_db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId?.ToString() == assetClass.ClassId));
             if (assetDescription == null)
             {
                 // Does a similiarly named item already exist?
@@ -94,7 +94,7 @@ namespace SCMM.Steam.API.Commands
                     _db.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
                     {
                         App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),
-                        ClassId = assetClass.ClassId,
+                        ClassId = UInt64.Parse(assetClass.ClassId),
                     });
                 }
             }
@@ -106,7 +106,7 @@ namespace SCMM.Steam.API.Commands
             var publishedFileChangeNotesPageHtml = (XElement)null;
             var publishedFileId = (ulong)0;
             var publishedFileHasChanged = false;
-            var viewWorkshopAction = assetClass.Actions?.FirstOrDefault(x =>
+            var viewWorkshopAction = assetClass.Actions?.Select(x => x.Value)?.FirstOrDefault(x =>
                 string.Equals(x.Name, Constants.SteamActionViewWorkshopItemId, StringComparison.InvariantCultureIgnoreCase) ||
                 string.Equals(x.Name, Constants.SteamActionViewWorkshopItem, StringComparison.InvariantCultureIgnoreCase)
             );
@@ -175,7 +175,7 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            var assetClassHasItemDescription = assetClass.Descriptions?
+            var assetClassHasItemDescription = assetClass.Descriptions?.Select(x => x.Value)?
                 .Where(x =>
                     string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
                     string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)

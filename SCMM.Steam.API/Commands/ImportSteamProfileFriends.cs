@@ -139,7 +139,7 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
             }
-            catch (HttpRequestException ex)
+            catch (SteamRequestException ex)
             {
                 if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden || ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {

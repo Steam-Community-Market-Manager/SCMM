@@ -67,7 +67,7 @@ namespace SCMM.Steam.API.Commands
                 .ToListAsync();
 
             // Add missing asset descriptions
-            var missingAssetClasses = assetClasses.Where(x => !assetDescriptions.Any(y => y.ClassId == x.ClassId)).ToArray();
+            var missingAssetClasses = assetClasses.Where(x => !assetDescriptions.Any(y => y.ClassId?.ToString() == x.ClassId)).ToArray();
             foreach (var missingAssetClass in missingAssetClasses)
             {
                 // Does a similiarly named item already exist?
@@ -82,7 +82,7 @@ namespace SCMM.Steam.API.Commands
                     _steamDb.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
                     {
                         App = await _steamDb.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),
-                        ClassId = missingAssetClass.ClassId,
+                        ClassId = UInt64.Parse(missingAssetClass.ClassId),
                     });
                 }
                 assetDescriptions.Add(assetDescription);
@@ -90,7 +90,7 @@ namespace SCMM.Steam.API.Commands
 
             Func<AssetClassInfo, ulong> parseWorkshopFileActionFromAssetClass = x =>
             {
-                var viewWorkshopAction = x.Actions?.FirstOrDefault(x =>
+                var viewWorkshopAction = x.Actions?.Select(x => x.Value)?.FirstOrDefault(x =>
                     string.Equals(x.Name, Constants.SteamActionViewWorkshopItemId, StringComparison.InvariantCultureIgnoreCase) ||
                     string.Equals(x.Name, Constants.SteamActionViewWorkshopItem, StringComparison.InvariantCultureIgnoreCase)
                 );
@@ -133,11 +133,11 @@ namespace SCMM.Steam.API.Commands
                 var updateAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
                 {
                     AssetDescription = assetDescription,
-                    AssetClass = assetClasses.FirstOrDefault(x => x.ClassId == assetDescription.ClassId),
+                    AssetClass = assetClasses.FirstOrDefault(x => x.ClassId == assetDescription.ClassId?.ToString()),
                     PublishedFile = publishedFiles?.FirstOrDefault(x =>
                         x.PublishedFileId == publishedFileIds.FirstOrDefault(y =>
-                            y.Key == assetClasses.FirstOrDefault(z => 
-                                z.ClassId == assetDescription.ClassId
+                            y.Key == assetClasses.FirstOrDefault(z =>
+                                z.ClassId == assetDescription.ClassId?.ToString()
                             )
                         ).Value
                     )

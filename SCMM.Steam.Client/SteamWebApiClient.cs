@@ -128,8 +128,8 @@ namespace SCMM.Steam.Client
         public async Task<GetFriendListJsonResponse> SteamUserGetFriendList(GetFriendListJsonRequest request, bool useCache = true)
         {
             request.Key ??= _configuration?.ApplicationKey;
-            var response = await GetJson<GetFriendListJsonRequest, GetFriendListJsonResponse>(request, useCache);
-            return response;
+            var response = await GetJson<GetFriendListJsonRequest, GetFriendListJsonResponse.Result>(request, useCache);
+            return response?.FriendsList;
         }
 
         public async Task<GetPlayerSummariesJsonResponse> SteamUserGetPlayerSummaries(GetPlayerSummariesJsonRequest request, bool useCache = true)
