@@ -46,8 +46,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(!detailed
-                ? languages.Select(x => _mapper.Map<LanguageListDTO>(x)).ToList()
-                : languages.Select(x => _mapper.Map<LanguageDetailedDTO>(x)).ToList()
+                ? languages.Select(x => _mapper.Map<LanguageListDTO>(x)).ToArray()
+                : languages.Select(x => _mapper.Map<LanguageDetailedDTO>(x)).ToArray()
             );
         }
     }

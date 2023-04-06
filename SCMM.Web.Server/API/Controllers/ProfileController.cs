@@ -598,7 +598,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             return Ok(
-                profileInventoryItemsSummaries.OrderByDescending(x => x.BuyNowPrice)
+                profileInventoryItemsSummaries.OrderByDescending(x => x.BuyNowPrice).ToArray()
             );
         }
 
@@ -682,7 +682,7 @@ namespace SCMM.Web.Server.API.Controllers
                 })
                 .Where(x => x.Items.Any(y => y.IsOwned))
                 .OrderByDescending(x => x.Items.Where(x => x.IsOwned).Count())
-                .ToList();
+                .ToArray();
 
             return Ok(
                 profileCollectionsGrouped
@@ -751,7 +751,7 @@ namespace SCMM.Web.Server.API.Controllers
                 })
                 .Where(x => x.Movement != 0)
                 .OrderByDescending(x => x.Movement)
-                .ToList();
+                .ToArray();
 
             return Ok(groupedItemMovement);
         }

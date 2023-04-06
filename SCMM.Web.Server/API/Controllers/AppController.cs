@@ -46,8 +46,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(!detailed
-                ? apps.Select(x => _mapper.Map<AppListDTO>(x)).ToList()
-                : apps.Select(x => _mapper.Map<AppDetailedDTO>(x)).ToList()
+                ? apps.Select(x => _mapper.Map<AppListDTO>(x)).ToArray()
+                : apps.Select(x => _mapper.Map<AppDetailedDTO>(x)).ToArray()
             );
         }
     }

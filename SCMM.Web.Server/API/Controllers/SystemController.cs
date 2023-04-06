@@ -76,7 +76,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("No recent system changes found");
             }
 
-            return Ok(latestSystemUpdates.Messages);
+            return Ok(latestSystemUpdates.Messages.ToArray());
         }
     }
 }

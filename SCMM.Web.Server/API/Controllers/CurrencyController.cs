@@ -46,8 +46,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(!detailed
-                ? currencies.Select(x => _mapper.Map<CurrencyListDTO>(x)).ToList()
-                : currencies.Select(x => _mapper.Map<CurrencyDetailedDTO>(x)).ToList()
+                ? currencies.Select(x => _mapper.Map<CurrencyListDTO>(x)).ToArray()
+                : currencies.Select(x => _mapper.Map<CurrencyDetailedDTO>(x)).ToArray()
             );
         }
     }

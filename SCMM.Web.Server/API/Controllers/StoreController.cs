@@ -64,7 +64,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(
-                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentifierDTO>(x, this)).ToList()
+                itemStores
+                    .Select(x => _mapper.Map<SteamItemStore, StoreIdentifierDTO>(x, this))
+                    .ToArray()
             );
         }
 
@@ -283,7 +285,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             );
 
-            return Ok(storeItemSales);
+            return Ok(storeItemSales.ToArray());
         }
 
         /// <summary>
@@ -362,7 +364,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             );
 
-            return Ok(storeItemRevenue);
+            return Ok(storeItemRevenue.ToArray());
         }
 
         /// <summary>

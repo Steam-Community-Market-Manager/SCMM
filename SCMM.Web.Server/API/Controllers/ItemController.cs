@@ -497,7 +497,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             );
 
-            return Ok(sales);
+            return Ok(sales.ToArray());
         }
 
         /// <summary>
@@ -567,7 +567,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
                     AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
                     Items = x.Items
-                })
+                }).ToArray()
             );
         }
 
@@ -667,7 +667,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Timestamp = x.TimePublished
                 })
                 .OrderByDescending(x => x.Timestamp)
-                .ToListAsync();
+                .ToArrayAsync();
 
             return Ok(itemDefinitionArchives);
         }
@@ -727,15 +727,19 @@ namespace SCMM.Web.Server.API.Controllers
 
             // TODO: Add support for other apps
             return Ok(
-                itemTypes.GroupBy(x => x.ToRustItemGroup()).OrderBy(x => x.Key).Select(g => new ItemTypeGroupDTO()
-                {
-                    Name = g.Key,
-                    ItemTypes = g.OrderBy(x => x).Select(i => new ItemTypeDTO()
+                itemTypes
+                    .GroupBy(x => x.ToRustItemGroup())
+                    .OrderBy(x => x.Key)
+                    .Select(g => new ItemTypeGroupDTO()
                     {
-                        Id = i.ToRustItemShortName(),
-                        Name = i
-                    }).ToArray()
-                })
+                        Name = g.Key,
+                        ItemTypes = g.OrderBy(x => x).Select(i => new ItemTypeDTO()
+                        {
+                            Id = i.ToRustItemShortName(),
+                            Name = i
+                        }).ToArray()
+                    })
+                    .ToArray()
             );
         }
 

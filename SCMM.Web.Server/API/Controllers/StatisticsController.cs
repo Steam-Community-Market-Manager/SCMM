@@ -119,7 +119,8 @@ namespace SCMM.Web.Server.API.Controllers
                         TotalSalesValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Value.TotalSalesValue)),
                         AverageItemValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.Value.AverageItemValue, 0))),
                     }
-                );
+                )
+                .ToArray();
 
             return Ok(salesPerDay);
         }
@@ -596,8 +597,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(
-                topSellerPositions.GroupBy(x => new { x.Name, x.IconUrl, x.IconAccentColour }).Select(
-                    x => new StoreTopSellerItemDTO
+                topSellerPositions
+                    .GroupBy(x => new { x.Name, x.IconUrl, x.IconAccentColour })
+                    .Select(x => new StoreTopSellerItemDTO
                     {
                         Name = x.Key.Name,
                         IconUrl = x.Key.IconUrl,
@@ -610,8 +612,8 @@ namespace SCMM.Web.Server.API.Controllers
                             Total = p.Total,
                             IsActive = p.IsActive
                         }).ToList()
-                    }
-                ).ToList()
+                    })
+                    .ToArray()
             );
         }
 
@@ -652,7 +654,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             return Ok(itemTypeDistribution
                 .OrderByDescending(x => x.Accepted)
-                .ToList()
+                .ToArray()
             );
         }
 
@@ -1166,7 +1168,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.DonatorLevel > 0)
                 .OrderByDescending(x => x.DonatorLevel)
                 .Select(x => _mapper.Map<ProfileDTO>(x))
-                .ToListAsync();
+                .ToArrayAsync();
 
             return Ok(donators);
         }
@@ -1188,7 +1190,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.Roles.Serialised.Contains(Roles.Contributor))
                 .OrderByDescending(x => x.SteamId)
                 .Select(x => _mapper.Map<ProfileDTO>(x))
-                .ToListAsync();
+                .ToArrayAsync();
 
             return Ok(donators);
         }
