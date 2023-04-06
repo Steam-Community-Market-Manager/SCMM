@@ -6,5 +6,5 @@ public class SystemUpdateMessageDTO
 
     public string Description { get; set; }
 
-    public IDictionary<string, string> Media { get; set; }
+    public Dictionary<string, string> Media { get; set; }
 }

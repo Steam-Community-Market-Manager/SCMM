@@ -30,7 +30,7 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public InventoryValueMovementDisplayType InventoryValueMovemenDisplay { get; set; }
 
-        public IDictionary<string, string[]> Notifications { get; set; }
+        public Dictionary<string, string[]> Notifications { get; set; }
 
         public ProfileWebhook[] Webhooks { get; set; }
     }

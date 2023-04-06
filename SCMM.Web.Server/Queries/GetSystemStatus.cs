@@ -73,7 +73,8 @@ namespace SCMM.Web.Server.Queries
                             Size = a.ItemDefinitions.Length,
                             PublishedOn = a.TimePublished,
                             IsImported = true
-                        }),
+                        })
+                        .ToArray(),
                     AssetDescriptionsUpdates = new TimeRangeWithTargetDTO()
                     {
                         Oldest = x.AssetDescriptions.Where(x => x.ClassId != null).Min(y => y.TimeRefreshed),
@@ -128,9 +129,9 @@ namespace SCMM.Web.Server.Queries
             {
                 Status = new SystemStatusDTO()
                 {
-                    Alerts = alerts,
+                    Alerts = alerts.ToArray(),
                     SteamApp = steamApp,
-                    WebProxies = webProxies,
+                    WebProxies = webProxies.ToArray(),
                 }
             };
         }

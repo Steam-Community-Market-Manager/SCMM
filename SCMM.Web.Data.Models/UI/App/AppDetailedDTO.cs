@@ -12,8 +12,8 @@ namespace SCMM.Web.Data.Models.UI.App
 
         public SteamAppFeatureTypes Features { get; set; }
 
-        public IEnumerable<string> DiscordCommunities { get; set; }
+        public string[] DiscordCommunities { get; set; }
 
-        public IEnumerable<string> EconomyMedia { get; set; }
+        public string[] EconomyMedia { get; set; }
     }
 }

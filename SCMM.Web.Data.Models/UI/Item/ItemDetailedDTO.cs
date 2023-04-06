@@ -45,9 +45,9 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string[] Notes { get; set; }
 
-        public IDictionary<long, string> Changes { get; set; }
+        public Dictionary<long, string> Changes { get; set; }
 
-        public IDictionary<string, string> Tags { get; set; }
+        public Dictionary<string, string> Tags { get; set; }
 
         public bool IsPermanent { get; set; }
 
@@ -75,7 +75,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string PreviewUrl { get; set; }
 
-        public IDictionary<string, SteamMediaType> Previews { get; set; }
+        public Dictionary<string, SteamMediaType> Previews { get; set; }
 
         public long? SupplyTotalEstimated { get; set; }
 
@@ -103,7 +103,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public uint? VotesDown { get; set; }
 
-        public IDictionary<ulong, uint> Bundle { get; set; }
+        public Dictionary<ulong, uint> Bundle { get; set; }
 
         public bool IsCommodity { get; set; }
 
@@ -123,11 +123,11 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public bool IsCraftable { get; set; }
 
-        public IDictionary<string, int> CraftingComponents { get; set; }
+        public Dictionary<string, int> CraftingComponents { get; set; }
 
         public bool IsBreakable { get; set; }
 
-        public IDictionary<string, int> BreaksIntoComponents { get; set; }
+        public Dictionary<string, int> BreaksIntoComponents { get; set; }
 
         public bool IsBanned { get; set; }
 

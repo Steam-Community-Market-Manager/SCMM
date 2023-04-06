@@ -22,7 +22,7 @@ public class SystemStatusWebProxyDTO
 
     public int RequestsFailedCount { get; set; }
 
-    public IDictionary<string, DateTimeOffset> DomainRateLimits { get; set; }
+    public Dictionary<string, DateTimeOffset> DomainRateLimits { get; set; }
 
     public SystemStatusSeverity Status
     {

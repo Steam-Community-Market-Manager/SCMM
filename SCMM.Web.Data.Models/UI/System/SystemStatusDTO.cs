@@ -2,11 +2,11 @@
 
 public class SystemStatusDTO
 {
-    public IEnumerable<SystemStatusAlertDTO> Alerts { get; set; }
+    public SystemStatusAlertDTO[] Alerts { get; set; }
 
     public SystemStatusSteamAppDTO SteamApp { get; set; }
 
-    public IEnumerable<SystemStatusWebProxyDTO> WebProxies { get; set; }
+    public SystemStatusWebProxyDTO[] WebProxies { get; set; }
 
     public SystemStatusSeverity Status
     {

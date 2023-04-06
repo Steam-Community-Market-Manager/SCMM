@@ -8,7 +8,7 @@ public class SystemStatusSteamAppDTO
 
     public string IconUrl { get; set; }
 
-    public IEnumerable<SystemStatusAppItemDefinitionArchive> ItemDefinitionArchives { get; set; }
+    public SystemStatusAppItemDefinitionArchive[] ItemDefinitionArchives { get; set; }
 
     public TimeRangeWithTargetDTO AssetDescriptionsUpdates { get; set; }
 
@@ -16,5 +16,5 @@ public class SystemStatusSteamAppDTO
 
     public TimeRangeWithTargetDTO MarketSaleUpdates { get; set; }
 
-    public IEnumerable<SystemStatusAppMarketDTO> Markets { get; set; }
+    public SystemStatusAppMarketDTO[] Markets { get; set; }
 }
