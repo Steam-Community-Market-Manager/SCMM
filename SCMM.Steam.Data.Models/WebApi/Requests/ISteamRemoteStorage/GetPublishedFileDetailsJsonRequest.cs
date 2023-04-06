@@ -1,6 +1,4 @@
-﻿using SCMM.Steam.Client;
-
-namespace SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage
+﻿namespace SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage
 {
     /// <summary>
     /// https://steamapi.xpaw.me/#ISteamRemoteStorage/GetPublishedFileDetails

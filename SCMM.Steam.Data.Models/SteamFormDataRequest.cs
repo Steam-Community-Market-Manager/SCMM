@@ -1,6 +1,4 @@
-﻿using SCMM.Steam.Data.Models;
-
-namespace SCMM.Steam.Client;
+﻿namespace SCMM.Steam.Data.Models;
 
 public abstract class SteamFormDataRequest : SteamRequest
 {
