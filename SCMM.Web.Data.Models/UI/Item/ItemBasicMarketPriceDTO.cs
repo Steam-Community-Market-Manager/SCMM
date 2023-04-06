@@ -1,5 +1,4 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
-using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Item
 {

@@ -43,7 +43,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
     )
     {
         var user = (DiscordUser)null;
-        
+
         // If steam id was not specified, default to the user (if any)
         if (string.IsNullOrEmpty(steamId) && Context.User != null)
         {

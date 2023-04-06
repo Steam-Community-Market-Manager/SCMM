@@ -1,8 +1,5 @@
 ﻿using Microsoft.Azure.Functions.Worker;
-using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
-using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Models.Statistics;
 
 namespace SCMM.Steam.Functions.Timer;
 

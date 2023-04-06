@@ -59,7 +59,7 @@ public class UpdateMarketItemPricesFromCSTrade
             {
                 stopwatch.Restart();
                 var csTradeAppItems = (await _csTradeWebClient.GetPricesAsync(app.Name)) ?? new List<CSTradeItemPrice>();
-                
+
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

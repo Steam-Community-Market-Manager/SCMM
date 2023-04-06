@@ -1,11 +1,4 @@
-﻿using CommandQuery;
-using SCMM.Shared.Abstractions.Messaging;
-using SCMM.Shared.Abstractions.Messaging.Attributes;
-using SCMM.Shared.API.Messages;
-using SCMM.Steam.API.Commands;
-using SCMM.Steam.Data.Models;
-
-namespace SCMM.Worker.Server.Handlers
+﻿namespace SCMM.Worker.Server.Handlers
 {
     /*
     [Concurrency(MaxConcurrentCalls = 1)]

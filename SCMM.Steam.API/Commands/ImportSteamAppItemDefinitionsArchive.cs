@@ -151,7 +151,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogInformation($"Parsing item definitions for new asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                     await AddNewAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Error while parsing item definitions for new asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}'). {ex.Message}");
                 }

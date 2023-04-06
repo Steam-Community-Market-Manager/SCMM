@@ -36,7 +36,6 @@ using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Shared.Web.Statistics;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;

@@ -1,6 +1,5 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
-using System.Reflection;
 
 namespace SCMM.Steam.Data.Models.Attributes;
 

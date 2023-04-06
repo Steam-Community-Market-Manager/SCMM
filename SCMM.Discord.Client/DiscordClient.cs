@@ -273,7 +273,7 @@ namespace SCMM.Discord.Client
             string authorIconUrl = null, string authorName = null, string authorUrl = null,
             string title = null, string url = null, string thumbnailUrl = null,
             string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false,
-            string imageUrl = null, Color? color = null, string[] reactions = null, IDictionary<string, string> linkButtons = null, 
+            string imageUrl = null, Color? color = null, string[] reactions = null, IDictionary<string, string> linkButtons = null,
             bool crossPost = false)
         {
             WaitUntilClientIsConnected();
@@ -290,7 +290,7 @@ namespace SCMM.Discord.Client
                 throw new Exception($"Unable to find guild channel (guildId: {guildId}, channelId: {channelId})");
             }
 
-            var messageChannel = (IMessageChannel) channel;
+            var messageChannel = (IMessageChannel)channel;
             if (!String.IsNullOrEmpty(threadName))
             {
                 crossPost = false; // cross-posting is only allowed in news channels, not threads

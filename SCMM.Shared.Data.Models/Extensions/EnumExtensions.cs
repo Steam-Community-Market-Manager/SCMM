@@ -16,7 +16,7 @@ namespace SCMM.Shared.Data.Models.Extensions
 
         public static bool IsEnabled(this Enum enumValue)
         {
-            return enumValue.GetDisplayName() != null && 
+            return enumValue.GetDisplayName() != null &&
                    enumValue.GetType()
                             .GetMember(enumValue.ToString())
                             .FirstOrDefault()?

@@ -148,7 +148,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> MissingWorkshopFiles(bool deepScan = false)
         {
             var message = await Context.Message.ReplyAsync("Importing workshop files from creators...");
-            
+
             var apps = await _steamDb.SteamApps.AsNoTracking()
                 .ToListAsync();
 

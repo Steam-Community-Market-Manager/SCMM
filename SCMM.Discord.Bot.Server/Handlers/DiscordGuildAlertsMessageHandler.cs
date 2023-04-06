@@ -8,8 +8,8 @@ using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
-using SCMM.Steam.Data.Models.Store.Requests.Html;
 using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Store.Requests.Html;
 using SCMM.Steam.Data.Store;
 using System.Globalization;
 using System.Text;
@@ -302,7 +302,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     //linkButtons: linkButtons, 
                     crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
-                
+
                 try
                 {
                     await _client.SendMessageAsync(

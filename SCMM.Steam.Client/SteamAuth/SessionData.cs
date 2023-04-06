@@ -20,13 +20,13 @@ namespace SteamAuth
         {
             if (Cookies?.Length > 0)
             {
-                foreach(var cookie in Cookies)
+                foreach (var cookie in Cookies)
                 {
                     cookies.Add(new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain)
                     {
                         HttpOnly = cookie.HttpOnly,
                         Secure = cookie.Secure,
-                        Expires = cookie.Expires                        
+                        Expires = cookie.Expires
                     });
                 }
             }

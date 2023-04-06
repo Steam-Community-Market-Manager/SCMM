@@ -112,7 +112,7 @@ public class UpdateMarketItemPricesFromSkinport
                         x.LastUpdateError = ex.Message;
                     });
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     logger.LogError(ex, $"Failed to update market item price statistics for Skinport (appId: {app.SteamId}). {ex.Message}");
                 }

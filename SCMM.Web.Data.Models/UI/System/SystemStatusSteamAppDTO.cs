@@ -1,6 +1,4 @@
-﻿using SCMM.Steam.Data.Models.Enums;
-
-namespace SCMM.Web.Data.Models.UI.System;
+﻿namespace SCMM.Web.Data.Models.UI.System;
 
 public class SystemStatusSteamAppDTO
 {

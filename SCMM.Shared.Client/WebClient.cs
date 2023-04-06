@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Text.RegularExpressions;
 
 namespace SCMM.Shared.Client;
 
@@ -67,7 +66,7 @@ public class WebClient : IDisposable
         {
             httpClient.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.UtcNow.Subtract(IfModifiedSinceTimeAgo.Value);
         }
-        
+
         return httpClient;
     }
 

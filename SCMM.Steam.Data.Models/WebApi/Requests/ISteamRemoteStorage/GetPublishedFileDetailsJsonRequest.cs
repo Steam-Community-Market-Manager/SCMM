@@ -13,7 +13,8 @@
             $"{Constants.SteamWebApiUrl}/ISteamRemoteStorage/GetPublishedFileDetails/v1/"
         );
 
-        public override IDictionary<string, string> Data {
+        public override IDictionary<string, string> Data
+        {
             get
             {
                 var data = new Dictionary<string, string>();

@@ -125,7 +125,7 @@ public class RedisStatisticsService : IStatisticsService
         return JsonSerializer.Deserialize<TValue>(entry.ToString());
     }
 
-    public async Task SetDictionaryAsync<TKey, TValue>(string key, IDictionary<TKey,TValue> value, bool deleteKeyBeforeSet = false)
+    public async Task SetDictionaryAsync<TKey, TValue>(string key, IDictionary<TKey, TValue> value, bool deleteKeyBeforeSet = false)
     {
         if (deleteKeyBeforeSet)
         {

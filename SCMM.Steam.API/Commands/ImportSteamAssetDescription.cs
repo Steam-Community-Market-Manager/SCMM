@@ -64,7 +64,7 @@ namespace SCMM.Steam.API.Commands
             var assetClassInfoResponse = await _apiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
             {
                 AppId = request.AppId,
-                ClassIds = new [] { request.AssetClassId }
+                ClassIds = new[] { request.AssetClassId }
             });
             if (assetClassInfoResponse?.Success != true)
             {
@@ -187,7 +187,7 @@ namespace SCMM.Steam.API.Commands
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
             var marketListingPageHtml = (string)null;
             var assetIsMarketable = (
-                string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase) || 
+                string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase) ||
                 (string.IsNullOrEmpty(assetClass.Marketable) && !string.IsNullOrEmpty(assetClass.MarketHashName))
             );
             var needsDescription = (!assetClassHasItemDescription && string.IsNullOrEmpty(assetDescription.Description));

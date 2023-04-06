@@ -4,10 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using SCMM.Shared.Data.Models;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Store;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace SCMM.Steam.API.Queries
 {

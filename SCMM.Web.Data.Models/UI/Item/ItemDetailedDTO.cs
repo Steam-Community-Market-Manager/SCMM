@@ -104,7 +104,7 @@ namespace SCMM.Web.Data.Models.UI.Item
         public uint? VotesDown { get; set; }
 
         public IDictionary<ulong, uint> Bundle { get; set; }
-        
+
         public bool IsCommodity { get; set; }
 
         public bool IsMarketable { get; set; }

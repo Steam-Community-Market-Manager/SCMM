@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.Metrics;
-
-namespace SCMM.Steam.Data.Models.Community.Requests.Json
+﻿namespace SCMM.Steam.Data.Models.Community.Requests.Json
 {
     public class SteamMarketItemOrdersActivityJsonRequest : SteamRequest
     {

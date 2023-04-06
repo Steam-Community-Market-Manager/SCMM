@@ -11,8 +11,6 @@ using SCMM.Steam.API.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;

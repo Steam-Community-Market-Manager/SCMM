@@ -34,7 +34,7 @@ namespace SCMM.Web.Data.Models.Extensions
                 return default(T);
             }
 
-            var midpoint = (int) Math.Round((decimal)count / 2, 0);
+            var midpoint = (int)Math.Round((decimal)count / 2, 0);
             return array
                 .OrderBy(n => n)
                 .ElementAt(midpoint);

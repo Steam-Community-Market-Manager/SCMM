@@ -3,7 +3,6 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -75,7 +74,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 Listings = (int)(totals?.TotalListings ?? 0),
                 ListingsMarketValue = this.Currency().CalculateExchange((long)(totals?.TotalListingsMarketValue ?? 0L)),
-                VolumeLast24hrs = last24hrSalesDataIsComplete ? (int) totals.TotalVolumeLast24hrs : null,
+                VolumeLast24hrs = last24hrSalesDataIsComplete ? (int)totals.TotalVolumeLast24hrs : null,
                 VolumeMarketValueLast24hrs = last24hrSalesDataIsComplete ? this.Currency().CalculateExchange((long)totals.TotalVolumeMarketValueLast24hrs) : null
             });
         }
@@ -118,7 +117,7 @@ namespace SCMM.Web.Server.API.Controllers
                         TotalSalesVolume = x.Value.TotalSalesVolume,
                         //AdjustedSalesVolume = (long)Math.Round((x.Value.TotalSalesVolume > 0 && x.Value.TotalItems > 0) ? (x.Value.TotalSalesVolume / (decimal)x.Value.TotalItems) : 0, 0),
                         TotalSalesValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Value.TotalSalesValue)),
-                        AverageItemValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.Value.AverageItemValue, 0))),
+                        AverageItemValue = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.Value.AverageItemValue, 0))),
                     }
                 );
 
@@ -646,7 +645,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .Where(y => y.AppId == appId)
                         .Where(y => y.ItemType == x.Key)
                         .Where(y => y.TimeCreated != null && y.TimeCreated.Value.Year >= fromYear.Value && y.TimeCreated.Value.Year <= toYear)
-                        .Count(), 
+                        .Count(),
                     Accepted = x.Count(y => y.IsAccepted),
                 })
                 .ToListAsync();

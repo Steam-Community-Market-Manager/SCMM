@@ -5,7 +5,6 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
-using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Language;
 using System.Linq.Expressions;
 

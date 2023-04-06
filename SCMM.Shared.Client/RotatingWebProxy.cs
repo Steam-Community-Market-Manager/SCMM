@@ -100,7 +100,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         {
             proxy.IncrementHostCooldown(address, cooldown);
             var newProxy = GetNextAvailableProxy(address);
-            
+
             _logger.LogDebug($"'{address?.Host}' has entered a {cooldown.TotalSeconds}s cooldown on '{proxy?.Address?.Host ?? "default"}' proxy. Requests will now rotate to '{newProxy?.Address?.Host ?? "default"}' proxy.");
 
             _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>

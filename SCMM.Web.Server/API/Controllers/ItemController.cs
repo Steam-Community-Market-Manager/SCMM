@@ -756,7 +756,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetItemPrices([FromQuery] MarketType[] markets = null)
         {
             var appId = this.App().Guid;
-            var query = (IQueryable<SteamAssetDescription>) _db.SteamAssetDescriptions
+            var query = (IQueryable<SteamAssetDescription>)_db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Where(x => x.AppId == appId && x.ClassId > 0)
                 .Include(x => x.App);
@@ -775,7 +775,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderBy(x => x.ClassId)
                 .ToArrayAsync();
 
-            if(markets.Length > 0)
+            if (markets.Length > 0)
             {
                 foreach (var item in items.Where(x => x.MarketItem != null))
                 {

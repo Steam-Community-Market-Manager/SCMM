@@ -25,7 +25,7 @@ public class BuyFromAttribute : Attribute
         var buyPrice = price;
         if (DiscountMultiplier > 0 && buyPrice > 0)
         {
-            buyPrice -= (long) Math.Round(buyPrice * DiscountMultiplier, 0);
+            buyPrice -= (long)Math.Round(buyPrice * DiscountMultiplier, 0);
         }
 
         return Math.Max(0, buyPrice);

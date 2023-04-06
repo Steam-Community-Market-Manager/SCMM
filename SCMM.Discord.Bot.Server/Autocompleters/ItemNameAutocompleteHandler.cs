@@ -17,12 +17,12 @@ public class ItemNameAutocompleteHandler : AutocompleteHandler
 
     public async override Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
-        var appId = (long) (autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == "app")?.Value ?? 0);
+        var appId = (long)(autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == "app")?.Value ?? 0);
         var itemName = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
         using var scope = services.CreateScope();
         {
             var steamDb = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-            var itemAppId = appId > 0 ? appId : (long) _configuration.AppId;
+            var itemAppId = appId > 0 ? appId : (long)_configuration.AppId;
             var itemNames = await steamDb.SteamAssetDescriptions
                 .Where(x => x.App.SteamId == itemAppId.ToString())
                 .Where(x => x.Name.Contains(itemName))

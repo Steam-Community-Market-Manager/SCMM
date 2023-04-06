@@ -8,7 +8,6 @@ using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.System;
-using SCMM.Web.Server.Extensions;
 
 namespace SCMM.Web.Server.Queries
 {

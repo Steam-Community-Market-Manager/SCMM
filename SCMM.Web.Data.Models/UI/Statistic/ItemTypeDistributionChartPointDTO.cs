@@ -1,6 +1,4 @@
-﻿using SCMM.Web.Data.Models.UI.Item;
-
-namespace SCMM.Web.Data.Models.UI.Statistic
+﻿namespace SCMM.Web.Data.Models.UI.Statistic
 {
     public class ItemTypeDistributionChartPointDTO
     {

@@ -44,7 +44,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         {
             appId = _configuration.GetDiscordConfiguration().AppId;
         }
-        
+
         // If currency was not specified, default to the user or guild currency (if any)
         if (string.IsNullOrEmpty(currencyId) && Context.User != null)
         {

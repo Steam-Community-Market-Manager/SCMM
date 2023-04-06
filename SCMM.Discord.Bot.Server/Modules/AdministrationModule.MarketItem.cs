@@ -6,14 +6,14 @@ using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using SCMM.Steam.Data.Models.Extensions;
-using SCMM.Steam.Client.Exceptions;
 using System.Globalization;
 
 namespace SCMM.Discord.Bot.Server.Modules

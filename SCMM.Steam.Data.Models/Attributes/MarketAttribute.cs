@@ -1,6 +1,4 @@
-﻿using SCMM.Steam.Data.Models.Enums;
-
-namespace SCMM.Steam.Data.Models.Attributes;
+﻿namespace SCMM.Steam.Data.Models.Attributes;
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
 public class MarketAttribute : Attribute

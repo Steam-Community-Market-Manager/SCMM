@@ -209,10 +209,10 @@ namespace SCMM.Steam.Data.Store
 
         public bool IsBuyNowAGoodDeal(bool includeFees = true)
         {
-            var profit = (long) Math.Round(SellOrderLowestPrice - (SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier) - (BuyNowPrice + (includeFees ? BuyNowFee : 0)), 0);
+            var profit = (long)Math.Round(SellOrderLowestPrice - (SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier) - (BuyNowPrice + (includeFees ? BuyNowFee : 0)), 0);
             return (BuyNowPrice + (includeFees ? BuyNowFee : 0)) > 0 &&
                    (SellOrderLowestPrice > 0) &&
-                   (profit > 100 || profit > (SellOrderLowestPrice * 0.5)) /* Profit must be >3.00 USD or >66% of it's Steam value, otherwise it's not worth the effort */; 
+                   (profit > 100 || profit > (SellOrderLowestPrice * 0.5)) /* Profit must be >3.00 USD or >66% of it's Steam value, otherwise it's not worth the effort */;
         }
 
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
@@ -603,7 +603,7 @@ namespace SCMM.Steam.Data.Store
                 var allTimeAverage = (long)Math.Round(salesAfterFirstSevenDays.Length > 0 ? salesAfterFirstSevenDays.Average(x => x.MedianPrice) : 0, 0);
                 var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Min(x => x.MedianPrice));
                 var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Max(x => x.MedianPrice));
-                
+
                 // Has the all-time-low been surpassed?
                 if (allTimeLow?.Timestamp > AllTimeLowestValueOn && allTimeLow?.MedianPrice > 0 && allTimeLow?.MedianPrice < AllTimeLowestValue)
                 {
@@ -690,7 +690,7 @@ namespace SCMM.Steam.Data.Store
             var medianSalesLastWeek = (Last168hrSales > 0 ? (Last168hrSales / 7) : 0);
 
             // Check for price spike manipulations
-            if (!IsBeingManipulated && 
+            if (!IsBeingManipulated &&
                 (marketAge > TimeSpan.FromDays(7)) && // older than 7 days
                 (medianSalesLastWeek > 5) && // weekly volume greater than 5
                 (lowestSellOrderPrice > 0 && highestBuyOrderPrice > 0 && medianPriceLastWeek > 0) && // price greater than zero
