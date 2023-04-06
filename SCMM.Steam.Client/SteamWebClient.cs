@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
@@ -37,7 +38,8 @@ namespace SCMM.Steam.Client
             {
                 try
                 {
-                    var response = await client.PostAsync(request.Uri, null);
+                    var formData = (request as SteamFormDataRequest);
+                    var response = await client.PostAsync(request.Uri, (formData != null ? formData : null));
                     if (!response.IsSuccessStatusCode)
                     {
                         throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);

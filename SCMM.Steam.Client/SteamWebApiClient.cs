@@ -5,10 +5,14 @@ using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamUser;
 using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Responses.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Responses.IPublishedFileService;
+using SCMM.Steam.Data.Models.WebApi.Responses.ISteamEconomy;
+using SCMM.Steam.Data.Models.WebApi.Responses.ISteamRemoteStorage;
 using SCMM.Steam.Data.Models.WebApi.Responses.ISteamUser;
 using System.Text.Json;
 
@@ -90,7 +94,43 @@ namespace SCMM.Steam.Client
 
         #endregion
 
+        #region Steam Economy
+
+        public async Task<GetAssetClassInfoJsonResponse> SteamEconomyGetAssetClassInfo(GetAssetClassInfoJsonRequest request, bool useCache = false)
+        {
+            request.Key ??= _configuration?.ApplicationKey;
+            var response = await GetJson<GetAssetClassInfoJsonRequest, SteamResult<GetAssetClassInfoJsonResponse>>(request, useCache);
+            return response?.Result;
+        }
+
+        public async Task<GetAssetPricesJsonResponse> SteamEconomyGetAssetPrices(GetAssetPricesJsonRequest request, bool useCache = false)
+        {
+            request.Key ??= _configuration?.ApplicationKey;
+            var response = await GetJson<GetAssetPricesJsonRequest, SteamResult<GetAssetPricesJsonResponse>>(request, useCache);
+            return response?.Result;
+        }
+
+        #endregion
+
+        #region Steam Remote Storage
+
+        public async Task<GetPublishedFileDetailsJsonResponse> SteamRemoteStorageGetPublishedFileDetails(GetPublishedFileDetailsJsonRequest request)
+        {
+            request.Key ??= _configuration?.ApplicationKey;
+            var response = await PostJson<GetPublishedFileDetailsJsonRequest, SteamResponse<GetPublishedFileDetailsJsonResponse>>(request);
+            return response?.Response;
+        }
+
+        #endregion
+
         #region Steam User
+
+        public async Task<GetFriendListJsonResponse> SteamUserGetFriendList(GetFriendListJsonRequest request, bool useCache = true)
+        {
+            request.Key ??= _configuration?.ApplicationKey;
+            var response = await GetJson<GetFriendListJsonRequest, GetFriendListJsonResponse>(request, useCache);
+            return response;
+        }
 
         public async Task<GetPlayerSummariesJsonResponse> SteamUserGetPlayerSummaries(GetPlayerSummariesJsonRequest request, bool useCache = true)
         {

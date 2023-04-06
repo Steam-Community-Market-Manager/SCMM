@@ -42,7 +42,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         }
 
         [JsonPropertyName("time")]
-        public long Time { get; set; }
+        public ulong Time { get; set; }
 
         [JsonPropertyName("avatar_buyer")]
         public string AvatarBuyer { get; set; }

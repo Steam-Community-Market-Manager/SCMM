@@ -5,7 +5,6 @@ using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.API.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
@@ -15,12 +14,10 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
 using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using Steam.Models.SteamEconomy;
-using SteamWebAPI2.Interfaces;
-using SteamWebAPI2.Utilities;
 using System.Globalization;
 using System.Text.Json;
 
@@ -374,11 +371,12 @@ namespace SCMM.Steam.API.Commands
             if (addedStoreItems.Any())
             {
                 // Get the latest asset description prices
-                var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
-                var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
                 var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
-                var assetPricesResponse = await steamEconomy.GetAssetPricesAsync(uint.Parse(app.SteamId));
-                if (assetPricesResponse?.Data?.Success != true)
+                var assetPricesResponse = await _steamApiClient.SteamEconomyGetAssetPrices(new GetAssetPricesJsonRequest()
+                {
+                    AppId = uint.Parse(app.SteamId)
+                });
+                if (assetPricesResponse?.Success != true)
                 {
                     _logger.LogError($"Failed to get store asset prices (appId: {app.SteamId})");
                 }
@@ -476,8 +474,8 @@ namespace SCMM.Steam.API.Commands
 
                         _logger.LogInformation($"A new item has been added to the {storeType} item store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
 
-                        var storeItemAsset = assetPricesResponse?.Data?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
-                        var storeItemPrices = storeItemAsset?.Prices?.ToDictionary();
+                        var storeItemAsset = assetPricesResponse?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId?.ToString() || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
+                        var storeItemPrices = storeItemAsset?.Prices ?? new Dictionary<string, long>();
                         var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailable(app, assetDescription, storeItemAsset, defaultCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
                         if (storeItem == null)
                         {
@@ -566,11 +564,11 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task<SteamStoreItem> CreateOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamAssetDescription assetDescription, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeDiscovered)
+        private async Task<SteamStoreItem> CreateOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamAssetDescription assetDescription, AssetPrice assetPrice, SteamCurrency currency, DateTimeOffset? timeDiscovered)
         {
-            if (assetDescription.ClassId == null && asset.ClassId > 0)
+            if (assetDescription.ClassId == null && !String.IsNullOrEmpty(assetPrice.ClassId))
             {
-                assetDescription.ClassId = asset.ClassId;
+                assetDescription.ClassId = UInt64.Parse(assetPrice.ClassId);
             }
 
             // Reload store item from database (if it exists) to ensure we load all store instances this item appears in
@@ -579,7 +577,7 @@ namespace SCMM.Steam.API.Commands
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
                 .Include(x => x.Description.CreatorProfile)
-                .FirstOrDefaultAsync(x => x.AppId == app.Id && x.Description.ClassId == asset.ClassId);
+                .FirstOrDefaultAsync(x => x.AppId == app.Id && x.Description.ClassId != null && x.Description.ClassId.ToString() == assetPrice.ClassId);
 
             // If the store item doesn't exist yet, create it now
             if (storeItem == null)
@@ -592,7 +590,7 @@ namespace SCMM.Steam.API.Commands
                     DescriptionId = assetDescription.Id
                 });
 
-                var prices = asset.Prices.ToDictionary();
+                var prices = assetPrice.Prices;
                 storeItem.UpdatePrice(
                     currency,
                     prices.FirstOrDefault(x => x.Key == currency?.Name).Value,
@@ -604,11 +602,11 @@ namespace SCMM.Steam.API.Commands
             assetDescription.IsAccepted = true;
             if (assetDescription.TimeAccepted == null)
             {
-                if (!String.IsNullOrEmpty(asset.Date))
+                if (!String.IsNullOrEmpty(assetPrice.Date))
                 {
                     DateTimeOffset storeDate;
-                    if (DateTimeOffset.TryParseExact(asset.Date, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate) ||
-                        DateTimeOffset.TryParseExact(asset.Date, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+                    if (DateTimeOffset.TryParseExact(assetPrice.Date, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate) ||
+                        DateTimeOffset.TryParseExact(assetPrice.Date, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
                     {
                         assetDescription.TimeAccepted = storeDate;
                     }
@@ -620,7 +618,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Mark the store item as available
-            storeItem.SteamId = asset.Name;
+            storeItem.SteamId = assetPrice.Name;
             storeItem.IsAvailable = true;
             return storeItem;
         }

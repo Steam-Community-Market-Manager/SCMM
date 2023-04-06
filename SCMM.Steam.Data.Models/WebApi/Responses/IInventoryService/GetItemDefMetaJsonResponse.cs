@@ -5,7 +5,7 @@ namespace SCMM.Steam.Data.Models.WebApi.Responses.IInventoryService
     public class GetItemDefMetaJsonResponse
     {
         [JsonPropertyName("modified")]
-        public long Modified { get; set; }
+        public ulong Modified { get; set; }
 
         [JsonPropertyName("digest")]
         public string Digest { get; set; }

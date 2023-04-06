@@ -9,9 +9,8 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamUser;
 using SCMM.Steam.Data.Store;
-using SteamWebAPI2.Interfaces;
-using SteamWebAPI2.Utilities;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -36,19 +35,21 @@ namespace SCMM.Steam.API.Commands
     {
         private readonly ILogger<ImportSteamProfileFriends> _logger;
         private readonly IServiceBus _serviceBus;
-        private readonly SteamDbContext _db;
-        private readonly ProxiedSteamCommunityWebClient _communityClient;
-        private readonly SteamConfiguration _cfg;
+        private readonly SteamConfiguration _steamConfiguration;
+        private readonly SteamDbContext _steamDb;
+        private readonly SteamWebApiClient _steamWebApiClient;
+        private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, IServiceBus serviceBus, SteamDbContext db, ProxiedSteamCommunityWebClient communityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, IServiceBus serviceBus, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _serviceBus = serviceBus;
-            _db = db;
-            _communityClient = communityClient;
-            _cfg = cfg?.GetSteamConfiguration();
+            _steamConfiguration = cfg?.GetSteamConfiguration();
+            _steamDb = steamDb;
+            _steamWebApiClient = steamWebApiClient;
+            _steamCommunityClient = steamCommunityClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
@@ -73,19 +74,20 @@ namespace SCMM.Steam.API.Commands
                 _logger.LogInformation($"Importing friends of '{resolvedId.SteamId64}' from Steam");
 
                 var steamId = resolvedId.SteamId64.Value;
-                var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
-                var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                var friendsListResponse = await steamUser.GetFriendsListAsync(steamId);
-                if (friendsListResponse?.Data == null)
+                var friendsListResponse = await _steamWebApiClient.SteamUserGetFriendList(new GetFriendListJsonRequest()
+                {
+                    SteamId = steamId.ToString()
+                });
+                if (friendsListResponse?.Friends == null)
                 {
                     throw new ArgumentException(nameof(request), "SteamID is invalid, or profile no longer exists");
                 }
 
-                friendSteamIds = friendsListResponse.Data
-                    .Where(x => x.SteamId > 0)
-                    .Select(x => x.SteamId.ToString())
+                friendSteamIds = friendsListResponse.Friends
+                    .Where(x => !String.IsNullOrEmpty(x.SteamId))
+                    .Select(x => x.SteamId)
                     .ToArray();
-                var existingFriendSteamIds = await _db.SteamProfiles
+                var existingFriendSteamIds = await _steamDb.SteamProfiles
                     .Where(x => friendSteamIds.Contains(x.SteamId))
                     .Select(x => x.SteamId)
                     .ToListAsync();
@@ -93,7 +95,7 @@ namespace SCMM.Steam.API.Commands
                     .Except(existingFriendSteamIds)
                     .ToArray();
 
-                var apps = await _db.SteamApps.AsNoTracking()
+                var apps = await _steamDb.SteamApps.AsNoTracking()
                     .Where(x => x.IsActive)
                     .Select(x => x.SteamId)
                     .ToListAsync();
@@ -105,7 +107,7 @@ namespace SCMM.Steam.API.Commands
                         foreach (var app in apps)
                         {
                             // Only import profiles that have a public inventory containing items from at least one of our active apps
-                            var inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
+                            var inventory = await _steamCommunityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
                             {
                                 AppId = app,
                                 SteamId = missingFriendSteamId,
@@ -152,7 +154,7 @@ namespace SCMM.Steam.API.Commands
             if (profile != null)
             {
                 profile.LastUpdatedFriendsOn = DateTimeOffset.UtcNow;
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             return new ImportSteamProfileFriendsResponse

@@ -7,9 +7,8 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
-using Steam.Models;
-using SteamWebAPI2.Utilities;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -17,7 +16,7 @@ namespace SCMM.Steam.API.Commands
     {
         public SteamWorkshopFile WorkshopFile { get; set; }
 
-        public PublishedFileDetailsModel PublishedFile { get; set; }
+        public PublishedFileDetails PublishedFile { get; set; }
     }
 
     public class UpdateSteamWorkshopFileResponse
@@ -44,7 +43,6 @@ namespace SCMM.Steam.API.Commands
 
         public async Task<UpdateSteamWorkshopFileResponse> HandleAsync(UpdateSteamWorkshopFileRequest request)
         {
-            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var workshopFile = request.WorkshopFile;
             if (workshopFile == null)
             {
@@ -66,8 +64,8 @@ namespace SCMM.Steam.API.Commands
                 workshopFile.FavouritedLifetime = (long?)publishedFile.LifetimeFavorited;
                 workshopFile.Views = (long?)publishedFile.Views;
                 workshopFile.IsAccepted = (workshopFile.IsAccepted | (publishedFile.LifetimeSubscriptions > 0));
-                workshopFile.TimeCreated = workshopFile.TimeCreated.Earliest(publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null);
-                workshopFile.TimeUpdated = workshopFile.TimeUpdated.Latest(publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null);
+                workshopFile.TimeCreated = workshopFile.TimeCreated.Earliest(publishedFile.TimeCreated.SteamTimestampToDateTimeOffset() > DateTimeOffset.MinValue ? publishedFile.TimeCreated.SteamTimestampToDateTimeOffset() : null);
+                workshopFile.TimeUpdated = workshopFile.TimeUpdated.Latest(publishedFile.TimeUpdated.SteamTimestampToDateTimeOffset() > DateTimeOffset.MinValue ? publishedFile.TimeUpdated.SteamTimestampToDateTimeOffset() : null);
 
                 // Parse creator
                 if (workshopFile.CreatorProfileId == null && publishedFile.Creator > 0)
@@ -95,7 +93,7 @@ namespace SCMM.Steam.API.Commands
                 // Parse tags
                 if (publishedFile.Tags != null)
                 {
-                    workshopFile.Tags = new PersistableStringDictionary(publishedFile.Tags.ToDictionary(k => k, v => v));
+                    workshopFile.Tags = new PersistableStringDictionary(publishedFile.Tags.ToDictionary(k => k.Tag, v => v.DisplayName ?? v.Tag));
                 }
 
                 // Parse item type

@@ -6,9 +6,8 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Store.Requests.Html;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
-using SteamWebAPI2.Interfaces;
-using SteamWebAPI2.Utilities;
 using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
@@ -16,15 +15,17 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateStoreStatistics
 {
     private readonly SteamConfiguration _steamConfiguration;
-    private readonly SteamDbContext _db;
+    private readonly SteamDbContext _steamDb;
+    private readonly SteamWebApiClient _steamApiClient;
     private readonly ICommandProcessor _commandProcessor;
     private readonly ProxiedSteamStoreWebClient _steamStoreWebClient;
 
-    public UpdateStoreStatistics(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, ProxiedSteamStoreWebClient steamStoreWebClient)
+    public UpdateStoreStatistics(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext steamDb, SteamWebApiClient steamApiClient, ProxiedSteamStoreWebClient steamStoreWebClient)
     {
         _steamConfiguration = steamConfiguration;
         _commandProcessor = commandProcessor;
-        _db = db;
+        _steamDb = steamDb;
+        _steamApiClient = steamApiClient;
         _steamStoreWebClient = steamStoreWebClient;
     }
 
@@ -33,7 +34,7 @@ public class UpdateStoreStatistics
     {
         var logger = context.GetLogger("Update-Store-Statistics");
 
-        var appItemStores = await _db.SteamItemStores
+        var appItemStores = await _steamDb.SteamItemStores
             .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
             .Include(x => x.App)
             .Include(x => x.Items).ThenInclude(x => x.Item)
@@ -46,7 +47,7 @@ public class UpdateStoreStatistics
             await UpdateItemStoreTopSellers(logger, appItemStore);
         }
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
     }
 
     private async Task UpdateItemStoreSubscribers(ILogger logger, SteamItemStore itemStore)
@@ -60,24 +61,25 @@ public class UpdateStoreStatistics
 
         var workshopFileIds = assetDescriptions
             .Select(x => x.WorkshopFileId.Value)
-            .ToList();
+            .ToArray();
 
         if (!workshopFileIds.Any())
         {
             return;
         }
 
-        logger.LogTrace($"Updating item store workshop statistics (ids: {workshopFileIds.Count})");
-        var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
-        var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
-        var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(workshopFileIds);
-        if (response?.Data?.Any() != true)
+        logger.LogTrace($"Updating item store workshop statistics (ids: {workshopFileIds.Length})");
+        var response = await _steamApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+        {
+            PublishedFileIds = workshopFileIds
+        });
+        if (response?.PublishedFileDetails?.Any() != true)
         {
             logger.LogError("Failed to get published file details");
             return;
         }
 
-        var assetWorkshopJoined = response.Data.Join(assetDescriptions,
+        var assetWorkshopJoined = response.PublishedFileDetails.Join(assetDescriptions,
             x => x.PublishedFileId,
             y => y.WorkshopFileId,
             (x, y) => new
@@ -96,7 +98,7 @@ public class UpdateStoreStatistics
             });
         }
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
     }
 
     private async Task UpdateItemStoreTopSellers(ILogger logger, SteamItemStore itemStore)
@@ -142,13 +144,13 @@ public class UpdateStoreStatistics
             }
         }
 
-        var items = await _db.SteamStoreItems
+        var items = await _steamDb.SteamStoreItems
             .Where(x => storeItemIds.Contains(x.SteamId) || x.Description.StoreItemTopSellerPositions.Any(y => y.IsActive))
             .Select(x => new
             {
                 StoreItemId = x.SteamId,
                 DescriptionId = x.DescriptionId,
-                LastPosition = _db.SteamStoreItemTopSellerPositions.FirstOrDefault(
+                LastPosition = _steamDb.SteamStoreItemTopSellerPositions.FirstOrDefault(
                     y => x.DescriptionId == y.DescriptionId && x.Description.StoreItemTopSellerPositions.Max(z => z.Timestamp) == y.Timestamp
                 )
             })
@@ -168,7 +170,7 @@ public class UpdateStoreStatistics
                 }
                 if (item.LastPosition == null || item.LastPosition.Position != position || item.LastPosition.Total != total)
                 {
-                    _db.SteamStoreItemTopSellerPositions.Add(
+                    _steamDb.SteamStoreItemTopSellerPositions.Add(
                         new SteamStoreItemTopSellerPosition()
                         {
                             Timestamp = DateTimeOffset.UtcNow,
@@ -189,6 +191,6 @@ public class UpdateStoreStatistics
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
     }
 }

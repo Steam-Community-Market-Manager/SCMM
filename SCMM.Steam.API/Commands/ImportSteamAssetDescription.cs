@@ -8,16 +8,14 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Store.Requests.Html;
 using SCMM.Steam.Data.Models.Store.Requests.Json;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
-using Steam.Models;
-using Steam.Models.SteamEconomy;
-using SteamWebAPI2.Interfaces;
-using SteamWebAPI2.Utilities;
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -62,23 +60,18 @@ namespace SCMM.Steam.API.Commands
 
         public async Task<ImportSteamAssetDescriptionResponse> HandleAsync(ImportSteamAssetDescriptionRequest request)
         {
-            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
-
             // Get asset class info
-            var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
-            var assetClassInfoResponse = await steamEconomy.GetAssetClassInfoAsync(
-                (uint)request.AppId,
-                new List<ulong>()
-                {
-                    request.AssetClassId
-                }
-            );
-            if (assetClassInfoResponse?.Data?.Success != true)
+            var assetClassInfoResponse = await _apiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
+            {
+                AppId = request.AppId,
+                ClassIds = new [] { request.AssetClassId }
+            });
+            if (assetClassInfoResponse?.Any() != true)
             {
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, request failed");
             }
 
-            var assetClass = assetClassInfoResponse.Data.AssetClasses.FirstOrDefault(x => x.ClassId == request.AssetClassId);
+            var assetClass = assetClassInfoResponse.FirstOrDefault(x => x.Value.ClassId == request.AssetClassId).Value;
             if (assetClass == null)
             {
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, asset was not found");
@@ -107,7 +100,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Get published file details from Steam (if workshopfileid is available)
-            var publishedFile = (PublishedFileDetailsModel)null;
+            var publishedFile = (PublishedFileDetails)null;
             var publishedFileVotes = (PublishedFileVoteData)null;
             var publishedFilePreviews = (IEnumerable<PublishedFilePreview>)null;
             var publishedFileChangeNotesPageHtml = (XElement)null;
@@ -125,15 +118,18 @@ namespace SCMM.Steam.API.Commands
             if (publishedFileId > 0)
             {
                 // Get file details
-                var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
-                var publishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(publishedFileId);
-                if (publishedFileDetails?.Data == null)
+                var publishedFileDetailsResponse = await _apiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+                {
+                    PublishedFileIds = new[] { publishedFileId }
+                });
+                var publishedFileDetails = publishedFileDetailsResponse?.PublishedFileDetails?.FirstOrDefault(x => x.PublishedFileId == publishedFileId);
+                if (publishedFileDetails == null)
                 {
                     throw new Exception($"Failed to get workshop file {publishedFileId} for asset {request.AssetClassId}, response was empty");
                 }
 
-                publishedFile = publishedFileDetails.Data;
-                publishedFileHasChanged = (assetDescription.TimeUpdated == null || assetDescription.TimeUpdated < publishedFile.TimeUpdated);
+                publishedFile = publishedFileDetails;
+                publishedFileHasChanged = (assetDescription.TimeUpdated == null || assetDescription.TimeUpdated < publishedFile.TimeUpdated.SteamTimestampToDateTimeOffset());
 
                 // Get file vote data (if missing or item is not yet accepted, votes don't change once accepted)
                 if ((assetDescription.VotesDown == null || assetDescription.VotesUp == null || !assetDescription.IsAccepted) && !string.IsNullOrEmpty(publishedFile.Title))

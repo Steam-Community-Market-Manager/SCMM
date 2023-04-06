@@ -8,28 +8,30 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
-using SteamWebAPI2.Interfaces;
-using SteamWebAPI2.Utilities;
 using System.Xml.Linq;
 
 namespace SCMM.Steam.Functions.Timer;
 
 public class CheckForNewWorkshopFiles
 {
+    private readonly SteamConfiguration _steamConfiguration;
     private readonly SteamDbContext _steamDb;
-    private readonly SteamConfiguration _steamCfg;
+    private readonly SteamWebApiClient _steamWebApiClient;
     private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly IServiceBus _serviceBus;
 
-    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamConfiguration steamCfg, ProxiedSteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus)
+    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus)
     {
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
+        _steamConfiguration = steamConfiguration;
         _steamDb = steamDb;
-        _steamCfg = steamCfg;
+        _steamWebApiClient = steamWebApiClient;
         _steamCommunityClient = steamCommunityClient;
         _serviceBus = serviceBus;
     }
@@ -39,9 +41,6 @@ public class CheckForNewWorkshopFiles
     {
         var logger = context.GetLogger("Check-New-Workshop-Files");
         var deepScan = false; // TODO: Make configurable?
-
-        var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamCfg.ApplicationKey);
-        var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
 
         var apps = await _steamDb.SteamApps.AsNoTracking()
             .Where(x => x.IsActive)
@@ -139,28 +138,29 @@ public class CheckForNewWorkshopFiles
             {
                 continue;
             }
-            var missingPublishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(
-                missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
-            );
-            if (missingPublishedFileDetails?.Data == null)
+            var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+            {
+                PublishedFileIds = missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
+            });
+            if (missingPublishedFileDetails?.PublishedFileDetails == null)
             {
                 continue;
             }
 
             // Import missing workshop files
-            foreach (var missingPublishedFile in missingPublishedFileDetails.Data)
+            foreach (var missingPublishedFile in missingPublishedFileDetails.PublishedFileDetails)
             {
                 // Skip items which have very short placeholder sounding names or that have only just been published in the last few minutes.
                 // Creators will often publish items temporarily just to test them in-game and then delete them again, which we don't want to import (yet).
                 // If the item has existed for at least 15 minutes, we assume the creator is happy with the item and plans to keep it published
                 if ((missingPublishedFile.Title.Length < 5) || missingPublishedFile.Title.StartsWith("test", StringComparison.InvariantCultureIgnoreCase) ||
-                    (DateTime.UtcNow - missingPublishedFile.TimeCreated) <= TimeSpan.FromMinutes(30))
+                    (DateTimeOffset.UtcNow - missingPublishedFile.TimeCreated.SteamTimestampToDateTimeOffset()) <= TimeSpan.FromMinutes(30))
                 {
                     continue;
                 }
 
                 // Skip items which are not skins
-                if (missingPublishedFile.Tags?.Contains(Constants.SteamWorkshopTagSkin) != true)
+                if (missingPublishedFile.Tags.Select(x => x.Tag)?.Contains(Constants.SteamWorkshopTagSkin) != true)
                 {
                     continue;
                 }

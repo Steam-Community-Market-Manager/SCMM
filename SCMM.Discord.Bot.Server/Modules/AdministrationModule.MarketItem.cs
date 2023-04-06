@@ -134,7 +134,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     x => x.Content = $"Importing market items {paginationStart}/{searchResults?.TotalCount.ToString() ?? "???"}..."
                 );
 
-                searchResults = await _communityClient.GetMarketSearchPaginated(new SteamMarketSearchPaginatedJsonRequest()
+                searchResults = await _steamCommunityClient.GetMarketSearchPaginated(new SteamMarketSearchPaginatedJsonRequest()
                 {
                     AppId = appId.ToString(),
                     GetDescriptions = true,
@@ -246,7 +246,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                         x => x.Content = $"Importing market items price history {Array.IndexOf(items, item)}/{items.Length}..."
                     );
 
-                    var response = await _authenticatedCommunityClient.GetMarketPriceHistory(
+                    var response = await _steamAuthenticatedCommunityClient.GetMarketPriceHistory(
                         new SteamMarketPriceHistoryJsonRequest()
                         {
                             AppId = item.App.SteamId,

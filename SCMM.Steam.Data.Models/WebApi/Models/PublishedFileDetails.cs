@@ -46,6 +46,9 @@ namespace SCMM.Steam.Data.Models.WebApi.Models
         [JsonPropertyName("title")]
         public string Title { get; set; }
 
+        [JsonPropertyName("description")]
+        public string Description { get; set; }
+
         [JsonPropertyName("file_description")]
         public string FileDescription { get; set; }
 

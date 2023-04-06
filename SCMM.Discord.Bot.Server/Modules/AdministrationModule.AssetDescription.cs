@@ -8,9 +8,8 @@ using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
-using SteamWebAPI2.Interfaces;
-using SteamWebAPI2.Utilities;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -118,7 +117,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     x => x.Content = $"Importing market item '{name}' ({Array.IndexOf(names, name) + 1}/{names.Length})..."
                 );
 
-                var marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
+                var marketListingPageHtml = await _steamCommunityClient.GetText(new SteamMarketListingPageRequest()
                 {
                     AppId = appId.ToString(),
                     MarketHashName = name,
@@ -149,9 +148,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> MissingWorkshopFiles(bool deepScan = false)
         {
             var message = await Context.Message.ReplyAsync("Importing workshop files from creators...");
-            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamCfg.ApplicationKey);
-            var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
-
+            
             var apps = await _steamDb.SteamApps.AsNoTracking()
                 .ToListAsync();
 
@@ -186,7 +183,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var workshopHtml = (XElement)null;
                 try
                 {
-                    workshopHtml = await _communityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                    workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
                     {
                         SteamId = creator.CreatorId.ToString(),
                         AppId = app.SteamId
@@ -207,7 +204,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     {
                         try
                         {
-                            workshopHtml = await _communityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                            workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
                             {
                                 SteamId = creator.CreatorId.ToString(),
                                 AppId = app.SteamId,
@@ -249,16 +246,17 @@ namespace SCMM.Discord.Bot.Server.Modules
                 {
                     continue;
                 }
-                var missingPublishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(
-                    missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
-                );
-                if (missingPublishedFileDetails?.Data == null)
+                var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+                {
+                    PublishedFileIds = missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
+                });
+                if (missingPublishedFileDetails?.PublishedFileDetails == null)
                 {
                     continue;
                 }
 
                 // Import missing workshop files
-                foreach (var missingPublishedFile in missingPublishedFileDetails.Data)
+                foreach (var missingPublishedFile in missingPublishedFileDetails.PublishedFileDetails)
                 {
                     var workshopFile = new SteamWorkshopFile()
                     {

@@ -13,8 +13,6 @@ using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using Steam.Models;
-using Steam.Models.SteamEconomy;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -28,9 +26,9 @@ namespace SCMM.Steam.API.Commands
 
         public ItemDefinition AssetItemDefinition { get; set; }
 
-        public AssetClassInfoModel AssetClass { get; set; }
+        public AssetClassInfo AssetClass { get; set; }
 
-        public PublishedFileDetailsModel PublishedFile { get; set; }
+        public PublishedFileDetails PublishedFile { get; set; }
 
         public PublishedFileVoteData PublishedFileVoteData { get; set; }
 
@@ -244,8 +242,8 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.FavouritedLifetime = (long?)publishedFile.LifetimeFavorited;
                 assetDescription.Views = (long?)publishedFile.Views;
                 assetDescription.IsAccepted = (assetDescription.IsAccepted | (publishedFile.LifetimeSubscriptions > 0));
-                assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null);
-                assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null);
+                assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(publishedFile.TimeCreated.SteamTimestampToDateTimeOffset() > DateTimeOffset.MinValue ? publishedFile.TimeCreated.SteamTimestampToDateTimeOffset() : null);
+                assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(publishedFile.TimeUpdated.SteamTimestampToDateTimeOffset() > DateTimeOffset.MinValue ? publishedFile.TimeUpdated.SteamTimestampToDateTimeOffset() : null);
 
                 // Parse ban details
                 if (publishedFile.Banned)
@@ -280,7 +278,7 @@ namespace SCMM.Steam.API.Commands
                 // Parse asset workshop tags (where missing)
                 if (publishedFile.Tags != null)
                 {
-                    var interestingTags = publishedFile.Tags.Where(x => !Constants.SteamIgnoredWorkshopTags.Any(y => x == y));
+                    var interestingTags = publishedFile.Tags.Select(x => x.Tag).Where(x => !Constants.SteamIgnoredWorkshopTags.Any(y => x == y));
                     if (interestingTags.Any())
                     {
                         var existingNonWorkshopTags = assetDescription.Tags.Where(x => !x.Key.StartsWith(Constants.SteamAssetTagWorkshop)).ToDictionary(x => x.Key, x => x.Value);
@@ -438,7 +436,7 @@ namespace SCMM.Steam.API.Commands
                             .FirstOrDefault().Value?
                             .FirstOrDefault().Value;
                         var itemDescription = ParseItemDescriptionText(
-                            listingAssetClass?.Descriptions?.Select(x => new AssetClassDescriptionModel()
+                            listingAssetClass?.Descriptions?.Select(x => new AssetClassDescription()
                             {
                                 Type = x.Type,
                                 Value = x.Value,
@@ -747,7 +745,7 @@ namespace SCMM.Steam.API.Commands
             };
         }
 
-        private string ParseItemDescriptionText(IEnumerable<AssetClassDescriptionModel> descriptions)
+        private string ParseItemDescriptionText(IEnumerable<AssetClassDescription> descriptions)
         {
             if (descriptions?.Any() != true)
             {

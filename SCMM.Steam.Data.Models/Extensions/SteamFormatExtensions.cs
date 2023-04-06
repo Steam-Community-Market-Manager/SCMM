@@ -4,7 +4,7 @@ namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class SteamFormatExtensions
     {
-        public static DateTimeOffset SteamTimestampToDateTimeOffset(this long timestamp)
+        public static DateTimeOffset SteamTimestampToDateTimeOffset(this ulong timestamp)
         {
             var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return new DateTimeOffset(epoch.AddSeconds(timestamp), TimeZoneInfo.Utc.BaseUtcOffset);
