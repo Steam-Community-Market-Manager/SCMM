@@ -2,54 +2,6 @@
 
 namespace SCMM.Steam.Data.Models.WebApi.Models
 {
-    public class AssetClassDescription
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; }
-
-        [JsonPropertyName("value")]
-        public string Value { get; set; }
-
-        [JsonPropertyName("color")]
-        public string Color { get; set; }
-    }
-
-    public class AssetClassAction
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonPropertyName("link")]
-        public string Link { get; set; }
-    }
-
-    public class AssetClassMarketAction
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonPropertyName("link")]
-        public string Link { get; set; }
-    }
-
-    public class AssetClassTag
-    {
-        [JsonPropertyName("internal_name")]
-        public string InternalName { get; set; }
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonPropertyName("category")]
-        public string Category { get; set; }
-
-        [JsonPropertyName("color")]
-        public string Color { get; set; }
-
-        [JsonPropertyName("category_name")]
-        public string CategoryName { get; set; }
-    }
-
     public class AssetClassInfo
     {
         [JsonPropertyName("icon_url")]
