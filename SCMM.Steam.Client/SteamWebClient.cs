@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models;
-using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
@@ -31,6 +30,11 @@ namespace SCMM.Steam.Client
 
         public SteamSession Session => _session;
 
+        private string SafeUrl(string requestUrl)
+        {
+            return Regex.Replace(requestUrl, @"key=([^&]*)", "key=***************", RegexOptions.IgnoreCase);
+        }
+
         private async Task<HttpResponseMessage> Post<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
@@ -49,7 +53,7 @@ namespace SCMM.Steam.Client
                 }
                 catch (Exception ex)
                 {
-                    throw new SteamRequestException($"POST '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
+                    throw new SteamRequestException($"POST '{SafeUrl(request)}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
                 }
             }
         }
@@ -81,11 +85,11 @@ namespace SCMM.Steam.Client
                         }
                     }
 
-                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", statusCode, ex);
+                    throw new SteamRequestException($"GET '{SafeUrl(request)}' failed. {ex.Message}", statusCode, ex);
                 }
                 catch (Exception ex)
                 {
-                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", null, ex);
+                    throw new SteamRequestException($"GET '{SafeUrl(request)}' failed. {ex.Message}", null, ex);
                 }
             }
         }
@@ -303,7 +307,7 @@ namespace SCMM.Steam.Client
                 {
                     if (steamError != null)
                     {
-                        throw new SteamRequestException($"GET '{request}' failed. {steamError.Message}", HttpStatusCode.OK, steamError);
+                        throw new SteamRequestException($"GET '{SafeUrl(request)}' failed. {steamError.Message}", HttpStatusCode.OK, steamError);
                     }
                 }
 
