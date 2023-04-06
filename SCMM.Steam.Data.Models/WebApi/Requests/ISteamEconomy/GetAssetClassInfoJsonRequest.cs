@@ -20,7 +20,7 @@
         private string BuildClassIdParameters()
         {
             var classes = $"&class_count={ClassIds?.Length ?? 0}";
-            if (ClassIds == null)
+            if (ClassIds != null)
             {
                 for (int i = 0; i < ClassIds.Length; i++)
                 {
