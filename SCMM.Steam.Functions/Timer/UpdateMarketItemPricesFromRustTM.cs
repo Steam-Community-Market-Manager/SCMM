@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromRustTM
     [Function("Update-Market-Item-Prices-From-RustTM")]
     public async Task Run([TimerTrigger("0 12/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.RustTM.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-RustTM");
         var stopwatch = new Stopwatch();
 

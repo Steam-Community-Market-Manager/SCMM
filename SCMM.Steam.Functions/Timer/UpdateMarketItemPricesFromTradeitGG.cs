@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromTradeitGG
     [Function("Update-Market-Item-Prices-From-TradeitGG")]
     public async Task Run([TimerTrigger("0 6/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.TradeitGG.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeitGG");
         var stopwatch = new Stopwatch();
 

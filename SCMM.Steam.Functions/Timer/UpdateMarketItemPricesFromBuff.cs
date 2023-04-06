@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromBuff
     [Function("Update-Market-Item-Prices-From-Buff")]
     public async Task Run([TimerTrigger("0 24/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.Buff.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Buff");
         var stopwatch = new Stopwatch();
 

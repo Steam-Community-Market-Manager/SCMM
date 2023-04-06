@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromSkinSwap
     [Function("Update-Market-Item-Prices-From-SkinSwap")]
     public async Task Run([TimerTrigger("0 20/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.SkinSwap.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinSwap");
         var stopwatch = new Stopwatch();
 

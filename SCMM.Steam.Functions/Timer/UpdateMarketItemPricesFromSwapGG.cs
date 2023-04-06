@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromSwapGG
     [Function("Update-Market-Item-Prices-From-SwapGG")]
     public async Task Run([TimerTrigger("0 4/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.SwapGGTrade.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SwapGG");
         var stopwatch = new Stopwatch();
 

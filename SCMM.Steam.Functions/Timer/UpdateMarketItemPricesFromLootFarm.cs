@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromLootFarmJob
     [Function("Update-Market-Item-Prices-From-LootFarm")]
     public async Task Run([TimerTrigger("0 2/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.LOOTFarm.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
         var stopwatch = new Stopwatch();
 

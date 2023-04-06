@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromCSTrade
     [Function("Update-Market-Item-Prices-From-CSTrade")]
     public async Task Run([TimerTrigger("0 14/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.CSTRADE.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSTrade");
         var stopwatch = new Stopwatch();
 

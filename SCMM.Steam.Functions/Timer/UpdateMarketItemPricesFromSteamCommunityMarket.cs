@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Statistics;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
@@ -34,6 +35,11 @@ public class UpdateMarketItemPricesSteamCommunityMarket
     //[Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
     public async Task Run([TimerTrigger("0 0 0/12 * * *")] /* every 12 hours */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.SteamCommunityMarket.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Steam-Community-Market");
         var stopwatch = new Stopwatch();
 

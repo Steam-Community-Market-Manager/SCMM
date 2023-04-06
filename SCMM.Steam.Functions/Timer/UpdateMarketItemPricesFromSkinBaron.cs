@@ -30,6 +30,11 @@ public class UpdateMarketItemPricesFromSkinBaron
     [Function("Update-Market-Item-Prices-From-SkinBaron")]
     public async Task Run([TimerTrigger("0 10/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
+        if (!MarketType.SkinBaron.IsEnabled())
+        {
+            return;
+        }
+
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinBaron");
         var stopwatch = new Stopwatch();
 
