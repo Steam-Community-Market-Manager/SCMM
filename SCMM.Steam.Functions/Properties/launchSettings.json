@@ -3,7 +3,7 @@
     "SCMM.Steam.Functions": {
       "commandName": "Project",
       "commandLineArgs": "--csharp",
-      "workingDirectory": "bin\\Debug\\net6.0",
+      "workingDirectory": "bin\\Debug\\net7.0",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
       }
