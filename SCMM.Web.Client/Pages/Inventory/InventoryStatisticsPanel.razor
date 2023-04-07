@@ -17,38 +17,41 @@
             {
                 <Loading Message="Loading item tree map..." />
             }
-        }    
-        @if (InventoryItems?.Any() == true)
-        {
-            <SfTreeMap TValue="InventoryItemTreeItem" DataSource="@DataSource" WeightValuePath="Value" ColorValuePath="Color"
-                        Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
-                @*
-                <TreeMapTitleSettings Text="Inventory item breakdown">
-                    <TreeMapTitleTextStyle Size="" Color="#eeeeee" />
-                </TreeMapTitleSettings>
-                *@
-                <TreeMapLeafItemSettings LabelPath="Name" LabelPosition="Syncfusion.Blazor.TreeMap.LabelPosition.Center" Gap="10">
-                </TreeMapLeafItemSettings>
-                <TreeMapLegendSettings Visible="false">
-                </TreeMapLegendSettings>
-                <TreeMapTooltipSettings Visible="true">
-                    <TooltipTemplate>
-                        @{
-                            var data = (context as InventoryItemTreeItem);
-                        }
-                        <MudPaper Outlined="true" Class="pa-2">
-                            <span class="no-wrap">@(data.Name) : <strong>@State.Currency.ToPriceString(data.Value)</strong></span>
-					    </MudPaper>
-				    </TooltipTemplate>
-                </TreeMapTooltipSettings>
-            </SfTreeMap>
         }
         else
         {
-            <div class="d-flex flex-column justify-center align-center full-height pa-4">
-                <TumbleWeed Light="true" />
-                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No statistics found</MudText>
-            </div>
+            @if (InventoryItems?.Any() == true)
+            {
+                <SfTreeMap TValue="InventoryItemTreeItem" DataSource="@DataSource" WeightValuePath="Value" ColorValuePath="Color"
+                           Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
+                    @*
+                    <TreeMapTitleSettings Text="Inventory item breakdown">
+                    <TreeMapTitleTextStyle Size="" Color="#eeeeee" />
+                    </TreeMapTitleSettings>
+                    *@
+                    <TreeMapLeafItemSettings LabelPath="Name" LabelPosition="Syncfusion.Blazor.TreeMap.LabelPosition.Center" Gap="10">
+                    </TreeMapLeafItemSettings>
+                    <TreeMapLegendSettings Visible="false">
+                    </TreeMapLegendSettings>
+                    <TreeMapTooltipSettings Visible="true">
+                        <TooltipTemplate>
+                            @{
+                                var data = (context as InventoryItemTreeItem);
+                            }
+                            <MudPaper Outlined="true" Class="pa-2">
+                                <span class="no-wrap">@(data.Name) : <strong>@State.Currency.ToPriceString(data.Value)</strong></span>
+                            </MudPaper>
+                        </TooltipTemplate>
+                    </TreeMapTooltipSettings>
+                </SfTreeMap>
+            }
+            else
+            {
+                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                    <TumbleWeed Light="true" />
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No statistics found</MudText>
+                </div>
+            }
         }
     </MudItem>
 
