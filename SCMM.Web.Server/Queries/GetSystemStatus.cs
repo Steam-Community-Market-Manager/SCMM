@@ -129,9 +129,9 @@ namespace SCMM.Web.Server.Queries
             {
                 Status = new SystemStatusDTO()
                 {
-                    Alerts = alerts.ToArray(),
+                    Alerts = alerts?.ToArray(),
                     SteamApp = steamApp,
-                    WebProxies = webProxies.ToArray(),
+                    WebProxies = webProxies?.ToArray(),
                 }
             };
         }
