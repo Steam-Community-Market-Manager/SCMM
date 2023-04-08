@@ -2,6 +2,7 @@
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Language;
@@ -38,6 +39,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<LanguageListDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<LanguageDetailedDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache]
         public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
             var languages = await _db.SteamLanguages

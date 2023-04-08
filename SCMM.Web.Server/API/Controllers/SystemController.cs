@@ -2,6 +2,7 @@
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using SCMM.Web.Data.Models.UI.System;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Queries;
@@ -68,6 +69,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<SystemUpdateMessageDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache]
         public async Task<IActionResult> GetLatestSystemUpdateMessages()
         {
             var latestSystemUpdates = await _queryProcessor.ProcessAsync(new ListLatestSystemUpdateMessagesRequest());

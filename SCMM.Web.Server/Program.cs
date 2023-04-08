@@ -28,6 +28,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
+using SCMM.Web.Client;
 using SCMM.Web.Data.Models.Services;
 using SCMM.Web.Server;
 using SCMM.Web.Server.Services;
@@ -290,6 +291,20 @@ public static class WebApplicationExtensions
         });
 
         builder.Services.AddRequestDecompression();
+        builder.Services.AddResponseCompression();
+        builder.Services.AddOutputCache(options =>
+        {
+            options.SizeLimit = 256 * 1024 * 1024; // 256MB
+            options.MaximumBodySize = 8 * 1024 * 1024; // 8MB
+            options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(15);
+            options.UseCaseSensitivePaths = false;
+            options.AddBasePolicy(builder => builder
+                .Expire(TimeSpan.FromMinutes(15))
+                .SetVaryByQuery(AppState.LanguageNameKey, AppState.CurrencyNameKey, AppState.AppIdKey)
+                .SetVaryByHeader(AppState.LanguageNameKey, AppState.CurrencyNameKey, AppState.AppIdKey)
+                .Tag("all")
+            );
+        });
 
         return builder;
     }
@@ -388,6 +403,8 @@ public static class WebApplicationExtensions
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseOutputCache();
 
         app.UseEndpoints(endpoints =>
         {

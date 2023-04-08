@@ -2,6 +2,7 @@
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models;
@@ -1161,6 +1162,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("donators")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache]
         public async Task<IActionResult> GetProfilesDonators()
         {
             var donators = await _db.SteamProfiles
@@ -1183,6 +1185,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("contributors")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache]
         public async Task<IActionResult> GetProfilesContributors()
         {
             var donators = await _db.SteamProfiles
