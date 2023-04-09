@@ -8,6 +8,7 @@ using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
 using System.Text.RegularExpressions;
@@ -517,6 +518,45 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
 
             await _serviceBus.SendMessagesAsync(messages);
+            return CommandResult.Success();
+        }
+
+        [Command("find-asset-descriptions")]
+        public async Task<RuntimeResult> FindClassIds(ulong startClassId, ulong endClassId)
+        {
+            const int classesPerPage = 1;
+
+            var message = await Context.Message.ReplyAsync("Finding asset descriptions...");
+
+            var classId = startClassId;
+            while (classId <= endClassId)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Checking asset class info {classId}..."
+                );
+
+                var classIds = new ulong[classesPerPage];
+                for(int i = 0; i < classesPerPage; i++)
+                {
+                    classIds[i] = (classId + (ulong)i);
+                }
+
+                var response = await _steamWebApiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
+                {
+                    AppId = Constants.RustAppId,
+                    ClassIds = classIds
+                });
+
+                foreach (var asset in response.Assets.Where(x => !String.IsNullOrEmpty(x.ClassId)))
+                {
+                    await Context.Message.ReplyAsync($"Found Asset {asset.ClassId} \"{asset.Name}\"");
+                }
+
+                classId += classesPerPage;
+            }
+
+            await message.DeleteAsync();
+
             return CommandResult.Success();
         }
     }
