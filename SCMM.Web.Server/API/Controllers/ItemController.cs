@@ -716,7 +716,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("types")]
         [ProducesResponseType(typeof(IEnumerable<ItemTypeGroupDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache]
+        [OutputCache(PolicyName = Policies.Cache24Hours)]
         public async Task<IActionResult> GetItemTypes()
         {
             var appId = this.App().Guid;

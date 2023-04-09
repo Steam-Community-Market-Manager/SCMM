@@ -41,8 +41,6 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
-        // TODO: Most skinned item
-
         /// <summary>
         /// Get marketplace totals
         /// </summary>
@@ -55,6 +53,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/totals")]
         [ProducesResponseType(typeof(MarketTotalsStatisticDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = Policies.Cache1Hour)]
         public async Task<IActionResult> GetMarketTotals()
         {
             var appGuid = this.App().Guid;
@@ -997,6 +996,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("profiles/inventories/total")]
         [ProducesResponseType(typeof(ProfileInventoryTotalsStatisticDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = Policies.Cache1Hour)]
         public async Task<IActionResult> GetProfileInventoriesTotal()
         {
             var appId = this.App().Guid;
@@ -1162,7 +1162,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("donators")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache]
+        [OutputCache(PolicyName = Policies.Cache1Hour)]
         public async Task<IActionResult> GetProfilesDonators()
         {
             var donators = await _db.SteamProfiles
@@ -1185,7 +1185,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("contributors")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache]
+        [OutputCache(PolicyName = Policies.Cache1Hour)]
         public async Task<IActionResult> GetProfilesContributors()
         {
             var donators = await _db.SteamProfiles

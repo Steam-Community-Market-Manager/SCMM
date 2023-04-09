@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<AppListDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<AppDetailedDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache]
+        [OutputCache(PolicyName = Policies.Cache24Hours)]
         public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
             var apps = await _db.SteamApps

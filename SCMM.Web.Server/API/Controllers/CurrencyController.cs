@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<CurrencyListDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<CurrencyDetailedDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache]
+        [OutputCache(PolicyName = Policies.Cache1Hour)]
         public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
             var currencies = await _db.SteamCurrencies

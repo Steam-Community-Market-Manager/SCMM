@@ -304,6 +304,12 @@ public static class WebApplicationExtensions
                 .SetVaryByHeader(AppState.LanguageNameKey, AppState.CurrencyNameKey, AppState.AppIdKey)
                 .Tag("all")
             );
+            options.AddPolicy(Policies.Cache1Hour, builder => builder
+                .Expire(TimeSpan.FromHours(1))
+            );
+            options.AddPolicy(Policies.Cache24Hours, builder => builder
+                .Expire(TimeSpan.FromHours(24))
+            );
         });
 
         return builder;
