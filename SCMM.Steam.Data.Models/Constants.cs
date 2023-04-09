@@ -37,6 +37,8 @@
 
         public const string SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex = @"Tradable \& Marketable After\: \[date\]([0-9]+)\[\/date\]";
 
+        public const ulong SteamAssetValuePublicContextId = 2;
+
         public const ulong SteamAssetDefaultInstanceId = 0;
 
         public const string SteamAssetClassDescriptionTypeHtml = "html";
@@ -52,7 +54,6 @@
 
         public const string SteamLanguageEnglish = "english";
         public const string SteamDefaultLanguage = SteamLanguageEnglish;
-
 
         public const string SteamCountryUS = "US";
         public const string SteamDefaultCountry = "US";
