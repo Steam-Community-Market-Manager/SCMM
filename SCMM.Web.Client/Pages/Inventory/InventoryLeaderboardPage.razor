@@ -10,23 +10,37 @@
 
 <PageContainer Title="@($"{State?.App?.Name} Inventory Leaderboard")">
     <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
-        <MudTextField @bind-Value="SteamId" Variant="Variant.Outlined" FullWidth="true" Immediate="true" AutoFocus="true" Disabled="State.IsPrerendering"
-                      Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fab fa-fw fa-steam mr-3" Placeholder="Enter a Steam ID64, Steam URL, or Custom URL" />
-        <MudButton Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-search-dollar" FullWidth="true" 
-                   Disabled="@(String.IsNullOrEmpty(SteamId) || State.IsPrerendering)" OnClick="@(() => ViewProfileInventory(SteamId))" Class="my-4">
-            <span>Analyse Inventory</span>
-        </MudButton>
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.body1">
+                    <span>What is your @(State?.App?.Name ?? "Steam") inventory worth? Enter your Steam ID below and we'll tell you the current market value of your inventory items.</span><br/>
+                    <span>Make sure your inventory items are set as "public" in your Steam profile privacy settings so we can detect your items.</span>
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="9">
+                <MudTextField @bind-Value="SteamId" Variant="Variant.Outlined" FullWidth="true" Immediate="true" AutoFocus="true" Disabled="State.IsPrerendering" Class="ma-0"
+                              Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fab fa-fw fa-steam mr-3" Placeholder="Enter a Steam ID64, Steam URL, or Custom URL" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudButton Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-search-dollar" FullWidth="true"
+                           Disabled="@(String.IsNullOrEmpty(SteamId) || State.IsPrerendering)" OnClick="@(() => ViewProfileInventory(SteamId))" Class="full-height full-width">
+                    <span>Calculate Value</span>
+                </MudButton>
+            </MudItem>
+        </MudGrid>
     </MudContainer>
-    <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
-        <MudGrid Spacing="4">
+    <MudContainer MaxWidth="MudBlazor.MaxWidth.Large" Class="mt-2">
+        <MudGrid Spacing="2">
             @if (Totals != null)
             {
-                <MudItem xs="12" Class="pb-0">
-                    <MudText Typo="Typo.h6" Class="text-centered">
-                        <span>@Totals.TotalInventories.ToQuantityString() <span class="mud-secondary-text"> inventories tracked, </span></span>
-                        <span><span class="mud-secondary-text"> containing </span> @Totals.TotalItems.ToQuantityString() <span class="mud-secondary-text"> items, </span></span>
-                        <span><span class="mud-secondary-text"> with a total market value of </span> @State.Currency.ToPriceString(Totals.TotalMarketValue) </span>
-                    </MudText>
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="px-4 py-2">
+                        <MudText Typo="Typo.h6" Class="text-centered">
+                            <span>@Totals.TotalInventories.ToQuantityString() <span class="mud-secondary-text"> inventories tracked, </span></span>
+                            <span><span class="mud-secondary-text"> containing </span> @Totals.TotalItems.ToQuantityString() <span class="mud-secondary-text"> items, </span></span>
+                            <span><span class="mud-secondary-text"> with a total market value of </span> @State.Currency.ToPriceString(Totals.TotalMarketValue) </span>
+                        </MudText>
+                    </MudPaper>
                 </MudItem>
             }
             <MudItem xs="12" md="6">
