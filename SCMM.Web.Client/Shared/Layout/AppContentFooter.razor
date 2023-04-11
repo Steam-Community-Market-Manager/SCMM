@@ -11,7 +11,7 @@
                 </div>
                 <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
                     <span>&copy; 2020-2022, SCMM - All rights reserved.</span><br />
-                    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption" Disabled="State.IsPrerendering">SCMM is a fanmade project</MudLink> and not affilated with Valve Corporation or @State.App.PublisherName.</span><br/>
+                    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption" Disabled="State.IsPrerendering">SCMM is a fanmade project</MudLink> and not affilated with Valve Corporation or @(State.App?.PublisherName ?? "the games publisher").</span><br/>
                     <br/>
                     <span>Contact: support@scmm.app</span>
                 </MudText>
