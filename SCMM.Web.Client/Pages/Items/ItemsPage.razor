@@ -90,7 +90,7 @@
                                 }
                                 <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                                 {
                                     <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
@@ -127,7 +127,7 @@
                     <MudSwitch T="bool" Checked="@Commodity" CheckedChanged="@((x) => { Commodity = x; _ = RefreshItems(); })" Label="Commodity " Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                     {
                         <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }

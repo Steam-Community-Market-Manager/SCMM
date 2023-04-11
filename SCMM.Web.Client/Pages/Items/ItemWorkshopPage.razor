@@ -1,9 +1,9 @@
 ﻿@using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Workshop
-@page "/workshop"
+@page "/item/workshop"
 @inherits PersistentComponent
-@inject ILogger<WorkshopPage> Logger
+@inject ILogger<ItemWorkshopPage> Logger
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject AppState State
@@ -27,6 +27,11 @@
                     <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("TimeCreated", Data.Models.SortDirection.Ascending))">Oldest</MudSelectItem>
                 }
             </MudSelect>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body1">
+                <span>Items submitted to the workshop aren't immediately usable in @(State?.App?.Name ?? "the game"). Instead, the developers are looking to the community to put forward their creations for consideration to be included in the game. These items may (in the future) be available to purchase from the @State?.App?.Name item store.</span>
+            </MudText>
         </MudItem>
         @if (WorkshopFiles == null)
         {
@@ -64,7 +69,7 @@
                     @foreach (var item in group)
                     {
                         <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
-                            <WorkshopFileDetails Item="item" />
+                            <ItemWorkshopFileDetails Item="item" />
                         </MudItem>
                     }
 
@@ -76,7 +81,7 @@
                 @foreach (var item in WorkshopFiles.Items)
                 {
                     <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
-                        <WorkshopFileDetails Item="item" />
+                        <ItemWorkshopFileDetails Item="item" />
                     </MudItem>
                 }
             }

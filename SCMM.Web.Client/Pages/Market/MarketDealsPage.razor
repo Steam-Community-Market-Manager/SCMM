@@ -2,10 +2,10 @@
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Analytic
 @using SCMM.Web.Client.Shared.Dialogs.Items
-@page "/deals"
-@page "/deals/{tab}"
+@page "/market/deals"
+@page "/market/deals/{tab}"
 @inherits PersistentComponent
-@inject ILogger<DealsPage> Logger
+@inject ILogger<MarketDealsPage> Logger
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
 @inject ISystemService SystemService
@@ -501,7 +501,7 @@
             var tabId = TabKeys.FirstOrDefault(x => x.Key == index).Value;
             if (!String.IsNullOrEmpty(tabId) && !String.Equals(Tab, tabId, StringComparison.OrdinalIgnoreCase))
             {
-                NavigationManager.NavigateTo($"/deals/{Uri.EscapeDataString(tabId)}");
+                NavigationManager.NavigateTo($"/market/deals/{Uri.EscapeDataString(tabId)}");
             }
         }
     }

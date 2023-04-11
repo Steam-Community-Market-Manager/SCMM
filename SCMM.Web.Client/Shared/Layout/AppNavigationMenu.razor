@@ -24,31 +24,36 @@
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) == true || State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) == true)
     {
         <MudNavLink Href="/store" Icon="fas fa-fw fa-shopping-cart" Disabled="@State.IsPrerendering">
-            <span class="no-wrap">Stores</span>
+            <span class="no-wrap">Item Stores</span>
         </MudNavLink>
     }
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
-        <MudNavLink Href="/workshop" Icon="fas fa-fw fa-tools" Disabled="@State.IsPrerendering">
-            <span class="no-wrap">Workshop Submissions</span>
+        <MudNavLink Href="/item/workshop" Icon="fas fa-fw fa-compass-drafting" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Item Workshop</span>
         </MudNavLink>
     }
-    @*
-    <MudNavLink Href="/items/definitionArchives" Icon="fas fa-fw fa-archive" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Item Definition Archives</span>
-    </MudNavLink>
-    *@
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemDefinitionArchives) == true)
+    {
+        <MudNavLink Href="/item/definitionArchives" Icon="fas fa-fw fa-dolly" Disabled="@State.IsPrerendering">
+                <span class="no-wrap">Item Definition Archives</span>
+        </MudNavLink>
+    }
 
     <MudDivider />
-    
-    <MudNavLink Href="/deals" Icon="fas fa-fw fa-search-dollar" Disabled="@State.IsPrerendering">
+
+    <MudNavLink Href="/market/deals" Icon="fas fa-fw fa-search-dollar" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Market Deals</span>
     </MudNavLink>
-    @*
-    <MudNavLink Href="/activity" Icon="fas fa-fw fa-exchange-alt" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Market Activity</span>
+    <MudNavLink Href="/market/tracker" Icon="fas fa-fw fa-magnifying-glass-chart" Disabled="true">
+        <span class="no-wrap">Market Item Tracker</span>
     </MudNavLink>
-    *@
+    <MudNavLink Href="/market/activity" Icon="fas fa-fw fa-exchange-alt" Disabled="true">
+        <span class="no-wrap">Market Item Activity</span>
+    </MudNavLink>
+
+    <MudDivider />
+
     <MudNavLink Href="/stats" Icon="fas fa-fw fa-chart-pie" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Statistics</span>
     </MudNavLink>
