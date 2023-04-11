@@ -1,0 +1,23 @@
+﻿@inject IJSRuntime JsRuntime;
+
+<div @ref=editorElement id="jsoneditor" style="width:100%; height:100%;"></div>
+
+@code {
+
+    [Parameter]
+    public string Json { set; get; }
+
+    [Parameter]
+    public bool ReadOnly { set; get; }
+
+    protected ElementReference editorElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("JsonEditorInterop.createEditor", editorElement, ReadOnly, Json);
+        }
+    }
+
+}

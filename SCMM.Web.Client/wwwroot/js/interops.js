@@ -1,4 +1,11 @@
 ﻿
+// Disable all context menus (i.e. right-click / long-touch)
+window.oncontextmenu = function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+};
+
 // Interops for window functions
 var WindowInterop = WindowInterop || {};
 WindowInterop.open = (url) => {
@@ -47,9 +54,15 @@ CookieInterop.removeCookie = (name) => {
     document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
 }
 
-// Disable all context menus (i.e. right-click / long-touch)
-window.oncontextmenu = function (event) {
-    event.preventDefault();
-    event.stopPropagation();
-    return false;
-};
+// Interops for json editor
+var JsonEditorInterop = JsonEditorInterop || {};
+JsonEditorInterop.createEditor = (reference, isReadOnly, jsonText) => {
+    var editor = new JSONEditor(reference, {
+        mode: (isReadOnly != true) ? 'tree' : 'view',
+        history: (isReadOnly != true),
+        navigationBar: false,
+        statusBar: false
+    });
+    editor.set(JSON.parse(jsonText));
+    return editor;
+}
