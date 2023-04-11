@@ -265,7 +265,7 @@ namespace SCMM.Steam.Data.Store
                 var buyUrl = (string)null;
                 if (!String.IsNullOrEmpty(StoreItem.SteamId) && app != null)
                 {
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                     {
                         buyUrl = new SteamItemStoreDetailPageRequest()
                         {
@@ -390,7 +390,7 @@ namespace SCMM.Steam.Data.Store
                 var storeUrl = (string)null;
                 if (!String.IsNullOrEmpty(StoreItem.SteamId) && StoreItem.IsAvailable && app != null)
                 {
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                     {
                         storeActionName = "View Store";
                         storeUrl = new SteamItemStoreDetailPageRequest()

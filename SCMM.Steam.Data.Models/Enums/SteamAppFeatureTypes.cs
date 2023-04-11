@@ -5,10 +5,11 @@
     {
         None = 0x0000,
 
-        StorePersistent = 0x0001,
-        StoreRotating = 0x0002,
+        ItemStorePersistent = 0x0001,
+        ItemStoreRotating = 0x0002,
 
         ItemWorkshop = 0x0010,
+        ItemDefinitionArchives = 0x0020,
 
         ItemFeatureCrafting = 0x0100,
         ItemFeatureGlowing = 0x0200,

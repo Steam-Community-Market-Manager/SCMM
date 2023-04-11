@@ -33,7 +33,7 @@ public class CheckForNewStoreVideos
         var logger = context.GetLogger("Check-New-Store-Videos");
 
         var steamApps = await _db.SteamApps
-            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
             .Where(x => x.IsActive)
             .ToListAsync();
         if (!steamApps.Any())

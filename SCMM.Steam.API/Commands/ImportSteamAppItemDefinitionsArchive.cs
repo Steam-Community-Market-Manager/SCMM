@@ -94,6 +94,8 @@ namespace SCMM.Steam.API.Commands
                     App = app,
                     Digest = request.ItemDefinitionsDigest,
                     ItemDefinitions = itemDefinitionsArchive,
+                    ItemDefinitionsSize = itemDefinitionsArchive.Length,
+                    ItemDefinitionsCount = itemDefinitionsArchiveItems.Count,
                     TimePublished = itemDefinitionsArchiveItems.Max(x => x.Modified.SteamTimestampToDateTimeOffset())
                 });
 
@@ -167,7 +169,7 @@ namespace SCMM.Steam.API.Commands
                     try
                     {
                         // Parse store item changes in the archive
-                        if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                        if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                         {
                             _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                             await RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
@@ -387,7 +389,7 @@ namespace SCMM.Steam.API.Commands
                 var limitedItemStore = (SteamItemStore)null;
 
                 // If the app uses a permanent or limited item store, check that they are still available (or create new ones)
-                if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                 {
                     // Load all of our [active] stores
                     var activeItemStores = await _steamDb.SteamItemStores
@@ -410,7 +412,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Ensure that an active "permanent" item store exists
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent))
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent))
                     {
                         permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
                         if (permanentItemStore == null)
@@ -426,7 +428,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Ensure that an active "limited" item store exists
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                     {
                         // If any items in the limited store are no longer available, rotate it (i.e. create a new limited store)
                         limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);

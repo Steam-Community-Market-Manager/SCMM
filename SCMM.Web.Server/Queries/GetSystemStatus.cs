@@ -70,7 +70,7 @@ namespace SCMM.Web.Server.Queries
                         .Select(a => new SystemStatusAppItemDefinitionArchive
                         {
                             Digest = a.Digest,
-                            Size = a.ItemDefinitions.Length,
+                            Size = a.ItemDefinitionsSize,
                             PublishedOn = a.TimePublished,
                             IsImported = true
                         })

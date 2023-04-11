@@ -27,6 +27,11 @@
             }
         }
 
+        public static string ToFileSizeString(this int size)
+        {
+            return ((long)size).ToFileSizeString();
+        }
+
         public static string ToFileSizeString(this long size)
         {
             if (size > (1024 * 1024 * 1024))

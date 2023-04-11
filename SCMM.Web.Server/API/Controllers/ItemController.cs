@@ -665,6 +665,8 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Id = x.Id.ToString(),
                     Digest = x.Digest,
+                    Size = x.ItemDefinitionsSize,
+                    ItemCount = x.ItemDefinitionsCount,
                     Timestamp = x.TimePublished
                 })
                 .OrderByDescending(x => x.Timestamp)

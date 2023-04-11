@@ -6,6 +6,10 @@
 
         public string Digest { get; set; }
 
+        public int Size { get; set; }
+
+        public int ItemCount { get; set; }
+
         public DateTimeOffset? Timestamp { get; set; }
     }
 }

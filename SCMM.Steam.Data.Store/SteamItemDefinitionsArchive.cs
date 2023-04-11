@@ -16,6 +16,10 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public string ItemDefinitions { get; set; }
 
+        public int ItemDefinitionsSize { get; set; }
+
+        public int ItemDefinitionsCount { get; set; }
+
         public DateTimeOffset TimePublished { get; set; }
 
     }

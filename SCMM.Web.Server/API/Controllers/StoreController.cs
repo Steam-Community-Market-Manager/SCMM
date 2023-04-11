@@ -51,7 +51,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStores()
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -115,7 +115,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStore([FromRoute] string id)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -236,7 +236,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid id)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -308,7 +308,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid id)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -390,7 +390,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> LinkStoreItem([FromRoute] Guid id, [FromBody] LinkStoreItemCommand command)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -519,7 +519,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> UnlinkStoreItem([FromRoute] Guid id, [FromBody] UnlinkStoreItemCommand command)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -580,7 +580,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStoreNextUpdateTime()
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) != true)
             {
                 return BadRequest("App does not support store rotations");
             }
