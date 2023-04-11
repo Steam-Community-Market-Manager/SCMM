@@ -1,0 +1,21 @@
+﻿@page "/market/tracker"
+@inherits PersistentComponent
+@inject ILogger<MarketTrackerPage> Logger
+@inject AppState State
+
+<PageContainer Title="@($"{State?.App?.Name} Item Tracker")">
+    <p>Hello :)</p>
+</PageContainer>
+
+@code {
+
+    protected override async Task OnLoadStateAsync()
+    {
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+}
