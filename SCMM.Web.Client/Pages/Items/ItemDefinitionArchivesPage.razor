@@ -1,7 +1,7 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
-@page "/items/definitionArchives"
-@page "/items/definitionArchive/{Digest}"
+@page "/item/definitionArchives"
+@page "/item/definitionArchive/{Digest}"
 @inherits PersistentComponent
 @inject ILogger<ItemDefinitionArchivesPage> Logger
 @inject ISnackbar Snackbar
@@ -10,71 +10,104 @@
 @inject HttpClient Http
 @inject AppState State
 
-@if (ItemDefinitionArchivesList == null)
-{
-    @if (LoadException == null)
-    {
-        <Loading Message="Loading item definition archives list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
-    }
-    else
-    {
-        <Alert Exception="@LoadException" />
-    }
-}
-else if (ItemDefinitionArchivesList.Any())
-{
-    <PageContainer Title="@($"{State?.App?.Name} Item Definition Archives")">
-        <MudExpansionPanels MultiExpansion="true">
-            @foreach (var itemDefinitionArchive in ItemDefinitionArchivesList)
+<PageContainer Title="@($"{State?.App?.Name} Item Definition Archives")">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <MudText Typo="Typo.body1">
+                <span>Item definition archives are the game data files that contain the raw definitions of each @(State?.App?.Name ?? "game") item that can be aquired through Steam. Typically each item definition archives introduces (or changes) one or many in-game items. You can compare the differences between archives to determine what changes where introduced and when.</span>
+            </MudText>
+        </MudItem>
+        <MudItem xs="12">
+            @if (ItemDefinitionArchivesList == null)
             {
-                <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))">
-                    <TitleContent>
-                        <div class="d-flex justify-space-between align-center">
-                            <MudText Typo="MudBlazor.Typo.body1">
-                                <i class="fas fa-fw fa-archive mr-1"></i>
-                                <span>@itemDefinitionArchive.Digest</span>
-                            </MudText>
-                            @if (itemDefinitionArchive.Timestamp != null)
-                            {
-                                <MudText Typo="MudBlazor.Typo.body2" Color="Color.Secondary" Class="mx-4">@((DateTimeOffset.Now - itemDefinitionArchive.Timestamp.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</MudText>
-                            }
-                        </div>
-                        </TitleContent>
-                    <ChildContent>
-                        @if (!ItemDefinitionArchives.ContainsKey(itemDefinitionArchive.Digest))
-                        {
-                            <Loading Message="Loading item definition archive..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
-                        }
-                        else
-                        {
-                            <p>@ItemDefinitionArchives[itemDefinitionArchive.Digest]</p>
-                        }
-                    </ChildContent>
-                </MudExpansionPanel>
+                @if (LoadException == null)
+                {
+                    <Loading Message="Loading item definition archives list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+                }
+                else
+                {
+                    <Alert Exception="@LoadException" />
+                }
             }
-        </MudExpansionPanels>
-    </PageContainer>
-}
-else
-{
-    <div class="d-flex flex-column justify-center align-center full-height pa-4">
-        <TumbleWeed Light="true" />
-        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">empty, check back later</MudText>
-    </div>
-}
+            else if (ItemDefinitionArchivesList.Any())
+            {
+                <MudExpansionPanels MultiExpansion="true" Dense="true" DisableGutters="true">
+                    @foreach (var itemDefinitionArchive in ItemDefinitionArchivesList)
+                    {
+                        <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive.Archive, x))">
+                            <TitleContent>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="MudBlazor.Typo.body1">
+                                            <i class="fas fa-fw fa-archive mr-1"></i>
+                                            <span>@itemDefinitionArchive.Archive.Digest</span>
+                                            <span class="mud-secondary-text"> (@itemDefinitionArchive.Archive.Size.ToFileSizeString()) </span>
+                                        </MudText>
+                                        <MudStack Spacing="2" Row="true" AlignItems="AlignItems.Center">
+                                            <MudChip Color="Color.Secondary" Size="Size.Small">@itemDefinitionArchive.Archive.ItemCount item(s)</MudChip>
+                                            <MudText Color="Color.Secondary" Typo="Typo.body2">
+                                                <span>This archive </span>
+                                                @if (itemDefinitionArchive.DiffItemCount != 0)
+                                                {
+                                                    <span class="@(itemDefinitionArchive.DiffItemCount > 0 ? "mud-success-text" : "mud-error-text")">
+                                                        @(itemDefinitionArchive.DiffItemCount > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffItemCount).ToQuantityString()) item(s)
+                                                    </span>
+                                                    <span> and </span>
+                                                }
+                                                @if (itemDefinitionArchive.DiffSize != 0)
+                                                {
+                                                    <span class="@(itemDefinitionArchive.DiffSize > 0 ? "mud-success-text" : "mud-error-text")">
+                                                        @(itemDefinitionArchive.DiffSize > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffSize).ToQuantityString()) character(s)
+                                                    </span>
+                                                    <span> to the game item definitions. </span>
+                                                }
+                                                else
+                                                {
+                                                    <span> didn't change anything noteworthy.</span>
+                                                }
+                                            </MudText>
+                                        </MudStack>
+                                    </MudStack>
+                                    @if (itemDefinitionArchive.Archive.Timestamp != null)
+                                    {
+                                        <MudText Typo="MudBlazor.Typo.body2" Color="Color.Secondary" Class="mx-4">@((DateTimeOffset.Now - itemDefinitionArchive.Archive.Timestamp.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</MudText>
+                                    }
+                                </MudStack>
+                            </TitleContent>
+                            <ChildContent>
+                                @if (!ItemDefinitionArchives.ContainsKey(itemDefinitionArchive.Archive.Digest))
+                                {
+                                    <Loading Message="Loading item definition archive..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+                                }
+                                else
+                                {
+                                }
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    }
+                </MudExpansionPanels>
+            }
+            else
+            {
+                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                    <TumbleWeed Light="true" />
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">empty, check back later</MudText>
+                </div>
+            }
+        </MudItem>
+    </MudGrid>
+</PageContainer>
 
 @code {
 
     [Parameter]
     public string Digest { get; set; }
 
-    private ItemDefinitionArchiveIdentifierDTO[] ItemDefinitionArchivesList;
+    private ItemDefinitionArchiveIdentifierWithDiff[] ItemDefinitionArchivesList;
 
     private IDictionary<string, string> ItemDefinitionArchives;
 
     private Exception LoadException;
-
-    private string test { get; set; }
 
     protected override async Task OnLoadStateAsync()
     {
@@ -83,7 +116,23 @@ else
         {
             try
             {
-                return await Http.GetFromJsonWithDefaultsAsync<ItemDefinitionArchiveIdentifierDTO[]>($"api/item/definitionArchives");
+                var results = new List<ItemDefinitionArchiveIdentifierWithDiff>();
+                var archives = await Http.GetFromJsonWithDefaultsAsync<ItemDefinitionArchiveIdentifierDTO[]>($"api/item/definitionArchives");
+                if (archives != null)
+                {
+                    foreach (var archive in archives)
+                    {
+                        var lastArchive = archives.ElementAtOrDefault(archives.IndexOf(archive) + 1);
+                        results.Add(new ItemDefinitionArchiveIdentifierWithDiff()
+                        {
+                            Archive = archive,
+                            DiffSize = lastArchive != null ? (archive.Size - (lastArchive?.Size ?? 0)) : 0,
+                            DiffItemCount = lastArchive != null ? (archive.ItemCount - (lastArchive?.ItemCount ?? 0)) : 0
+                        });
+                    }
+                }
+
+                return results.ToArray();
             }
             catch (Exception ex)
             {
@@ -124,7 +173,7 @@ else
                 })
                 .ContinueWith(t => StateHasChanged())
                 .AndForget();
-            
+
         }
         else
         {
@@ -133,5 +182,14 @@ else
                 .ContinueWith(t => ItemDefinitionArchives[archive.Digest] = null)
                 .AndForget();
         }
+    }
+
+    public class ItemDefinitionArchiveIdentifierWithDiff
+    {
+        public ItemDefinitionArchiveIdentifierDTO Archive { get; set; }
+
+        public int DiffSize { get; set; }
+
+        public int DiffItemCount { get; set; }
     }
 }
