@@ -14,7 +14,7 @@
     <MudGrid Spacing="2">
         <MudItem xs="12">
             <MudText Typo="Typo.body1">
-                <span>Item definition archives are the game data files that contain the raw definitions of each @(State?.App?.Name ?? "game") item that can be aquired through Steam. Typically each item definition archives introduces (or changes) one or many in-game items. You can compare the differences between archives to determine what changes where introduced and when.</span>
+                <span>Item definition archives are the game data files that contain the raw definitions for each @(State?.App?.Name ?? "game") item that can be acquired through Steam. Typically each item definition archives adds/removes/changes one or many in-game items.</span>
             </MudText>
         </MudItem>
         <MudItem xs="12">
@@ -82,7 +82,7 @@
                                 else
                                 {
                                     <div style="width:100%; height:75vh;">
-                                        <JsonEditor Json="@ItemDefinitionArchives[itemDefinitionArchive.Archive.Digest]" ReadOnly="true" />
+                                        <JsonEditor Json="@ItemDefinitionArchives[itemDefinitionArchive.Archive.Digest]" SelectionPath="@($@"[{itemDefinitionArchive.Archive.ItemCount - 1}, ""itemdefid""]")" ReadOnly="true" />
                                     </div>
                                 }
                             </ChildContent>

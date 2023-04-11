@@ -56,13 +56,22 @@ CookieInterop.removeCookie = (name) => {
 
 // Interops for json editor
 var JsonEditorInterop = JsonEditorInterop || {};
-JsonEditorInterop.createEditor = (reference, isReadOnly, jsonText) => {
+JsonEditorInterop.createEditor = (reference, isReadOnly, jsonText, selectionPath) => {
     var editor = new JSONEditor(reference, {
         mode: (isReadOnly != true) ? 'tree' : 'view',
         history: (isReadOnly != true),
         navigationBar: false,
         statusBar: false
     });
-    editor.set(JSON.parse(jsonText));
+    if (jsonText) {
+        editor.set(JSON.parse(jsonText));
+    }
+    if (selectionPath) {
+        editor.setSelection({ path: JSON.parse(selectionPath) });
+        reference.querySelector(".jsoneditor-tree-inner").scrollIntoView({
+            behavior: "smooth",
+            block: "end"
+        });
+    }
     return editor;
 }

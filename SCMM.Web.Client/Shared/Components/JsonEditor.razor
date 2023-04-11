@@ -8,6 +8,9 @@
     public string Json { set; get; }
 
     [Parameter]
+    public string SelectionPath { get; set; }
+
+    [Parameter]
     public bool ReadOnly { set; get; }
 
     protected ElementReference editorElement;
@@ -16,7 +19,7 @@
     {
         if (firstRender)
         {
-            await JsRuntime.InvokeVoidAsync("JsonEditorInterop.createEditor", editorElement, ReadOnly, Json);
+            await JsRuntime.InvokeVoidAsync("JsonEditorInterop.createEditor", editorElement, ReadOnly, Json, SelectionPath);
         }
     }
 
