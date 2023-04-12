@@ -31,7 +31,9 @@
                         <MudCardContent class="d-flex flex-column justify-center align-center">
                             <MudGrid Spacing="4">
                                 <MudItem xs="12" md="3" xl="2" xxl="1" class="d-flex flex-column justify-center align-center">
-                                    <MudAvatar Image="@State.Profile.AvatarLargeUrl" Class="full-width full-height text-centered mx-2 mb-4" Style="max-width:8rem; max-height:8rem;" />
+                                    <MudAvatar Class="full-width full-height text-centered mx-2 mb-4" Style="max-width:8rem; max-height:8rem;">
+                                        <MudImage Src="@State.Profile.AvatarLargeUrl" />
+                                    </MudAvatar>
                                     <MudText Typo="@MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
                                         <span>@State.Profile.Name</span>
                                     </MudText>
@@ -45,7 +47,7 @@
                                             <MudTextField Label="Steam Trade URL" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="State.IsPrerendering"
                                                           @bind-Value="@Update.TradeUrl" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateProfile"
                                                           HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade. Click on the question mark icon to view and manage your Steam Trade URL."
-                                                          Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab($"https://steamcommunity.com/id/{State.Profile.SteamId}/tradeoffers/privacy#trade_offer_access_url"))" />
+                                                          Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync($"https://steamcommunity.com/id/{State.Profile.SteamId}/tradeoffers/privacy#trade_offer_access_url"))" />
                                         </MudItem>
                                         <MudItem xs="12" lg="6" xl="4" xxl="3">
                                             <MudSelect T="ItemAnalyticsParticipationType" Value="@Update.ItemAnalyticsParticipation" ValueChanged="((x) => { Update.ItemAnalyticsParticipation = x; _ = UpdateProfile(); })" Label="Item Analytics" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true"
@@ -389,7 +391,7 @@
     {
         if (!State.IsAuthenticated)
         {
-            ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+            ExternalNavigationManager.NavigateToAsync($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
         }
         else 
         {
@@ -459,7 +461,7 @@
     
     private void DownloadProfileData()
     {
-        ExternalNavigationManager.NavigateTo("/api/profile/data");
+        ExternalNavigationManager.NavigateToAsync("/api/profile/data");
     }
     
     private async Task ShowDeleteProfileDataConfirmationDialog()
@@ -488,7 +490,7 @@
                 throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
             }
 
-            ExternalNavigationManager.NavigateTo("/signout");
+            await ExternalNavigationManager.NavigateToAsync("/signout");
         }
         catch (Exception)
         {

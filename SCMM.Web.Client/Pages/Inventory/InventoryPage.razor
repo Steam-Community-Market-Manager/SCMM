@@ -206,7 +206,7 @@
 
     private void ViewProfileOnSteam()
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamProfilePageRequest()
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamProfilePageRequest()
         {
             SteamId = Uri.EscapeDataString(Profile?.SteamId ?? SteamId)
         });
@@ -349,9 +349,9 @@
                 if (thisIsMyInventory)
                 {
                     options.Action = "Change Privacy Settings";
-                    options.Onclick = async (x) =>
+                    options.Onclick = (x) =>
                     {
-                        ExternalNavigationManager.NavigateToNewTab(
+                        return ExternalNavigationManager.NavigateToNewTabAsync(
                             $"https://steamcommunity.com/profiles/{Profile?.SteamId}/edit/settings"
                         );
                     };

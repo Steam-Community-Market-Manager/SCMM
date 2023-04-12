@@ -25,7 +25,7 @@
                     <div class="d-flex flex-column full-height item-preview-container">
                         @if (Item.Previews.Any())
                         {
-                            <MudCarousel ShowArrows="true" ShowDelimiters="false" AutoCycle="true" TData="object" Class="full-width full-height" Style="min-height: 25rem;">
+                            <MudCarousel ShowArrows="true" ShowBullets="false" AutoCycle="true" TData="object" Class="full-width full-height" Style="min-height: 25rem;">
                                 <MudCarouselItem Transition="Transition.Fade" Class="d-flex flex-grow-1 align-center justify-center">
                                     <div class="d-flex flex-grow-1 align-center justify-center">
                                         <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
@@ -81,7 +81,9 @@
                         @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
                         {
                             <MudTooltip Text="@($"View more items created by {Item.CreatorName}")">
-                                <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="clickable mr-4" @onclick="@(() => ShowCreatorItemsDialog())" />
+                                <MudAvatar Size="MudBlazor.Size.Medium" Class="clickable mr-4" @onclick="@(() => ShowCreatorItemsDialog())">
+                                    <MudImage Src="@Item.CreatorAvatarUrl" />
+                                </MudAvatar>
                             </MudTooltip>
                         }
                         <div>
@@ -1074,7 +1076,9 @@
                         {
                             <div class="d-flex">
                                 <MudTooltip Text="@Collection.CreatorName">
-                                    <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="mt-2" />
+                                    <MudAvatar Size="MudBlazor.Size.Medium" Class="mt-2">
+                                        <MudImage Src="@Collection.CreatorAvatarUrl" />
+                                    </MudAvatar>
                                 </MudTooltip>
                                 <div class="ml-4">
                                     <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
@@ -1313,20 +1317,20 @@
     {
         if (price != null && price.IsAvailable && !String.IsNullOrEmpty(price.Url))
         {
-            ExternalNavigationManager.NavigateToNewTab(price.Url);
+            ExternalNavigationManager.NavigateToNewTabAsync(price.Url);
         }
     }
     
     private void ViewStorePage(string storeId)
     {
-        ExternalNavigationManager.NavigateToNewTab(
+        ExternalNavigationManager.NavigateToNewTabAsync(
             $"/store/{storeId}"
         );
     }
 
     private void ViewMarketPage()
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest()
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamMarketListingPageRequest()
         {
             AppId = Item.AppId.ToString(),
             MarketHashName = Item.Name
@@ -1335,7 +1339,7 @@
 
     private void ViewItemWorkshopPage()
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamWorkshopFileDetailsPageRequest() 
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamWorkshopFileDetailsPageRequest() 
         {
             Id = Item.WorkshopFileId.ToString()
         });
@@ -1343,14 +1347,14 @@
     
     private void DownloadItemWorkshopFile()
     {
-        ExternalNavigationManager.NavigateTo(Item.WorkshopFileUrl);
+        ExternalNavigationManager.NavigateToAsync(Item.WorkshopFileUrl);
     }
     
     private void ViewProfileInventory(string steamId)
     {
         if (!String.IsNullOrEmpty(steamId))
         {
-            ExternalNavigationManager.NavigateToNewTab($"/inventory/{Uri.EscapeDataString(steamId)}");
+            ExternalNavigationManager.NavigateToNewTabAsync($"/inventory/{Uri.EscapeDataString(steamId)}");
         }
     }
     
@@ -1368,7 +1372,7 @@
 
     private void ViewCreatorWorkshopPage()
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamProfileMyWorkshopFilesPageRequest() 
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamProfileMyWorkshopFilesPageRequest() 
         {
             SteamId = Item.CreatorId.ToString(),
             AppId = Item.AppId.ToString()

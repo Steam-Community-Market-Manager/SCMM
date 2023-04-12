@@ -49,7 +49,7 @@
         try
         {
             Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>(ItemUrl);
-            Dialog.ForceRender();
+            Dialog.StateHasChanged();
         }
         catch (Exception ex)
         {

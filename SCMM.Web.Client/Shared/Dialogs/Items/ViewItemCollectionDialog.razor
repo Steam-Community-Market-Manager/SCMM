@@ -18,7 +18,9 @@
                 @if (!String.IsNullOrEmpty(Collection.CreatorAvatarUrl))
                 {
                     <MudTooltip Text="@Collection.CreatorName">
-                        <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="mt-2" />
+                        <MudAvatar Size="MudBlazor.Size.Medium" Class="mt-2">
+                            <MudImage Src="@Collection.CreatorAvatarUrl" />
+                        </MudAvatar>
                     </MudTooltip>
                 }
                 <div class="ml-4">
@@ -34,7 +36,7 @@
                     }
                 </div>
                 <MudSpacer />
-                <MudMenu Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" 
+                <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" 
                          Dense="true" Class="hover-darken align-self-start mx-4 " title="Change sort order">
                     <ActivatorContent>
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">
@@ -139,7 +141,7 @@
         try
         {
             Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>(CollectionUrl);
-            Dialog.ForceRender();
+            Dialog.StateHasChanged();
         }
         catch (Exception ex)
         {

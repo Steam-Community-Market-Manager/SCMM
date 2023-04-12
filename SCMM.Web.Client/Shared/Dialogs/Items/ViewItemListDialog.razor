@@ -21,7 +21,7 @@
                 @if (List?.Items?.Any() == true)
                 {
                     <MudSpacer />
-                    <MudMenu Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
+                    <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
                              Dense="true" Class="@($"hover-darken mx-4 {(IsMediaSize(Breakpoint.SmAndDown) ? "mr-8" : null)}")" title="Change sort order">
                         <ActivatorContent>
                             <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">
@@ -129,7 +129,7 @@
         {
             List = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(ListUrl);
             ListFilteredAndSorted = GetFilteredAndSortedItems(List.Items).ToArray();
-            Dialog.ForceRender();
+            Dialog.StateHasChanged();
             StateHasChanged();
 
             if (HighlightedItemId > 0)

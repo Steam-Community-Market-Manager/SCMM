@@ -140,7 +140,7 @@ else
     private void SellSelectedItemsOnMarket()
     {
         var items = InventoryItems.Where(x => SelectedInventoryItems.Any(y => y.Key == x.Id && y.Value == true));
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketMultisellPageRequest()
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamMarketMultisellPageRequest()
         {
             AppId = items.Where(x => x.AppId > 0).FirstOrDefault()?.AppId.ToString(),
             MarketHashNames = items.Select(x => x.Name).ToArray()

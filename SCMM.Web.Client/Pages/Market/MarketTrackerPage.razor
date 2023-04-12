@@ -9,8 +9,9 @@
 
 @code {
 
-    protected override async Task OnLoadStateAsync()
+    protected override Task OnLoadStateAsync()
     {
+        return Task.CompletedTask;
     }
 
     protected override Task OnPersistStateAsync()

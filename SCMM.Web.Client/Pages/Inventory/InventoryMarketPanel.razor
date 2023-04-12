@@ -265,7 +265,7 @@ else
 
     private void OnItemClicked(ItemDescriptionDTO item)
     {
-        ExternalNavigationManager.NavigateToItem(item);
+        ExternalNavigationManager.NavigateToItemAsync(item);
     }
 
     private async Task LoadInventoryMovement()

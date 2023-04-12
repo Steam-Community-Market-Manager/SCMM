@@ -67,7 +67,7 @@
                     {
                         @foreach (var action in Item.Actions)
                         {
-                            <MudMenuItem OnTouch="@(() => ExternalNavigationManager.NavigateToNewTab(action.Url))" OnClick="@(() => ExternalNavigationManager.NavigateToNewTab(action.Url))">
+                            <MudMenuItem OnTouch="@(() => ExternalNavigationManager.NavigateToNewTabAsync(action.Url))" OnClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync(action.Url))">
                                 <i class="@($"fa fa-fw {action.Icon} mr-1")"></i>
                                 <span>@action.Name</span>
                             </MudMenuItem>
@@ -89,12 +89,12 @@
 
     private void OnItemClicked(ProfileInventoryItemDescriptionDTO item)
     {
-        ExternalNavigationManager.NavigateToItem(item);
+        ExternalNavigationManager.NavigateToItemAsync(item);
     }
     
     private void ViewItemOnSteam()
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamProfileInventoryPageRequest()
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamProfileInventoryPageRequest()
         {
             SteamId = SteamId,
             AppId = Item.AppId.ToString(),
@@ -104,7 +104,7 @@
     
     private void SellItemOnMarket()
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketMultisellPageRequest()
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamMarketMultisellPageRequest()
         {
             AppId = Item.AppId.ToString(),
             MarketHashNames = new string[] { Item.Name }

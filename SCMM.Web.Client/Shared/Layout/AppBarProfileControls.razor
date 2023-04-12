@@ -8,7 +8,7 @@
 @inject AppState State
 
 <div class="full-height" @attributes="AdditionalAttributes">
-    <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Class="full-height hover-darken" Disabled="State.IsPrerendering">
+    <MudMenu ActivationEvent="@MouseEvent.LeftClick" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Class="full-height hover-darken" Disabled="State.IsPrerendering">
         <ActivatorContent>
             <div class="d-flex justify-start align-center px-2">
                 @if (InventoryTotals?.MarketValue > 0)
@@ -22,8 +22,9 @@
                         </div>
                     </MudHidden>
                 }
-                <MudAvatar Image="@(State.Profile?.AvatarUrl ?? "/images/steam_default_avatar.png")" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" 
-                           title="@(State.IsAuthenticated ? "Your profile" : "Anonymous user")" />
+                <MudAvatar Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" title="@(State.IsAuthenticated ? "Your profile" : "Anonymous user")">
+                    <MudImage Src="@(State.Profile?.AvatarUrl ?? "/images/steam_default_avatar.png")" />
+                </MudAvatar>
             </div>
         </ActivatorContent>
         <ChildContent>
@@ -149,12 +150,12 @@
 
     private void NavigateToSignIn()
     {
-        ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+        ExternalNavigationManager.NavigateToAsync($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
     }
 
     private void NavigateToSignOut()
     {
-        ExternalNavigationManager.NavigateTo($"/signout?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+        ExternalNavigationManager.NavigateToAsync($"/signout?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
     }
 
 }

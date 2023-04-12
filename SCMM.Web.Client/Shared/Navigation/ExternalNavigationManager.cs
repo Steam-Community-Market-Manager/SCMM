@@ -16,51 +16,51 @@ public class ExternalNavigationManager
         _state = state;
     }
 
-    public void NavigateTo(string uri)
+    public Task NavigateToAsync(string uri)
     {
-        _jsRuntime.InvokeVoidAsync("WindowInterop.open", uri);
+        return _jsRuntime.InvokeVoidAsync("WindowInterop.open", uri).AsTask();
     }
 
-    public void NavigateToNewTab(string uri)
+    public Task NavigateToNewTabAsync(string uri)
     {
-        _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", uri);
+        return _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", uri).AsTask();
     }
 
-    public void NavigateToItem(IItemDescription item)
+    public Task NavigateToItemAsync(IItemDescription item)
     {
         switch (_state?.Profile?.ItemInfoWebsite ?? ItemInfoWebsiteType.External)
         {
             case ItemInfoWebsiteType.Internal:
                 if (item.Id > 0)
                 {
-                    _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", $"/item/{item.Id}");
+                    return _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", $"/item/{item.Id}").AsTask();
                 }
                 else
                 {
-                    _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", $"/item/{item.Name}");
+                    return _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", $"/item/{item.Name}").AsTask();
                 }
-                break;
 
             case ItemInfoWebsiteType.External:
                 var interactableItem = (item as ICanBeInteractedWith);
                 var purchasableItem = (item as ICanBePurchased);
                 if (purchasableItem != null && !String.IsNullOrEmpty(purchasableItem.BuyNowUrl))
                 {
-                    _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", purchasableItem.BuyNowUrl);
+                    return _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", purchasableItem.BuyNowUrl).AsTask();
                 }
                 else if (interactableItem != null && interactableItem.Actions.Any(x => !String.IsNullOrEmpty(x.Url)))
                 {
-                    _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", interactableItem.Actions.FirstOrDefault(x => !String.IsNullOrEmpty(x.Url)).Url);
+                    return _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", interactableItem.Actions.FirstOrDefault(x => !String.IsNullOrEmpty(x.Url)).Url).AsTask();
                 }
                 else // TODO: if (item.IsMarketable)
                 {
-                    _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", new SteamMarketListingPageRequest()
+                    return _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", new SteamMarketListingPageRequest()
                     {
                         AppId = item.AppId.ToString(),
                         MarketHashName = item.Name
-                    }.ToString());
+                    }.ToString()).AsTask();
                 }
-                break;
         }
+
+        return Task.CompletedTask;
     }
 }

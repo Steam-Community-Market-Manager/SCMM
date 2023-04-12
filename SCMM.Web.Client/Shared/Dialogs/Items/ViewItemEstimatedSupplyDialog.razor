@@ -103,7 +103,7 @@
         try
         {
             Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>(ItemUrl);
-            Dialog.ForceRender();
+            Dialog.StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -132,7 +132,7 @@
     {
         if (!String.IsNullOrEmpty(steamId))
         {
-            ExternalNavigationManager.NavigateToNewTab($"/inventory/{Uri.EscapeDataString(steamId)}");
+            ExternalNavigationManager.NavigateToNewTabAsync($"/inventory/{Uri.EscapeDataString(steamId)}");
         }
     }
 

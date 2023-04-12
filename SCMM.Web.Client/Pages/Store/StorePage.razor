@@ -133,7 +133,9 @@ else if (StoreList.Any())
                                 <MudCardHeader>
                                     <CardHeaderAvatar>
                                         <MudTooltip Text="@($"View more items created by {item.CreatorName}")">
-                                            <MudAvatar Image="@item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="clickable" @onclick="@(() => ShowCreatorItemsDialog(item))" />
+                                            <MudAvatar Size="MudBlazor.Size.Medium" Class="clickable" @onclick="@(() => ShowCreatorItemsDialog(item))">
+                                                <MudImage Src="@item.CreatorAvatarUrl" />
+                                            </MudAvatar>
                                         </MudTooltip>
                                     </CardHeaderAvatar>
                                     <CardHeaderContent>
@@ -152,7 +154,7 @@ else if (StoreList.Any())
                                             @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && item.IsDraft && State.IsInRole(Roles.Contributor)))
                                             {
                                                 <MudTooltip Text="Remove this item from the store">
-                                                    <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt" Class="mr-3" Disabled="State.IsPrerendering"></MudFab>
+                                                    <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" StartIcon="fas fa-fw fa-trash-alt" Class="mr-3" Disabled="State.IsPrerendering"></MudFab>
                                                 </MudTooltip>
                                             }
                                             @if (Store.End == null && item.IsStillAvailableFromStore && item.TopSellerIndex != null)
@@ -722,7 +724,7 @@ else
         var numberToBuy = await dialog.GetReturnValueAsync<int?>();
         if (numberToBuy > 0)
         {
-            ExternalNavigationManager.NavigateToNewTab(new SteamBuyItemPageRequest() 
+            await ExternalNavigationManager.NavigateToNewTabAsync(new SteamBuyItemPageRequest() 
             {
                 AppId = item.AppId.ToString(),
                 ItemDefinitionId = item.ItemDefinitionId.Value.ToString(),
@@ -733,7 +735,7 @@ else
 
     private void ViewItemStorePage(StoreItemDetailsDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamItemStoreDetailPageRequest() 
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamItemStoreDetailPageRequest() 
         {
             AppId = item.AppId.ToString(),
             ItemId = item.Id.ToString()
@@ -742,7 +744,7 @@ else
 
     private void ViewItemMarketPage(StoreItemDetailsDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamMarketListingPageRequest() 
         {
             AppId = item.AppId.ToString(),
             MarketHashName = item.Name
@@ -753,7 +755,7 @@ else
     {
         if (item.HasWorkshopFile)
         {
-            ExternalNavigationManager.NavigateToNewTab(new SteamWorkshopFileDetailsPageRequest() 
+            ExternalNavigationManager.NavigateToNewTabAsync(new SteamWorkshopFileDetailsPageRequest() 
             {
                 Id = item.WorkshopFileId.ToString()
             });
@@ -762,7 +764,7 @@ else
 
     private void ViewItem(StoreItemDetailsDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab($"/item/{item.AssetDescriptionId}");
+        ExternalNavigationManager.NavigateToNewTabAsync($"/item/{item.AssetDescriptionId}");
     }
 
     private void ShowCreatorItemsDialog(StoreItemDetailsDTO item)

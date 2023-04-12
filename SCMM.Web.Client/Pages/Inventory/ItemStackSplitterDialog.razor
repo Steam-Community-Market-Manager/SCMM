@@ -80,7 +80,7 @@
         </div>
         <MudTextField T="string" @bind-Text="@SteamApiKey" DebounceInterval="500" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" 
                       Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="Click on the question mark icon to view and manage your Steam API Key"
-                      Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
+                      Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync("https://steamcommunity.com/dev/apikey"))" />
         <div class="mt-2">
             <MudCheckBox T="bool" @bind-Checked="@StackNewItems" Color="Color.Primary" Label="Automatically stack the newly created items after splitting" Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))" />
         </div>

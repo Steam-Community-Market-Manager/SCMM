@@ -516,7 +516,7 @@
 
     private void ViewMarketItem(ulong appId, string name)
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest()
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamMarketListingPageRequest()
         {
             AppId = appId.ToString(),
             MarketHashName = name
@@ -525,12 +525,12 @@
 
     private void ViewItem(ItemDescriptionDTO item)
     {
-        ExternalNavigationManager.NavigateToItem(item);
+        ExternalNavigationManager.NavigateToItemAsync(item);
     }
 
     private void BuyItem(string buyUrl)
     {
-        ExternalNavigationManager.NavigateToNewTab(buyUrl);
+        ExternalNavigationManager.NavigateToNewTabAsync(buyUrl);
     }
 
     private void ShowItemDetailsDialog(string itemName, string itemAssetDescriptionId)

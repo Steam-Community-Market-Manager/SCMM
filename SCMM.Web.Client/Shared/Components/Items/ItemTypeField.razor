@@ -70,18 +70,18 @@
         {
             return await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemTypeGroupDTO>>($"api/item/types");
         });
-        ItemTypes = await RestoreFromStateOrLoad(nameof(ItemTypes), async () =>
+        ItemTypes = await RestoreFromStateOrLoad(nameof(ItemTypes), () =>
         {
             if (ItemTypesGroups != null && !String.IsNullOrEmpty(Value))
             {
-                return new ItemTypeDTO[]
+                return Task.FromResult(new ItemTypeDTO[]
                 {
                     ItemTypesGroups
                         .SelectMany(x => x.ItemTypes)
                         .FirstOrDefault(x => String.Equals(x.Name, Value, StringComparison.OrdinalIgnoreCase))
-                };
+                });
             }
-            return null;
+            return Task.FromResult(new ItemTypeDTO[0]);
         });
     }
 

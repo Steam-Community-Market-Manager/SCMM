@@ -307,11 +307,11 @@
     {
         if (item.Id > 0)
         {
-            ExternalNavigationManager.NavigateToNewTab($"/item/{item.Id}");
+            ExternalNavigationManager.NavigateToNewTabAsync($"/item/{item.Id}");
         }
         else
         {
-            ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");
+            ExternalNavigationManager.NavigateToNewTabAsync($"/item/{item.Name}");
         }
     }
 

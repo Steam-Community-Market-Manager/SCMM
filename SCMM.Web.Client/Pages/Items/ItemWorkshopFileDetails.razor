@@ -129,7 +129,7 @@
 
     private void ViewItemWorkshopPage(WorkshopFileDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamWorkshopFileDetailsPageRequest()
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamWorkshopFileDetailsPageRequest()
         {
             Id = item.Id.ToString()
         });
