@@ -171,7 +171,7 @@
                             @if (Item.MarketSellOrderCount != null)
                             {
                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                    <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
+                                <i class="fas fa-fw fa-truck-ramp-box mud-secondary-text"></i>
                                     <span>
                                         <MudLink @onclick="@(() => ViewMarketPage())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.MarketSellOrderCount.Value.ToQuantityString() supply</MudLink>
                                         <span class="mud-secondary-text"> on the market</span>
@@ -181,7 +181,7 @@
                             @if (Item.Market24hrSales != null)
                             {
                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                    <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
+                                <i class="fas fa-fw fa-people-carry mud-secondary-text"></i>
                                     <span>
                                         <MudLink @onclick="@(() => ViewMarketPage())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.Market24hrSales.Value.ToQuantityString() demand</MudLink>
                                         <span class="mud-secondary-text"> from the market (last 24hrs)</span>
@@ -237,7 +237,7 @@
                         @if (Item.SupplyTotalEstimated > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                <i class="fas fa-fw fa-people-carry mud-secondary-text"></i>
+                                <i class="fas fa-fw fa-cubes-stacked mud-secondary-text"></i>
                                 <span>
                                     <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ <span class="mud-secondary-text">estimated total</span> supply</span>
                                 </span>
@@ -480,7 +480,7 @@
                         @if (Item.IsLootCrateDrop == true)
                         {
                             <MudTooltip Text="There is a chance to obtain this item when opening a loot crate. The odds of obtaining this item from a loot crate are not known.">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Loot Crate Drop" Icon="fab fa-fw fa-parachute-box mr-2"
+                                <MudChip Size="MudBlazor.Size.Small" Text="Loot Crate Drop" Icon="fas fa-fw fa-parachute-box mr-2"
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
@@ -1494,7 +1494,7 @@
             {
                 Timestamp = Item.TimeMarketFirstSold.Value,
                 Color = Color.Default,
-                Icon = "fas fa-fw fa-balance-scale-left",
+                Icon = "fas fa-fw fa-shop",
                 Title = "First Market Listing",
                 Subtitle = "Item first appeared on the market."
             });

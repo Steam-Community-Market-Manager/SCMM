@@ -91,7 +91,7 @@
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-people-carry mr-1" Title="Highest Estimated Item Supply" Subtitle="Which items have the highest estimated total supply?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-cubes-stacked mr-1" Title="Highest Estimated Item Supply" Subtitle="Which items have the highest estimated total supply?" Dense="true">
                 <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                     <tbody>
                         <Virtualize ItemsProvider="LoadItemMostSupply" Context="item" SpacerElement="tr">

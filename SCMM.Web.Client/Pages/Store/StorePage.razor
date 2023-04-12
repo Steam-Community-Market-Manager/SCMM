@@ -252,25 +252,25 @@ else if (StoreList.Any())
                                             }
                                             @if (item.IsMarketable && !item.IsBanned && !item.IsStillAvailableFromStore)
                                             {
+                                                @if (item.MarketSupply != null)
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-truck-ramp-box mud-secondary-text"></i>
+                                                    <span>
+                                                        <MudLink @onclick="@(() => ViewItemMarketPage(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketSupply.Value.ToQuantityString() supply</MudLink>
+                                                        <span class="mud-secondary-text"> on the market</span>
+                                                    </span>
+                                                </MudText>
+                                                }
                                                 @if (item.MarketDemand24hrs != null)
                                                 {
                                                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                                        <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
+                                                    <i class="fas fa-fw fa-people-carry mud-secondary-text"></i>
                                                         <span>
                                                             <MudLink @onclick="@(() => ViewItemMarketPage(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketDemand24hrs.Value.ToQuantityString() demand</MudLink>
                                                             <span class="mud-secondary-text"> from the market (last 24hrs)</span>
                                                         </span>
                                                     </MudText>
-                                                }
-                                                @if (item.MarketSupply != null)
-                                                {
-                                                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                                            <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
-                                                            <span>
-                                                                <MudLink @onclick="@(() => ViewItemMarketPage(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketSupply.Value.ToQuantityString() supply</MudLink>
-                                                                <span class="mud-secondary-text"> on the market</span>
-                                                            </span>
-                                                        </MudText>
                                                 }
                                             }
                                             @if (item.MarketRankTotal > 0 && !item.IsBanned)
@@ -457,7 +457,7 @@ else if (StoreList.Any())
                                                 @if (item.IsLootCrateDrop == true)
                                                 {
                                                     <MudTooltip Text="There is a chance to obtain this item when opening a loot crate. The odds of obtaining this item from a loot crate are not known.">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Loot Crate Drop" Icon="fab fa-fw fa-parachute-box mr-2"
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Loot Crate Drop" Icon="fas fa-fw fa-parachute-box mr-2"
                                                                     Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                                                     </MudTooltip>
                                                 }

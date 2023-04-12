@@ -362,7 +362,7 @@ namespace SCMM.Steam.Data.Store
             {
                 yield return new ItemInteraction
                 {
-                    Icon = "fa-tools",
+                    Icon = "fa-compass-drafting",
                     Name = "View Workshop",
                     Url = new SteamWorkshopFileDetailsPageRequest()
                     {
