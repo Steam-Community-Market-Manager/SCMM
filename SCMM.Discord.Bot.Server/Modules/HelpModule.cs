@@ -16,7 +16,7 @@ public class HelpModule : InteractionModuleBase<ShardedInteractionContext>
     }
 
     [SlashCommand("invite", "Invite this bot to another Discord server", runMode: RunMode.Sync)]
-    public async Task<RuntimeResult> GetBotInviteAsync()
+    public RuntimeResult GetBotInviteAsync()
     {
         var name = Context.Client.CurrentUser.Username;
         return InteractionResult.Success(

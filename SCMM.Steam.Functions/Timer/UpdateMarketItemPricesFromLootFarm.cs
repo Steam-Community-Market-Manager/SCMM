@@ -16,6 +16,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromLootFarmJob
 {
+    private const MarketType LOOTFarm = MarketType.LOOTFarm;
+
     private readonly SteamDbContext _db;
     private readonly LootFarmWebClient _lootFarmWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +32,7 @@ public class UpdateMarketItemPricesFromLootFarmJob
     [Function("Update-Market-Item-Prices-From-LootFarm")]
     public async Task Run([TimerTrigger("0 2/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.LOOTFarm.IsEnabled())
+        if (!LOOTFarm.IsEnabled())
         {
             return;
         }
@@ -38,7 +40,7 @@ public class UpdateMarketItemPricesFromLootFarmJob
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.LOOTFarm.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = LOOTFarm.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -81,7 +83,7 @@ public class UpdateMarketItemPricesFromLootFarmJob
                     if (item != null)
                     {
                         var available = lootFarmItem.Have;
-                        item.UpdateBuyPrices(MarketType.LOOTFarm, new PriceWithSupply
+                        item.UpdateBuyPrices(LOOTFarm, new PriceWithSupply
                         {
                             Price = available > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
                             Supply = available
@@ -89,15 +91,15 @@ public class UpdateMarketItemPricesFromLootFarmJob
                     }
                 }
 
-                var missingItems = items.Where(x => !lootFarmItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.LOOTFarm));
+                var missingItems = items.Where(x => !lootFarmItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(LOOTFarm));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.LOOTFarm, null);
+                    missingItem.Item.UpdateBuyPrices(LOOTFarm, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.LOOTFarm, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
                 {
                     x.TotalItems = lootFarmItems.Count();
                     x.TotalListings = lootFarmItems.Sum(i => i.Have);
@@ -112,7 +114,7 @@ public class UpdateMarketItemPricesFromLootFarmJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.LOOTFarm, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

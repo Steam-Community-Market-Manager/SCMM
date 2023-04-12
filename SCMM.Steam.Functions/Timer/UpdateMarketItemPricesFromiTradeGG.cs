@@ -16,6 +16,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromiTradeggJob
 {
+    private const MarketType iTradegg = MarketType.iTradegg;
+
     private readonly SteamDbContext _db;
     private readonly iTradeggWebClient _iTradeggWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +32,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
     [Function("Update-Market-Item-Prices-From-iTradegg")]
     public async Task Run([TimerTrigger("0 16/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.iTradegg.IsEnabled())
+        if (!iTradegg.IsEnabled())
         {
             return;
         }
@@ -38,7 +40,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
         var logger = context.GetLogger("Update-Market-Item-Prices-From-iTradegg");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.iTradegg.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = iTradegg.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -80,7 +82,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
                     var item = items.FirstOrDefault(x => x.Name == iTradeggItem.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.iTradegg, new PriceWithSupply
+                        item.UpdateBuyPrices(iTradegg, new PriceWithSupply
                         {
                             Price = iTradeggItem.Same > 0 ? item.Currency.CalculateExchange(iTradeggItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Supply = iTradeggItem.Same
@@ -88,15 +90,15 @@ public class UpdateMarketItemPricesFromiTradeggJob
                     }
                 }
 
-                var missingItems = items.Where(x => !iTradeggItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.iTradegg));
+                var missingItems = items.Where(x => !iTradeggItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(iTradegg));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.iTradegg, null);
+                    missingItem.Item.UpdateBuyPrices(iTradegg, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.iTradegg, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
                 {
                     x.TotalItems = iTradeggItems.Count();
                     x.TotalListings = iTradeggItems.Sum(i => i.Same);
@@ -111,7 +113,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from iTrade.gg (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.iTradegg, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

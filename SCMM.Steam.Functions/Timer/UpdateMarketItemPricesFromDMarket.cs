@@ -16,6 +16,9 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromDMarketJob
 {
+    private const MarketType DMarket = MarketType.DMarket;
+    private const MarketType DMarketF2F = MarketType.DMarketF2F;
+
     private readonly SteamDbContext _db;
     private readonly DMarketWebClient _dMarketWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +33,7 @@ public class UpdateMarketItemPricesFromDMarketJob
     [Function("Update-Market-Item-Prices-From-DMarket")]
     public async Task Run([TimerTrigger("0 22/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.DMarket.IsEnabled())
+        if (!DMarket.IsEnabled())
         {
             return;
         }
@@ -38,7 +41,7 @@ public class UpdateMarketItemPricesFromDMarketJob
         var logger = context.GetLogger("Update-Market-Item-Prices-From-DMarket");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.DMarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = DMarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -95,7 +98,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                     if (item != null)
                     {
                         var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
-                        item.UpdateBuyPrices(MarketType.DMarketF2F, new PriceWithSupply
+                        item.UpdateBuyPrices(DMarketF2F, new PriceWithSupply
                         {
                             Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
                             Supply = supply
@@ -103,15 +106,15 @@ public class UpdateMarketItemPricesFromDMarketJob
                     }
                 }
 
-                var missingItems = items.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(MarketType.DMarketF2F));
+                var missingItems = items.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(DMarketF2F));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.DMarketF2F, null);
+                    missingItem.Item.UpdateBuyPrices(DMarketF2F, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.DMarketF2F, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
                 {
                     x.TotalItems = dMarketItemGroups.Count();
                     x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
@@ -126,7 +129,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.DMarketF2F, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;
@@ -177,7 +180,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                     if (item != null)
                     {
                         var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
-                        item.UpdateBuyPrices(MarketType.DMarket, new PriceWithSupply
+                        item.UpdateBuyPrices(DMarket, new PriceWithSupply
                         {
                             Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
                             Supply = supply
@@ -185,15 +188,15 @@ public class UpdateMarketItemPricesFromDMarketJob
                     }
                 }
 
-                var missingItems = items.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(MarketType.DMarket));
+                var missingItems = items.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(DMarket));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.DMarket, null);
+                    missingItem.Item.UpdateBuyPrices(DMarket, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.DMarket, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
                 {
                     x.TotalItems = dMarketItemGroups.Count();
                     x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
@@ -208,7 +211,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: exchange). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.DMarket, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

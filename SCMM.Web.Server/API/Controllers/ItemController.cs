@@ -59,7 +59,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>
         /// <param name="banned">If <code>true</code>, only banned items are returned</param>
         /// <param name="publisherDrop">If <code>true</code>, only game publisher drops are returned</param>
-        /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param
+        /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param>
         /// <param name="lootCrateDrop">If <code>true</code>, only items which can drop from loot crates are returned</param>
         /// <param name="craftable">If <code>true</code>, only craftable items are returned</param>
         /// <param name="manipulated">If <code>true</code>, only items currently flagged as undergoing price manipulation are returned</param>

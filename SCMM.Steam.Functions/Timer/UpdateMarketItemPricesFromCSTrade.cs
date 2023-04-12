@@ -16,6 +16,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromCSTrade
 {
+    private const MarketType CSTRADE = MarketType.CSTRADE;
+
     private readonly SteamDbContext _db;
     private readonly CSTradeWebClient _csTradeWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +32,7 @@ public class UpdateMarketItemPricesFromCSTrade
     [Function("Update-Market-Item-Prices-From-CSTrade")]
     public async Task Run([TimerTrigger("0 14/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.CSTRADE.IsEnabled())
+        if (!CSTRADE.IsEnabled())
         {
             return;
         }
@@ -38,7 +40,7 @@ public class UpdateMarketItemPricesFromCSTrade
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSTrade");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.CSTRADE.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = CSTRADE.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -80,7 +82,7 @@ public class UpdateMarketItemPricesFromCSTrade
                     var item = items.FirstOrDefault(x => x.Name == csTradeItem.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.CSTRADE, new PriceWithSupply
+                        item.UpdateBuyPrices(CSTRADE, new PriceWithSupply
                         {
                             Price = csTradeItem.Have > 0 ? item.Currency.CalculateExchange(csTradeItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Supply = csTradeItem.Have
@@ -88,15 +90,15 @@ public class UpdateMarketItemPricesFromCSTrade
                     }
                 }
 
-                var missingItems = items.Where(x => !csTradeAppItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.CSTRADE));
+                var missingItems = items.Where(x => !csTradeAppItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(CSTRADE));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.CSTRADE, null);
+                    missingItem.Item.UpdateBuyPrices(CSTRADE, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSTRADE, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
                 {
                     x.TotalItems = csTradeAppItems.Count();
                     x.TotalListings = csTradeAppItems.Sum(i => i.Have);
@@ -111,7 +113,7 @@ public class UpdateMarketItemPricesFromCSTrade
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from CS.TRADE (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSTRADE, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

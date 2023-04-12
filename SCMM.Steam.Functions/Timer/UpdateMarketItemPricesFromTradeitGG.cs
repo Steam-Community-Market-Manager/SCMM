@@ -16,6 +16,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromTradeitGG
 {
+    private const MarketType TradeitGG = MarketType.TradeitGG;
+
     private readonly SteamDbContext _db;
     private readonly TradeitGGWebClient _tradeitGGWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +32,7 @@ public class UpdateMarketItemPricesFromTradeitGG
     [Function("Update-Market-Item-Prices-From-TradeitGG")]
     public async Task Run([TimerTrigger("0 6/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.TradeitGG.IsEnabled())
+        if (!TradeitGG.IsEnabled())
         {
             return;
         }
@@ -38,7 +40,7 @@ public class UpdateMarketItemPricesFromTradeitGG
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeitGG");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.TradeitGG.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = TradeitGG.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -93,7 +95,7 @@ public class UpdateMarketItemPricesFromTradeitGG
                     var item = items.FirstOrDefault(x => x.Name == tradeitGGItem.Key.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.TradeitGG, new PriceWithSupply
+                        item.UpdateBuyPrices(TradeitGG, new PriceWithSupply
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
                             Supply = tradeitGGItem.Value
@@ -101,15 +103,15 @@ public class UpdateMarketItemPricesFromTradeitGG
                     }
                 }
 
-                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(MarketType.TradeitGG));
+                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(TradeitGG));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.TradeitGG, null);
+                    missingItem.Item.UpdateBuyPrices(TradeitGG, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.TradeitGG, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
                 {
                     x.TotalItems = tradeitGGItems.Count();
                     x.TotalListings = tradeitGGItems.Sum(i => i.Value);
@@ -124,7 +126,7 @@ public class UpdateMarketItemPricesFromTradeitGG
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.TradeitGG, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

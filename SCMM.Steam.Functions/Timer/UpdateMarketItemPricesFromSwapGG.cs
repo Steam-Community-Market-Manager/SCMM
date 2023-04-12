@@ -16,6 +16,9 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromSwapGG
 {
+    private const MarketType SwapGGMarket = MarketType.SwapGGMarket;
+    private const MarketType SwapGGTrade = MarketType.SwapGGTrade;
+
     private readonly SteamDbContext _db;
     private readonly SwapGGWebClient _swapGGWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +33,7 @@ public class UpdateMarketItemPricesFromSwapGG
     [Function("Update-Market-Item-Prices-From-SwapGG")]
     public async Task Run([TimerTrigger("0 4/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.SwapGGTrade.IsEnabled())
+        if (!SwapGGTrade.IsEnabled())
         {
             return;
         }
@@ -38,7 +41,7 @@ public class UpdateMarketItemPricesFromSwapGG
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SwapGG");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.SwapGGTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = SwapGGTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -80,7 +83,7 @@ public class UpdateMarketItemPricesFromSwapGG
                     var item = items.FirstOrDefault(x => x.Name == swapggTradeItem.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.SwapGGTrade, new PriceWithSupply
+                        item.UpdateBuyPrices(SwapGGTrade, new PriceWithSupply
                         {
                             Price = swapggTradeItem.ItemIds?.Length > 0 ? item.Currency.CalculateExchange(swapggTradeItem.Price, eurCurrency) : 0,
                             Supply = swapggTradeItem.ItemIds?.Length
@@ -88,15 +91,15 @@ public class UpdateMarketItemPricesFromSwapGG
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggTradeItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.SwapGGTrade));
+                var missingItems = items.Where(x => !swapggTradeItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(SwapGGTrade));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.SwapGGTrade, null);
+                    missingItem.Item.UpdateBuyPrices(SwapGGTrade, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGTrade, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGTrade, x =>
                 {
                     x.TotalItems = swapggTradeItems.Count();
                     x.TotalListings = swapggTradeItems.Sum(i => i.ItemIds?.Length ?? 0);
@@ -111,7 +114,7 @@ public class UpdateMarketItemPricesFromSwapGG
                 try
                 {
                     logger.LogError(ex, $"Failed to update trade item price information from swap.gg (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGTrade, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGTrade, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;
@@ -147,7 +150,7 @@ public class UpdateMarketItemPricesFromSwapGG
                     var item = items.FirstOrDefault(x => x.Name == swapggMarketItem.Key)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.SwapGGMarket, new PriceWithSupply
+                        item.UpdateBuyPrices(SwapGGMarket, new PriceWithSupply
                         {
                             Price = swapggMarketItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggMarketItem.Value.Price, eurCurrency) : 0,
                             Supply = swapggMarketItem.Value.Quantity
@@ -155,15 +158,15 @@ public class UpdateMarketItemPricesFromSwapGG
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggMarketItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(MarketType.SwapGGMarket));
+                var missingItems = items.Where(x => !swapggMarketItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(SwapGGMarket));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.SwapGGMarket, null);
+                    missingItem.Item.UpdateBuyPrices(SwapGGMarket, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGMarket, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGMarket, x =>
                 {
                     x.TotalItems = swapggMarketItems.Count();
                     x.TotalListings = swapggMarketItems.Sum(i => i.Value.Quantity);
@@ -178,7 +181,7 @@ public class UpdateMarketItemPricesFromSwapGG
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGMarket, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGMarket, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

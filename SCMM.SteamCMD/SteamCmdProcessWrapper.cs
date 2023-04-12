@@ -15,7 +15,7 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
         _logger = logger;
     }
 
-    public async Task<WebFileData> DownloadWorkshopFile(string appId, string workshopFileId)
+    public async Task<WebFileData?> DownloadWorkshopFile(string appId, string workshopFileId)
     {
         var workshopFileName = $"{appId}-{workshopFileId}.zip";
         var workshopFileBasePath = $"Tools{Path.DirectorySeparatorChar}steamapps{Path.DirectorySeparatorChar}workshop{Path.DirectorySeparatorChar}content{Path.DirectorySeparatorChar}{appId}{Path.DirectorySeparatorChar}{workshopFileId}";
@@ -60,7 +60,7 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
             if (!Directory.Exists(workshopFileBasePath))
             {
                 _logger.LogWarning("Workshop file cannot be found, it either has been deleted or is private");
-                return null;
+                return default;
             }
 
             ZipFile.CreateFromDirectory(workshopFileBasePath, workshopFileZipPath, CompressionLevel.SmallestSize, includeBaseDirectory: false);

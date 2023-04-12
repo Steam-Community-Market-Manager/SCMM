@@ -16,6 +16,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromRustTM
 {
+    private const MarketType RustTM = MarketType.RustTM;
+
     private readonly SteamDbContext _db;
     private readonly RustTMWebClient _rustTMWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +32,7 @@ public class UpdateMarketItemPricesFromRustTM
     [Function("Update-Market-Item-Prices-From-RustTM")]
     public async Task Run([TimerTrigger("0 12/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.RustTM.IsEnabled())
+        if (!RustTM.IsEnabled())
         {
             return;
         }
@@ -38,7 +40,7 @@ public class UpdateMarketItemPricesFromRustTM
         var logger = context.GetLogger("Update-Market-Item-Prices-From-RustTM");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.RustTM.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = RustTM.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -80,7 +82,7 @@ public class UpdateMarketItemPricesFromRustTM
                     var item = items.FirstOrDefault(x => x.Name == rustTMItem.MarketHashName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.RustTM, new PriceWithSupply
+                        item.UpdateBuyPrices(RustTM, new PriceWithSupply
                         {
                             Price = rustTMItem.Volume > 0 ? item.Currency.CalculateExchange(rustTMItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Supply = rustTMItem.Volume
@@ -88,15 +90,15 @@ public class UpdateMarketItemPricesFromRustTM
                     }
                 }
 
-                var missingItems = items.Where(x => !rustTMItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.RustTM));
+                var missingItems = items.Where(x => !rustTMItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(RustTM));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.RustTM, null);
+                    missingItem.Item.UpdateBuyPrices(RustTM, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.RustTM, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RustTM, x =>
                 {
                     x.TotalItems = rustTMItems.Count();
                     x.TotalListings = rustTMItems.Sum(i => i.Volume);
@@ -111,7 +113,7 @@ public class UpdateMarketItemPricesFromRustTM
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from Rust.tm (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.RustTM, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RustTM, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

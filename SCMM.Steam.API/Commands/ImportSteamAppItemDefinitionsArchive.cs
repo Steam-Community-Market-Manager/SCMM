@@ -136,7 +136,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     // Parse all item definition changes in the archive
                     _logger.LogInformation($"Parsing item definitions for missing ids (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                    await LinkAssetDescriptionsToItemDefinitionsFromArchive(app, itemDefinitions, assetDescriptions);
+                    LinkAssetDescriptionsToItemDefinitionsFromArchive(app, itemDefinitions, assetDescriptions);
                 }
                 catch (Exception ex)
                 {
@@ -151,7 +151,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     // Parse all new asset description in the archive
                     _logger.LogInformation($"Parsing item definitions for new asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                    await AddNewAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
+                    await AddNewAssetDescriptionsFromArchiveAsync(app, itemDefinitions, assetDescriptions);
                 }
                 catch (Exception ex)
                 {
@@ -172,9 +172,9 @@ namespace SCMM.Steam.API.Commands
                         if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                         {
                             _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                            await RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                            RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
                             await _steamDb.SaveChangesAsync();
-                            await AddOrUpdateStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                            await AddOrUpdateStoreItemsFromArchiveAsync(app, itemDefinitions, assetDescriptions, currencies);
                         }
                     }
                     catch (Exception ex)
@@ -190,7 +190,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         // Parse market item changes in the archive
                         _logger.LogInformation($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                        await AddOrUpdateMarketItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
+                        await AddOrUpdateMarketItemsFromArchiveAsync(app, itemDefinitions, assetDescriptions, currencies);
                     }
                     catch (Exception ex)
                     {
@@ -207,7 +207,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     // Parse asset description changes in the archive
                     _logger.LogInformation($"Parsing item definitions for updated asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                    await UpdateExistingAssetDescriptionsFromArchive(app, itemDefinitions, assetDescriptions);
+                    await UpdateExistingAssetDescriptionsFromArchiveAsync(app, itemDefinitions, assetDescriptions);
                 }
                 catch (Exception ex)
                 {
@@ -220,7 +220,7 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task LinkAssetDescriptionsToItemDefinitionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
+        private void LinkAssetDescriptionsToItemDefinitionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
             var assetDescriptionsWithMissingItemDefinitionId = assetDescriptions
                 .Where(x => x.ItemDefinitionId == null)
@@ -243,7 +243,7 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task AddNewAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
+        private async Task AddNewAssetDescriptionsFromArchiveAsync(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
             var newItems = itemDefinitions
                 .Where(x => !assetDescriptions.Any(y => y.ItemDefinitionId == x.ItemDefId))
@@ -297,7 +297,7 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task UpdateExistingAssetDescriptionsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
+        private async Task UpdateExistingAssetDescriptionsFromArchiveAsync(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions)
         {
             var updatedItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
@@ -329,7 +329,7 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task RemoveStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
+        private void RemoveStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
         {
             var storeItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
@@ -356,7 +356,7 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task AddOrUpdateStoreItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
+        private async Task AddOrUpdateStoreItemsFromArchiveAsync(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
         {
             var storeItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
@@ -478,7 +478,7 @@ namespace SCMM.Steam.API.Commands
 
                         var storeItemAsset = assetPricesResponse?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId?.ToString() || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
                         var storeItemPrices = storeItemAsset?.Prices ?? new Dictionary<string, long>();
-                        var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailable(app, assetDescription, storeItemAsset, defaultCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
+                        var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailableAsync(app, assetDescription, storeItemAsset, defaultCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
                         if (storeItem == null)
                         {
                             continue;
@@ -556,17 +556,17 @@ namespace SCMM.Steam.API.Commands
                 var newPermanentStoreItems = newStoreItems.Where(x => x.Description.IsPermanent).ToArray();
                 if (permanentItemStore != null && newPermanentStoreItems.Any())
                 {
-                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(app, permanentItemStore, newPermanentStoreItems, defaultCurrency);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, permanentItemStore, newPermanentStoreItems, defaultCurrency);
                 }
                 var newLimitedStoreItems = newStoreItems.Where(x => !x.Description.IsPermanent).ToArray();
                 if (limitedItemStore != null && newLimitedStoreItems.Any())
                 {
-                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(app, limitedItemStore, newLimitedStoreItems, defaultCurrency);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, limitedItemStore, newLimitedStoreItems, defaultCurrency);
                 }
             }
         }
 
-        private async Task<SteamStoreItem> CreateOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamAssetDescription assetDescription, AssetPrice assetPrice, SteamCurrency currency, DateTimeOffset? timeDiscovered)
+        private async Task<SteamStoreItem> CreateOrUpdateStoreItemAndMarkAsAvailableAsync(SteamApp app, SteamAssetDescription assetDescription, AssetPrice assetPrice, SteamCurrency currency, DateTimeOffset? timeDiscovered)
         {
             if (assetDescription.ClassId == null && !String.IsNullOrEmpty(assetPrice.ClassId))
             {
@@ -625,7 +625,7 @@ namespace SCMM.Steam.API.Commands
             return storeItem;
         }
 
-        private async Task AddOrUpdateMarketItemsFromArchive(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
+        private async Task AddOrUpdateMarketItemsFromArchiveAsync(SteamApp app, IEnumerable<ItemDefinition> itemDefinitions, ICollection<SteamAssetDescription> assetDescriptions, IEnumerable<SteamCurrency> currencies)
         {
             var marketItems = itemDefinitions
                 .Join(assetDescriptions, x => x.ItemDefId, y => y.ItemDefinitionId, (x, y) => new
@@ -750,7 +750,7 @@ namespace SCMM.Steam.API.Commands
             }
         }
 
-        private async Task RegenerateStoreItemsThumbnailAndSendStoreAddedMessage(SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newItems, SteamCurrency currency)
+        private async Task RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newItems, SteamCurrency currency)
         {
             try
             {

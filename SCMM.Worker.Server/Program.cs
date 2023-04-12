@@ -42,7 +42,7 @@ var hostBuilder = new HostBuilder()
     .ConfigureAppConfiguration(environment ?? String.Empty, args)
     .ConfigureServices()
     .UseConsoleLifetime()
-    .UseEnvironment(environment);
+    .UseEnvironment(environment ?? "Production");
 
 using (var host = hostBuilder.Build())
 {

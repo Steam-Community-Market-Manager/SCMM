@@ -16,6 +16,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromSkinBaron
 {
+    private const MarketType SkinBaron = MarketType.SkinBaron;
+
     private readonly SteamDbContext _db;
     private readonly SkinBaronWebClient _skinBaronWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +32,7 @@ public class UpdateMarketItemPricesFromSkinBaron
     [Function("Update-Market-Item-Prices-From-SkinBaron")]
     public async Task Run([TimerTrigger("0 10/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.SkinBaron.IsEnabled())
+        if (!SkinBaron.IsEnabled())
         {
             return;
         }
@@ -38,7 +40,7 @@ public class UpdateMarketItemPricesFromSkinBaron
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinBaron");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.SkinBaron.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = SkinBaron.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -93,7 +95,7 @@ public class UpdateMarketItemPricesFromSkinBaron
                     var item = items.FirstOrDefault(x => x.Name == skinBaronItem.ExtendedProductInformation?.LocalizedName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.SkinBaron, new PriceWithSupply
+                        item.UpdateBuyPrices(SkinBaron, new PriceWithSupply
                         {
                             Price = skinBaronItem.NumberOfOffers > 0 ? item.Currency.CalculateExchange(skinBaronItem.LowestPrice.ToString().SteamPriceAsInt(), eurCurrency) : 0,
                             Supply = skinBaronItem.NumberOfOffers
@@ -101,16 +103,16 @@ public class UpdateMarketItemPricesFromSkinBaron
                     }
                 }
 
-                var missingItems = items.Where(x => !skinBaronItems.Any(y => x.Name == y.ExtendedProductInformation?.LocalizedName) && x.Item.BuyPrices.ContainsKey(MarketType.SkinBaron));
+                var missingItems = items.Where(x => !skinBaronItems.Any(y => x.Name == y.ExtendedProductInformation?.LocalizedName) && x.Item.BuyPrices.ContainsKey(SkinBaron));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.SkinBaron, null);
-                    missingItem.Item.UpdateBuyPrices(MarketType.SkinBaron, null);
+                    missingItem.Item.UpdateBuyPrices(SkinBaron, null);
+                    missingItem.Item.UpdateBuyPrices(SkinBaron, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SkinBaron, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinBaron, x =>
                 {
                     x.TotalItems = skinBaronItems.Count();
                     x.TotalListings = skinBaronItems.Sum(i => i.NumberOfOffers);
@@ -125,7 +127,7 @@ public class UpdateMarketItemPricesFromSkinBaron
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from SkinBaron (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SkinBaron, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinBaron, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

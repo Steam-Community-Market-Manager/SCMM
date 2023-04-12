@@ -57,7 +57,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Name("help")]
         [Alias("help", "?")]
         [Summary("Show this command help text")]
-        public async Task<RuntimeResult> ShowHelp()
+        public RuntimeResult ShowHelp()
         {
             var embed = new EmbedBuilder();
             var modules = _commandService.Modules

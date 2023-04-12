@@ -9,7 +9,7 @@ public class StoreModuleLegacyCommands : ModuleBase<ShardedCommandContext>
     [Command("next")]
     [Alias("update", "remaining", "time")]
     [Summary("Show time remaining until the next store update")]
-    public async Task<RuntimeResult> SayStoreNextUpdateExpectedOnAsync()
+    public RuntimeResult SayStoreNextUpdateExpectedOnAsync()
     {
         return CommandResult.Fail(
             reason: $"Use `/store next` instead",

@@ -16,6 +16,9 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromCSDeals
 {
+    private const MarketType CSDealsMarketplace = MarketType.CSDealsMarketplace;
+    private const MarketType CSDealsTrade = MarketType.CSDealsTrade;
+
     private readonly SteamDbContext _db;
     private readonly CSDealsWebClient _csDealsWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +33,7 @@ public class UpdateMarketItemPricesFromCSDeals
     [Function("Update-Market-Item-Prices-From-CSDeals")]
     public async Task Run([TimerTrigger("0 8/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.CSDealsTrade.IsEnabled())
+        if (!CSDealsTrade.IsEnabled())
         {
             return;
         }
@@ -38,7 +41,7 @@ public class UpdateMarketItemPricesFromCSDeals
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.CSDealsTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = CSDealsTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -82,7 +85,7 @@ public class UpdateMarketItemPricesFromCSDeals
                     if (item != null)
                     {
                         var supply = csDealsInventoryItemGroup.Sum(x => x.ItemIds?.Length ?? 0);
-                        item.UpdateBuyPrices(MarketType.CSDealsTrade, new PriceWithSupply
+                        item.UpdateBuyPrices(CSDealsTrade, new PriceWithSupply
                         {
                             Price = supply > 0 ? item.Currency.CalculateExchange((csDealsInventoryItemGroup.Min(x => x.ListingPrice)).ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Supply = supply
@@ -90,15 +93,15 @@ public class UpdateMarketItemPricesFromCSDeals
                     }
                 }
 
-                var missingItems = items.Where(x => !csDealsInventoryItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.CSDealsTrade));
+                var missingItems = items.Where(x => !csDealsInventoryItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(CSDealsTrade));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.CSDealsTrade, null);
+                    missingItem.Item.UpdateBuyPrices(CSDealsTrade, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSDealsTrade, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
                 {
                     x.TotalItems = csDealsInventoryItemGroups.Count();
                     x.TotalListings = csDealsInventoryItemGroups.Sum(x => x.Sum(y => y.ItemIds?.Length ?? 0));
@@ -113,7 +116,7 @@ public class UpdateMarketItemPricesFromCSDeals
                 try
                 {
                     logger.LogError(ex, $"Failed to update trade item price information from CS.Deals (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSDealsTrade, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;
@@ -149,7 +152,7 @@ public class UpdateMarketItemPricesFromCSDeals
                     var item = items.FirstOrDefault(x => x.Name == csDealsLowestPriceItem.MarketName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.CSDealsMarketplace, new PriceWithSupply
+                        item.UpdateBuyPrices(CSDealsMarketplace, new PriceWithSupply
                         {
                             Price = item.Currency.CalculateExchange(csDealsLowestPriceItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
                             Supply = null
@@ -157,15 +160,15 @@ public class UpdateMarketItemPricesFromCSDeals
                     }
                 }
 
-                var missingItems = items.Where(x => !csDealsLowestPriceItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.CSDealsMarketplace));
+                var missingItems = items.Where(x => !csDealsLowestPriceItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(CSDealsMarketplace));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.CSDealsMarketplace, null);
+                    missingItem.Item.UpdateBuyPrices(CSDealsMarketplace, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSDealsMarketplace, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsMarketplace, x =>
                 {
                     x.TotalItems = csDealsLowestPriceItems.Count();
                     x.TotalListings = null;
@@ -180,7 +183,7 @@ public class UpdateMarketItemPricesFromCSDeals
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from CS.Deals (appId: {app.SteamId}, source: lowest price items). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.CSDealsMarketplace, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsMarketplace, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

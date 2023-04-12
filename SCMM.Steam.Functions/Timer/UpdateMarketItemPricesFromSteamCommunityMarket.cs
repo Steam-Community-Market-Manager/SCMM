@@ -19,6 +19,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesSteamCommunityMarket
 {
+    private const MarketType SteamCommunityMarket = MarketType.SteamCommunityMarket;
+
     private readonly SteamDbContext _db;
     private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -35,7 +37,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
     //[Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
     public async Task Run([TimerTrigger("0 0 0/12 * * *")] /* every 12 hours */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.SteamCommunityMarket.IsEnabled())
+        if (!SteamCommunityMarket.IsEnabled())
         {
             return;
         }
@@ -43,7 +45,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Steam-Community-Market");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.SteamCommunityMarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = SteamCommunityMarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -127,7 +129,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
                             }
                             if (marketItem.SellOrderLowestPrice > 0)
                             {
-                                marketItem.UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply()
+                                marketItem.UpdateBuyPrices(SteamCommunityMarket, new PriceWithSupply()
                                 {
                                     Price = marketItem.SellOrderLowestPrice,
                                     Supply = (marketItem.SellOrderCount > 0 ? marketItem.SellOrderCount : null)
@@ -144,7 +146,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SteamCommunityMarket, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SteamCommunityMarket, x =>
                 {
                     x.TotalItems = allMarketItems.Count();
                     x.TotalListings = allMarketItems.Sum(i => i.SellOrderCount);
@@ -159,7 +161,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
                 try
                 {
                     logger.LogError(ex, $"Failed to update trade item price information from steam community market (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.SwapGGTrade, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SteamCommunityMarket, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

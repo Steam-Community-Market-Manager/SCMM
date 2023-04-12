@@ -32,7 +32,7 @@ namespace SCMM.Steam.API.Queries
             _db = db;
         }
 
-        public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
+        public Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
         {
             SteamProfile profile = null;
             var profileId = Guid.Empty;
@@ -100,13 +100,13 @@ namespace SCMM.Steam.API.Queries
                 customUrl = profile.ProfileId;
             }
 
-            return new ResolveSteamIdResponse
+            return Task.FromResult(new ResolveSteamIdResponse
             {
                 Profile = profile,
                 ProfileId = profileId != Guid.Empty ? profileId : null,
                 SteamId64 = steamId64 > 0 ? steamId64 : null,
                 CustomUrl = customUrl
-            };
+            });
         }
     }
 }

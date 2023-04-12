@@ -12,7 +12,7 @@ public class InventoryModuleLegacyCommands : ModuleBase<ShardedCommandContext>
     [Name("value")]
     [Alias("value")]
     [Summary("Show the current inventory market value for a Steam profile. This only works if the profile and the inventory privacy is set as public.")]
-    public async Task<RuntimeResult> SayProfileInventoryValueAsync(
+    public RuntimeResult SayProfileInventoryValueAsync(
         [Name("steam_id")][Summary("Valid SteamID or Steam URL")] string steamId = null,
         [Name("currency_id")][Summary("Supported three-letter currency code (e.g. USD, EUR, AUD)")] string currencyId = null
     )

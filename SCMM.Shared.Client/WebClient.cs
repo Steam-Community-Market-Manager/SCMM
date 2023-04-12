@@ -121,7 +121,7 @@ public class WebClient : IDisposable
         return httpClient;
     }
 
-    protected async Task<HttpResponseMessage> PostAsync<TRequest>(HttpClient client, TRequest request, HttpContent? content = null, CancellationToken cancellationToken = default(CancellationToken))
+    protected async Task<HttpResponseMessage> PostAsync<TRequest>(HttpClient client, TRequest request, HttpContent content = null, CancellationToken cancellationToken = default(CancellationToken))
         where TRequest : IWebRequest
     {
         return HandleRequestAndAssertWasSuccess(request,

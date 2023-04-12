@@ -16,6 +16,8 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromSkinport
 {
+    private const MarketType Skinport = MarketType.Skinport;
+
     private readonly SteamDbContext _db;
     private readonly SkinportWebClient _skinportWebClient;
     private readonly IStatisticsService _statisticsService;
@@ -30,7 +32,7 @@ public class UpdateMarketItemPricesFromSkinport
     [Function("Update-Market-Item-Prices-From-Skinport")]
     public async Task Run([TimerTrigger("0 0/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!MarketType.Skinport.IsEnabled())
+        if (!Skinport.IsEnabled())
         {
             return;
         }
@@ -38,7 +40,7 @@ public class UpdateMarketItemPricesFromSkinport
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Skinport");
         var stopwatch = new Stopwatch();
 
-        var appIds = MarketType.Skinport.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = Skinport.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             //.Where(x => x.IsActive)
@@ -80,7 +82,7 @@ public class UpdateMarketItemPricesFromSkinport
                     var item = items.FirstOrDefault(x => x.Name == skinportItem.MarketHashName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.Skinport, new PriceWithSupply
+                        item.UpdateBuyPrices(Skinport, new PriceWithSupply
                         {
                             Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Supply = skinportItem.Quantity
@@ -88,15 +90,15 @@ public class UpdateMarketItemPricesFromSkinport
                     }
                 }
 
-                var missingItems = items.Where(x => !skinportItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.Skinport));
+                var missingItems = items.Where(x => !skinportItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(Skinport));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.Skinport, null);
+                    missingItem.Item.UpdateBuyPrices(Skinport, null);
                 }
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Skinport, x =>
+                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Skinport, x =>
                 {
                     x.TotalItems = skinportItems.Count();
                     x.TotalListings = skinportItems.Sum(i => i.Quantity);
@@ -111,7 +113,7 @@ public class UpdateMarketItemPricesFromSkinport
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from Skinport (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, MarketType.Skinport, x =>
+                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Skinport, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

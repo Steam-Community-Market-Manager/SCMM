@@ -412,14 +412,11 @@ public static class WebApplicationExtensions
 
         app.UseOutputCache();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-            endpoints.MapDefaultControllerRoute();
+        app.MapControllers();
+        app.MapDefaultControllerRoute();
 
-            endpoints.MapBlazorHub();
-            endpoints.MapFallbackToPage("/_Host");
-        });
+        app.MapBlazorHub();
+        app.MapFallbackToPage("/_Host");
 
         app.UseAzureServiceBusProcessor();
 

@@ -370,7 +370,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/cheapestCraftingResourceCosts")]
         [ProducesResponseType(typeof(PaginatedResult<MarketCraftingItemCostAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCraftingCheapestComponentCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetCraftingCheapestComponentCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
             var appId = this.App().Guid;
@@ -426,7 +426,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get the cheapest method of aquiring craftable item containers, sorted by lowest cost
+        /// Get the cheapest method of acquiring craftable item containers, sorted by lowest cost
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
@@ -915,7 +915,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("items/largestCollections")]
         [ProducesResponseType(typeof(PaginatedResult<DashboardAssetCollectionDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsLargestCollections([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetItemsLargestCollections([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
