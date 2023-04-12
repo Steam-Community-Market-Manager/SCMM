@@ -98,7 +98,9 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public int? TradableRestrictionDays { get; set; }
 
-        public bool IsSpecialDrop { get; set; }
+        public bool IsPublisherDrop { get; set; }
+
+        public bool IsLootCrateDrop { get; set; }
 
         public bool IsBreakable { get; set; }
 

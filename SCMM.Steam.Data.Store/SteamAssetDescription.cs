@@ -185,9 +185,11 @@ namespace SCMM.Steam.Data.Store
         /// <summary>
         /// Frog Boots, etc
         /// </summary>
-        public bool IsSpecialDrop { get; set; }
+        public bool IsPublisherDrop { get; set; }
 
         public bool IsTwitchDrop { get; set; }
+
+        public bool IsLootCrateDrop { get; set; }
 
         public bool IsCraftingComponent { get; set; }
 

@@ -138,6 +138,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset store tags
+                var dropsFromLootCrates = app?.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureLootCrates) == true;
                 if (itemDefinition.StoreTags != null)
                 {
                     var existingNonStoreTags = assetDescription.Tags.Where(x => !x.Key.StartsWith(Constants.SteamAssetTagStore)).ToDictionary(x => x.Key, x => x.Value);
@@ -146,7 +147,19 @@ namespace SCMM.Steam.API.Commands
                     {
                         var tagKey = $"{Constants.SteamAssetTagStore}.{tag}";
                         assetDescription.Tags[tagKey] = tag;
+                        if (tag == "nocrate")
+                        {
+                            dropsFromLootCrates = false;
+                        } 
+                        else if (tag == "crate")
+                        {
+                            dropsFromLootCrates = true;
+                        }
                     }
+                }
+                if (assetDescription.IsLootCrateDrop != dropsFromLootCrates)
+                {
+                    assetDescription.IsLootCrateDrop = dropsFromLootCrates;
                 }
 
                 // Parse bundle
@@ -161,8 +174,6 @@ namespace SCMM.Steam.API.Commands
                         assetDescription.Bundle[bundleItemId] = bundleItemWeight;
                     }
                 }
-
-                // TODO: Store tags "nocrate"
 
                 // TODO: Exchange (https://partner.steamgames.com/doc/features/inventory/schema#ExchangeFormat)
                 // TODO: Promo (https://partner.steamgames.com/doc/features/inventory/schema#PromoItems)
@@ -722,12 +733,12 @@ namespace SCMM.Steam.API.Commands
                 ?.Trim("&nbsp;")
                 ?.Trim(' ', '.', '\t', '\n', '\r');
 
-            // Check if this is a special/twitch drop item
-            if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)
+            // Check if this is a twitch drop item
+            if (!assetDescription.IsTwitchDrop)
             {
-                // Does this look like a publisher item twitch drop?
-                if (assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !assetDescription.IsMarketable && !string.IsNullOrEmpty(assetDescription.Description) &&
-                         Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                // Does this look like a twitch drop?
+                if (!assetDescription.IsPublisherDrop && !assetDescription.IsMarketable && assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !string.IsNullOrEmpty(assetDescription.Description) &&
+                    Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                 {
                     assetDescription.IsTwitchDrop = true;
                 }

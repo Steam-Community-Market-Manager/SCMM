@@ -131,7 +131,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         Id = x.Id,
                         ClassId = x.ClassId,
-                        IsDrop = (x.IsSpecialDrop || x.IsTwitchDrop)
+                        IsDrop = (x.IsPublisherDrop || x.IsTwitchDrop)
                     })
                     .ToListAsync();
 
@@ -154,7 +154,7 @@ namespace SCMM.Steam.API.Commands
                             {
                                 Id = importAssetDescription.AssetDescription.Id,
                                 ClassId = importAssetDescription.AssetDescription.ClassId,
-                                IsDrop = (importAssetDescription.AssetDescription.IsSpecialDrop || importAssetDescription.AssetDescription.IsTwitchDrop)
+                                IsDrop = (importAssetDescription.AssetDescription.IsPublisherDrop || importAssetDescription.AssetDescription.IsTwitchDrop)
                             };
                         //}
                     }

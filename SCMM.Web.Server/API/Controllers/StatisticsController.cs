@@ -925,7 +925,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ItemCollection != null)
                 .Select(x => new
                 {
-                    CreatorId = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorId : null,
+                    CreatorId = (!x.IsPublisherDrop && !x.IsTwitchDrop) ? x.CreatorId : null,
                     Name = x.ItemCollection,
                     IconUrl = x.IconUrl,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency

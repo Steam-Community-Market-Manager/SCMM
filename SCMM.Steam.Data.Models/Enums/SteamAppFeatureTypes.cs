@@ -14,7 +14,8 @@
         ItemFeatureCrafting = 0x0100,
         ItemFeatureGlowing = 0x0200,
         ItemFeatureCutout = 0x0400,
-        ItemFeatureGameDrops = 0x0800,
-        ItemFeatureTwitchDrops = 0x1000
+        ItemFeaturePublisherDrops = 0x0800,
+        ItemFeatureTwitchDrops = 0x1000,
+        ItemFeatureLootCrates = 0x2000
     }
 }

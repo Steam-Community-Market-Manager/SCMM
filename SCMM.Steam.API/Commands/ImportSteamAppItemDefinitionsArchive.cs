@@ -634,7 +634,7 @@ namespace SCMM.Steam.API.Commands
                     AssetDescription = y,
                     HasBecomeUnmarketable = (!x.Marketable && y.IsMarketable),
                     HasBecomeMarketable = (x.Marketable && !y.IsMarketable),
-                    IsMissingMarketInfo = (x.Marketable && (y.IsMarketable || y.MarketableRestrictionDays > 0) && (y.MarketItem == null || y.NameId == null) && !String.IsNullOrEmpty(y.NameHash) && !y.IsSpecialDrop && !y.IsTwitchDrop && y.IsAccepted)
+                    IsMissingMarketInfo = (x.Marketable && (y.IsMarketable || y.MarketableRestrictionDays > 0) && (y.MarketItem == null || y.NameId == null) && !String.IsNullOrEmpty(y.NameHash) && !y.IsPublisherDrop && !y.IsTwitchDrop && y.IsAccepted)
                 })
                 .Where(x => x.AssetDescription != null)
                 .OrderBy(x => x.ItemDefinition.Name)

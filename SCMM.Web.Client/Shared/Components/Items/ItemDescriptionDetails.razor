@@ -463,10 +463,10 @@
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
-                        @if (Item.IsSpecialDrop == true)
+                        @if (Item.IsPublisherDrop == true)
                         {
-                            <MudTooltip Text="This item is a limited-time drop, generally done as part of special event (e.g. charity or promotion)">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Special Drop" Icon="fas fa-fw fa-crown mr-2" 
+                            <MudTooltip Text="This item is a limited-time publisher drop, generally done as part of special event (e.g. charity or promotion)">
+                                <MudChip Size="MudBlazor.Size.Small" Text="@($"{State.App?.PublisherName ?? "Publisher"} Drop")" Icon="fas fa-fw fa-crown mr-2"
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
@@ -474,6 +474,13 @@
                         {
                             <MudTooltip Text="This item is a limited-time drop, obtaining from watching streamers on Twitch.tv">
                                 <MudChip Size="MudBlazor.Size.Small" Text="Twitch Drop" Icon="fab fa-fw fa-twitch mr-2" 
+                                         Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                            </MudTooltip>
+                        }
+                        @if (Item.IsLootCrateDrop == true)
+                        {
+                            <MudTooltip Text="There is a chance to obtain this item when opening a loot crate. The odds of obtaining this item from a loot crate are not known.">
+                                <MudChip Size="MudBlazor.Size.Small" Text="Loot Crate Drop" Icon="fab fa-fw fa-parachute-box mr-2"
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }

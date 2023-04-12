@@ -559,7 +559,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Description != null)
-                .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
+                .Where(x => showDrops || (!x.Description.IsPublisherDrop && !x.Description.IsTwitchDrop))
                 .Where(x => showUnmarketable || (x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0))
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
@@ -654,7 +654,7 @@ namespace SCMM.Web.Server.API.Controllers
             var profileCollections = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == app.Guid)
                 .Where(x => itemCollections.Contains(x.ItemCollection))
-                .Where(x => showDrops || (!x.IsSpecialDrop && !x.IsTwitchDrop))
+                .Where(x => showDrops || (!x.IsPublisherDrop && !x.IsTwitchDrop))
                 .Where(x => showUnmarketable || (x.IsMarketable || x.MarketableRestrictionDays > 0))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
@@ -666,8 +666,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .GroupBy(x => new
                 {
                     Collection = x.ItemCollection,
-                    CreatorName = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorProfile?.Name : null,
-                    CreatorAvatarUrl = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorProfile?.AvatarUrl : null
+                    CreatorName = (!x.IsPublisherDrop && !x.IsTwitchDrop) ? x.CreatorProfile?.Name : null,
+                    CreatorAvatarUrl = (!x.IsPublisherDrop && !x.IsTwitchDrop) ? x.CreatorProfile?.AvatarUrl : null
                 })
                 .Select(x => new ProfileInventoryCollectionDTO()
                 {
@@ -728,7 +728,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
-                .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
+                .Where(x => !x.Description.IsPublisherDrop && !x.Description.IsTwitchDrop)
                 .Select(x => new
                 {
                     App = x.App,
@@ -810,7 +810,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Description != null)
-                .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
+                .Where(x => !x.Description.IsPublisherDrop && !x.Description.IsTwitchDrop)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.ToLower().Contains(filter.ToLower()))
                 .Include(x => x.App)
                 .Include(x => x.Currency)

@@ -58,8 +58,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="tradable">If <code>true</code>, only tradable items are returned</param>
         /// <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>
         /// <param name="banned">If <code>true</code>, only banned items are returned</param>
-        /// <param name="specialDrop">If <code>true</code>, only special drops are returned</param>
-        /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param>
+        /// <param name="publisherDrop">If <code>true</code>, only game publisher drops are returned</param>
+        /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param
+        /// <param name="lootCrateDrop">If <code>true</code>, only items which can drop from loot crates are returned</param>
         /// <param name="craftable">If <code>true</code>, only craftable items are returned</param>
         /// <param name="manipulated">If <code>true</code>, only items currently flagged as undergoing price manipulation are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -80,7 +81,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null,
                                                   [FromQuery] bool? glow = null, [FromQuery] bool? glowsight = null, [FromQuery] bool? cutout = null, [FromQuery] bool? commodity = null, [FromQuery] bool? marketable = null, [FromQuery] bool? tradable = null,
-                                                  [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? specialDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? craftable = null, [FromQuery] bool? manipulated = null,
+                                                  [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? publisherDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? lootCrateDrop = null, [FromQuery] bool? craftable = null, [FromQuery] bool? manipulated = null,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
             id = (id ?? new ulong?[0]);
@@ -169,13 +170,17 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsBanned == banned.Value);
             }
-            if (specialDrop != null)
+            if (publisherDrop != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.IsSpecialDrop == specialDrop.Value);
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsPublisherDrop == publisherDrop.Value);
             }
             if (twitchDrop != null)
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsTwitchDrop == twitchDrop.Value);
+            }
+            if (lootCrateDrop != null)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsLootCrateDrop == lootCrateDrop.Value);
             }
             if (craftable != null)
             {

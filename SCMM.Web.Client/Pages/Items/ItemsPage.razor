@@ -80,13 +80,17 @@
                                 {
                                     <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGameDrops))
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeaturePublisherDrops))
                                 {
-                                    <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                    <MudSwitch T="bool" Checked="@PublisherDrop" CheckedChanged="@((x) => { PublisherDrop = x; _ = RefreshItems(); })" Label="@($"{State.App?.PublisherName ?? "Publisher"} Drop")" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
                                 @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
                                 {
                                     <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureLootCrates))
+                                {
+                                    <MudSwitch T="bool" Checked="@LootCrateDrop" CheckedChanged="@((x) => { LootCrateDrop = x; _ = RefreshItems(); })" Label="Loot Crate Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
                                 <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
@@ -116,13 +120,17 @@
                     {
                         <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGameDrops))
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeaturePublisherDrops))
                     {
-                        <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                        <MudSwitch T="bool" Checked="@PublisherDrop" CheckedChanged="@((x) => { PublisherDrop = x; _ = RefreshItems(); })" Label="@($"{State.App?.PublisherName ?? "Publisher"} Drop")" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
                     @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
                     {
                         <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureLootCrates))
+                    {
+                        <MudSwitch T="bool" Checked="@LootCrateDrop" CheckedChanged="@((x) => { LootCrateDrop = x; _ = RefreshItems(); })" Label="Loot Crate Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
                     <MudSwitch T="bool" Checked="@Commodity" CheckedChanged="@((x) => { Commodity = x; _ = RefreshItems(); })" Label="Commodity " Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
@@ -206,11 +214,15 @@
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public bool SpecialDrop { get; set; }
+    public bool PublisherDrop { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
     public bool TwitchDrop { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool LootCrateDrop { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -345,7 +357,7 @@
                 $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}" +
                 $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&breaksIntoComponent={Uri.EscapeDataString(BreaksIntoComponent ?? String.Empty)}" +
                 $"&glow={(Glow ? true : (bool?)null)}&glowsight={(Glowsight ? true : (bool?)null)}&cutout={(Cutout ? true : (bool?)null)}&craftable={(Craftable ? true : (bool?)null)}" +
-                $"&specialDrop={(SpecialDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +
+                $"&publisherDrop={(PublisherDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&lootCrateDrop={(LootCrateDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +
                 $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}&manipulated={(Manipulated ? true : (bool?)null)}"
             );
         }
