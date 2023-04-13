@@ -43,7 +43,10 @@ namespace SCMM.Steam.Client
                 try
                 {
                     var formData = (request as SteamFormDataRequest);
-                    var response = await client.PostAsync(request.Uri, (formData != null ? formData : null));
+                    var response = ((formData != null)
+                        ? await client.PostAsync(request.Uri, formData)
+                        : await client.PostAsync(request.Uri, null)
+                    );
                     if (!response.IsSuccessStatusCode)
                     {
                         throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);

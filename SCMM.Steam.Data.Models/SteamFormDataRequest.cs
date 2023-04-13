@@ -6,6 +6,6 @@ public abstract class SteamFormDataRequest : SteamRequest
 
     public static implicit operator FormUrlEncodedContent(SteamFormDataRequest x)
     {
-        return new FormUrlEncodedContent(x.Data);
+        return (x?.Data == null) ? null : new FormUrlEncodedContent(x.Data);
     }
 }
