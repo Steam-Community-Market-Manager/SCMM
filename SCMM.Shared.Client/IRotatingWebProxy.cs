@@ -4,9 +4,11 @@ namespace SCMM.Shared.Client;
 
 public interface IRotatingWebProxy : IWebProxy
 {
-    void UpdateRequestStatistics(Uri address, HttpStatusCode responseStatusCode);
+    string GetProxyId(Uri requestAddress);
 
-    void RotateProxy(Uri address, TimeSpan cooldown);
+    void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode);
 
-    void DisableProxy(Uri address);
+    void RotateProxy(string proxyId, Uri host, TimeSpan cooldown);
+
+    void DisableProxy(string proxyId);
 }

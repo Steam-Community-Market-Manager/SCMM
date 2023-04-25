@@ -147,13 +147,18 @@ public class WebClient : IDisposable
                 throw new HttpRequestException($"Response did not indicate success. {response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
             }
 
-            UpdateRequestStatisticsForHost(request.Uri, response.StatusCode);
+            var proxyId = GetRequestProxyId(request?.Uri);
+            if (!String.IsNullOrEmpty(proxyId))
+            {
+                UpdateProxyRequestStatistics(proxyId, request.Uri, response.StatusCode);
+            }
         }
         catch (HttpRequestException ex)
         {
-            if (ex.StatusCode != null)
+            var proxyId = GetRequestProxyId(request?.Uri);
+            if (!String.IsNullOrEmpty(proxyId) && ex.StatusCode != null)
             {
-                UpdateRequestStatisticsForHost(request.Uri, ex.StatusCode.Value);
+                UpdateProxyRequestStatistics(proxyId, request?.Uri, ex.StatusCode.Value);
             }
 
             /*
@@ -204,19 +209,24 @@ public class WebClient : IDisposable
         return response;
     }
 
-    protected void UpdateRequestStatisticsForHost(Uri address, HttpStatusCode responseStatusCode)
+    protected string GetRequestProxyId(Uri requestAddress)
     {
-        (_webProxy as IRotatingWebProxy)?.UpdateRequestStatistics(address, responseStatusCode);
+        return (_webProxy as IRotatingWebProxy)?.GetProxyId(requestAddress);
     }
 
-    protected void RotateWebProxyForHost(Uri address, TimeSpan cooldown)
+    protected void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode)
     {
-        (_webProxy as IRotatingWebProxy)?.RotateProxy(address, cooldown);
+        (_webProxy as IRotatingWebProxy)?.UpdateProxyRequestStatistics(proxyId, requestAddress, responseStatusCode);
     }
 
-    protected void DisableWebProxyForHost(Uri address)
+    protected void RotateWebProxyForHost(string proxyId, Uri host, TimeSpan cooldown)
     {
-        (_webProxy as IRotatingWebProxy)?.DisableProxy(address);
+        (_webProxy as IRotatingWebProxy)?.RotateProxy(proxyId, host, cooldown);
+    }
+
+    protected void DisableWebProxyForHost(string proxyId)
+    {
+        (_webProxy as IRotatingWebProxy)?.DisableProxy(proxyId);
     }
 
     protected virtual void Dispose(bool disposing)

@@ -21,7 +21,7 @@ public class WebProxyStatisticsService : IWebProxyStatisticsService
             .ToArray();
     }
 
-    public async Task SetAllStatistics(IEnumerable<WebProxyStatistic> statistics)
+    public async Task SetAllStatisticsAsync(IEnumerable<WebProxyStatistic> statistics)
     {
         await _statisticsService.SetDictionaryAsync<string, WebProxyStatistic>(
             WebProxiesStatsKey,

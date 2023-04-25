@@ -28,6 +28,11 @@ public class UpdateWebProxyStatistics
                 await _webProxyStatisticsService.GetAllStatisticsAsync() ?? Enumerable.Empty<WebProxyStatistic>()
             );
 
+            // Remove all empty proxies
+            cachedWebProxies.RemoveAll(x =>
+                String.IsNullOrEmpty(x.Address) || x.Port <= 0
+            );
+
             // Remove all proxies that no longer exist
             cachedWebProxies.RemoveAll(x =>
                 !webProxies.Any(y => y.Source == x.Source && y.Id == x.Id)
@@ -48,6 +53,8 @@ public class UpdateWebProxyStatistics
                     );
                 }
 
+                cachedWebProxy.Source = webProxy.Source;
+                cachedWebProxy.Id = webProxy.Id;
                 cachedWebProxy.Address = webProxy.Address;
                 cachedWebProxy.Port = webProxy.Port;
                 cachedWebProxy.Username = webProxy.Username;
@@ -59,7 +66,7 @@ public class UpdateWebProxyStatistics
             }
 
             // Update cached list
-            await _webProxyStatisticsService.SetAllStatistics(
+            await _webProxyStatisticsService.SetAllStatisticsAsync(
                 cachedWebProxies
             );
         }
