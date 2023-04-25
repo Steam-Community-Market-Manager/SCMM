@@ -207,7 +207,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     paginationStart += searchResults.Results?.Count ?? 0;
                 }
 
-            } while (searchResults?.Success == true && searchResults?.Results?.Count > 0);
+            } while (searchResults?.Success == true && searchResults?.Results?.Count > 0 && paginationStart < searchResults?.TotalCount);
 
             var itemCount = (searchResults?.TotalCount.ToString() ?? "???");
             await message.ModifyAsync(
