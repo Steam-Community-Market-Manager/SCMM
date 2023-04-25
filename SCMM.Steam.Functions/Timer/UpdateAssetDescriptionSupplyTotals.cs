@@ -18,7 +18,7 @@ public class UpdateAssetDescriptionSupplyTotals
     {
         using (var transaction = await _db.Database.BeginTransactionAsync())
         {
-            _db.Database.SetCommandTimeout(600); // 10mins
+            _db.Database.SetCommandTimeout(900); // 15mins max
 
             // Recalculate the various supply totals
             await _db.Database.ExecuteSqlInterpolatedAsync(@$"
