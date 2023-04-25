@@ -288,6 +288,21 @@ namespace SCMM.Steam.API.Commands
                                 ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
                             });
                         }
+
+                        if (newAssetDescription.WorkshopFileId > 0)
+                        {
+                            var workshopFiles = await _steamDb.SteamWorkshopFiles
+                                .Where(x => x.SteamId == newAssetDescription.WorkshopFileId.Value.ToString())
+                                .ToListAsync();
+                            foreach (var workshopFile in workshopFiles)
+                            {
+                                workshopFile.IsAccepted = newAssetDescription.IsAccepted;
+                                workshopFile.TimeAccepted = newAssetDescription.TimeAccepted;
+                                workshopFile.TimeUpdated = newAssetDescription.TimeUpdated;
+                                ((SteamItem)workshopFile).DescriptionId = newAssetDescription.Id;
+                                ((SteamItem)workshopFile).Description = newAssetDescription;
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
