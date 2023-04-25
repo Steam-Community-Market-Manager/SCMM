@@ -83,51 +83,66 @@ public class UpdateCurrencyExchangeRates
         var updatedCurrencies = new List<SteamCurrency>();
         foreach (var currency in currencies.OrderByDescending(x => x.Name == usdCurrency.Name))
         {
-            var response = await _steamCommunityWebClient.GetMarketPriceOverview(
-                new SteamMarketPriceOverviewJsonRequest()
+            try
+            {
+                var response = await _steamCommunityWebClient.GetMarketPriceOverview(
+                    new SteamMarketPriceOverviewJsonRequest()
+                    {
+                        AppId = mostExpensiveItem.App.SteamId,
+                        MarketHashName = mostExpensiveItem.Description.Name,
+                        Language = Constants.SteamDefaultLanguage,
+                        CurrencyId = currency.SteamId,
+                        NoRender = true
+                    }
+                );
+
+                if (response?.Success != true)
                 {
-                    AppId = mostExpensiveItem.App.SteamId,
-                    MarketHashName = mostExpensiveItem.Description.Name,
-                    Language = Constants.SteamDefaultLanguage,
-                    CurrencyId = currency.SteamId,
-                    NoRender = true
+                    logger.LogWarning($"Currency exchange rate for {currency.Name} could not be fetched");
+                    continue;
                 }
-            );
 
-            if (response?.Success != true)
-            {
-                logger.LogWarning($"Currency exchange rate for {currency.Name} could not be fetched");
-                continue;
-            }
-
-            var currencyPrice = response.LowestPrice.SteamPriceAsInt();
-            if (usdCurrency == currency)
-            {
-                usdPrice = currencyPrice;
-            }
-            var currencyExchangeRateMultiplier = 0m;
-            if (usdPrice > 0 && currencyPrice > 0)
-            {
-                currencyExchangeRateMultiplier = (decimal)currencyPrice / usdPrice;
-            }
-            if (currencyExchangeRateMultiplier <= 0)
-            {
-                logger.LogWarning($"Currency exchange rate for {currency.Name} could not be calculated");
-                continue;
-            }
-
-            // Set the exchange rate multiplier and add a historical exchange rate records (for historical conversions)
-            currency.ExchangeRateMultiplier = currencyExchangeRateMultiplier;
-            _db.SteamCurrencyExchangeRates.Add(
-                new SteamCurrencyExchangeRate()
+                var currencyPrice = response.LowestPrice.SteamPriceAsInt();
+                if (usdCurrency == currency)
                 {
-                    CurrencyId = currency.Name,
-                    Timestamp = timeChecked,
-                    ExchangeRateMultiplier = currencyExchangeRateMultiplier
+                    usdPrice = currencyPrice;
                 }
-            );
+                var currencyExchangeRateMultiplier = 0m;
+                if (usdPrice > 0 && currencyPrice > 0)
+                {
+                    currencyExchangeRateMultiplier = (decimal)currencyPrice / usdPrice;
+                }
+                if (currencyExchangeRateMultiplier <= 0)
+                {
+                    logger.LogWarning($"Currency exchange rate for {currency.Name} could not be calculated");
+                    continue;
+                }
 
-            updatedCurrencies.Add(currency);
+                // Set the exchange rate multiplier and add a historical exchange rate records (for historical conversions)
+                currency.ExchangeRateMultiplier = currencyExchangeRateMultiplier;
+                _db.SteamCurrencyExchangeRates.Add(
+                    new SteamCurrencyExchangeRate()
+                    {
+                        CurrencyId = currency.Name,
+                        Timestamp = timeChecked,
+                        ExchangeRateMultiplier = currencyExchangeRateMultiplier
+                    }
+                );
+
+                updatedCurrencies.Add(currency);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error updating currency exchange rate for {currency.Name}");
+                if (usdCurrency == currency)
+                {
+                    break; // USD price is required to calculate other currencies. If it fails, we can't continue
+                }
+                else
+                {
+                    continue;
+                }
+            }
         }
 
         _db.SaveChanges();
