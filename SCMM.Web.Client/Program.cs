@@ -30,11 +30,36 @@ public static class WebAssemblyHostExtensions
 
         builder.Services.AddScoped<HttpClient>(sp =>
         {
+            var appState = sp.GetService<AppState>();
             var navigationManager = sp.GetRequiredService<NavigationManager>();
             var client = new HttpClient()
             {
                 BaseAddress = new Uri(navigationManager.BaseUri)
             };
+            if (appState != null)
+            {
+                client.DefaultRequestHeaders.Add(AppState.LanguageNameKey, appState.LanguageId);
+                client.DefaultRequestHeaders.Add(AppState.CurrencyNameKey, appState.CurrencyId);
+                client.DefaultRequestHeaders.Add(AppState.AppIdKey, appState.AppId.ToString());
+                appState.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(AppState.LanguageId))
+                    {
+                        client.DefaultRequestHeaders.Remove(AppState.LanguageNameKey);
+                        client.DefaultRequestHeaders.Add(AppState.LanguageNameKey, appState.LanguageId);
+                    }
+                    else if (e.PropertyName == nameof(AppState.CurrencyId))
+                    {
+                        client.DefaultRequestHeaders.Remove(AppState.CurrencyNameKey);
+                        client.DefaultRequestHeaders.Add(AppState.CurrencyNameKey, appState.CurrencyId);
+                    }
+                    else if (e.PropertyName == nameof(AppState.AppId))
+                    {
+                        client.DefaultRequestHeaders.Remove(AppState.AppIdKey);
+                        client.DefaultRequestHeaders.Add(AppState.AppIdKey, appState.AppId.ToString());
+                    }
+                };
+            }
 
             return client;
         });

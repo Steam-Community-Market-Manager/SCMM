@@ -334,13 +334,27 @@ public static class WebApplicationExtensions
             var cookies = httpContextAccessor.HttpContext.Request.Cookies;
             if (cookies.Any())
             {
-                var cks = new List<string>();
-                foreach (var cookie in cookies)
+                client.DefaultRequestHeaders.Add("Cookie", 
+                    string.Join(';', cookies.Select(x => $"{x.Key}={x.Value}"))
+                );
+
+                var languageId = cookies.FirstOrDefault(x => String.Equals(x.Key, AppState.LanguageNameKey, StringComparison.OrdinalIgnoreCase)).Value;
+                if (!String.IsNullOrEmpty(languageId))
                 {
-                    cks.Add($"{cookie.Key}={cookie.Value}");
+                    client.DefaultRequestHeaders.Add(AppState.LanguageNameKey, languageId);
                 }
 
-                client.DefaultRequestHeaders.Add("Cookie", string.Join(';', cks));
+                var currencyId = cookies.FirstOrDefault(x => String.Equals(x.Key, AppState.CurrencyNameKey, StringComparison.OrdinalIgnoreCase)).Value;
+                if (!String.IsNullOrEmpty(currencyId))
+                {
+                    client.DefaultRequestHeaders.Add(AppState.CurrencyNameKey, currencyId);
+                }
+
+                var appId = cookies.FirstOrDefault(x => String.Equals(x.Key, AppState.AppIdKey, StringComparison.OrdinalIgnoreCase)).Value;
+                if (!String.IsNullOrEmpty(appId))
+                {
+                    client.DefaultRequestHeaders.Add(AppState.AppIdKey, appId);
+                }
             }
 
             return client;
