@@ -18,7 +18,7 @@ public class UpdateDatabaseStatistics
     {
         using (var transaction = await _db.Database.BeginTransactionAsync())
         {
-            _db.Database.SetCommandTimeout(600); // 10mins
+            _db.Database.SetCommandTimeout(900); // 15mins max
 
             await _db.Database.ExecuteSqlInterpolatedAsync(@$"
                 DECLARE @update_stats_cmd NVARCHAR(1024)
