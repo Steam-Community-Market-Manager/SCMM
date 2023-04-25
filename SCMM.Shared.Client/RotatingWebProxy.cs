@@ -58,7 +58,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     public void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode)
     {
         var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
-        if (proxy != null)
+        if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
         {
             var lastAccessedOn = DateTimeOffset.Now;
             _logger.LogDebug($"Proxy '{proxyId}' response was {responseStatusCode} for '{proxy.CurrentRequestAddress}'.");
@@ -85,7 +85,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     public void CooldownProxy(string proxyId, Uri host, TimeSpan cooldown)
     {
         var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
-        if (proxy != null)
+        if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
         {
             proxy.IncrementHostCooldown(host, cooldown);
             _logger.LogDebug($"Proxy '{proxyId}' incurred a {cooldown.TotalSeconds}s cooldown for '{host?.Host}'.");
@@ -101,7 +101,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     public void DisableProxy(string proxyId)
     {
         var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
-        if (proxy != null)
+        if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
         {
             proxy.IsEnabled = false;
             _logger.LogDebug($"Proxy '{proxyId}' has been disabled.");

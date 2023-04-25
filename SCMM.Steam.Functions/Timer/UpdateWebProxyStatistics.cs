@@ -67,7 +67,7 @@ public class UpdateWebProxyStatistics
 
             // Update cached list
             await _webProxyStatisticsService.SetAllStatisticsAsync(
-                cachedWebProxies
+                cachedWebProxies.Where(x => !String.IsNullOrEmpty(x.Address) && x.Port > 0)
             );
         }
     }
