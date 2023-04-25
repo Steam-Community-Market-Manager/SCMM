@@ -36,7 +36,7 @@ public class UpdateMarketItemOrders
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedOrdersOn)
-            .Take(100) // batch 100 items per minute
+            .Take(30) // batch 30 items per minute
             .ToList();
 
         if (!items.Any())
