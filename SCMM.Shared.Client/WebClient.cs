@@ -219,9 +219,9 @@ public class WebClient : IDisposable
         (_webProxy as IRotatingWebProxy)?.UpdateProxyRequestStatistics(proxyId, requestAddress, responseStatusCode);
     }
 
-    protected void RotateWebProxyForHost(string proxyId, Uri host, TimeSpan cooldown)
+    protected void CooldownWebProxyForHost(string proxyId, Uri host, TimeSpan cooldown)
     {
-        (_webProxy as IRotatingWebProxy)?.RotateProxy(proxyId, host, cooldown);
+        (_webProxy as IRotatingWebProxy)?.CooldownProxy(proxyId, host, cooldown);
     }
 
     protected void DisableWebProxyForHost(string proxyId)

@@ -150,7 +150,7 @@ namespace SCMM.Steam.Client
                     if (!String.IsNullOrEmpty(proxyId) && retryAttempt > 10)
                     {
                         // This proxy is timing out too much, maybe it is offline? Rotate to the next proxy if possible
-                        RotateWebProxyForHost(proxyId, request?.Uri, cooldown: TimeSpan.FromHours(6));
+                        CooldownWebProxyForHost(proxyId, request?.Uri, cooldown: TimeSpan.FromHours(6));
                     }
                     _logger.LogDebug($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
                     return await GetWithRetry(request, (retryAttempt + 1));
@@ -167,7 +167,7 @@ namespace SCMM.Steam.Client
                         //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
                         // Steam community web site rate-limits observed from personal testing:
                         //  - You are limited to 25 requests within 30 seconds, which resets after ???.
-                        RotateWebProxyForHost(proxyId, request?.Uri, cooldown: TimeSpan.FromMinutes(60));
+                        CooldownWebProxyForHost(proxyId, request?.Uri, cooldown: TimeSpan.FromMinutes(30));
                         return await GetWithRetry(request, (retryAttempt + 1));
                     }
                 }

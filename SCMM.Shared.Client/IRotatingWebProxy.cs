@@ -8,7 +8,7 @@ public interface IRotatingWebProxy : IWebProxy
 
     void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode);
 
-    void RotateProxy(string proxyId, Uri host, TimeSpan cooldown);
+    void CooldownProxy(string proxyId, Uri host, TimeSpan cooldown);
 
     void DisableProxy(string proxyId);
 }

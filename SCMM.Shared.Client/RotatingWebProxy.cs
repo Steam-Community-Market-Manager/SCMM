@@ -55,12 +55,14 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         return _proxies?.FirstOrDefault(x => x.CurrentRequestAddress == requestAddress)?.Id;
     }
 
-    public void UpdateProxyRequestStatistics(string proxyId, Uri address, HttpStatusCode responseStatusCode)
+    public void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode)
     {
         var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
         if (proxy != null)
         {
             var lastAccessedOn = DateTimeOffset.Now;
+            _logger.LogDebug($"Proxy '{proxyId}' response was {responseStatusCode} for '{proxy.CurrentRequestAddress}'.");
+
             _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {
                 value.LastAccessedOn = lastAccessedOn;
@@ -80,13 +82,13 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         }
     }
 
-    public void RotateProxy(string proxyId, Uri host, TimeSpan cooldown)
+    public void CooldownProxy(string proxyId, Uri host, TimeSpan cooldown)
     {
         var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
         if (proxy != null)
         {
             proxy.IncrementHostCooldown(host, cooldown);
-            _logger.LogDebug($"'{host?.Host}' has entered a {cooldown.TotalSeconds}s cooldown on '{proxy?.Address?.Host ?? "default"}' proxy.");
+            _logger.LogDebug($"Proxy '{proxyId}' incurred a {cooldown.TotalSeconds}s cooldown for '{host?.Host}'.");
 
             _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {
@@ -102,7 +104,7 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         if (proxy != null)
         {
             proxy.IsEnabled = false;
-            _logger.LogDebug($"'{proxy?.Address?.Host ?? "default"}' proxy has been disabled.");
+            _logger.LogDebug($"Proxy '{proxyId}' has been disabled.");
 
             _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
             {
@@ -144,10 +146,17 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
         }
 
         var now = DateTime.UtcNow;
-        return _proxies
+        var proxiesAreAvailable = _proxies
             ?.Where(x => x.IsAvailable)
             ?.Where(x => x.GetHostCooldown(host) <= now)
-            ?.FirstOrDefault() == null;
+            ?.FirstOrDefault() != null;
+
+        if (!proxiesAreAvailable)
+        {
+            _logger.LogError($"There are no available proxies to handle new requests to '{host.Host}'.");
+        }
+
+        return !proxiesAreAvailable;
     }
 
     NetworkCredential ICredentials.GetCredential(Uri uri, string authType)
