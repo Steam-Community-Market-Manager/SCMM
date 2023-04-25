@@ -8,6 +8,7 @@
             <summary>
             List all supported apps
             </summary>
+            <remarks>Response is cached for 24hrs</remarks>
             <returns>List of supported apps</returns>
             <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.App.AppDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.App.AppListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -16,6 +17,7 @@
             <summary>
             List all supported currencies
             </summary>
+            <remarks>Response is cached for 1hr</remarks>
             <returns>List of supported currencies</returns>
             <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Currency.CurrencyDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Currency.CurrencyListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -166,6 +168,7 @@
             <summary>
             List all known item types
             </summary>
+            <remarks>Response is cached for 24hrs</remarks>
             <response code="200">List of unique item types</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -184,6 +187,7 @@
             <summary>
             List all supported languages
             </summary>
+            <remarks>Response is cached for 24hrs</remarks>
             <returns>List of supported languages</returns>
             <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Language.LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Language.LanguageListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -433,6 +437,7 @@
             </summary>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            Response is cached for 1hr.
             </remarks>
             <response code="200">Marketplace totals for the current app.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -610,6 +615,10 @@
             <summary>
             Get profile inventory total statistics
             </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            Response is cached for 1hr.
+            </remarks>
             <response code="200">The totals across all profile inventories.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -644,6 +653,7 @@
             <summary>
             List profiles who have the donator role, sorted by highest contribution
             </summary>
+            <remarks>Response is cached for 1hr</remarks>
             <returns>The list of profiles who have donated</returns>
             <response code="200">The list of profiles who have donated.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -652,6 +662,7 @@
             <summary>
             List profiles who have the contributor role
             </summary>
+            <remarks>Response is cached for 1hr</remarks>
             <returns>The list of profiles who have contributed</returns>
             <response code="200">The list of profiles who have contributed.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -765,6 +776,7 @@
             <summary>
             Get system status
             </summary>
+            <remarks>Response is cached for 3mins</remarks>
             <param name="appId">The app to check the status of</param>
             <param name="includeAppMarkets">If true, status details for item markets will be included</param>
             <param name="includeWebProxiesStatus">If true, status details for web proxies will be included</param>
@@ -777,6 +789,7 @@
             <summary>
             Get most recent system update messages
             </summary>
+            <remarks>Response is cached for 1hr</remarks>
             <returns>The most recent system update messages</returns>
             <response code="200">The most recent system update messages</response>
             <response code="404">If the request app cannot be found.</response>

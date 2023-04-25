@@ -46,6 +46,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 1hr.
         /// </remarks>
         /// <response code="200">Marketplace totals for the current app.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -53,7 +54,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/totals")]
         [ProducesResponseType(typeof(MarketTotalsStatisticDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = Policies.Cache1Hour)]
+        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetMarketTotals()
         {
             var appGuid = this.App().Guid;
@@ -990,13 +991,17 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get profile inventory total statistics
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 1hr.
+        /// </remarks>
         /// <response code="200">The totals across all profile inventories.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("profiles/inventories/total")]
         [ProducesResponseType(typeof(ProfileInventoryTotalsStatisticDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = Policies.Cache1Hour)]
+        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetProfileInventoriesTotal()
         {
             var appId = this.App().Guid;
@@ -1155,6 +1160,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List profiles who have the donator role, sorted by highest contribution
         /// </summary>
+        /// <remarks>Response is cached for 1hr</remarks>
         /// <returns>The list of profiles who have donated</returns>
         /// <response code="200">The list of profiles who have donated.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -1162,7 +1168,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("donators")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = Policies.Cache1Hour)]
+        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetProfilesDonators()
         {
             var donators = await _db.SteamProfiles
@@ -1178,6 +1184,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List profiles who have the contributor role
         /// </summary>
+        /// <remarks>Response is cached for 1hr</remarks>
         /// <returns>The list of profiles who have contributed</returns>
         /// <response code="200">The list of profiles who have contributed.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -1185,7 +1192,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("contributors")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = Policies.Cache1Hour)]
+        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetProfilesContributors()
         {
             var donators = await _db.SteamProfiles

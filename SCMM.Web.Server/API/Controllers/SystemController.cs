@@ -29,6 +29,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get system status
         /// </summary>
+        /// <remarks>Response is cached for 3mins</remarks>
         /// <param name="appId">The app to check the status of</param>
         /// <param name="includeAppMarkets">If true, status details for item markets will be included</param>
         /// <param name="includeWebProxiesStatus">If true, status details for web proxies will be included</param>
@@ -41,7 +42,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(SystemStatusDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (3 * 60))]
+        [OutputCache(Duration = (1 * 60 /* 3min */))]
         public async Task<IActionResult> GetSystemStatus([FromQuery] ulong? appId = null, [FromQuery] bool includeAppMarkets = false, [FromQuery] bool includeWebProxiesStatus = false)
         {
             var systemStatus = await _queryProcessor.ProcessAsync(new GetSystemStatusRequest()
@@ -61,6 +62,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get most recent system update messages
         /// </summary>
+        /// <remarks>Response is cached for 1hr</remarks>
         /// <returns>The most recent system update messages</returns>
         /// <response code="200">The most recent system update messages</response>
         /// <response code="404">If the request app cannot be found.</response>
@@ -70,7 +72,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<SystemUpdateMessageDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = Policies.Cache1Hour)]
+        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetLatestSystemUpdateMessages()
         {
             var latestSystemUpdates = await _queryProcessor.ProcessAsync(new ListLatestSystemUpdateMessagesRequest());

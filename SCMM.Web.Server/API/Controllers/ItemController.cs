@@ -717,13 +717,14 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List all known item types
         /// </summary>
+        /// <remarks>Response is cached for 24hrs</remarks>
         /// <response code="200">List of unique item types</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("types")]
         [ProducesResponseType(typeof(IEnumerable<ItemTypeGroupDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = Policies.Cache24Hours)]
+        [OutputCache(Duration = (24 * 60 * 60 /* 24hr */))]
         public async Task<IActionResult> GetItemTypes()
         {
             var appId = this.App().Guid;

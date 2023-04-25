@@ -292,23 +292,17 @@ public static class WebApplicationExtensions
 
         builder.Services.AddRequestDecompression();
         builder.Services.AddResponseCompression();
+        
         builder.Services.AddOutputCache(options =>
         {
             options.SizeLimit = 256 * 1024 * 1024; // 256MB
             options.MaximumBodySize = 8 * 1024 * 1024; // 8MB
-            options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(15);
             options.UseCaseSensitivePaths = false;
             options.AddBasePolicy(builder => builder
-                .Expire(TimeSpan.FromMinutes(15))
+                .NoCache() // do not cache by default
                 .SetVaryByQuery(AppState.LanguageNameKey, AppState.CurrencyNameKey, AppState.AppIdKey)
                 .SetVaryByHeader(AppState.LanguageNameKey, AppState.CurrencyNameKey, AppState.AppIdKey)
                 .Tag("all")
-            );
-            options.AddPolicy(Policies.Cache1Hour, builder => builder
-                .Expire(TimeSpan.FromHours(1))
-            );
-            options.AddPolicy(Policies.Cache24Hours, builder => builder
-                .Expire(TimeSpan.FromHours(24))
             );
         });
 

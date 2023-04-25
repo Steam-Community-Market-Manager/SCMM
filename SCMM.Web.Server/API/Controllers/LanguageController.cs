@@ -31,6 +31,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List all supported languages
         /// </summary>
+        /// <remarks>Response is cached for 24hrs</remarks>
         /// <returns>List of supported languages</returns>
         /// <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="LanguageListDTO"/>.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -39,7 +40,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<LanguageListDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<LanguageDetailedDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = Policies.Cache24Hours)]
+        [OutputCache(Duration = (24 * 60 * 60 /* 24hr */))]
         public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
             var languages = await _db.SteamLanguages
