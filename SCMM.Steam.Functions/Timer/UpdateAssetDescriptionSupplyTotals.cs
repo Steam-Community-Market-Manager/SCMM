@@ -52,9 +52,12 @@ public class UpdateAssetDescriptionSupplyTotals
 	                [SupplyTotalInvestorsKnown] = (ivs.TotalQuantity - ivs.UniqueProfileIds),
 	                [SupplyTotalMarketsKnown] = mks.BuyPricesTotalSupply
                 FROM [SteamAssetDescriptions] a
+	                INNER JOIN [SteamApps] app ON app.Id = a.AppId
 	                LEFT OUTER JOIN AssetDescriptionSupply ads ON ads.Id = a.Id
 	                LEFT OUTER JOIN MarketSupply mks ON mks.Id = a.Id
 	                LEFT OUTER JOIN InventorySupply ivs ON ivs.Id = a.Id
+                WHERE
+	                app.IsActive = 1
             ");
 
             // Recalculate the overall supply total
