@@ -58,6 +58,11 @@ public class UpdateCurrencyExchangeRates
         var mostExpensiveItem = _db.SteamMarketItems
             .Include(x => x.App)
             .Include(x => x.Description)
+            .Where(x => x.App.IsActive)
+            .Where(x => x.Description.IsMarketable)
+            .Where(x => x.Description.IsCommodity)
+            .Where(x => !String.IsNullOrEmpty(x.SteamId))
+            .Where(x => x.SellOrderCount > 0 && x.SellOrderLowestPrice > 0)
             .OrderByDescending(x => x.SellOrderLowestPrice)
             .FirstOrDefault();
 
