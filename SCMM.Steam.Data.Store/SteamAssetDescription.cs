@@ -90,6 +90,8 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public PersistableStringDictionary Tags { get; set; }
 
+        public string PriceFormat { get; set; }
+
         /// <summary>
         /// If true, the item is always available for purchase. Otherwise, it is assumed to be purchasable for a limited time only.
         /// </summary>

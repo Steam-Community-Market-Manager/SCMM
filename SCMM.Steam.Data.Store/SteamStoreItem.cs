@@ -23,7 +23,7 @@ namespace SCMM.Steam.Data.Store
 
         /// <summary>
         /// The most recent price set this item was sold for on the store.
-        /// Store prices are generally fixed and don't fluxuate with currency exhange rates.
+        /// Store prices are generally fixed and don't fluctuate with currency exchange rates.
         /// Because of this, we need to keep a list of all the fixed store prices in each currency.
         /// </summary>
         [Required]

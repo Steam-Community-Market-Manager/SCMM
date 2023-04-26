@@ -162,9 +162,11 @@ namespace SCMM.Steam.API.Commands
                     assetDescription.IsLootCrateDrop = dropsFromLootCrates;
                 }
 
-                // Parse bundle
-                if (itemDefinition.Bundle != null)
+                // Parse bundles
+                if (!String.IsNullOrEmpty(itemDefinition.Bundle))
                 {
+                    // https://partner.steamgames.com/doc/features/inventory/schema#SpecifyBundles
+                    // TODO: assetDescription.Bundle = itemDefinition.Bundle.ParseSteamBundles();
                     assetDescription.Bundle = new PersistableItemBundleDictionary();
                     foreach (var item in itemDefinition.Bundle.Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
                     {
@@ -175,9 +177,26 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
 
-                // TODO: Exchange (https://partner.steamgames.com/doc/features/inventory/schema#ExchangeFormat)
-                // TODO: Promo (https://partner.steamgames.com/doc/features/inventory/schema#PromoItems)
-                // TODO: Price Category (https://partner.steamgames.com/doc/features/inventory/schema#SpecifyPrices)
+                // Parse promos
+                if (!String.IsNullOrEmpty(itemDefinition.Promo))
+                {
+                    // https://partner.steamgames.com/doc/features/inventory/schema#PromoItems
+                    // TODO: assetDescription.Promo = itemDefinition.Promo.ParseSteamPromos();
+                }
+
+                // Parse exchanges
+                if (!String.IsNullOrEmpty(itemDefinition.Exchange))
+                {
+                    // https://partner.steamgames.com/doc/features/inventory/schema#ExchangeFormat
+                    // TODO: assetDescription.Exchange = itemDefinition.Exchange.ParseSteamExchanges();
+                }
+                 
+                // Parse prices
+                if (!String.IsNullOrEmpty(itemDefinition.Price) || !String.IsNullOrEmpty(itemDefinition.PriceCategory))
+                {
+                    // https://partner.steamgames.com/doc/features/inventory/schema#SpecifyPrices
+                    assetDescription.PriceFormat = (itemDefinition.Price ?? itemDefinition.PriceCategory);
+                }
 
             }
 
