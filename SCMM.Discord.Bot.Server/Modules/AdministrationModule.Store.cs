@@ -9,6 +9,7 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Store.Types;
 using System.Globalization;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -282,8 +283,58 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
+
+        [Command("import-item-definition-store-prices")]
+        public async Task<RuntimeResult> ImportItemDefinitionStorePricesAsync(ulong appId)
+        {
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions
+                .Where(x => x.App.SteamId == appId.ToString())
+                .Where(x => !String.IsNullOrEmpty(x.PriceFormat))
+                .Where(x => x.StoreItem != null)
+                .Where(x => x.StoreItem.Stores.Count == 1) // ignore items that have been released multiple times as it complicates things when the price is different between releases
+                .Include(x => x.StoreItem).ThenInclude(x => x.Stores)
+                .ToArrayAsync();
+
+            var usdCurrency = await _steamDb.SteamCurrencies
+                .FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
+
+            foreach (var assetDescription in assetDescriptions)
+            {
+                var prices = assetDescription.PriceFormat.ParseSteamPrices();
+                var usdPrice = prices.SteamPriceAtDateTime(assetDescription.TimeAccepted?.DateTime ?? assetDescription.TimeCreated?.DateTime ?? DateTime.UtcNow, usdCurrency.Name);
+                if (usdPrice != null)
+                {
+                    // If the current store item prices is different to the item definition price format, update it
+                    if ((ulong)(assetDescription.StoreItem.Price ?? 0) != usdPrice.Price)
+                    {
+                        // Update the price for the store item releases
+                        foreach(var storeItem in assetDescription.StoreItem.Stores)
+                        {
+                            if ((storeItem.Price ?? 0) == (assetDescription.StoreItem.Price ?? 0))
+                            {
+                                storeItem.CurrencyId = usdCurrency.Id;
+                                storeItem.Currency = usdCurrency;
+                                storeItem.Price = (long) usdPrice.Price;
+                                storeItem.Prices = new PersistablePriceDictionary()
+                                {
+                                    { usdCurrency.Name, (long) usdPrice.Price }
+                                };
+                            }
+                        }
+
+                        // Update the latest price for the store item
+                        assetDescription.StoreItem.UpdateLatestPrice();
+                    }
+                }
+            }
+
+            await _steamDb.SaveChangesAsync();
+
+            return CommandResult.Success();
+        }
+
         [Command("rebuild-store-item-missing-prices")]
-        public async Task<RuntimeResult> RebuildStoreItemMissingPricesAsync()
+        public async Task<RuntimeResult> RebuildStoreItemMissingPricesAsync(ulong appId)
         {
             var message = await Context.Message.ReplyAsync("Rebuilding missing store item prices...");
             var currencies = await _steamDb.SteamCurrencies.ToListAsync();
@@ -294,9 +345,11 @@ namespace SCMM.Discord.Bot.Server.Modules
                 {
                     Currency = x,
                     StoreItemsWithMissingPrices = _steamDb.SteamStoreItemItemStore
+                        .Where(y => y.Item.App.SteamId == appId.ToString()) 
                         .Where(y => y.Price != null)
                         .Where(y => !String.IsNullOrEmpty(y.Prices.Serialised) && !y.Prices.Serialised.Contains(x.Name))
                         .Where(y => y.CurrencyId == usdCurrency.Id)
+                        .Include(y => y.Item).ThenInclude(y => y.Stores)
                         .Select(y => new
                         {
                             StoreItemItemStore = y,
@@ -321,12 +374,14 @@ namespace SCMM.Discord.Bot.Server.Modules
                 {
                     if (itemExchange.ExchangeRate != null)
                     {
+                        // Update the price for the store item release
                         itemExchange.StoreItemItemStore.Prices = new Steam.Data.Store.Types.PersistablePriceDictionary(itemExchange.StoreItemItemStore.Prices);
                         itemExchange.StoreItemItemStore.Prices[currencyWithMissingStorePrices.Currency.Name] = EconomyExtensions.SteamPriceRounded(
                             itemExchange.ExchangeRate.ExchangeRateMultiplier.CalculateExchange(itemExchange.StoreItemItemStore.Price.Value)
                         );
 
-                        //itemExchange.StoreItem.UpdateLatestPrice();
+                        // Update the latest price for the store item
+                        itemExchange.StoreItemItemStore?.Item?.UpdateLatestPrice();
                     }
                     else
                     {
@@ -345,11 +400,12 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("rebuild-store-item-latest-prices")]
-        public async Task<RuntimeResult> RebuildStoreItemLatestPricesAsync()
+        public async Task<RuntimeResult> RebuildStoreItemLatestPricesAsync(ulong appId)
         {
             var message = await Context.Message.ReplyAsync("Rebuilding latest store item prices...");
 
             var storeItems = await _steamDb.SteamStoreItemItemStore
+                .Where(x => x.Item.App.SteamId == appId.ToString())
                 .Include(x => x.Item)
                 .Include(x => x.Store)
                 .ToListAsync();
