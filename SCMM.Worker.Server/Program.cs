@@ -154,6 +154,7 @@ public static class HostExtensions
 
             // Web proxies
             services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
+            services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
             services.AddSingleton<IWebProxy, RotatingWebProxy>();
 
             // 3rd party clients
@@ -183,9 +184,10 @@ public static class HostExtensions
             var contactAssemblies = new[]
             {
                 Assembly.GetEntryAssembly(),
-                Assembly.Load("SCMM.Shared.API"),
+                Assembly.Load("SCMM.Steam.API"),
                 Assembly.Load("SCMM.Discord.API"),
-                Assembly.Load("SCMM.Steam.API")
+                Assembly.Load("SCMM.Shared.API"),
+                Assembly.Load("SCMM.Shared.Web")
             };
             services.AddCommands(contactAssemblies);
             services.AddQueries(contactAssemblies);

@@ -179,6 +179,7 @@ public static class WebApplicationExtensions
 
         // Web proxies
         builder.Services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
+        builder.Services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
         builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
 
         // 3rd party clients
@@ -203,9 +204,10 @@ public static class WebApplicationExtensions
         var contactAssemblies = new[]
         {
             Assembly.GetEntryAssembly(),
-            Assembly.Load("SCMM.Shared.API"),
+            Assembly.Load("SCMM.Steam.API"),
             Assembly.Load("SCMM.Discord.API"),
-            Assembly.Load("SCMM.Steam.API")
+            Assembly.Load("SCMM.Shared.API"),
+            Assembly.Load("SCMM.Shared.Web")
         };
         builder.Services.AddCommands(contactAssemblies);
         builder.Services.AddQueries(contactAssemblies);

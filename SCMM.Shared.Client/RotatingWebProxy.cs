@@ -5,7 +5,7 @@ using System.Net;
 
 namespace SCMM.Shared.Client;
 
-public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByHost
+public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICredentialsByHost
 {
     private const int WebProxyRefreshIntervalMinutes = 10;
 
@@ -19,35 +19,37 @@ public class RotatingWebProxy : IRotatingWebProxy, ICredentials, ICredentialsByH
     {
         _logger = logger;
         _webProxyStatisticsService = webProxyStatisticsService;
-        _webProxyRefreshTimer = new Timer(RefreshProxies, null, TimeSpan.Zero, TimeSpan.FromMinutes(WebProxyRefreshIntervalMinutes));
+        _webProxyRefreshTimer = new Timer(
+            (x) => Task.Run(async () => await RefreshProxiesAsync()), 
+            null, 
+            TimeSpan.Zero, 
+            TimeSpan.FromMinutes(WebProxyRefreshIntervalMinutes)
+        );
     }
 
-    private void RefreshProxies(object _)
+    public async Task RefreshProxiesAsync()
     {
-        Task.Run(async () =>
+        var endpoints = await _webProxyStatisticsService.GetAllStatisticsAsync();
+        if (endpoints != null)
         {
-            var endpoints = await _webProxyStatisticsService.GetAllStatisticsAsync();
-            if (endpoints != null)
-            {
-                _proxies = endpoints
-                    .Where(x => !String.IsNullOrEmpty(x.Address) && x.Port > 0)
-                    .OrderBy(x => x.Id)
-                    .Select(x => new WebProxyWithCooldown()
+            _proxies = endpoints
+                .Where(x => !String.IsNullOrEmpty(x.Address) && x.Port > 0)
+                .OrderBy(x => x.Id)
+                .Select(x => new WebProxyWithCooldown()
+                {
+                    Id = x.Id,
+                    Address = new Uri(x.Url),
+                    Credentials = x.Username == null && x.Password == null ? null : new NetworkCredential()
                     {
-                        Id = x.Id,
-                        Address = new Uri(x.Url),
-                        Credentials = x.Username == null && x.Password == null ? null : new NetworkCredential()
-                        {
-                            UserName = x.Username,
-                            Password = x.Password
-                        },
-                        Cooldowns = x.DomainRateLimits?.ToDictionary(k => k.Key, v => v.Value.UtcDateTime) ?? new Dictionary<string, DateTime>(),
-                        LastAccessedOn = x.LastAccessedOn,
-                        IsEnabled = x.IsAvailable,
-                    })
-                    .ToArray();
-            }
-        });
+                        UserName = x.Username,
+                        Password = x.Password
+                    },
+                    Cooldowns = x.DomainRateLimits?.ToDictionary(k => k.Key, v => v.Value.UtcDateTime) ?? new Dictionary<string, DateTime>(),
+                    LastAccessedOn = x.LastAccessedOn,
+                    IsEnabled = x.IsAvailable,
+                })
+                .ToArray();
+        }
     }
 
     public string GetProxyId(Uri requestAddress)

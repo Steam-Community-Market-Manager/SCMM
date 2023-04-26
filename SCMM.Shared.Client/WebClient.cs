@@ -211,22 +211,22 @@ public class WebClient : IDisposable
 
     protected string GetRequestProxyId(Uri requestAddress)
     {
-        return (_webProxy as IRotatingWebProxy)?.GetProxyId(requestAddress);
+        return (_webProxy as IWebProxyManager)?.GetProxyId(requestAddress);
     }
 
     protected void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode)
     {
-        (_webProxy as IRotatingWebProxy)?.UpdateProxyRequestStatistics(proxyId, requestAddress, responseStatusCode);
+        (_webProxy as IWebProxyManager)?.UpdateProxyRequestStatistics(proxyId, requestAddress, responseStatusCode);
     }
 
     protected void CooldownWebProxyForHost(string proxyId, Uri host, TimeSpan cooldown)
     {
-        (_webProxy as IRotatingWebProxy)?.CooldownProxy(proxyId, host, cooldown);
+        (_webProxy as IWebProxyManager)?.CooldownProxy(proxyId, host, cooldown);
     }
 
     protected void DisableWebProxyForHost(string proxyId)
     {
-        (_webProxy as IRotatingWebProxy)?.DisableProxy(proxyId);
+        (_webProxy as IWebProxyManager)?.DisableProxy(proxyId);
     }
 
     protected virtual void Dispose(bool disposing)
