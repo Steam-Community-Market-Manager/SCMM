@@ -24,7 +24,7 @@ public class UpdateAssetDescriptions
     {
         var logger = context.GetLogger("Update-Asset-Descriptions");
 
-        var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
+        var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(23));
         var assetDescriptions = await _db.SteamAssetDescriptions
             .Where(x => x.ClassId != null)
             .Where(x => x.App.IsActive)
