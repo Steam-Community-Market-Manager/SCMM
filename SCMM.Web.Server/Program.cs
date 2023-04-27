@@ -33,6 +33,7 @@ using SCMM.Web.Data.Models.Services;
 using SCMM.Web.Server;
 using SCMM.Web.Server.Services;
 using StackExchange.Redis;
+using Swashbuckle.AspNetCore.Filters;
 using System.Net;
 using System.Reflection;
 using System.Security.Claims;
@@ -248,18 +249,20 @@ public static class WebApplicationExtensions
             }
             catch (Exception)
             {
-                // Probably haven't generated XML docs, not a deal breaker...
+                // We probably haven't generated XML docs for this build, not a deal breaker though...
             }
 
             config.SwaggerDoc(
-                "preview",
+                "v1",
                 new OpenApiInfo
                 {
                     Title = "SCMM",
-                    Version = "Preview",
+                    Version = "v1",
                     Description = (
                         "Steam Community Market Manager (SCMM) API.<br/>" +
-                        "These APIs are provided unrestricted, unthrottled, and free of charge in the hopes that they are useful to somebody. If you abuse them or are the cause of significant performance degradation, don't be surprised if you get blocked."
+                        "These APIs are provided unrestricted, unthrottled, and free of charge in the hopes that they are useful to somebody. If you abuse them or are the cause of significant performance degradation, don't be surprised if you get blocked.<br/>" +
+                        "<br/>" +
+                        "Contact: support@scmm.app"
                     ),
                     Contact = new OpenApiContact()
                     {
@@ -270,25 +273,30 @@ public static class WebApplicationExtensions
                 }
             );
 
+            // NOTE: App is effectively supplied in the subdomain of the URL, don't need to ask the user for it
+            //config.OperationFilter<AddHeaderOperationFilter>(
+            //    AppState.AppIdKey, "Steam Application Id used for the request (e.g. 252490 = Rust, 730 = CSGO, etc)", false
+            //);
+            config.OperationFilter<AddHeaderOperationFilter>(
+                AppState.LanguageNameKey, "Language used for the request (e.g. English)", false
+            );
+            config.OperationFilter<AddHeaderOperationFilter>(
+                AppState.CurrencyNameKey, "Currency used for the request (e.g. USD)", false
+            );
+
             var securitySchema = new OpenApiSecurityScheme
             {
-                Description = "JWT Authorization header using the Bearer scheme. Example: `Authorization: Bearer {token}`",
+                Description = "JWT Authorization header using the bearer scheme.<br /> Example: `Authorization: Bearer {token}`",
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
                 Scheme = "bearer",
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
             };
 
-            config.AddSecurityDefinition("Bearer", securitySchema);
-            config.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                { securitySchema, new[] { "Bearer" } }
-            });
+            config.AddSecurityDefinition("OAuth2", securitySchema);
+
+            config.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
+            config.OperationFilter<SecurityRequirementsOperationFilter>(true, "OAuth2");
 
         });
 
@@ -392,7 +400,7 @@ public static class WebApplicationExtensions
         app.UseSwaggerUI(config =>
         {
             config.RoutePrefix = "docs";
-            config.SwaggerEndpoint("/docs/preview/swagger.json", "SCMM API (Preview)");
+            config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM API (v1)");
             config.InjectStylesheet("/css/scmm-swagger-theme.css");
             config.OAuth2RedirectUrl("/signin");
         });

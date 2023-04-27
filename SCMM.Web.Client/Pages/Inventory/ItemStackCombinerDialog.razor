@@ -181,7 +181,7 @@
                 RequestUri = new Uri($"{Http.BaseAddress}api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{destinationItem.SteamId}/combine"),
                 Method = HttpMethod.Put,
                 Headers = {
-                    { "Steam-Api-Key", SteamApiKey }
+                    { "steam-api-key", SteamApiKey }
                 },
                 Content = JsonContent.Create(
                     sourceItems.ToDictionary(

@@ -152,7 +152,7 @@
                     RequestUri = new Uri($"{Http.BaseAddress}api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{sourceItem.Key.SteamId}/split?stackNewItems={StackNewItems}"),
                     Method = HttpMethod.Put,
                     Headers = {
-                        { "Steam-Api-Key", SteamApiKey }
+                        { "steam-api-key", SteamApiKey }
                     },
                     Content = JsonContent.Create(sourceItem.Value)
                 };

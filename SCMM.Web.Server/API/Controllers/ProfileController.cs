@@ -969,7 +969,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CombineInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] IDictionary<ulong, uint> sourceItems)
+        public async Task<IActionResult> CombineInventoryItemStacks([FromHeader(Name = "steam-api-key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] IDictionary<ulong, uint> sourceItems)
         {
             if (string.IsNullOrEmpty(profileId))
             {
@@ -1058,7 +1058,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SplitInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] uint quantity, [FromQuery] bool stackNewItems = true)
+        public async Task<IActionResult> SplitInventoryItemStacks([FromHeader(Name = "steam-api-key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] uint quantity, [FromQuery] bool stackNewItems = true)
         {
             if (string.IsNullOrEmpty(profileId))
             {
