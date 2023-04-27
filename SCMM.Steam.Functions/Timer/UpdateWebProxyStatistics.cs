@@ -2,6 +2,7 @@
 using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Events;
+using SCMM.Shared.Client;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -9,12 +10,14 @@ public class UpdateWebProxyStatistics
 {
     private readonly IWebProxyManagementService _webProxies;
     private readonly IWebProxyStatisticsService _webProxyStatisticsService;
+    private readonly IWebProxyManager _webProxyManager;
     private readonly IServiceBus _serviceBus;
 
-    public UpdateWebProxyStatistics(IWebProxyManagementService webProxies, IWebProxyStatisticsService webProxyStatisticsService, IServiceBus serviceBus)
+    public UpdateWebProxyStatistics(IWebProxyManagementService webProxies, IWebProxyStatisticsService webProxyStatisticsService, IWebProxyManager webProxyManager, IServiceBus serviceBus)
     {
         _webProxies = webProxies;
         _webProxyStatisticsService = webProxyStatisticsService;
+        _webProxyManager = webProxyManager;
         _serviceBus = serviceBus;
     }
 
@@ -86,6 +89,7 @@ public class UpdateWebProxyStatistics
 
             if (proxiesHaveChanged)
             {
+                await _webProxyManager.RefreshProxiesAsync();
                 await _serviceBus.SendMessageAsync(
                     new WebProxyStatisticsUpdatedMessage()
                 );
