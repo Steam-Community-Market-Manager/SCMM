@@ -186,8 +186,7 @@ public static class HostExtensions
                 Assembly.GetEntryAssembly(),
                 Assembly.Load("SCMM.Steam.API"),
                 Assembly.Load("SCMM.Discord.API"),
-                Assembly.Load("SCMM.Shared.API"),
-                Assembly.Load("SCMM.Shared.Web")
+                Assembly.Load("SCMM.Shared.API")
             };
             services.AddCommands(contactAssemblies);
             services.AddQueries(contactAssemblies);
