@@ -738,14 +738,14 @@ namespace SCMM.Web.Server.API.Controllers
             // TODO: Add support for other apps
             return Ok(
                 itemTypes
-                    .GroupBy(x => x.ToRustItemGroup())
+                    .GroupBy(x => x.RustItemTypeGroup())
                     .OrderBy(x => x.Key)
                     .Select(g => new ItemTypeGroupDTO()
                     {
                         Name = g.Key,
                         ItemTypes = g.OrderBy(x => x).Select(i => new ItemTypeDTO()
                         {
-                            Id = i.ToRustItemShortName(),
+                            Id = i.RustItemTypeToShortName(),
                             Name = i
                         }).ToArray()
                     })

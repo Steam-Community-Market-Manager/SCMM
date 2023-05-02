@@ -94,7 +94,7 @@ namespace SCMM.Web.Server.API.Controllers
                 itemTypeResults.Select(x => new SearchResultDTO()
                 {
                     Type = "Type",
-                    IconUrl = $"{_configuration.GetDataStoreUrl()}/images/app/{app.Id}/items/{x.ToRustItemShortName()}.png",
+                    IconUrl = $"{_configuration.GetDataStoreUrl()}/images/app/{app.Id}/items/{x.RustItemTypeToShortName()}.png",
                     Description = x,
                     Url = $"api/item?type={x}&count=-1"
                 })

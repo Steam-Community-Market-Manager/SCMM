@@ -73,10 +73,12 @@
             "Pants", "Vest"
         };
 
+        public const string RustItemTypeNone = "None";
         public const string RustItemTypeResource = "Resource";
         public const string RustItemTypeSkinContainer = "Skin Container";
         public const string RustItemTypeMiscellaneous = "Miscellaneous";
         public const string RustItemTypeUnderwear = "Underwear";
+        public const string RustItemTypeBuildingSkin = "Building Skin";
 
         public const string RustItemShortNameLR300 = "lr300.item";
         public const string RustItemTypeLR300 = "LR300";

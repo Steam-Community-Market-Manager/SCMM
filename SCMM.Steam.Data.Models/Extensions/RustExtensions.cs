@@ -3,7 +3,7 @@ namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class RustExtensions
     {
-        public static string WorkshopTagToRustItemType(this string workshopTag)
+        public static string RustWorkshopTagToItemType(this string workshopTag)
         {
             switch (workshopTag)
             {
@@ -105,7 +105,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static string ToRustItemShortName(this string itemType)
+        public static string RustItemTypeToShortName(this string itemType)
         {
             switch (itemType)
             {
@@ -206,41 +206,147 @@ namespace SCMM.Steam.Data.Models.Extensions
                 case "Wooden Door": return "door.hinged.wood";
                 case "Mace": return "mace";
                 case "Torch": return "torch";
-                default: return itemType?.ToLower();
+                case "Building Skin": return "buildingskin";
+                default: return "miscellanous";
             }
         }
 
-        public static string ToRustItemGroup(this string itemType)
+        public static string RustItemShortNameToItemType(this string shortName)
         {
-            if (IsRustArmourItem(itemType))
+            switch (shortName.ToLower())
+            {
+                case "fun.guitar": return "Acoustic Guitar";
+                case "door.hinged.toptier": return "Armored Door";
+                case "door.double.hinged.toptier": return "Armored Double Door";
+                case "rifle.ak": return "Assault Rifle";
+                case "mask.bandana": return "Bandana Mask";
+                case "hat.cap": return "Baseball Cap";
+                case "hat.beenie": return "Beenie Hat";
+                case "rifle.bolt": return "Bolt Action Rifle"; // texture issues (Tempered)
+                case "bone.club": return "Bone Club";
+                case "deer.skull.mask": return "Bone Helmet";
+                case "knife.bone": return "Bone Knife";
+                case "hat.boonie": return "Boonie Hat";
+                case "shoes.boots": return "Boots";
+                case "bucket.helmet": return "Bucket Helmet";
+                case "burlap.headwrap": return "Burlap Headwrap";
+                case "burlap.shirt": return "Burlap Shirt";
+                case "burlap.shoes": return "Burlap Shoes";
+                case "burlap.trousers": return "Burlap Trousers";
+                case "chair": return "Chair";
+                case "coffeecan.helmet": return "Coffee Can Helmet";
+                case "knife.combat": return "Combat Knife";
+                case "barricade.concrete": return "Concrete Barricade";
+                case "crossbow": return "Crossbow"; // texture issues (Tempered)
+                case "smg.2": return "Custom SMG"; // texture issues (Lovely SMG)
+                case "shotgun.double": return "Double Barrel Shotgun"; // broken model
+                case "pistol.eoka": return "Eoka Pistol";
+                case "grenade.f1": return "F1 Grenade";
+                case "fridge": return "Fridge"; // door is open
+                case "furnace": return "Furnace";
+                case "wall.frame.garagedoor": return "Garage Door";
+                case "hammer": return "Hammer";
+                case "hatchet": return "Hatchet";
+                case "hazmatsuit": return "Hazmat Suit";
+                case "attire.hide.boots": return "Hide Boots";
+                case "attire.hide.helterneck": return "Hide Halterneck";
+                case "attire.hide.pants": return "Hide Pants";
+                case "attire.hide.poncho": return "Hide Poncho";
+                case "attire.hide.skirt": return "Hide Skirt";
+                case "attire.hide.vest": return "Hide Vest";
+                case "hoodie": return "Hoodie";
+                case "bow.hunting": return "Hunting Bow";
+                case "mask.balaclava": return "Improvised Balaclava";
+                case "jacket": return "Jacket";
+                case "jackhammer": return "Jackhammer";
+                case "rifle.l96": return "L96 Rifle";
+                case "box.wooden.large": return "Large Wood Box"; // texture issues (Large Stickered Toy Car)
+                case "burlap.gloves": return "Leather Gloves";
+                case "locker": return "Locker"; // texture issues (Heli Cargo), doors are open
+                case "tshirt.long": return "Longsleeve T-Shirt";
+                case "longsword": return "Longsword";
+                case "rifle.lr300": return "LR300";
+                case "lmg.m249": return "M249"; // broken model
+                case "rifle.m39": return "M39 Rifle";
+                case "metal.plate.torso": return "Metal Chest Plate";
+                case "metal.facemask": return "Metal Facemask";
+                case "hat.miner": return "Miners Hat";
+                case "smg.mp5": return "MP5A4";
+                case "pants": return "Pants";
+                case "pickaxe": return "Pickaxe";
+                case "shotgun.pump": return "Pump Shotgun"; // can't hide bullet
+                case "pistol.python": return "Python Revolver"; // can't hide chamber
+                case "target.reactive": return "Reactive Target";
+                case "pistol.revolver": return "Revolver";
+                case "riot.helmet": return "Riot Helmet"; // broken model
+                case "roadsign.jacket": return "Road Sign Jacket";
+                case "roadsign.kilt": return "Road Sign Kilt";
+                case "roadsign.gloves": return "Roadsign Gloves";
+                case "rock": return "Rock";
+                case "rocket.launcher": return "Rocket Launcher";
+                case "rug": return "Rug";
+                case "rug.bear": return "Rug Bear Skin";
+                case "icepick.salvaged": return "Salvaged Icepick";
+                case "salvaged.sword": return "Salvaged Sword";
+                case "barricade.sandbags": return "Sandbag Barricade";
+                case "explosive.satchel": return "Satchel Charge"; // broken model
+                case "pistol.semiauto": return "Semi-Automatic Pistol";
+                case "rifle.semiauto": return "Semi-Automatic Rifle";
+                case "door.hinged.metal": return "Sheet Metal Door";
+                case "door.double.hinged.metal": return "Sheet Metal Double Door";
+                case "shirt.collared": return "Shirt"; // texture issues (torso should map to white)
+                case "pants.shorts": return "Shorts";
+                case "sleepingbag": return "Sleeping Bag";
+                case "jacket.snow": return "Snow Jacket";
+                case "stonehatchet": return "Stone Hatchet";
+                case "stone.pickaxe": return "Stone Pickaxe";
+                case "table": return "Table";
+                case "shirt.tanktop": return "Tank Top";
+                case "smg.thompson": return "Thompson";
+                case "tshirt": return "T-Shirt";
+                case "vending.machine": return "Vending Machine"; // broken model
+                case "water.purifier": return "Water Purifier";
+                case "shotgun.waterpipe": return "Waterpipe Shotgun";
+                case "door.double.hinged.wood": return "Wood Double Door";
+                case "box.wooden": return "Wood Storage Box"; // texture issues (Heli Cargo)
+                case "door.hinged.wood": return "Wooden Door";
+                case "mace": return "Mace";
+                case "torch": return "Torch";
+                case "buildingskin": return "Building Skin";
+                default: return "Miscellanous";
+            }
+        }
+        public static string RustItemTypeGroup(this string itemType)
+        {
+            if (IsRustArmourItemType(itemType))
             {
                 return "Armour";
             }
-            else if (IsRustClothingItem(itemType))
+            else if (IsRustClothingItemType(itemType))
             {
                 return "Clothing";
             }
-            else if (IsRustGunItem(itemType))
+            else if (IsRustGunItemType(itemType))
             {
                 return "Guns";
             }
-            else if (IsRustWeaponItem(itemType))
+            else if (IsRustWeaponItemType(itemType))
             {
                 return "Weapons";
             }
-            else if (IsRustToolItem(itemType))
+            else if (IsRustToolItemType(itemType))
             {
                 return "Tools";
             }
-            else if (IsRustConstructionItem(itemType))
+            else if (IsRustConstructionItemType(itemType))
             {
                 return "Construction";
             }
-            else if (IsRustDeployableItem(itemType))
+            else if (IsRustDeployableItemType(itemType))
             {
                 return "Deployables";
             }
-            else if (IsRustFunItem(itemType))
+            else if (IsRustFunItemType(itemType))
             {
                 return "Fun";
             }
@@ -248,7 +354,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             return null;
         }
 
-        public static bool IsRustArmourItem(this string itemType)
+        public static bool IsRustArmourItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -265,7 +371,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustClothingItem(this string itemType)
+        public static bool IsRustClothingItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -301,7 +407,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustGunItem(this string itemType)
+        public static bool IsRustGunItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -326,7 +432,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustWeaponItem(this string itemType)
+        public static bool IsRustWeaponItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -345,7 +451,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustToolItem(this string itemType)
+        public static bool IsRustToolItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -362,7 +468,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustConstructionItem(this string itemType)
+        public static bool IsRustConstructionItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -377,7 +483,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustDeployableItem(this string itemType)
+        public static bool IsRustDeployableItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -400,7 +506,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustFunItem(this string itemType)
+        public static bool IsRustFunItemType(this string itemType)
         {
             switch (itemType)
             {
@@ -409,17 +515,17 @@ namespace SCMM.Steam.Data.Models.Extensions
             }
         }
 
-        public static bool IsRustSpecialItem(this string itemType)
+        public static bool IsRustSpecialItemType(this string itemType)
         {
             return (
-                !itemType.IsRustArmourItem() &&
-                !itemType.IsRustClothingItem() &&
-                !itemType.IsRustGunItem() &&
-                !itemType.IsRustWeaponItem() &&
-                !itemType.IsRustToolItem() &&
-                !itemType.IsRustConstructionItem() &&
-                !itemType.IsRustDeployableItem() &&
-                !itemType.IsRustFunItem()
+                !itemType.IsRustArmourItemType() &&
+                !itemType.IsRustClothingItemType() &&
+                !itemType.IsRustGunItemType() &&
+                !itemType.IsRustWeaponItemType() &&
+                !itemType.IsRustToolItemType() &&
+                !itemType.IsRustConstructionItemType() &&
+                !itemType.IsRustDeployableItemType() &&
+                !itemType.IsRustFunItemType()
             );
         }
     }

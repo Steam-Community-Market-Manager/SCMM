@@ -639,9 +639,14 @@ namespace SCMM.Steam.API.Commands
                         {
                             assetDescription.ItemType = Constants.RustItemTypeUnderwear;
                         }
+                        // Is it a building skin?
+                        else if (Regex.IsMatch(assetDescription.Description.ToPlainText(), @"is a building skin item"))
+                        {
+                            assetDescription.ItemType = Constants.RustItemTypeBuildingSkin;
+                        }
                     }
 
-                    // Remove all empty markup elements
+                    // Remove all empty markup elements in the description
                     if (!String.IsNullOrEmpty(assetDescription.Description))
                     {
                         assetDescription.Description = assetDescription.Description.RemoveEmptyMarkup();
@@ -660,7 +665,16 @@ namespace SCMM.Steam.API.Commands
                     }
                     else if (!string.IsNullOrEmpty(assetDescription.ItemType))
                     {
-                        assetDescription.ItemShortName = assetDescription.ItemType.ToRustItemShortName();
+                        assetDescription.ItemShortName = assetDescription.ItemType.RustItemTypeToShortName();
+                    }
+
+                    // Parse asset item type
+                    if (string.IsNullOrEmpty(assetDescription.ItemType) || string.Equals(assetDescription.ItemType, Constants.RustItemTypeNone))
+                    {
+                        if (!string.IsNullOrEmpty(assetDescription.ItemShortName))
+                        {
+                            assetDescription.ItemType = assetDescription.ItemShortName.RustItemShortNameToItemType();
+                        }
                     }
 
                     // Parse asset item collection (if missing and is a user created item)

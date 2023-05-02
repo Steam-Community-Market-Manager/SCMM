@@ -97,8 +97,8 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse item type
-                workshopFile.ItemType = workshopFile.Tags.FirstOrDefault(t => !Constants.SteamIgnoredWorkshopTags.Contains(t.Value)).Value.WorkshopTagToRustItemType();
-                workshopFile.ItemShortName = workshopFile.ItemType.ToRustItemShortName();
+                workshopFile.ItemType = workshopFile.Tags.FirstOrDefault(t => !Constants.SteamIgnoredWorkshopTags.Contains(t.Value)).Value.RustWorkshopTagToItemType();
+                workshopFile.ItemShortName = workshopFile.ItemType.RustItemTypeToShortName();
             }
 
             // Cleanup the description text

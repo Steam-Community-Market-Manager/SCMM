@@ -39,7 +39,7 @@
                 @if (!String.IsNullOrEmpty(Item.ItemType))
                 {
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="d-flex no-wrap">
-                        <img src="@($"/images/app/{State.AppId}/items/{Item.ItemType.ToRustItemShortName()}.png")" class="mr-1" style="width:1.5em;height:1.5em" />
+                        <img src="@($"/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png")" class="mr-1" style="width:1.5em;height:1.5em" />
                         <span>@Item.ItemType</span>
                     </MudText>
                 }
