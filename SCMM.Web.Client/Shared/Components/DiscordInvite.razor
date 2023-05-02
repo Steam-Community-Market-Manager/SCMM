@@ -1,6 +1,5 @@
 ﻿@using System.Text.Json.Serialization
 @inject ILogger<DiscordInvite> Logger
-@inject HttpClient Http
 @inject ExternalNavigationManager ExternalNavigationManager
 
 @if (Invite != null)
@@ -39,7 +38,10 @@
         {
             try
             {
-                Invite = await Http.GetFromJsonWithDefaultsAsync<DiscordInviteDTO>($"https://discordapp.com/api/v6/invite/{InviteCode}?with_counts=true");
+                using (var client = new HttpClient())
+                {
+                    Invite = await client.GetFromJsonWithDefaultsAsync<DiscordInviteDTO>($"https://discordapp.com/api/v6/invite/{InviteCode}?with_counts=true");
+                }
             }
             catch (Exception ex)
             {
