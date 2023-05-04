@@ -296,7 +296,7 @@ else if (StoreList.Any())
                                                     </span>
                                                 </MudText>
                                             }
-                                            @if (item.TimeCreated != null && item.TimeAccepted != null)
+                                            @if (item.TimeCreated != null && item.TimeAccepted != null && (item.TimeAccepted.Value - item.TimeCreated.Value) > TimeSpan.Zero)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-stopwatch mud-secondary-text"></i>

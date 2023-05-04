@@ -285,7 +285,7 @@
                                 </span>
                             </MudText>
                         }
-                        @if (Item.TimeCreated != null && Item.TimeAccepted != null)
+                        @if (Item.TimeCreated != null && Item.TimeAccepted != null && (Item.TimeAccepted.Value - Item.TimeCreated.Value) > TimeSpan.Zero)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-stopwatch mud-secondary-text"></i>
