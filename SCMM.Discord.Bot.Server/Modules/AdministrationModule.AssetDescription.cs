@@ -6,8 +6,9 @@ using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
@@ -19,7 +20,7 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule
     {
         [Command("import-item-definitions-archives")]
-        public async Task<RuntimeResult> ImportRustItemDefinitionsArchivesAsync(ulong appId, params string[] digests)
+        public async Task<RuntimeResult> ImportItemDefinitionsArchivesAsync(ulong appId, params string[] digests)
         {
             var message = await Context.Message.ReplyAsync("Importing item definitions archives...");
             foreach (var digest in digests)
@@ -43,7 +44,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-item-definitions-archive-and-parse-changes")]
-        public async Task<RuntimeResult> ImportAndParseRustItemDefinitionsArchiveAsync(ulong appId, string digest)
+        public async Task<RuntimeResult> ImportAndParseItemDefinitionsArchiveAsync(ulong appId, string digest)
         {
             await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
             {
@@ -57,33 +58,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-asset-description")]
-        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(ulong appId, params ulong[] classIds)
-        {
-            var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
-            foreach (var classId in classIds)
-            {
-                await message.ModifyAsync(
-                    x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
-                );
-
-                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-                {
-                    AppId = appId,
-                    AssetClassId = classId
-                });
-
-                await _steamDb.SaveChangesAsync();
-            }
-
-            await message.ModifyAsync(
-                x => x.Content = $"Imported {classIds.Length}/{classIds.Length} asset descriptions"
-            );
-
-            return CommandResult.Success();
-        }
-
-        [Command("import-asset-description")]
-        public async Task<RuntimeResult> ImportCSGOAssetDescriptionAsync(ulong appId, params ulong[] classIds)
+        public async Task<RuntimeResult> ImportAssetDescriptionAsync(ulong appId, params ulong[] classIds)
         {
             var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
             foreach (var classId in classIds)
@@ -109,7 +84,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-market-item")]
-        public async Task<RuntimeResult> ImportCSGOMarketItemAsync(ulong appId, params string[] names)
+        public async Task<RuntimeResult> ImportMarketItemAsync(ulong appId, params string[] names)
         {
             var message = await Context.Message.ReplyAsync("Importing market items...");
             foreach (var name in names)
@@ -131,7 +106,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
-                    AppId = Constants.CSGOAppId,
+                    AppId = appId,
                     AssetClassId = UInt64.Parse(classId)
                 });
 
@@ -522,7 +497,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("find-asset-descriptions")]
-        public async Task<RuntimeResult> FindClassIds(ulong startClassId, ulong endClassId)
+        public async Task<RuntimeResult> FindClassIds(ulong appId, ulong startClassId, ulong endClassId)
         {
             const int classesPerPage = 1;
 
@@ -543,7 +518,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 var response = await _steamWebApiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
                 {
-                    AppId = Constants.RustAppId,
+                    AppId = appId,
                     ClassIds = classIds
                 });
 
