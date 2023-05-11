@@ -534,5 +534,45 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             return CommandResult.Success();
         }
+
+        [Command("import-asset-filters")]
+        public async Task<RuntimeResult> ImportAssetFilters(ulong appId)
+        {
+            var app = await _steamDb.SteamApps
+                .Include(x => x.AssetFilters)
+                .FirstOrDefaultAsync(x => x.SteamId == appId.ToString());
+
+            var appFilters = await _steamCommunityClient.GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(new SteamMarketAppFiltersJsonRequest()
+            {
+                AppId = appId.ToString()
+            });
+
+            if (appFilters?.Success == true && appFilters?.Facets?.Any() == true)
+            {
+                foreach(var filter in appFilters.Facets)
+                {
+                    if (app.AssetFilters.Any(x => x.SteamId == filter.Value.Name))
+                    {
+                        continue; // already exists, skip...
+                    }
+
+                    app.AssetFilters.Add(new SteamAssetFilter()
+                    {
+                        SteamId = filter.Value.Name,
+                        Name = filter.Value.Localized_Name,
+                        Type = "Select",
+                        Size = 2,
+                        Icon = "fa-filter",
+                        Options = new PersistableStringDictionary(
+                            filter.Value.Tags.ToDictionary(x => x.Key, x => x.Value.Localized_Name)
+                        ),
+                        IsEnabled = true
+                    });
+                }
+            }
+
+            await _steamDb.SaveChangesAsync();
+            return CommandResult.Success();
+        }
     }
 }
