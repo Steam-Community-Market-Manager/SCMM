@@ -15,7 +15,7 @@
 
     <MudGrid Spacing="2">
         <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item, type, collection, author, or tags..." 
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item..." 
                           Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         @if (Filters != null && FilterValues != null)
@@ -40,7 +40,7 @@
                                 <MudSelectItem T="string" Value="@String.Empty">Any</MudSelectItem>
                                 @foreach (var option in filter.Options)
                                 {
-                                    <MudSelectItem Value="@option.Key">@option.Value</MudSelectItem>
+                                    <MudSelectItem Value="@option.Value">@option.Value</MudSelectItem>
                                 }
                             </MudSelect>
                         </MudItem>
@@ -394,9 +394,9 @@
             Items = null;
             StateHasChanged();
 
-            var filterTags = String.Join("&", FilterValues
+            var itemFilters = String.Join("&", FilterValues
                 .Where(x => !String.IsNullOrEmpty(x.Key) && !String.IsNullOrEmpty(x.Value))
-                .Select(x => $"tag={x.Value}")
+                .Select(x => $"filter.{x.Key}={x.Value}")
             );
 
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
@@ -404,7 +404,7 @@
                 $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&breaksIntoComponent={Uri.EscapeDataString(BreaksIntoComponent ?? String.Empty)}" +
                 $"&glow={(Glow ? true : (bool?)null)}&glowsight={(Glowsight ? true : (bool?)null)}&cutout={(Cutout ? true : (bool?)null)}&craftable={(Craftable ? true : (bool?)null)}" +
                 $"&publisherDrop={(PublisherDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&lootCrateDrop={(LootCrateDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +
-                $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}&manipulated={(Manipulated ? true : (bool?)null)}&{filterTags}"
+                $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}&manipulated={(Manipulated ? true : (bool?)null)}&{itemFilters}"
             );
         }
         catch (Exception ex)

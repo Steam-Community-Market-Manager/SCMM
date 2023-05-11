@@ -98,8 +98,24 @@ namespace SCMM.Web.Server.API.Controllers
                 count = int.MaxValue;
             }
 
-            // Filter app
+            // Parse all app asset filters
             var appId = this.App().Guid;
+            var appFilters = await _db.SteamApps.AsNoTracking()
+                .Where(x => x.Id == appId)
+                .SelectMany(x => x.AssetFilters)
+                .Where(x => x.IsEnabled)
+                .ToListAsync();
+            var assetFilters = new Dictionary<string, string>();
+            foreach (var appFilter in appFilters)
+            {
+                var queryStringKey = $"filter.{appFilter.SteamId}";
+                if (Request.Query.ContainsKey(queryStringKey))
+                {
+                    assetFilters[appFilter.SteamId] = Request.Query[queryStringKey];
+                }
+            }
+
+            // Filter app
             var query = _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == appId);
 
@@ -140,13 +156,20 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (!String.IsNullOrEmpty(breaksIntoComponent))
             {
-                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains($"{PersistableAssetQuantityDictionary.DefaultItemSeperator}{breaksIntoComponent}{PersistableAssetQuantityDictionary.DefaultKeyValueSeperator}"));
+                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains(Uri.EscapeUriString(breaksIntoComponent)));
             }
             if (tag != null && tag.Length > 0)
             {
                 foreach (var tagValue in tag)
                 {
-                    query = query.Where(x => x.Tags.Serialised.Contains($"{PersistableStringDictionary.DefaultItemSeperator}{tagValue}{PersistableStringDictionary.DefaultKeyValueSeperator}"));
+                    query = query.Where(x => x.Tags.Serialised.Contains(Uri.EscapeUriString(tagValue)));
+                }
+            }
+            if (assetFilters != null && assetFilters.Count > 0)
+            {
+                foreach (var assetFilter in assetFilters)
+                {
+                    query = query.Where(x => x.Tags.Serialised.Contains($"{Uri.EscapeUriString(assetFilter.Key)}{PersistableStringDictionary.DefaultKeyValueSeperator}{Uri.EscapeUriString(assetFilter.Value)}"));
                 }
             }
             if (glow != null)
