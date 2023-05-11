@@ -11,14 +11,14 @@
 <PageContainer Title="@($"{State?.App?.Name} Skin Workshop")">
 
     <MudGrid Spacing="2">
-        <MudItem xs="12" sm="6" md="4" lg="6">
+        <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item, type, collection, author, or tags..." 
                           Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
-        <MudItem xs="12" sm="6" md="4" lg="3">
-            <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshWorkshopFiles(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
+        <MudItem xs="12" sm="6" md="3" lg="3" xl="2">
+            <ItemTypeField Label="Item Type" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshWorkshopFiles(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
-        <MudItem xs="12" sm="12" md="4" lg="3">
+        <MudItem xs="12" sm="6" md="3" lg="3" xl="2">
             <MudSelect T="Tuple<string, Data.Models.SortDirection>" Value="@Sort" ValueChanged="SetSortOrder" Label="Sorting" Clearable="false" Disabled="State.IsPrerendering"
                        Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fas fa-fw fa-sort-alpha-down mr-1" Class="mud-input-transparent ma-0">
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))

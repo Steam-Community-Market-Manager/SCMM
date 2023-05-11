@@ -31,7 +31,7 @@
             <returns>Image data</returns>
             <response code="410"></response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.Nullable{System.UInt64}[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.Nullable{System.UInt64}[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.String,System.String[],System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
             <summary>
             Search for items
             </summary>
@@ -43,7 +43,8 @@
             <param name="type">If specified, only items matching the supplied item type are returned</param>
             <param name="collection">If specified, only items matching the supplied item collection are returned</param>
             <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
-            <param name="breaksIntoComponent">If specified, item items that break in to this component are returned</param>
+            <param name="breaksIntoComponent">If specified, only items that break in to this component are returned</param>
+            <param name="tag">If specified, only items that contain ALL of the supplied tags are returned</param>
             <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
             <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
             <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
@@ -162,6 +163,14 @@
             <returns>The item definition archive contents</returns>
             <response code="200">The item definition archive contents.</response>
             <response code="404">If the item definition archive doesn't exist.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemFilters">
+            <summary>
+            List all known item filters
+            </summary>
+            <remarks>Response is cached for 24hrs</remarks>
+            <response code="200">List of unique item filters</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemTypes">

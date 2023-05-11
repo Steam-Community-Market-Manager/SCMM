@@ -14,14 +14,42 @@
 <PageContainer Title="@($"{State?.App?.Name} Skins")">
 
     <MudGrid Spacing="2">
-        <MudItem xs="12" sm="6" md="4" lg="6">
+        <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item, type, collection, author, or tags..." 
                           Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
-        <MudItem xs="12" sm="6" md="4" lg="3">
-            <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
-        </MudItem>
-        <MudItem xs="12" sm="12" md="4" lg="3">
+        @if (Filters != null && FilterValues != null)
+        {
+            foreach (var filter in Filters.Where(x => x.IsEnabled))
+            {
+                switch(filter.Type)
+                {
+                    case "ItemType":
+                    {
+                        <MudItem xs="12" sm="6" md="@((int)Math.Ceiling(filter.Size * 1.5))" lg="@((int)Math.Ceiling(filter.Size * 1.5))" xl="@filter.Size">
+                            <ItemTypeField Label="@filter.Name" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
+                        </MudItem>
+                        break;
+                    }
+
+                    case "Select":
+                    {
+                        <MudItem xs="12" sm="6" md="@((int)Math.Ceiling(filter.Size * 1.5))" lg="@((int)Math.Ceiling(filter.Size * 1.5))" xl="@filter.Size">
+                            <MudSelect T="string" Value="@FilterValues[filter.SteamId]" ValueChanged="@((x) => { FilterValues[filter.SteamId] = x; RefreshItems(); })" Label="@filter.Name" Clearable="false" Disabled="State.IsPrerendering"
+                                           Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Adornment="MudBlazor.Adornment.Start" AdornmentIcon="@($"fas fa-fw {filter.Icon ?? "fa-filter"} mr-1")" Class="mud-input-transparent ma-0">
+                                <MudSelectItem T="string" Value="@String.Empty">Any</MudSelectItem>
+                                @foreach (var option in filter.Options)
+                                {
+                                    <MudSelectItem Value="@option.Key">@option.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        break;
+                    }
+                }
+            }
+        }
+        <MudItem xs="12" sm="6" md="3" lg="3" xl="2">
             <MudSelect T="Tuple<string, Data.Models.SortDirection>" Value="@Sort" ValueChanged="SetSortOrder" Label="Sorting" Clearable="false" Disabled="State.IsPrerendering"
                        Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fas fa-fw fa-sort-alpha-down mr-1" Class="mud-input-transparent ma-0">
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
@@ -219,7 +247,7 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public bool TwitchDrop { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool LootCrateDrop { get; set; }
@@ -243,7 +271,7 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Banned { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Manipulated { get; set; }
@@ -265,6 +293,10 @@
     public string SortDirection { get; set; }
 
     private Tuple<string, Data.Models.SortDirection> Sort;
+
+    private IEnumerable<ItemFilterDTO> Filters;
+
+    private IDictionary<string, string> FilterValues;
 
     private PaginatedResult<ItemDescriptionWithPriceDTO> Items;
 
@@ -290,6 +322,13 @@
 
     protected override async Task OnLoadStateAsync()
     {
+        Filters = await RestoreFromStateOrLoad(nameof(Filters), async () =>
+        {
+            var filters = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemFilterDTO>>($"api/item/filters");
+            FilterValues = (filters ?? Enumerable.Empty<ItemFilterDTO>()).ToDictionary(x => x.SteamId, x => String.Empty);
+            return filters;
+        });
+        FilterValues = await RestoreFromStateOrLoad(nameof(FilterValues), () => Task.FromResult(FilterValues ?? new Dictionary<string, string>()));
         Items = await RestoreFromStateOrLoad(nameof(Items), async () =>
         {
             await RefreshItems();
@@ -299,6 +338,8 @@
 
     protected override Task OnPersistStateAsync()
     {
+        PersistToState(nameof(Filters), Filters);
+        PersistToState(nameof(FilterValues), FilterValues);
         PersistToState(nameof(Items), Items);
         return Task.CompletedTask;
     }
@@ -353,12 +394,17 @@
             Items = null;
             StateHasChanged();
 
+            var filterTags = String.Join("&", FilterValues
+                .Where(x => !String.IsNullOrEmpty(x.Key) && !String.IsNullOrEmpty(x.Value))
+                .Select(x => $"tag={x.Value}")
+            );
+
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
                 $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}" +
                 $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&breaksIntoComponent={Uri.EscapeDataString(BreaksIntoComponent ?? String.Empty)}" +
                 $"&glow={(Glow ? true : (bool?)null)}&glowsight={(Glowsight ? true : (bool?)null)}&cutout={(Cutout ? true : (bool?)null)}&craftable={(Craftable ? true : (bool?)null)}" +
                 $"&publisherDrop={(PublisherDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&lootCrateDrop={(LootCrateDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +
-                $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}&manipulated={(Manipulated ? true : (bool?)null)}"
+                $"&marketable={(Marketable ? true : (bool?)null)}&returning={(Returning ? true : (bool?)null)}&banned={(Banned ? true : (bool?)null)}&manipulated={(Manipulated ? true : (bool?)null)}&{filterTags}"
             );
         }
         catch (Exception ex)

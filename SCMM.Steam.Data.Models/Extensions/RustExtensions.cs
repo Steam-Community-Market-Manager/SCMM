@@ -375,6 +375,7 @@ namespace SCMM.Steam.Data.Models.Extensions
         {
             switch (itemType)
             {
+                case "Underwear":
                 case "Beenie Hat":
                 case "Snow Jacket":
                 case "Hoodie":
@@ -510,6 +511,7 @@ namespace SCMM.Steam.Data.Models.Extensions
         {
             switch (itemType)
             {
+                case "Spray Can":
                 case "Acoustic Guitar": return true;
                 default: return false;
             }

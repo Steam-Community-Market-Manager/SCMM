@@ -5,7 +5,7 @@
 @inject HttpClient Http
 @inject AppState State
 
-<MudField Label="Item" Disabled="@(ItemTypesGroups == null || !ItemTypesGroups.Any() || State.IsPrerendering)" Variant="@Variant" Margin="@Margin" FullWidth="@FullWidth" Class="@Class">
+<MudField Label="@Label" Disabled="@(ItemTypesGroups == null || !ItemTypesGroups.Any() || State.IsPrerendering)" Variant="@Variant" Margin="@Margin" FullWidth="@FullWidth" Class="@Class">
     <div class="clickable" @onclick="@ShowItemTypePickerDialog">
         <div class="d-flex flex-row align-center">
             @if (ItemTypes?.Length > 0)
@@ -38,6 +38,9 @@
 </MudField>
 
 @code {
+
+    [Parameter]
+    public string Label { get; set; }
 
     [Parameter]
     public string Value { get; set; }

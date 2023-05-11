@@ -7,14 +7,17 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
+using System.Linq;
 using System.Text.Json;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -49,7 +52,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="type">If specified, only items matching the supplied item type are returned</param>
         /// <param name="collection">If specified, only items matching the supplied item collection are returned</param>
         /// <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
-        /// <param name="breaksIntoComponent">If specified, item items that break in to this component are returned</param>
+        /// <param name="breaksIntoComponent">If specified, only items that break in to this component are returned</param>
+        /// <param name="tag">If specified, only items that contain ALL of the supplied tags are returned</param>
         /// <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
@@ -79,7 +83,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null,
+        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null, [FromQuery] string[] tag = null,
                                                   [FromQuery] bool? glow = null, [FromQuery] bool? glowsight = null, [FromQuery] bool? cutout = null, [FromQuery] bool? commodity = null, [FromQuery] bool? marketable = null, [FromQuery] bool? tradable = null,
                                                   [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? publisherDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? lootCrateDrop = null, [FromQuery] bool? craftable = null, [FromQuery] bool? manipulated = null,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
@@ -136,7 +140,14 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (!String.IsNullOrEmpty(breaksIntoComponent))
             {
-                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains(breaksIntoComponent));
+                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains($"{PersistableAssetQuantityDictionary.DefaultItemSeperator}{breaksIntoComponent}{PersistableAssetQuantityDictionary.DefaultKeyValueSeperator}"));
+            }
+            if (tag != null && tag.Length > 0)
+            {
+                foreach (var tagValue in tag)
+                {
+                    query = query.Where(x => x.Tags.Serialised.Contains($"{PersistableStringDictionary.DefaultItemSeperator}{tagValue}{PersistableStringDictionary.DefaultKeyValueSeperator}"));
+                }
             }
             if (glow != null)
             {
@@ -711,6 +722,30 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(raw
                 ? itemDefinitionArchive
                 : JsonSerializer.Deserialize<ItemDefinition[]>(itemDefinitionArchive)
+            );
+        }
+
+        /// <summary>
+        /// List all known item filters
+        /// </summary>
+        /// <remarks>Response is cached for 24hrs</remarks>
+        /// <response code="200">List of unique item filters</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("filters")]
+        [ProducesResponseType(typeof(IEnumerable<ItemFilterDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(Duration = (24 * 60 * 60 /* 24hr */))]
+        public async Task<IActionResult> GetItemFilters()
+        {
+            var appId = this.App().Guid;
+            var itemFilters = await _db.SteamApps.AsNoTracking()
+                .Where(x => x.Id == appId)
+                .SelectMany(x => x.AssetFilters)
+                .ToArrayAsync();
+
+            return Ok(
+                _mapper.Map<SteamAssetFilter, ItemFilterDTO>(itemFilters, this)
             );
         }
 

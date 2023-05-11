@@ -11,6 +11,8 @@ namespace SCMM.Web.Server.Mappers
     {
         public SteamAssetDescriptionMapperProfile()
         {
+            CreateMap<SteamAssetFilter, ItemFilterDTO>();
+
             CreateMap<SteamAssetDescription, ItemDetailedDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
