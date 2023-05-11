@@ -149,23 +149,5 @@ namespace SCMM.Discord.Bot.Server.Modules
             await message.ModifyAsync(x => x.Content = $"Checked {bots.Count} whale profiles");
             return CommandResult.Success();
         }
-
-        [Command("import-high-profile-inventories")]
-        public async Task<RuntimeResult> TestTest()
-        {
-            var profiles = await _steamDb.SteamProfiles
-                .Where(x => x.Roles.Serialised.Contains("Whale") || x.Roles.Serialised.Contains("Facepunch"))
-                .ToArrayAsync();
-
-            foreach (var profile in profiles)
-            {
-                await _serviceBus.SendMessageAsync(new ImportProfileInventoryMessage()
-                {
-                    ProfileId = profile.SteamId
-                });
-            }
-
-            return CommandResult.Success();
-        }
     }
 }
