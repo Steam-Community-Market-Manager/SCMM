@@ -400,7 +400,7 @@
             );
 
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}" +
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&exactMatch=false&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}" +
                 $"&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&breaksIntoComponent={Uri.EscapeDataString(BreaksIntoComponent ?? String.Empty)}" +
                 $"&glow={(Glow ? true : (bool?)null)}&glowsight={(Glowsight ? true : (bool?)null)}&cutout={(Cutout ? true : (bool?)null)}&craftable={(Craftable ? true : (bool?)null)}" +
                 $"&publisherDrop={(PublisherDrop ? true : (bool?)null)}&twitchDrop={(TwitchDrop ? true : (bool?)null)}&lootCrateDrop={(LootCrateDrop ? true : (bool?)null)}&commodity={(Commodity ? true : (bool?)null)}&tradable={(Tradable ? true : (bool?)null)}" +

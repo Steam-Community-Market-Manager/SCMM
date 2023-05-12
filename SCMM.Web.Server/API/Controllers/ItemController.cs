@@ -49,6 +49,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="id">Optional array of ids to be included in the list. Helpful when you want search for items and compare against a known (but unrelated) item</param>
         /// <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
+        /// <param name="exactMatch">If true, only items that exactly match <code>filter</code> are returned. If false, partial matches are returned</param>
         /// <param name="type">If specified, only items matching the supplied item type are returned</param>
         /// <param name="collection">If specified, only items matching the supplied item collection are returned</param>
         /// <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
@@ -83,7 +84,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null, [FromQuery] string[] tag = null,
+        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] bool exactMatch = false, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null, [FromQuery] string[] tag = null,
                                                   [FromQuery] bool? glow = null, [FromQuery] bool? glowsight = null, [FromQuery] bool? cutout = null, [FromQuery] bool? commodity = null, [FromQuery] bool? marketable = null, [FromQuery] bool? tradable = null,
                                                   [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? publisherDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? lootCrateDrop = null, [FromQuery] bool? craftable = null, [FromQuery] bool? manipulated = null,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
@@ -121,20 +122,37 @@ namespace SCMM.Web.Server.API.Controllers
 
             // Filter search
             filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
-            var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            foreach (var filterWord in filterWords)
+            if (exactMatch)
             {
                 query = query.Where(x =>
                     id.Contains(x.ClassId) ||
-                    x.Id.ToString() == filterWord ||
-                    x.ClassId.ToString() == filterWord ||
-                    x.Name.Contains(filterWord) ||
-                    x.Description.Contains(filterWord) ||
-                    (x.CreatorProfile != null && x.CreatorProfile.Name.Contains(filterWord)) ||
-                    x.ItemType.Contains(filterWord) ||
-                    x.ItemCollection.Contains(filterWord) ||
-                    x.Tags.Serialised.Contains(filterWord)
+                    x.Id.ToString() == filter ||
+                    x.ClassId.ToString() == filter ||
+                    x.Name == filter ||
+                    x.Description == filter ||
+                    (x.CreatorProfile != null && x.CreatorProfile.Name == filter) ||
+                    x.ItemType == filter ||
+                    x.ItemCollection == filter ||
+                    x.Tags.Serialised.Contains($"{PersistableStringDictionary.DefaultKeyValueSeperator}{filter}")
                 );
+            }
+            else
+            {
+                var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var filterWord in filterWords)
+                {
+                    query = query.Where(x =>
+                        id.Contains(x.ClassId) ||
+                        x.Id.ToString() == filterWord ||
+                        x.ClassId.ToString() == filterWord ||
+                        x.Name.Contains(filterWord) ||
+                        x.Description.Contains(filterWord) ||
+                        (x.CreatorProfile != null && x.CreatorProfile.Name.Contains(filterWord)) ||
+                        x.ItemType.Contains(filterWord) ||
+                        x.ItemCollection.Contains(filterWord) ||
+                        x.Tags.Serialised.Contains(filterWord)
+                    );
+                }
             }
 
             // Filter toggles
