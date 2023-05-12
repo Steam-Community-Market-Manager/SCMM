@@ -316,6 +316,7 @@ namespace SCMM.Steam.Data.Models.Extensions
                 default: return "Miscellanous";
             }
         }
+
         public static string RustItemTypeGroup(this string itemType)
         {
             if (IsRustArmourItemType(itemType))
