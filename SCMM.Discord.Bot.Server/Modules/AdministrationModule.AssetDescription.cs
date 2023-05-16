@@ -12,6 +12,7 @@ using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -573,6 +574,39 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
+        }
+
+        [Command("update-rust-twitch-drop-stats")]
+        public async Task<RuntimeResult> UpdateRustTwitchDropStats()
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetFromJsonAsync<FacepunchTwitchDropsStats>("https://twitch.facepunch.com/?handler=DropsStats");
+                var itemDefinitionIds = response?.Items?.Select(x => x.Key)?.ToArray();
+                if (itemDefinitionIds.Any() == true)
+                {
+                    var assetDescriptions = await _steamDb.SteamAssetDescriptions
+                        .Where(x => x.ItemDefinitionId != null && itemDefinitionIds.Contains(x.ItemDefinitionId.Value.ToString()))
+                        .ToListAsync();
+
+                    foreach (var assetDescription in assetDescriptions)
+                    {
+                        assetDescription.SupplyTotalOwnersKnown = response.Items.FirstOrDefault(x => x.Key == assetDescription.ItemDefinitionId.ToString()).Value;
+                    }
+                }
+            }
+
+            await _steamDb.SaveChangesAsync();
+            return CommandResult.Success();
+        }
+
+        public class FacepunchTwitchDropsStats
+        {
+            [JsonPropertyName("accounts")]
+            public int Accounts { get; set; }
+
+            [JsonPropertyName("items")]
+            public Dictionary<string, int> Items { get; set; }
         }
     }
 }
