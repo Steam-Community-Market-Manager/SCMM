@@ -33,6 +33,7 @@ public class UpdateMarketItemOrders
             .Include(x => x.Currency)
             .Include(x => x.Description)
             .Where(x => !string.IsNullOrEmpty(x.SteamId))
+            .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedOrdersOn)

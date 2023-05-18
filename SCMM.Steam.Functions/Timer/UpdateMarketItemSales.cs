@@ -33,6 +33,7 @@ public class UpdateMarketItemSales
             .Include(x => x.App)
             .Include(x => x.Currency)
             .Include(x => x.Description)
+            .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedSalesOn)
