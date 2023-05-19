@@ -591,7 +591,9 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                     foreach (var assetDescription in assetDescriptions)
                     {
-                        assetDescription.SupplyTotalOwnersKnown = response.Items.FirstOrDefault(x => x.Key == assetDescription.ItemDefinitionId.ToString()).Value;
+                        assetDescription.SupplyTotalOwnersKnown = Math.Max(
+                            assetDescription.SupplyTotalOwnersKnown ?? 0, response.Items.FirstOrDefault(x => x.Key == assetDescription.ItemDefinitionId.ToString()).Value
+                        );
                     }
                 }
             }
