@@ -82,13 +82,13 @@ namespace SCMM.Web.Server.Queries
                     },
                     MarketOrderUpdates = new TimeRangeWithTargetDTO()
                     {
-                        Oldest = x.MarketItems.Min(y => y.LastCheckedOrdersOn),
-                        Newest = x.MarketItems.Max(y => y.LastCheckedOrdersOn)
+                        Oldest = x.MarketItems.Where(x => x.Description.IsMarketable).Min(y => y.LastCheckedOrdersOn),
+                        Newest = x.MarketItems.Where(x => x.Description.IsMarketable).Max(y => y.LastCheckedOrdersOn)
                     },
                     MarketSaleUpdates = new TimeRangeWithTargetDTO()
                     {
-                        Oldest = x.MarketItems.Min(y => y.LastCheckedSalesOn),
-                        Newest = x.MarketItems.Max(y => y.LastCheckedSalesOn)
+                        Oldest = x.MarketItems.Where(x => x.Description.IsMarketable).Min(y => y.LastCheckedSalesOn),
+                        Newest = x.MarketItems.Where(x => x.Description.IsMarketable).Max(y => y.LastCheckedSalesOn)
                     }
                 })
                 .FirstOrDefaultAsync();
