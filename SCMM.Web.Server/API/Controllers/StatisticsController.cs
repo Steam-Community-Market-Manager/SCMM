@@ -887,6 +887,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Where(x => x.AppId == appId)
                 .Where(x => x.WorkshopFileId > 0 && x.SupplyTotalEstimated > 0)
+                .Where(x => x.IsMarketable)
                 .OrderByDescending(x => x.SupplyTotalEstimated)
                 .Select(x => new ItemSupplyStatisticDTO()
                 {
