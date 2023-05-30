@@ -9,7 +9,7 @@
 }
 else
 {
-    <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@(!State.Is(SteamId) || State.IsPrerendering)" Class="mud-table-dense-extra"
+    <MudTable @ref="Table" Dense="true" Hover="true" Striped="false" FixedHeader="true" FixedFooter="true" ReadOnly="@(!State.Is(SteamId) || State.IsPrerendering)" Class="mud-table-dense-extra"
               ServerData="@LoadItems" RowsPerPage="25" Breakpoint="Breakpoint.Xs" CommitEditTooltip="Save Changes" AllowUnsorted="false">
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
