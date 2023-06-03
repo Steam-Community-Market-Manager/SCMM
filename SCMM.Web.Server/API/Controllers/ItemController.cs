@@ -8,6 +8,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
@@ -658,6 +659,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Item type is missing");
             }
 
+            var currency = await _db.SteamCurrencies.AsNoTracking().FirstOrDefaultAsync(x => x.Name == Constants.SteamDefaultCurrency);
             var items = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == appId)
                 .Where(x => x.IsAccepted == true)
@@ -675,10 +677,10 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(new ItemGroupDemandDTO
             {
                 TotalItems = items.Count,
-                Last24hrMedianPrice = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice),
-                Last168hrMedianPrice = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Last168hrValue),
-                Last24hrMedianMovementFromStorePrice = items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Stable24hrSellOrderLowestPrice > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice - x.StoreItem.Price.Value),
-                Last168hrMedianMovementFromStorePrice = items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Last168hrValue > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Last168hrValue - x.StoreItem.Price.Value),
+                Last24hrMedianPrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice), currency),
+                Last168hrMedianPrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Last168hrValue), currency),
+                Last24hrMedianMovementFromStorePrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Stable24hrSellOrderLowestPrice > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice - x.StoreItem.Price.Value), currency),
+                Last168hrMedianMovementFromStorePrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Last168hrValue > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Last168hrValue - x.StoreItem.Price.Value), currency),
                 TotalMarketSupply = items.Where(x => x.IsMarketable && x.MarketItem != null).Sum(x => x.MarketItem.SellOrderCount),
                 MedianMarketSupply = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.SellOrderCount),
                 TotalMarketDemand = items.Where(x => x.IsMarketable && x.MarketItem != null).Sum(x => x.MarketItem.Last24hrSales),

@@ -63,105 +63,108 @@
         } 
         else
         {
-            <div class="py-4">
+            <div class="pb-4">
                 <MudGrid Spacing="0">
-                    <MudItem xs="12">
-                        <MudGrid Spacing="1" Class="mb-4">
-                            <MudItem xs="12" md="6" lg="4" xl="3">
-                                <MudTooltip Text="The median (middle) price of all items in this list over the last 24hrs.">
-                                    <dl>
-                                        <dt>
-                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
-                                                <span><i class="fas fa-fw fa-piggy-bank"></i> Median Price: </span>
-                                            </MudText>
-                                        </dt>
-                                        <dd>
-                                            @if (Demand != null)
-                                            {
-                                                <MudText Typo="Typo.subtitle2" Color="Color.Default">
-                                                    <span>@State.Currency.ToPriceString(Demand.Last24hrMedianPrice)</span>
-                                                    <span class="@(Demand.Last168hrMedianPriceDelta >= 0 ? "mud-success-text" : "mud-error-text")"><i class="@($"fas fa-fw {(Demand.Last168hrMedianPriceDelta >= 0 ? "fa-arrow-up" : "fa-arrow-down")}")"></i> @State.Currency.ToPriceString(Demand.Last168hrMedianPriceDelta, dense: true) <span class="mud-secondary-text">from 7 days ago</span></span>
+                    @if (!String.IsNullOrEmpty(DemandUrl))
+                    {
+                        <MudItem xs="12">
+                            <MudGrid Spacing="1" Class="mb-4">
+                                <MudItem xs="12" md="6" lg="4" xl="3">
+                                    <MudTooltip Text="The median (middle) price of all items in this list over the last 24hrs.">
+                                        <dl>
+                                            <dt>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                    <span><i class="fas fa-fw fa-piggy-bank"></i> Median Price: </span>
                                                 </MudText>
-                                            }
-                                            else
-                                            {
-                                                <MudSkeleton SkeletonType="SkeletonType.Text" />
-                                            }
-                                        </dd>
-                                    </dl>
-                                </MudTooltip>
-                            </MudItem>
-                            <MudItem xs="12" md="6" lg="4" xl="3">
-                                <MudTooltip Text="The median (middle) difference between the last 24hr market price and original store price for all items in this list. If this number is positive, it means the majority of items in this list will (eventually) generate a profit.">
-                                    <dl>
-                                        <dt>
-                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
-                                                <span><i class="fas fa-fw fa-chart-line"></i> Median Store Price Movement: </span>
-                                            </MudText>
-                                        </dt>
-                                        <dd>
-                                            @if (Demand != null)
-                                            {
-                                                <MudText Typo="Typo.subtitle2" Color="@(Demand.Last24hrMedianMovementFromStorePrice >= 0 ? Color.Success : Color.Error)">
-                                                    <span><i class="@($"fas fa-fw {(Demand.Last24hrMedianMovementFromStorePrice >= 0 ? "fa-arrow-up" : "fa-arrow-down")}")"></i> @State.Currency.ToPriceString(Demand.Last24hrMedianMovementFromStorePrice) <span class="mud-secondary-text"> from original store price</span></span>
+                                            </dt>
+                                            <dd>
+                                                @if (Demand != null)
+                                                {
+                                                    <MudText Typo="Typo.subtitle2" Color="Color.Default">
+                                                        <span>@State.Currency.ToPriceString(Demand.Last24hrMedianPrice)</span>
+                                                        <span class="@(Demand.Last168hrMedianPriceDelta >= 0 ? "mud-success-text" : "mud-error-text")"><i class="@($"fas fa-fw {(Demand.Last168hrMedianPriceDelta >= 0 ? "fa-arrow-up" : "fa-arrow-down")}")"></i> @State.Currency.ToPriceString(Demand.Last168hrMedianPriceDelta, dense: true) <span class="mud-secondary-text">from 7 days ago</span></span>
+                                                    </MudText>
+                                                }
+                                                else
+                                                {
+                                                    <MudSkeleton SkeletonType="SkeletonType.Text" />
+                                                }
+                                            </dd>
+                                        </dl>
+                                    </MudTooltip>
+                                </MudItem>
+                                <MudItem xs="12" md="6" lg="4" xl="3">
+                                    <MudTooltip Text="The median (middle) difference between the last 24hr market price and original store price for all items in this list. If this number is positive, it means the majority of items in this list will (eventually) generate a profit.">
+                                        <dl>
+                                            <dt>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                    <span><i class="fas fa-fw fa-chart-line"></i> Median Store Price Movement: </span>
                                                 </MudText>
-                                            }
-                                            else
-                                            {
-                                                <MudSkeleton SkeletonType="SkeletonType.Text" />
-                                            }
-                                        </dd>
-                                    </dl>
-                                </MudTooltip>
-                            </MudItem>
-                            <MudItem xs="12" md="6" lg="4" xl="3">
-                                <MudTooltip Text="The number of listing on the Steam Community Market for all items in this list">
-                                    <dl>
-                                        <dt>
-                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
-                                                <span><i class="fas fa-fw fa-truck-ramp-box"></i> Market Supply: </span>
-                                            </MudText>
-                                        </dt>
-                                        <dd>
-                                            @if (Demand != null)
-                                            {
-                                                <MudText Typo="Typo.subtitle2" Color="Color.Default">
-                                                    <span>@(Demand.TotalMarketSupply.ToQuantityString()) <span class="mud-secondary-text">currently listed for sale, median is</span> @(Demand.MedianMarketSupply.ToQuantityString())</span>
+                                            </dt>
+                                            <dd>
+                                                @if (Demand != null)
+                                                {
+                                                    <MudText Typo="Typo.subtitle2" Color="@(Demand.Last24hrMedianMovementFromStorePrice >= 0 ? Color.Success : Color.Error)">
+                                                        <span><i class="@($"fas fa-fw {(Demand.Last24hrMedianMovementFromStorePrice >= 0 ? "fa-arrow-up" : "fa-arrow-down")}")"></i> @State.Currency.ToPriceString(Demand.Last24hrMedianMovementFromStorePrice) <span class="mud-secondary-text"> from original store price</span></span>
+                                                    </MudText>
+                                                }
+                                                else
+                                                {
+                                                    <MudSkeleton SkeletonType="SkeletonType.Text" />
+                                                }
+                                            </dd>
+                                        </dl>
+                                    </MudTooltip>
+                                </MudItem>
+                                <MudItem xs="12" md="6" lg="4" xl="3">
+                                    <MudTooltip Text="The number of listing on the Steam Community Market for all items in this list">
+                                        <dl>
+                                            <dt>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                    <span><i class="fas fa-fw fa-truck-ramp-box"></i> Market Supply: </span>
                                                 </MudText>
-                                            }
-                                            else
-                                            {
-                                                <MudSkeleton SkeletonType="SkeletonType.Text" />
-                                            }
-                                        </dd>
-                                    </dl>
-                                </MudTooltip>
-                            </MudItem>
-                            <MudItem xs="12" md="6" lg="4" xl="3">
-                                <MudTooltip Text="The number of purchases from the Steam Community Market for all items in this list">
-                                    <dl>
-                                        <dt>
-                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
-                                                <span><i class="fas fa-fw fa-people-carry"></i> Market Demand: </span>
-                                            </MudText>
-                                        </dt>
-                                        <dd>
-                                            @if (Demand != null)
-                                            {
-                                                <MudText Typo="Typo.subtitle2" Color="Color.Default">
-                                                    <span>@(Demand.TotalMarketDemand.ToQuantityString()) <span class="mud-secondary-text">sold in last 24hrs, median is</span> @(Demand.MedianMarketDemand.ToQuantityString())</span>
+                                            </dt>
+                                            <dd>
+                                                @if (Demand != null)
+                                                {
+                                                    <MudText Typo="Typo.subtitle2" Color="Color.Default">
+                                                        <span>@(Demand.TotalMarketSupply.ToQuantityString()) <span class="mud-secondary-text">currently listed for sale, median is</span> @(Demand.MedianMarketSupply.ToQuantityString())</span>
+                                                    </MudText>
+                                                }
+                                                else
+                                                {
+                                                    <MudSkeleton SkeletonType="SkeletonType.Text" />
+                                                }
+                                            </dd>
+                                        </dl>
+                                    </MudTooltip>
+                                </MudItem>
+                                <MudItem xs="12" md="6" lg="4" xl="3">
+                                    <MudTooltip Text="The number of purchases from the Steam Community Market for all items in this list">
+                                        <dl>
+                                            <dt>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                    <span><i class="fas fa-fw fa-people-carry"></i> Market Demand: </span>
                                                 </MudText>
-                                            }
-                                            else
-                                            {
-                                                <MudSkeleton SkeletonType="SkeletonType.Text" />
-                                            }
-                                        </dd>
-                                    </dl>
-                                </MudTooltip>
-                            </MudItem>
-                        </MudGrid>
-                    </MudItem>
+                                            </dt>
+                                            <dd>
+                                                @if (Demand != null)
+                                                {
+                                                    <MudText Typo="Typo.subtitle2" Color="Color.Default">
+                                                        <span>@(Demand.TotalMarketDemand.ToQuantityString()) <span class="mud-secondary-text">sold in last 24hrs, median is</span> @(Demand.MedianMarketDemand.ToQuantityString())</span>
+                                                    </MudText>
+                                                }
+                                                else
+                                                {
+                                                    <MudSkeleton SkeletonType="SkeletonType.Text" />
+                                                }
+                                            </dd>
+                                        </dl>
+                                    </MudTooltip>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                    }
                     @{
                         var acceptedYear = 0;
                     }
@@ -170,7 +173,7 @@
                         @if (SortBy == nameof(ItemDescriptionWithPriceDTO.TimeAccepted) && item.TimeAccepted?.Year != acceptedYear)
                         {
                             acceptedYear = item.TimeAccepted.Value.Year;
-                            <MudItem xs="12">
+                            <MudItem xs="12" Class="my-4">
                                 <MudText Typo="Typo.h6" Color="Color.Default">
                                     <span>Accepted in @item.TimeAccepted?.Year <small class="mud-secondary-text">(@ListFilteredAndSorted.Count(x => x.TimeAccepted?.Year == item.TimeAccepted?.Year))</small></span>
                                 </MudText>
