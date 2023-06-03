@@ -823,6 +823,7 @@ else
         {
             ["ListName"] = $"Marketable {item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
+            ["DemandUrl"] = $"api/item/type/{item.ItemType}/demand",
             ["HighlightedItemId"] = item.AssetDescriptionId,
             ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.BuyNowPrice),
             ["SortDirection"] = MudBlazor.SortDirection.Ascending

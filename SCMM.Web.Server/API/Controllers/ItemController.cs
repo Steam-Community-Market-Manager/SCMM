@@ -630,6 +630,63 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get demand statistics for all items of the specified type
+        /// </summary>
+        /// <param name="itemType">The item type</param>=
+        /// <returns>The demand statistics for the item type</returns>
+        /// <remarks>
+        /// Response is cached for 12hrs.
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <response code="200">The demand statistics for the item type.</response>
+        /// <response code="400">If the item type is missing.</response>
+        /// <response code="404">If the item type doesn't exist (or doesn't contain any marketable items).</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("type/{type}/demand")]
+        [ProducesResponseType(typeof(ItemGroupDemandDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(Duration = (12 * 60 * 60 /* 12hr */))]
+        public async Task<IActionResult> GetItemDemandByItemType([FromRoute] string type)
+        {
+            var appId = this.App().Guid;
+
+            if (string.IsNullOrEmpty(type))
+            {
+                return BadRequest("Item type is missing");
+            }
+
+            var items = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.IsAccepted == true)
+                .Where(x => x.ItemType == type)
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
+                .ToListAsync();
+            if (items?.Any() != true)
+            {
+                return NotFound("No items found for item type");
+            }
+
+            return Ok(new ItemGroupDemandDTO
+            {
+                TotalItems = items.Count,
+                Last24hrMedianPrice = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice),
+                Last168hrMedianPrice = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Last168hrValue),
+                Last24hrMedianMovementFromStorePrice = items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Stable24hrSellOrderLowestPrice > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice - x.StoreItem.Price.Value),
+                Last168hrMedianMovementFromStorePrice = items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Last168hrValue > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Last168hrValue - x.StoreItem.Price.Value),
+                TotalMarketSupply = items.Where(x => x.IsMarketable && x.MarketItem != null).Sum(x => x.MarketItem.SellOrderCount),
+                MedianMarketSupply = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.SellOrderCount),
+                TotalMarketDemand = items.Where(x => x.IsMarketable && x.MarketItem != null).Sum(x => x.MarketItem.Last24hrSales),
+                MedianMarketDemand = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Last24hrSales),
+            });
+        }
+
+        /// <summary>
         /// Get all items that belong to the specified collection
         /// </summary>
         /// <param name="name">The name of the item collection</param>
