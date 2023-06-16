@@ -21,7 +21,7 @@
                 <ActivatorContent>
                     <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
                         <div class="hover-zoom">
-                            <img src="@Item.IconUrl" class="ma-1" />
+                            <img src="@Item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="ma-1" />
                         </div>
                         @if (Item.BuyNowPrice != null)
                         {

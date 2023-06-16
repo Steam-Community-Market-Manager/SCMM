@@ -55,7 +55,7 @@ else
         <RowTemplate>
             <MudTd>
                 <div class="d-flex flex-row justify-start align-center">
-                    <img src="@context.IconUrl" class="icon my-1 mr-2" />
+                    <img src="@context.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{context.ItemType.RustItemTypeToShortName()}.png'")" class="icon my-1 mr-2" />
                     <strong>@context.Name</strong>
                     @if (context.Quantity > 1)
                     { 
@@ -193,7 +193,7 @@ else
         <RowEditingTemplate>
             <MudTd>
                 <div class="d-flex flex-row justify-start align-center">
-                    <img src="@context.IconUrl" class="icon my-1 mr-2" />
+                    <img src="@context.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{context.ItemType.RustItemTypeToShortName()}.png'")" class="icon my-1 mr-2" />
                     <strong>@context.Name</strong>
                     @if (context.Quantity > 1)
                     { 

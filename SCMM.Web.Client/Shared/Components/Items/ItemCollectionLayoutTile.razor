@@ -21,7 +21,7 @@
                         }
                     </TooltipContent>
                     <ChildContent>
-                        <img src="@Item.IconUrl" class="full-width" />
+                        <img src="@Item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="full-width" />
 					</ChildContent>
 			    </MudTooltip>
             </div>

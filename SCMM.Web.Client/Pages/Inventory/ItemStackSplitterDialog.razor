@@ -4,6 +4,7 @@
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
 
 <MudDialog>
     <TitleContent>
@@ -21,7 +22,7 @@
                 @foreach (var stack in SelectedStacks.OrderByDescending(x => x.Key.Quantity))
                 {
                     <MudPaper Outlined="true" Class="d-flex flex-row align-center full-width pa-2 my-2">
-                        <img src="@(Item.IconUrl)" class="icon flex-shrink-1 flex-grow-0 mr-2" />
+                        <img src="@(Item.IconUrl)" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="icon flex-shrink-1 flex-grow-0 mr-2" />
                         <div class="d-flex flex-column flex-grow-1">
                             <div class="d-flex flex-row justify-space-between">
                                 <MudText Typo="Typo.body2" Class="mx-1 text-left" Style="color: {(Item.ForegroundColour)}">
@@ -72,7 +73,7 @@
 				        </div>
                         @if (stack.Value > 0)
                         {
-                            <img src="@(Item.IconUrl)" class="icon flex-shrink-1 flex-grow-0 ml-2" />
+                            <img src="@(Item.IconUrl)" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="icon flex-shrink-1 flex-grow-0 ml-2" />
                         }
 			        </MudPaper>
                 }

@@ -34,7 +34,7 @@
                             }
                             <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">@GetActivityDescription(item)</MudText>
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.Quantity.ToQuantityString()x</MudText>
-                            <img src="@item.IconUrl" class="mx-1 clickable" style="width:32px; height:32px;" @onclick="@(() => ViewItem(item))" />
+                            <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" class="mx-1 clickable" style="width:32px; height:32px;" @onclick="@(() => ViewItem(item))" />
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {item.ForegroundColour}")" @onclick="@(() => ViewItem(item))">@item.Name</MudText>
                             <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">for</MudText>
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
