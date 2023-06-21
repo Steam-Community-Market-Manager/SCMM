@@ -258,6 +258,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{id}/summary")]
         [ProducesResponseType(typeof(ProfileDetailedDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfileSummary([FromRoute] string id)
@@ -280,6 +281,11 @@ namespace SCMM.Web.Server.API.Controllers
             if (profile == null)
             {
                 return NotFound($"Profile not found");
+            }
+
+            if (profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Private && User.Id() != profile.Id)
+            {
+                return Unauthorized("Profile is private");
             }
 
             return Ok(
@@ -387,6 +393,11 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
+            if (profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Private && User.Id() != profile.Id)
+            {
+                return Unauthorized("Profile is private");
+            }
+
             // Reload the profiles inventory
             var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
@@ -474,6 +485,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{id}/inventory/total")]
         [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryTotal([FromRoute] string id)
@@ -490,6 +502,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (resolvedId?.Exists != true || resolvedId.ProfileId == null)
             {
                 return NotFound("Profile not found");
+            }
+            if (resolvedId?.Profile?.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Private && User.Id() != resolvedId.ProfileId)
+            {
+                return Unauthorized("Profile is private");
             }
 
             var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
@@ -532,6 +548,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{id}/inventory/items")]
         [ProducesResponseType(typeof(IList<ProfileInventoryItemDescriptionDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryItems([FromRoute] string id)
@@ -548,6 +565,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (resolvedId?.Exists != true)
             {
                 return NotFound("Profile not found");
+            }
+            if (resolvedId?.Profile?.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Private && User.Id() != resolvedId.ProfileId)
+            {
+                return Unauthorized("Profile is private");
             }
 
             var app = this.App();
@@ -617,6 +638,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{id}/inventory/collections")]
         [ProducesResponseType(typeof(IEnumerable<ProfileInventoryCollectionDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryCollections([FromRoute] string id)
@@ -633,6 +655,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (resolvedId?.Exists != true)
             {
                 return NotFound("Profile not found");
+            }
+            if (resolvedId?.Profile?.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Private && User.Id() != resolvedId.ProfileId)
+            {
+                return Unauthorized("Profile is private");
             }
 
             var app = this.App();
@@ -704,6 +730,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{id}/inventory/movement")]
         [ProducesResponseType(typeof(IEnumerable<ProfileInventoryItemMovementDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryMovement([FromRoute] string id)
@@ -720,6 +747,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (resolvedId?.Exists != true)
             {
                 return NotFound("Profile not found");
+            }
+            if (resolvedId?.Profile?.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Private && User.Id() != resolvedId.ProfileId)
+            {
+                return Unauthorized("Profile is private");
             }
 
             var app = this.App();
@@ -795,6 +826,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (resolvedId?.Exists != true || resolvedId.ProfileId == null || resolvedId.Profile == null)
             {
                 return NotFound("Profile not found");
+            }
+            if (resolvedId?.Profile?.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Private && User.Id() != resolvedId.ProfileId)
+            {
+                return Unauthorized("Profile is private");
             }
 
             if (!User.Is(resolvedId.ProfileId.Value) && !User.IsInRole(Roles.Administrator))
