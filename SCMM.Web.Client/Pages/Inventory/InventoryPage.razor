@@ -14,7 +14,10 @@
                Description="@(InventoryTotals != null ? $"Inventory contains {InventoryTotals.Items.ToQuantityString()} item(s) with a total market value of {State.Currency?.ToPriceString(InventoryTotals.MarketValue)}." : null)"
                ImageUrl="@Profile?.AvatarUrl">
     <MudGrid Spacing="2">
-        <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" />
+        @if (LoadingError == null)
+        {
+            <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" />
+        }
         @if (Profile != null && InventoryTotals != null)
         {
             <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
