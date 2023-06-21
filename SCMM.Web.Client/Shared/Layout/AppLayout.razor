@@ -36,7 +36,7 @@
                 {
                     <MudAlert Severity="Enum.Parse<Severity>(systemAlert.Severity.ToString(), true)" Variant="Variant.Filled" Icon="fas fa-fw fa-magnifying-glass-chart" Dense="true" Square="true"
                               ShowCloseIcon="@(!systemAlert.IsPersistent)" CloseIcon="fa fa-fw fa-times" CloseIconClicked="@(() => { systemAlert.IsVisible = false; StateHasChanged(); })">
-                        <span>@systemAlert.Message</span>
+                        <MarkdownView Content="@systemAlert.Message"></MarkdownView>
                     </MudAlert>
                 }
             }
