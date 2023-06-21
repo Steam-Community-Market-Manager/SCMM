@@ -128,7 +128,7 @@ namespace SCMM.Steam.Client
             }
             catch (SteamRequestException ex)
             {
-                var proxyId = GetRequestProxyId(request?.Uri); 
+                var proxyId = GetRequestProxyId(request?.Uri);
                 if (!String.IsNullOrEmpty(proxyId) && ex.StatusCode != null)
                 {
                     UpdateProxyRequestStatistics(proxyId, request?.Uri, ex.StatusCode.Value);

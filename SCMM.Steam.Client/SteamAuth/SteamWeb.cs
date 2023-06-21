@@ -20,7 +20,7 @@ namespace SteamAuth
 
         public static string Request(string url, string method, NameValueCollection data = null, CookieContainer cookies = null, NameValueCollection headers = null, string referer = APIEndpoints.COMMUNITY_BASE)
         {
-            var query = (data == null ? string.Empty : string.Join("&", Array.ConvertAll(data.AllKeys, key => string.Format("{0}={1}", WebUtility.UrlEncode(key), WebUtility.UrlEncode(data[key])))));
+            string query = (data == null ? string.Empty : string.Join("&", Array.ConvertAll(data.AllKeys, key => String.Format("{0}={1}", WebUtility.UrlEncode(key), WebUtility.UrlEncode(data[key])))));
             if (method == "GET")
             {
                 url += (url.Contains("?") ? "&" : "?") + query;
@@ -31,7 +31,7 @@ namespace SteamAuth
 
         public static string Request(string url, string method, string dataString = null, CookieContainer cookies = null, NameValueCollection headers = null, string referer = APIEndpoints.COMMUNITY_BASE)
         {
-            var request = (HttpWebRequest)WebRequest.Create(url);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = method;
             request.Accept = "text/javascript, text/html, application/xml, text/xml, */*";
             request.UserAgent = "Mozilla/5.0 (Linux; U; Android 4.1.1; en-us; Google Nexus 4 - 4.1.1 - API 16 - 768x1280 Build/JRO03S) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
@@ -53,14 +53,14 @@ namespace SteamAuth
                 request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
                 request.ContentLength = dataString.Length;
 
-                var requestStream = new StreamWriter(request.GetRequestStream());
+                StreamWriter requestStream = new StreamWriter(request.GetRequestStream());
                 requestStream.Write(dataString);
                 requestStream.Close();
             }
 
             try
             {
-                using (var response = (HttpWebResponse)request.GetResponse())
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
@@ -68,9 +68,9 @@ namespace SteamAuth
                         return null;
                     }
 
-                    using (var responseStream = new StreamReader(response.GetResponseStream()))
+                    using (StreamReader responseStream = new StreamReader(response.GetResponseStream()))
                     {
-                        var responseData = responseStream.ReadToEnd();
+                        string responseData = responseStream.ReadToEnd();
                         return responseData;
                     }
                 }
@@ -84,13 +84,13 @@ namespace SteamAuth
 
         public static async Task<string> RequestAsync(string url, string method, NameValueCollection data = null, CookieContainer cookies = null, NameValueCollection headers = null, string referer = APIEndpoints.COMMUNITY_BASE)
         {
-            var query = (data == null ? string.Empty : string.Join("&", Array.ConvertAll(data.AllKeys, key => string.Format("{0}={1}", WebUtility.UrlEncode(key), WebUtility.UrlEncode(data[key])))));
+            string query = (data == null ? string.Empty : string.Join("&", Array.ConvertAll(data.AllKeys, key => String.Format("{0}={1}", WebUtility.UrlEncode(key), WebUtility.UrlEncode(data[key])))));
             if (method == "GET")
             {
                 url += (url.Contains("?") ? "&" : "?") + query;
             }
 
-            var request = (HttpWebRequest)WebRequest.Create(url);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = method;
             request.Accept = "text/javascript, text/html, application/xml, text/xml, */*";
             request.UserAgent = "Mozilla/5.0 (Linux; U; Android 4.1.1; en-us; Google Nexus 4 - 4.1.1 - API 16 - 768x1280 Build/JRO03S) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
@@ -112,14 +112,14 @@ namespace SteamAuth
                 request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
                 request.ContentLength = query.Length;
 
-                var requestStream = new StreamWriter(request.GetRequestStream());
+                StreamWriter requestStream = new StreamWriter(request.GetRequestStream());
                 await requestStream.WriteAsync(query);
                 requestStream.Close();
             }
 
             try
             {
-                var response = (HttpWebResponse)await request.GetResponseAsync();
+                HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
 
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
@@ -127,9 +127,9 @@ namespace SteamAuth
                     return null;
                 }
 
-                using (var responseStream = new StreamReader(response.GetResponseStream()))
+                using (StreamReader responseStream = new StreamReader(response.GetResponseStream()))
                 {
-                    var responseData = await responseStream.ReadToEndAsync();
+                    string responseData = await responseStream.ReadToEndAsync();
                     return responseData;
                 }
             }
@@ -145,10 +145,7 @@ namespace SteamAuth
         /// </summary>
         private static void HandleFailedWebRequestResponse(HttpWebResponse response, string requestURL)
         {
-            if (response == null)
-            {
-                return;
-            }
+            if (response == null) return;
 
             //Redirecting -- likely to a steammobile:// URI
             if (response.StatusCode == HttpStatusCode.Found)
