@@ -17,7 +17,7 @@ public abstract class ResponsiveComponent : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-            var subscriptionResult = await BreakpointListener.Subscribe(
+            var subscriptionResult = await BreakpointListener.SubscribeAsync(
                 (breakpoint) =>
                 {
                     Breakpoint = breakpoint;
@@ -43,7 +43,7 @@ public abstract class ResponsiveComponent : ComponentBase, IAsyncDisposable
     {
         if (_breakpointSubscriptionId != Guid.Empty)
         {
-            await BreakpointListener.Unsubscribe(_breakpointSubscriptionId);
+            await BreakpointListener.UnsubscribeAsync(_breakpointSubscriptionId);
             _breakpointSubscriptionId = Guid.Empty;
         }
     }

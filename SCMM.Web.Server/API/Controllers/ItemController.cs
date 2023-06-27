@@ -175,20 +175,20 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (!String.IsNullOrEmpty(breaksIntoComponent))
             {
-                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains(Uri.EscapeUriString(breaksIntoComponent)));
+                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains(Uri.EscapeDataString(breaksIntoComponent)));
             }
             if (tag != null && tag.Length > 0)
             {
                 foreach (var tagValue in tag)
                 {
-                    query = query.Where(x => x.Tags.Serialised.Contains(Uri.EscapeUriString(tagValue)));
+                    query = query.Where(x => x.Tags.Serialised.Contains(Uri.EscapeDataString(tagValue)));
                 }
             }
             if (assetFilters != null && assetFilters.Count > 0)
             {
                 foreach (var assetFilter in assetFilters)
                 {
-                    query = query.Where(x => x.Tags.Serialised.Contains($"{Uri.EscapeUriString(assetFilter.Key)}{PersistableStringDictionary.DefaultKeyValueSeperator}{Uri.EscapeUriString(assetFilter.Value)}"));
+                    query = query.Where(x => x.Tags.Serialised.Contains($"{Uri.EscapeDataString(assetFilter.Key)}{PersistableStringDictionary.DefaultKeyValueSeperator}{Uri.EscapeDataString(assetFilter.Value)}"));
                 }
             }
             if (glow != null)
@@ -633,7 +633,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get demand statistics for all items of the specified type
         /// </summary>
-        /// <param name="itemType">The item type</param>=
+        /// <param name="type">The item type</param>=
         /// <returns>The demand statistics for the item type</returns>
         /// <remarks>
         /// Response is cached for 12hrs.

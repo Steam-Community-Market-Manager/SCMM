@@ -63,7 +63,7 @@
     {
         if (firstRender)
         {
-            var subscriptionResult = await BreakpointService.Subscribe(
+            var subscriptionResult = await BreakpointService.SubscribeAsync(
                 (breakpoint) =>
                 {
                     OnBreakpointChanged(breakpoint);
@@ -88,7 +88,7 @@
     {
         if (_breakpointSubscriptionId != Guid.Empty)
         {
-            await BreakpointService.Unsubscribe(_breakpointSubscriptionId);
+            await BreakpointService.UnsubscribeAsync(_breakpointSubscriptionId);
             _breakpointSubscriptionId = Guid.Empty;
         }
     }

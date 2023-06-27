@@ -91,7 +91,7 @@ namespace SCMM.Google.Client
                             ChannelTitle = item.Snippet.ChannelTitle,
                             Description = item.Snippet.Description,
                             Thumbnail = new Uri(item.Snippet.Thumbnails.Maxres?.Url ?? item.Snippet.Thumbnails.High?.Url ?? item.Snippet.Thumbnails.Medium?.Url ?? item.Snippet.Thumbnails.Standard?.Url),
-                            PublishedAt = new DateTimeOffset(item.Snippet.PublishedAt.Value, TimeZoneInfo.Local.GetUtcOffset(item.Snippet.PublishedAt.Value))
+                            PublishedAt = item.Snippet.PublishedAtDateTimeOffset.Value
                         });
                     }
                 }
@@ -141,7 +141,7 @@ namespace SCMM.Google.Client
                             ChannelTitle = item.Snippet.ChannelTitle,
                             Description = item.Snippet.Description,
                             Thumbnail = new Uri(item.Snippet.Thumbnails.Maxres?.Url ?? item.Snippet.Thumbnails.High?.Url ?? item.Snippet.Thumbnails.Medium?.Url ?? item.Snippet.Thumbnails.Standard?.Url),
-                            PublishedAt = new DateTimeOffset(item.Snippet.PublishedAt.Value, TimeZoneInfo.Local.GetUtcOffset(item.Snippet.PublishedAt.Value))
+                            PublishedAt = item.Snippet.PublishedAtDateTimeOffset.Value
                         });
                     }
                 }

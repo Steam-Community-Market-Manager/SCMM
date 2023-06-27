@@ -35,7 +35,7 @@
                     case "Select":
                     {
                         <MudItem xs="12" sm="6" md="@((int)Math.Ceiling(filter.Size * 1.5))" lg="@((int)Math.Ceiling(filter.Size * 1.5))" xl="@filter.Size">
-                            <MudSelect T="string" Value="@FilterValues[filter.SteamId]" ValueChanged="@((x) => { FilterValues[filter.SteamId] = x; RefreshItems(); })" Label="@filter.Name" Clearable="false" Disabled="State.IsPrerendering"
+                            <MudSelect T="string" Value="@FilterValues[filter.SteamId]" ValueChanged="@((x) => { FilterValues[filter.SteamId] = x; _ = RefreshItems(); })" Label="@filter.Name" Clearable="false" Disabled="State.IsPrerendering"
                                            Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Adornment="MudBlazor.Adornment.Start" AdornmentIcon="@($"fas fa-fw {filter.Icon ?? "fa-filter"} mr-1")" Class="mud-input-transparent ma-0">
                                 <MudSelectItem T="string" Value="@String.Empty">Any</MudSelectItem>
                                 @foreach (var option in filter.Options)
