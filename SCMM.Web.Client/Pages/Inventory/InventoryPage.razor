@@ -5,6 +5,7 @@
 @inherits PersistentComponent
 @inject ILogger<InventoryPage> Logger
 @inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
@@ -97,6 +98,13 @@
                                 <i class="fa fa-fw fa-sync mr-1"></i>
                                 <span>Synchronise with Steam</span>
                             </MudMenuItem>
+                            @if (State.Is(Profile?.SteamId))
+                            {
+                                <MudMenuItem OnTouch="@ShowInventoryStackCombinerDialog" OnClick="@ShowInventoryStackCombinerDialog">
+                                    <i class="fa fa-fw fa-object-group mr-1"></i>
+                                    <span>Stack all inventory items</span>
+                                </MudMenuItem>
+                            }
                         </MudMenu>
 	                </Header>
                 </MudTabs>
@@ -212,6 +220,14 @@
         ExternalNavigationManager.NavigateToNewTabAsync(new SteamProfilePageRequest()
         {
             SteamId = Uri.EscapeDataString(Profile?.SteamId ?? SteamId)
+        });
+    }
+    
+    private void ShowInventoryStackCombinerDialog()
+    {
+        Dialogs.Show<InventoryStackCombinerDialog>(null, parameters: new DialogParameters()
+        {
+            ["SteamId"] = SteamId
         });
     }
 

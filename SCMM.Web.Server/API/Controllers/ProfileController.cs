@@ -976,6 +976,65 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Combine all inventory items together in to the smallest possible stack
+        /// </summary>
+        /// <remarks>This API requires authentication and a Steam Web API key to use</remarks>
+        /// <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
+        /// <param name="apiKey">
+        /// Valid Steam Web API key with permission to modify the source and destination items.
+        /// You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
+        /// Read https://scmm.app/privacy for more about how your Steam API key is handled.
+        /// </param>
+        /// <response code="200">If the inventory items were combined successfully.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
+        /// <response code="404">If the inventory items cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [Authorize(AuthorizationPolicies.User)]
+        [HttpPut("{profileId}/inventory/combineAll")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CombineInventoryItemStacks([FromHeader(Name = "steam-api-key")] string apiKey, [FromRoute] string profileId)
+        {
+            if (string.IsNullOrEmpty(profileId))
+            {
+                return BadRequest("Profile id is invalid");
+            }
+
+            try
+            {
+                await _commandProcessor.ProcessAsync(new CombineAllInventoryItemStacksRequest()
+                {
+                    ProfileId = profileId,
+                    ApiKey = apiKey
+                });
+
+                return Ok();
+            }
+            catch (SteamRequestException ex)
+            {
+                switch (ex.StatusCode)
+                {
+                    case HttpStatusCode.BadRequest:
+                        return BadRequest(ex.Message);
+                    case HttpStatusCode.Forbidden:
+                        return Unauthorized("Forbidden, please check that your Steam API Key is correct and the inventory you are combining all belong to you.");
+                    case HttpStatusCode.Unauthorized:
+                        return Unauthorized("Unauthorized, please check that your Steam API Key is correct and the inventory you are combining all belong to you.");
+                    default: throw;
+                }
+            }
+            finally
+            {
+                // Some items may have been combined on steam already so make sure we save any changes to the database
+                await _db.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
         /// Combine multiple inventory item stacks together
         /// </summary>
         /// <remarks>This API requires authentication and a Steam Web API key to use</remarks>
