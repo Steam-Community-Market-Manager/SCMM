@@ -247,6 +247,7 @@ namespace SCMM.Web.Server.API.Controllers
             // Join
             query = query
                 .Include(x => x.App)
+                .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency);
