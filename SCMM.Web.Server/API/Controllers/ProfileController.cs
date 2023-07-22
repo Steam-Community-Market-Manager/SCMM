@@ -985,6 +985,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
         /// Read https://scmm.app/privacy for more about how your Steam API key is handled.
         /// </param>
+        /// <param name="stackUntradableAndUnmarketable">
+        /// If true, untradeable and unmarketable items will be stacked too, which may cause trade/market restrictions to be applied to the resulting stack.
+        /// </param>
         /// <response code="200">If the inventory items were combined successfully.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
@@ -997,7 +1000,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CombineInventoryItemStacks([FromHeader(Name = "steam-api-key")] string apiKey, [FromRoute] string profileId)
+        public async Task<IActionResult> CombineInventoryItemStacks([FromHeader(Name = "steam-api-key")] string apiKey, [FromRoute] string profileId, [FromQuery] bool stackUntradableAndUnmarketable = false)
         {
             if (string.IsNullOrEmpty(profileId))
             {
@@ -1009,7 +1012,8 @@ namespace SCMM.Web.Server.API.Controllers
                 await _commandProcessor.ProcessAsync(new CombineAllInventoryItemStacksRequest()
                 {
                     ProfileId = profileId,
-                    ApiKey = apiKey
+                    ApiKey = apiKey,
+                    StackUntradableAndUnmarketable = stackUntradableAndUnmarketable
                 });
 
                 return Ok();

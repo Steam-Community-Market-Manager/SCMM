@@ -23,6 +23,9 @@
         <MudTextField T="string" @bind-Text="@SteamApiKey" DebounceInterval="500" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" 
                       Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="Click on the question mark icon to view and manage your Steam API Key"
                       Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync("https://steamcommunity.com/dev/apikey"))" />
+        <div class="mt-4">
+            <MudCheckBox T="bool" @bind-Checked="@StackUntradableAndUnmarketable" Color="Color.Primary" Label="Include untradeable and unmarketable items. If selected, this may cause trade/market restrictions to be applied to the resulting stack." Disabled="@IsCombining" />
+        </div>
     </DialogContent>
     <DialogActions>
         <div class="d-flex gap-4 mx-4 my-2">
@@ -51,6 +54,8 @@
 
     private bool IsCombining { get; set; }
 
+    private bool StackUntradableAndUnmarketable { get; set; } = false;
+
     protected override void OnConfigure(ResponsiveDialogOptions options)
     {
         options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
@@ -68,7 +73,7 @@
 
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"{Http.BaseAddress}api/profile/{Uri.EscapeDataString(SteamId)}/inventory/combineAll"),
+                RequestUri = new Uri($"{Http.BaseAddress}api/profile/{Uri.EscapeDataString(SteamId)}/inventory/combineAll?stackUntradableAndUnmarketable={StackUntradableAndUnmarketable}"),
                 Method = HttpMethod.Put,
                 Headers = {
                     { "steam-api-key", SteamApiKey }

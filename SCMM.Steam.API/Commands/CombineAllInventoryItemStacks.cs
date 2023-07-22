@@ -16,6 +16,7 @@ namespace SCMM.Steam.API.Commands
 
         public string ApiKey { get; set; }
 
+        public bool StackUntradableAndUnmarketable { get; set; } = false;
     }
 
     public class CombineAllInventoryItemStacks : ICommandHandler<CombineAllInventoryItemStacksRequest>
@@ -44,6 +45,7 @@ namespace SCMM.Steam.API.Commands
             var items = await _db.SteamProfileInventoryItems
                 .Include(x => x.App)
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => request.StackUntradableAndUnmarketable || x.TradableAndMarketable)
                 .ToListAsync();
 
             var itemGroups = items
