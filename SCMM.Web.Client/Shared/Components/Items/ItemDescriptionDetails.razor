@@ -1399,7 +1399,7 @@
             ["ListUrl"] = $"api/item?type={Item.ItemType}&count=-1",
             ["DemandUrl"] = $"api/item/type/{Item.ItemType}/demand",
             ["HighlightedItemId"] = Item.Id,
-            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.BuyNowPrice),
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
             ["SortDirection"] = MudBlazor.SortDirection.Ascending
         });
     }

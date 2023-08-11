@@ -826,7 +826,7 @@ else
             ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
             ["DemandUrl"] = $"api/item/type/{item.ItemType}/demand",
             ["HighlightedItemId"] = item.AssetDescriptionId,
-            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.BuyNowPrice),
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
             ["SortDirection"] = MudBlazor.SortDirection.Ascending
         });
     }
