@@ -827,7 +827,7 @@ else
             ["DemandUrl"] = $"api/item/type/{item.ItemType}/demand",
             ["HighlightedItemId"] = item.AssetDescriptionId,
             ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
-            ["SortDirection"] = MudBlazor.SortDirection.Ascending
+            ["SortDirection"] = MudBlazor.SortDirection.Descending
         });
     }
 
