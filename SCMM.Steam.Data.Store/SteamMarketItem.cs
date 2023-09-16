@@ -1,4 +1,5 @@
-﻿using SCMM.Shared.API.Events;
+﻿using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.API.Events;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Enums;
@@ -106,6 +107,9 @@ namespace SCMM.Steam.Data.Store
 
         [Required]
         public PersistablePriceCollection SalesPriceRolling24hrs { get; set; }
+
+        [Precision(18, 2)]
+        public decimal InvestmentReliability { get; set; }
 
         // What was the total number of sales from the first 24hrs (1 day)
         public long First24hrSales { get; set; }
@@ -673,6 +677,22 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 AllTimeAverageValue = allTimeAverage;
+
+                var salesPriceLast30DaysSampleSize = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromDays(7))).Count();
+                var salesPriceSMA = salesSorted.Select(x => (decimal)x.MedianPrice).SimpleMovingAverage(salesPriceLast30DaysSampleSize).ToArray();
+                var salesPriceSMADelta = salesPriceSMA.Delta();
+                var salesPriceSMAMaxIndex = Array.IndexOf(salesPriceSMA, salesPriceSMA.Max());
+                var salesPriceSMAMaxDistanceFromNow = Math.Abs((DateTimeOffset.UtcNow - salesSorted.ElementAt(salesPriceSMAMaxIndex).Timestamp).TotalDays);
+                if (salesPriceSMADelta > 0 && salesPriceSMAMaxDistanceFromNow <= 30)
+                {
+                    var salesPrice = salesSorted.Select(x => (decimal)x.MedianPrice).ToArray();
+                    var salesPriceTotalIncrements = salesPrice.TotalIncrementCount();
+                    InvestmentReliability = (salesPriceTotalIncrements > 0 ? ((decimal)salesPriceTotalIncrements / salesPrice.Length) : 0);
+                }
+                else
+                {
+                    InvestmentReliability = 0;
+                }
             }
 
             RecalulateIsBeingManipulated();
