@@ -71,7 +71,6 @@ namespace SteamAuth
 
             Thread.Sleep(350); //Sleep for a bit to give Steam a chance to catch up??
 
-            RNGCryptoServiceProvider secureRandom = new RNGCryptoServiceProvider();
             byte[] encryptedPasswordBytes;
             using (var rsaEncryptor = new RSACryptoServiceProvider())
             {
@@ -148,7 +147,8 @@ namespace SteamAuth
 
                 SessionData session = new SessionData();
                 session.SteamID = oAuthData.SteamID;
-                session.SteamLogin = session.SteamID + "%7C%7C" + oAuthData.SteamLoginSecure;
+                // Steam no longer uses this cookie. Use SteamLoginSecure only
+                //session.SteamLogin = session.SteamID + "%7C%7C" + oAuthData.SteamLoginSecure;
                 session.SteamLoginSecure = session.SteamID + "%7C%7C" + oAuthData.SteamLoginSecure;
                 session.WebCookie = oAuthData.Webcookie;
                 session.SessionID = readableCookies["sessionid"].Value;

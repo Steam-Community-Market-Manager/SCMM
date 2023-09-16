@@ -68,7 +68,7 @@ namespace SCMM.Steam.API.Queries
             }
             var badgeFont = new Font(fontFamily, (int)Math.Max(12, Math.Ceiling(20 * ((double)tileSize / 200))), FontStyle.Regular);
             var titleFont = new Font(fontFamily, (int)Math.Max(20, Math.Ceiling(30 * ((double)tileSize / 200))), FontStyle.Regular);
-            var titleLineHeight = (renderTitles ? ((int)titleFont.FontMetrics.LineHeight + (2 * 2)) : 0);
+            var titleLineHeight = (renderTitles ? ((int)titleFont.FontMetrics.VerticalMetrics.LineHeight + (2 * 2)) : 0);
             var padding = (int)Math.Ceiling(badgeFont.Size * 0.5f);
             var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
 
@@ -131,7 +131,7 @@ namespace SCMM.Steam.API.Queries
                     if (imageSource.Badge > 1)
                     {
                         var badgeText = $"{imageSource.Badge}";
-                        var badgeTextSize = TextMeasurer.Measure(badgeText, new TextOptions(badgeFont));
+                        var badgeTextSize = TextMeasurer.MeasureSize(badgeText, new TextOptions(badgeFont));
                         var badgeRect = new Rectangle(
                             (int)(x + tileSize - badgeTextSize.Width - (padding * 2)),
                             (int)(y + padding),
@@ -182,8 +182,8 @@ namespace SCMM.Steam.API.Queries
                             var lineWidth = (indicatorSize / 6);
                             var lineFill = Pens.Solid(solidRed, lineWidth);
                             mosaic.Mutate(ctx => ctx
-                                .DrawLines(lineFill, new PointF(symbolRect.Left, symbolRect.Top), new PointF(symbolRect.Right, symbolRect.Bottom))
-                                .DrawLines(lineFill, new PointF(symbolRect.Right, symbolRect.Top), new PointF(symbolRect.Left, symbolRect.Bottom))
+                                .DrawLine(lineFill, new PointF(symbolRect.Left, symbolRect.Top), new PointF(symbolRect.Right, symbolRect.Bottom))
+                                .DrawLine(lineFill, new PointF(symbolRect.Right, symbolRect.Top), new PointF(symbolRect.Left, symbolRect.Bottom))
                             );
                             break;
                     }
@@ -191,16 +191,16 @@ namespace SCMM.Steam.API.Queries
                     if (!string.IsNullOrEmpty(imageSource.Title))
                     {
                         var title = imageSource.Title;
-                        var titleSize = TextMeasurer.Measure(title, new TextOptions(titleFont));
+                        var titleSize = TextMeasurer.MeasureSize(title, new TextOptions(titleFont));
                         while (titleSize.Width >= (tileSize - (padding * 2)) && title.Length > 0)
                         {
                             title = title.Substring(0, title.Length - 1);
-                            titleSize = TextMeasurer.Measure(title, new TextOptions(titleFont));
+                            titleSize = TextMeasurer.MeasureSize(title, new TextOptions(titleFont));
                         }
                         if (title.Length != imageSource.Title.Length)
                         {
                             title = (title.Trim() + "…");
-                            titleSize = TextMeasurer.Measure(title, new TextOptions(titleFont));
+                            titleSize = TextMeasurer.MeasureSize(title, new TextOptions(titleFont));
                         }
                         if (!string.IsNullOrEmpty(title) && titleSize.Width > 0)
                         {
