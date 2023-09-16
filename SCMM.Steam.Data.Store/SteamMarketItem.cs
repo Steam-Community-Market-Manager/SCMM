@@ -646,10 +646,10 @@ namespace SCMM.Steam.Data.Store
                 if (allTimeHigh?.Timestamp > AllTimeHighestValueOn && allTimeHigh?.MedianPrice > 0 && allTimeHigh?.MedianPrice > AllTimeHighestValue)
                 {
                     var previousSale = (salesAfterFirstSevenDays.ElementAtOrDefault(Array.IndexOf(salesAfterFirstSevenDays, allTimeHigh) - 1)?.MedianPrice ?? 0);
-                    var priceWasSpikeOrAccidentalBuy = (
-                       (allTimeHigh.Quantity == 1) && // only one sale
-                       (previousSale > 0 && !allTimeHigh.MedianPrice.IsWithinPercentageRangeOf(previousSale, 0.5m)) // sold for 50+% higher than the last sale price
-                    );
+                    var priceWasSpikeOrAccidentalBuy = false; // (
+                    //   (allTimeHigh.Quantity == 1) && // only one sale
+                    //   (previousSale > 0 && !allTimeHigh.MedianPrice.IsWithinPercentageRangeOf(previousSale, 0.5m)) // sold for 50+% higher than the last sale price
+                    //);
 
                     // Ignore accidental buy spikes
                     if (!priceWasSpikeOrAccidentalBuy)
