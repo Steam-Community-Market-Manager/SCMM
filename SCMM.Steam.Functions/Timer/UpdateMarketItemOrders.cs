@@ -66,6 +66,7 @@ public class UpdateMarketItemOrders
                 );
 
                 await UpdateMarketItemOrderHistory(item, response);
+                logger.LogInformation($"Market item orders updated for '{item.Description?.Name}' ({item.Description?.ClassId})");
             }
             catch (SteamRequestException ex)
             {

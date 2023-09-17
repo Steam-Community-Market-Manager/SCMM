@@ -71,6 +71,7 @@ public class UpdateMarketItemSales
                 // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
                 // TODO: Find/buy a Steam account that is locked to USD for better accuracy
                 await UpdateMarketItemSalesHistory(item, response, nzdCurrency);
+                logger.LogInformation($"Market item sales history updated for '{item.Description?.Name}' ({item.Description?.ClassId})");
             }
             catch (SteamRequestException ex)
             {
