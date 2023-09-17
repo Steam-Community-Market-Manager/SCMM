@@ -678,19 +678,28 @@ namespace SCMM.Steam.Data.Store
 
                 AllTimeAverageValue = allTimeAverage;
 
-                var salesPriceLast30DaysSampleSize = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromDays(7))).Count();
-                var salesPriceSMA = salesSorted.Select(x => (decimal)x.MedianPrice).SimpleMovingAverage(salesPriceLast30DaysSampleSize).ToArray();
-                var salesPriceSMADelta = salesPriceSMA.Delta();
-                var salesPriceSMAMaxIndex = Array.IndexOf(salesPriceSMA, salesPriceSMA.Max());
-                var salesPriceSMAMaxDistanceFromNow = Math.Abs((DateTimeOffset.UtcNow - salesSorted.ElementAt(salesPriceSMAMaxIndex).Timestamp).TotalDays);
-                if (salesPriceSMADelta > 0 && salesPriceSMAMaxDistanceFromNow <= 30)
+                var salesPriceLast30DaysSampleSize = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromDays(30))).Count();
+                if (salesPriceLast30DaysSampleSize > 0)
                 {
-                    var salesPrice = salesSorted.Select(x => (decimal)x.MedianPrice).ToArray();
-                    var salesPriceTotalIncrements = salesPrice.TotalIncrementCount();
-                    InvestmentReliability = (salesPriceTotalIncrements > 0 ? ((decimal)salesPriceTotalIncrements / salesPrice.Length) : 0);
+                    var salesPriceSMA = salesSorted.Select(x => (decimal)x.MedianPrice).SimpleMovingAverage(salesPriceLast30DaysSampleSize).ToArray();
+                    var salesPriceSMADelta = salesPriceSMA.Delta();
+                    var salesPriceSMAMaxIndex = Array.IndexOf(salesPriceSMA, salesPriceSMA.Max());
+                    var salesPriceSMAMaxDistanceFromNow = Math.Abs((DateTimeOffset.UtcNow - salesSorted.ElementAt(salesPriceSMAMaxIndex).Timestamp).TotalDays);
+                    if (salesPriceSMADelta > 0 && salesPriceSMAMaxDistanceFromNow <= 30)
+                    {
+                        var salesPrice = salesSorted.Select(x => (decimal)x.MedianPrice).ToArray();
+                        var salesPriceTotalIncrements = salesPrice.TotalIncrementCount();
+                        InvestmentReliability = (salesPriceTotalIncrements > 0 ? ((decimal)salesPriceTotalIncrements / salesPrice.Length) : 0);
+                    }
+                    else
+                    {
+
+                        InvestmentReliability = 0;
+                    }
                 }
                 else
                 {
+                    // No sales data in last 30 days
                     InvestmentReliability = 0;
                 }
             }
