@@ -8,7 +8,7 @@
 @inject IConfiguration Configuration
 @{
     var runtime = Model.AppState.Runtime;
-    var prerenderMode = (Model.AppState.Runtime == Data.Models.RuntimeType.WebAssembly ? RenderMode.WebAssemblyPrerendered : RenderMode.ServerPrerendered);
+    var renderMode = (Model.AppState.Runtime == Data.Models.RuntimeType.WebAssembly ? Microsoft.AspNetCore.Mvc.Rendering.RenderMode.WebAssemblyPrerendered : Microsoft.AspNetCore.Mvc.Rendering.RenderMode.ServerPrerendered);
 }
 <!DOCTYPE html>
 <html>
@@ -41,7 +41,7 @@
     <link href="@(Configuration.GetDataStoreUrl())/images/app/@(Model.AppId)/og.icon-512.png" rel="icon" type="image/png" />
     <link href="@(Configuration.GetDataStoreUrl())/images/app/@(Model.AppId)/og.icon-512.png" rel="apple-touch-icon" type="image/png" sizes="512x512" />
     
-    <component type="typeof(HeadOutlet)" render-mode="@prerenderMode" />
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
 
 </head>
 <body class="no-select">
