@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -15,7 +15,7 @@
 	<PackageReference Include="Syncfusion.Blazor.Themes" Version="23.1.36" />
 	<PackageReference Include="Syncfusion.Blazor.Charts" Version="23.1.36" />
     <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="23.1.36" />
-	<PackageReference Include="Syncfusion.Blazor.RangeNavigator" Version="23.1.36" />
+	<PackageReference Include="Syncfusion.Blazor.RangeNavigator" Version="23.1.38" />
   </ItemGroup>
 
   <ItemGroup>
