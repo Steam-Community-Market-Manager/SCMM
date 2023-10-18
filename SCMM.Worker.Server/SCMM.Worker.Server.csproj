@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.10.1" />
+    <PackageReference Include="Azure.Identity" Version="1.10.2" />
 	<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
 	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.11" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
