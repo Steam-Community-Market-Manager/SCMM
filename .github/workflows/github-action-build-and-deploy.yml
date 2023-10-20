@@ -85,10 +85,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: app-services
+          path: ~/app-services
 
       - name: Deploy Discord.Bot.Server app service to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: scmm-discord-bot
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_SCMM_DISCORD_BOT }}
-          package: app-services/SCMM.Discord.Bot.Server
+          package: ~/app-services/SCMM.Discord.Bot.Server
