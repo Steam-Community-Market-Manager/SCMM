@@ -54,23 +54,23 @@ jobs:
       - name: Build solution with dotnet
         run: dotnet build --configuration Release
 
-      - name: Publish SCMM.Steam.Functions
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/pub/services/SCMM.Steam.Functions
+      - name: Publish Steam.Functions app service with dotnet
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/pub/app-service/SCMM.Steam.Functions
         working-directory: ./SCMM.Steam.Functions
 
-      - name: Publish Discord.Bot.Server
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/pub/services/SCMM.Discord.Bot.Server
+      - name: Publish Discord.Bot.Server app service with dotnet
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/pub/app-service/SCMM.Discord.Bot.Server
         working-directory: ./SCMM.Discord.Bot.Server
 
-      - name: Publish SCMM.Web.Server
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/pub/services/SCMM.Web.Server
+      - name: Publish Web.Server app service with dotnet
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/pub/app-service/SCMM.Web.Server
         working-directory: ./SCMM.Web.Server
 
       - name: Upload artifacts for deployment job
         uses: actions/upload-artifact@v3
         with:
-          name: services
-          path: ${{env.DOTNET_ROOT}}/pub/services
+          name: app-services
+          path: ${{env.DOTNET_ROOT}}/pub/app-service
 
   deploy:
     needs: build
@@ -78,17 +78,17 @@ jobs:
     permissions:
       contents: none
     environment:
-      name: 'Development'
+      name: 'Production'
     steps:
 
       - name: Download artifacts from build job
         uses: actions/download-artifact@v3
         with:
-          name: services
+          name: app-services
 
-      - name: Deploy Discord.Bot.Server to Azure Web App
+      - name: Deploy Discord.Bot.Server app service to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: scmm-discord-bot
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_SCMM_DISCORD_BOT }}
-          package: ./services/SCMM.Discord.Bot.Server
+          package: app-services/SCMM.Discord.Bot.Server
