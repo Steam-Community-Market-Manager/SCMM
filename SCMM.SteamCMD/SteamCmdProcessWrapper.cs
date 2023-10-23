@@ -15,7 +15,7 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
         _logger = logger;
     }
 
-    public async Task<WebFileData?> DownloadWorkshopFile(string appId, string workshopFileId)
+    public async Task<WebFileData?> DownloadWorkshopFile(string appId, string workshopFileId, bool clearCache = true)
     {
         var workshopFileName = $"{appId}-{workshopFileId}.zip";
         var workshopFileBasePath = $"Tools{Path.DirectorySeparatorChar}steamapps{Path.DirectorySeparatorChar}workshop{Path.DirectorySeparatorChar}content{Path.DirectorySeparatorChar}{appId}{Path.DirectorySeparatorChar}{workshopFileId}";
@@ -36,6 +36,25 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
             if (String.IsNullOrEmpty(steamCmdPath))
             {
                 throw new PlatformNotSupportedException($"Workshop file download failed, OS platform is not supported");
+            }
+
+            if (clearCache)
+            {
+                // Sometimes Steam will fail with error "Download item {workshopFileId} failed (Failure)".
+                // This is normally a temporary error which can be fixed by deleting the cached download and trying again
+                var cachedPaths = new string[]
+                {
+                    $"Tools{Path.DirectorySeparatorChar}appcache",
+                    $"Tools{Path.DirectorySeparatorChar}steamapps",
+                    $"Tools{Path.DirectorySeparatorChar}userdata"
+                };
+                foreach (var cachedPath in cachedPaths)
+                {
+                    if (Path.Exists(cachedPath))
+                    {
+                        Directory.Delete(cachedPath, true);
+                    }
+                }
             }
 
             var downloadProcess = Process.Start(new ProcessStartInfo()
