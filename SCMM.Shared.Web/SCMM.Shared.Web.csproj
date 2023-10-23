@@ -9,7 +9,7 @@
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0-rc.1.23419.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="StackExchange.Redis" Version="2.6.122" />
   </ItemGroup>
 

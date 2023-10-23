@@ -8,8 +8,8 @@
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.16.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.1.23419.4" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23419.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.2.23479.6" />
   </ItemGroup>
 
   <ItemGroup>

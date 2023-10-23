@@ -8,17 +8,17 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.10.1" />
+		<PackageReference Include="Azure.Identity" Version="1.10.3" />
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.19.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.14.1" OutputItemType="Analyzer" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.15.1" OutputItemType="Analyzer" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.2.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="6.2.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.13.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.14.0" />
 		<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-rc.1.23421.29" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-rc.2.23480.2" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.0" />
 	</ItemGroup>
 	

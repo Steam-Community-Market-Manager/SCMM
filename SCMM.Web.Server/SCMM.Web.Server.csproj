@@ -15,13 +15,13 @@
   
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OpenId.Steam" Version="7.0.0" />
-    <PackageReference Include="Azure.Identity" Version="1.10.1" />
+    <PackageReference Include="Azure.Identity" Version="1.10.3" />
     <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.1.23421.29" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.0-rc.1.23421.29" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.2.23480.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.0-rc.2.23480.2" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-rc.1.23421.29" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-rc.2.23480.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0" />
