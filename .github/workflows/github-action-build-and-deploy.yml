@@ -35,19 +35,19 @@ jobs:
         run: dotnet build SCMM.sln -c Release
 
       - name: Publish Steam.Functions app service with dotnet
-        run: dotnet publish SCMM.Steam.Functions/SCMM.Steam.Functions.csproj -c Release -o ${{env.DOTNET_ROOT}}/pub/app-service/SCMM.Steam.Functions
+        run: dotnet publish SCMM.Steam.Functions/SCMM.Steam.Functions.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SCMM.Steam.Functions
 
       - name: Publish Discord.Bot.Server app service with dotnet
-        run: dotnet publish SCMM.Discord.Bot.Server/SCMM.Discord.Bot.Server.csproj -c Release -o ${{env.DOTNET_ROOT}}/pub/app-service/SCMM.Discord.Bot.Server
+        run: dotnet publish SCMM.Discord.Bot.Server/SCMM.Discord.Bot.Server.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SCMM.Discord.Bot.Server
 
       - name: Publish Web.Server app service with dotnet
-        run: dotnet publish SCMM.Web.Server/SCMM.Web.Server.csproj -c Release -o ${{env.DOTNET_ROOT}}/pub/app-service/SCMM.Web.Server
+        run: dotnet publish SCMM.Web.Server/SCMM.Web.Server.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SCMM.Web.Server
 
       - name: Upload artifacts for deployment job
         uses: actions/upload-artifact@v3
         with:
-          name: app-services
-          path: ${{env.DOTNET_ROOT}}/pub/app-service
+          name: web-apps
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
   deploy:
     needs: build
@@ -61,21 +61,15 @@ jobs:
       - name: Download artifacts from build job
         uses: actions/download-artifact@v3
         with:
-          name: app-services
-          path: ~/app-services
+          name: web-apps
+          path: ${{ github.workspace }}
 
       - name: Test
-        run: ls -la ~/app-services
-  
-      - name: Test2
-        run: ls -la app-services
-  
-      - name: Test3
-        run: ls -la app-services/SCMM.Discord.Bot.Server
+        run: ls -la ${{ github.workspace }}/SCMM.Discord.Bot.Server
   
       - name: Deploy Discord.Bot.Server app service to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: scmm-discord-bot
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_SCMM_DISCORD_BOT }}
-          package: 'app-services/SCMM.Discord.Bot.Server'
+          package: '${{ github.workspace }}/SCMM.Discord.Bot.Server'
