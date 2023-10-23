@@ -4,6 +4,7 @@ using SCMM.Steam.Abstractions;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace SCMM.SteamCMD;
 public class SteamCmdProcessWrapper : ISteamConsoleClient
@@ -63,7 +64,9 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
                 Arguments = $"+login anonymous +workshop_download_item {appId} {workshopFileId} +quit",
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
+                WindowStyle = ProcessWindowStyle.Hidden,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
             });
             if (downloadProcess == null)
             {
@@ -76,10 +79,22 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
                 throw new Exception($"Workshop file download failed, process exited with code {downloadProcess.ExitCode}");
             }
 
+            // If the workshop file did NOT get downloaded, find out why...
             if (!Directory.Exists(workshopFileBasePath))
             {
-                _logger.LogWarning("Workshop file cannot be found, it either has been deleted or is private");
-                return default;
+                var downloadProcessOutput = downloadProcess.StandardOutput.ReadToEnd();
+                var errorReason = Regex.Match(downloadProcessOutput, @"ERROR! (.*) \((.*)\)\.").Groups.OfType<Capture>().LastOrDefault()?.Value;
+                switch (errorReason)
+                {
+                    case "Access Denied":
+                        throw new UnauthorizedAccessException($"Workshop file download failed, file is private or hidden");
+                    case "File Not Found":
+                        throw new FileNotFoundException($"Workshop file download failed, file has been deleted");
+                    case "Failure":
+                        throw new IOException($"Workshop file download failed, generic download failure, try again later");
+                    default:
+                        throw new Exception($"Workshop file download failed, process completed successfully but no file was downloaded. Error reason was: '{errorReason}'");
+                }
             }
 
             ZipFile.CreateFromDirectory(workshopFileBasePath, workshopFileZipPath, CompressionLevel.SmallestSize, includeBaseDirectory: false);
