@@ -64,8 +64,12 @@ jobs:
           name: web-apps
           path: ${{ github.workspace }}
 
-      - name: Test
-        run: ls -la ${{ github.workspace }}/SCMM.Discord.Bot.Server
+      - name: Deploy Steam.Functions app service to Azure Web App
+        uses: Azure/functions-action@v1
+        with:
+          app-name: scmm-steam-functions
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_SCMM_STEAM_FUNCTIONS }}
+          package: '${{ github.workspace }}/SCMM.Steam.Functions'
   
       - name: Deploy Discord.Bot.Server app service to Azure Web App
         uses: azure/webapps-deploy@v2
@@ -73,3 +77,10 @@ jobs:
           app-name: scmm-discord-bot
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_SCMM_DISCORD_BOT }}
           package: '${{ github.workspace }}/SCMM.Discord.Bot.Server'
+
+      - name: Deploy Web.Server app service to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: scmm-web
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_SCMM_WEB }}
+          package: '${{ github.workspace }}/SCMM.Web.Server'
