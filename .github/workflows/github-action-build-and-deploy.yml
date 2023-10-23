@@ -35,19 +35,19 @@ jobs:
         run: dotnet build SCMM.sln -c Release
 
       - name: Publish Steam.Functions app service with dotnet
-        run: dotnet publish SCMM.Steam.Functions/SCMM.Steam.Functions.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SCMM.Steam.Functions
+        run: dotnet publish SCMM.Steam.Functions/SCMM.Steam.Functions.csproj -c Release -o ${{ github.workspace }}/pub/web-apps/SCMM.Steam.Functions
 
       - name: Publish Discord.Bot.Server app service with dotnet
-        run: dotnet publish SCMM.Discord.Bot.Server/SCMM.Discord.Bot.Server.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SCMM.Discord.Bot.Server
+        run: dotnet publish SCMM.Discord.Bot.Server/SCMM.Discord.Bot.Server.csproj -c Release -o ${{ github.workspace }}/pub/web-apps/SCMM.Discord.Bot.Server
 
       - name: Publish Web.Server app service with dotnet
-        run: dotnet publish SCMM.Web.Server/SCMM.Web.Server.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SCMM.Web.Server
+        run: dotnet publish SCMM.Web.Server/SCMM.Web.Server.csproj -c Release -o ${{ github.workspace }}/pub/web-apps/SCMM.Web.Server
 
       - name: Upload artifacts for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: web-apps
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          path: ${{ github.workspace }}/pub/web-apps
 
   deploy:
     needs: build
