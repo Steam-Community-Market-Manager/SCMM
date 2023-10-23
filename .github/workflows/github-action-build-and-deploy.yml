@@ -25,14 +25,12 @@ env:
 on:
   push:
     branches: [ "main", "feature/github-actions-update" ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read    
     steps:
 
       - name: Checkout source code
@@ -92,4 +90,4 @@ jobs:
         with:
           app-name: scmm-discord-bot
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_SCMM_DISCORD_BOT }}
-          package: ~/app-services/SCMM.Discord.Bot.Server
+          package: app-services/SCMM.Discord.Bot.Server
