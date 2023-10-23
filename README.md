@@ -1,5 +1,5 @@
 # Steam Community Market Manager (SCMM)
-SCMM is a fan-created project dedicated to collecting and analyzing data from the Steam Community Market and third-party marketplaces. Our goal is to document the history of the Steam market (and game item stores), detect market trends and patterns, and provide useful quality of life features not found in the official Steam Community Market app/website. Currently on a small subset of Steam apps are supported by SCMM, with the primary focus being [Rust](https://store.steampowered.com/app/252490/Rust/).
+SCMM is a fan-created project dedicated to collecting and analyzing data from the Steam Community Market and third-party marketplaces. Our goal is to document the history of the Steam market (and game item stores), detect market trends and patterns, and provide useful quality of life features not found in the official Steam Community Market app/website. Currently only a small subset of Steam apps are supported by SCMM, primarily [Rust](https://store.steampowered.com/app/252490/Rust/).
 
 | | Website | Status |
 |----|----|----|
