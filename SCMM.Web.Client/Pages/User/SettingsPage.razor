@@ -83,33 +83,12 @@
                                 <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Inherit">
                                     @if (State.IsInRole(Roles.Donator))
                                     {
-                                        <span>Thank you for your generous support and donation(s) to the SCMM project. As a small token of my appreciation, you're profile has the following extra benefits:</span>
+                                        <span>Thank you for your generous support and/or donation(s) to the SCMM project.</span>
                                     }
                                     else
                                     {
-                                        <span>Thank you for contributing to the SCMM project. As a small token of our appreciation, you're profile has the following extra benefits:</span>
+                                        <span>Thank you for contributing to the SCMM project.</span>
                                     }
-                                    <ul>
-                                        <li>
-                                            <span class="px-1">-</span>
-                                            <span>A special gold <strong>@(State.Profile.DonatorLevel > 0 ? Roles.Donator : Roles.VIP) role</strong> to flex on others with.</span>
-                                        </li>
-                                        @if (State.IsInRole(Roles.Donator))
-                                        {
-                                            <li>
-                                                <span class="px-1">-</span>
-                                                <span>A personal <strong>shoutout</strong> on the <MudLink Href="/about" Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Inherit">about website</MudLink> page.</span>
-                                            </li>
-                                        }
-                                        <li>
-                                            <span class="px-1">-</span>
-                                            <span>Early access to certain <strong>new features</strong> before the general public.</span>
-                                        </li>
-                                        <li>
-                                            <span class="px-1">-</span>
-                                            <i>with more benefits to come in the future...</i>
-                                        </li>
-                                    </ul>
                                 </MudText>
                             </div>
                         </MudPaper>

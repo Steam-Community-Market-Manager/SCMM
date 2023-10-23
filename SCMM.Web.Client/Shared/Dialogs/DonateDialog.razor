@@ -7,48 +7,15 @@
     <DialogContent>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
             <p>This website is free to use, but isn't free to keep running.</p>
-            <p>If you found it useful and would like to support further development, consider buying me an energy drink or Rust skin.</p>
+            <p>If you found it useful and would like to say thanks, you can send me a Rust skin using the button below.</p>
         </MudText>
-        <MudGrid Spacing="0">
+        <MudGrid Spacing="0" Justify="Justify.SpaceAround">
             <MudItem xs="6" Class="hidden-overflow">
-                <MudTooltip Text="Buy me a drink!" Inline="false">
-                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
-                        <input type="hidden" name="cmd" value="_donations" onfocus="this.blur()" />
-                        <input type="hidden" name="business" value="P29WU38RQJM8J" onfocus="this.blur()" />
-                        <input type="hidden" name="currency_code" value="NZD" onfocus="this.blur()" />
-                        <input type="image" name="submit" src="/images/donate-paypal.png" border="0" alt="Donate with PayPal" onfocus="this.blur()" class="full-width" />
-                    </form>
-                </MudTooltip>
-            </MudItem>
-            <MudItem xs="6" Class="hidden-overflow">
-                <MudTooltip Text="Send me a skin!" Inline="false">
+                <MudTooltip Text="Click to send me a skin via Steam trade" Inline="false">
                     <a href="https://steamcommunity.com/tradeoffer/new/?partner=121835790&token=AjBXyQhL" target="_blank">
                         <img src="/images/donate-steam.png" alt="Donate with Steam" class="full-width" />
                     </a>
                 </MudTooltip>
-            </MudItem>
-            <MudItem xs="12" Class="my-2">
-                <MudText Typo="@MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" GutterBottom>
-                    <span>As a small token of a appreciation, all donators receive the following benefits:</span>
-                    <ul>
-                        <li>
-                            <span class="px-1">-</span>
-                            <span>A special gold <strong>@(Roles.Donator) role</strong> to flex on others with.</span>
-                        </li>
-                        <li>
-                            <span class="px-1">-</span>
-                            <span>A personal <strong>shoutout</strong> on the <MudLink Href="/about" Typo="@MudBlazor.Typo.caption" Color="MudBlazor.Color.Inherit">about website</MudLink> page.</span>
-                        </li>
-                        <li>
-                            <span class="px-1">-</span>
-                            <span>Early access to certain <strong>new features</strong> before the general public.</span>
-                        </li>
-                        <li>
-                            <span class="px-1">-</span>
-                            <i>with more benefits to come in the future...</i>
-                        </li>
-                    </ul>
-                </MudText>
             </MudItem>
         </MudGrid>
     </DialogContent>

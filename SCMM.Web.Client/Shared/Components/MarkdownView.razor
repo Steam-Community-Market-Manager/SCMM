@@ -1,6 +1,6 @@
 ﻿@using Markdig
 
-<div class="markdown-container" @attributes="AdditionalAttributes">
+<div class="markdown-container mb-n3" @attributes="AdditionalAttributes">
     @MarkupContent
 </div>
 
@@ -25,7 +25,7 @@
                         .UseAdvancedExtensions()
                         .UseSoftlineBreakAsHardlineBreak()
                         .Build()
-                )
+                ).RemoveEmptyMarkup()
             );
         }
         else 

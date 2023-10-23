@@ -9,7 +9,7 @@
             {
                 <MudBadge Color="MudBlazor.Color.Tertiary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
                     <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                        <img src="@Item.IconUrl" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
+                        <img src="@Item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
                     </div>
                 </MudBadge>
             }
@@ -19,14 +19,14 @@
                           Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
                           Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
                     <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                        <img src="@Item.IconUrl" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
+                        <img src="@Item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
                     </div>
                 </MudBadge>
             }
             else
             {
                 <div class="d-flex flex-grow-1 justify-center align-center hover-zoom">
-                    <img src="@Item.IconUrl" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
+                    <img src="@Item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
                 </div>
             }
             <div class="ma-2 d-flex flex-column justify-center align-center text-centered">

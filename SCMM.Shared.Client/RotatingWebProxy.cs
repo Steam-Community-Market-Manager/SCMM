@@ -211,7 +211,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         /// <summary>
         /// The current address this proxy is serving
         /// </summary>
-        public Uri? CurrentRequestAddress { get; set; }
+        public Uri CurrentRequestAddress { get; set; }
 
         /// <summary>
         /// Rate-limit cooldown time for each domain

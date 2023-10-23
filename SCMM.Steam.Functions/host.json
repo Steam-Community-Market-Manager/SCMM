@@ -19,5 +19,13 @@
         "excludedTypes": "Request;Exception"
       }
     }
+  },
+  "extensions": {
+    "serviceBus": {
+      "maxConcurrentCalls": 1,
+      "messageHandlerOptions": {
+        "maxConcurrentCalls": 1
+      }
+    }
   }
 }

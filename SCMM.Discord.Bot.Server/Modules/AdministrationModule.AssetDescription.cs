@@ -6,11 +6,13 @@ using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -19,7 +21,7 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule
     {
         [Command("import-item-definitions-archives")]
-        public async Task<RuntimeResult> ImportRustItemDefinitionsArchivesAsync(ulong appId, params string[] digests)
+        public async Task<RuntimeResult> ImportItemDefinitionsArchivesAsync(ulong appId, params string[] digests)
         {
             var message = await Context.Message.ReplyAsync("Importing item definitions archives...");
             foreach (var digest in digests)
@@ -43,7 +45,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-item-definitions-archive-and-parse-changes")]
-        public async Task<RuntimeResult> ImportAndParseRustItemDefinitionsArchiveAsync(ulong appId, string digest)
+        public async Task<RuntimeResult> ImportAndParseItemDefinitionsArchiveAsync(ulong appId, string digest)
         {
             await _commandProcessor.ProcessAsync(new ImportSteamAppItemDefinitionsArchiveRequest()
             {
@@ -57,33 +59,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-asset-description")]
-        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(ulong appId, params ulong[] classIds)
-        {
-            var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
-            foreach (var classId in classIds)
-            {
-                await message.ModifyAsync(
-                    x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
-                );
-
-                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-                {
-                    AppId = appId,
-                    AssetClassId = classId
-                });
-
-                await _steamDb.SaveChangesAsync();
-            }
-
-            await message.ModifyAsync(
-                x => x.Content = $"Imported {classIds.Length}/{classIds.Length} asset descriptions"
-            );
-
-            return CommandResult.Success();
-        }
-
-        [Command("import-asset-description")]
-        public async Task<RuntimeResult> ImportCSGOAssetDescriptionAsync(ulong appId, params ulong[] classIds)
+        public async Task<RuntimeResult> ImportAssetDescriptionAsync(ulong appId, params ulong[] classIds)
         {
             var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
             foreach (var classId in classIds)
@@ -109,7 +85,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-market-item")]
-        public async Task<RuntimeResult> ImportCSGOMarketItemAsync(ulong appId, params string[] names)
+        public async Task<RuntimeResult> ImportMarketItemAsync(ulong appId, params string[] names)
         {
             var message = await Context.Message.ReplyAsync("Importing market items...");
             foreach (var name in names)
@@ -131,7 +107,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
-                    AppId = Constants.CSGOAppId,
+                    AppId = appId,
                     AssetClassId = UInt64.Parse(classId)
                 });
 
@@ -522,7 +498,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("find-asset-descriptions")]
-        public async Task<RuntimeResult> FindClassIds(ulong startClassId, ulong endClassId)
+        public async Task<RuntimeResult> FindClassIds(ulong appId, ulong startClassId, ulong endClassId)
         {
             const int classesPerPage = 1;
 
@@ -543,7 +519,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 var response = await _steamWebApiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
                 {
-                    AppId = Constants.RustAppId,
+                    AppId = appId,
                     ClassIds = classIds
                 });
 
@@ -558,6 +534,81 @@ namespace SCMM.Discord.Bot.Server.Modules
             await message.DeleteAsync();
 
             return CommandResult.Success();
+        }
+
+        [Command("import-asset-filters")]
+        public async Task<RuntimeResult> ImportAssetFilters(ulong appId)
+        {
+            var app = await _steamDb.SteamApps
+                .Include(x => x.AssetFilters)
+                .FirstOrDefaultAsync(x => x.SteamId == appId.ToString());
+
+            var appFilters = await _steamCommunityClient.GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(new SteamMarketAppFiltersJsonRequest()
+            {
+                AppId = appId.ToString()
+            });
+
+            if (appFilters?.Success == true && appFilters?.Facets?.Any() == true)
+            {
+                foreach(var filter in appFilters.Facets)
+                {
+                    if (app.AssetFilters.Any(x => x.SteamId == filter.Value.Name))
+                    {
+                        continue; // already exists, skip...
+                    }
+
+                    app.AssetFilters.Add(new SteamAssetFilter()
+                    {
+                        SteamId = filter.Value.Name,
+                        Name = filter.Value.Localized_Name,
+                        Type = "Select",
+                        Size = 2,
+                        Icon = "fa-filter",
+                        Options = new PersistableStringDictionary(
+                            filter.Value.Tags.ToDictionary(x => x.Key, x => x.Value.Localized_Name)
+                        ),
+                        IsEnabled = true
+                    });
+                }
+            }
+
+            await _steamDb.SaveChangesAsync();
+            return CommandResult.Success();
+        }
+
+        [Command("update-rust-twitch-drop-stats")]
+        public async Task<RuntimeResult> UpdateRustTwitchDropStats()
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetFromJsonAsync<FacepunchTwitchDropsStats>("https://twitch.facepunch.com/?handler=DropsStats");
+                var itemDefinitionIds = response?.Items?.Select(x => x.Key)?.ToArray();
+                if (itemDefinitionIds.Any() == true)
+                {
+                    var assetDescriptions = await _steamDb.SteamAssetDescriptions
+                        .Where(x => x.ItemDefinitionId != null && itemDefinitionIds.Contains(x.ItemDefinitionId.Value.ToString()))
+                        .ToListAsync();
+
+                    foreach (var assetDescription in assetDescriptions)
+                    {
+                        assetDescription.SupplyTotalOwnersKnown = Math.Max(
+                            assetDescription.SupplyTotalOwnersKnown ?? 0, response.Items.FirstOrDefault(x => x.Key == assetDescription.ItemDefinitionId.ToString()).Value
+                        );
+                    }
+                }
+            }
+
+            await _steamDb.SaveChangesAsync();
+            return CommandResult.Success();
+        }
+
+        public class FacepunchTwitchDropsStats
+        {
+            [JsonPropertyName("accounts")]
+            public int Accounts { get; set; }
+
+            [JsonPropertyName("items")]
+            public Dictionary<string, int> Items { get; set; }
         }
     }
 }

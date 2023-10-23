@@ -17,7 +17,7 @@ namespace SCMM.Steam.Data.Store.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "7.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -328,15 +328,27 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Icon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("SteamAppId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SteamId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -560,6 +572,9 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<DateTimeOffset?>("FirstSaleOn")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("InvestmentReliability")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsBeingManipulated")
                         .HasColumnType("bit");

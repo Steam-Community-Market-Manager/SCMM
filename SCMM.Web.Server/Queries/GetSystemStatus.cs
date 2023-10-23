@@ -50,7 +50,7 @@ namespace SCMM.Web.Server.Queries
                 new SystemStatusAlertDTO()
                 {
                     Severity = SystemStatusAlertSeverity.Warning,
-                    Message = "Steam is heavily rate limiting our servers. Market data is taking longer to update than normal. Please be patient as we work through a solution. Sorry for the inconvenience.",
+                    Message = "Steam logins are temporarily disabled whilst we investigate the impact of the recently circulating Steam OpenID exploit. There is no breach or leak of SCMM data and your Steam profiles are **not** at risk by using SCMM. This is just a safety precaution until we have had time to investigate the exploit further. Sorry for the inconvenience.",
                     IsVisible = true
                 }
             );
@@ -82,13 +82,13 @@ namespace SCMM.Web.Server.Queries
                     },
                     MarketOrderUpdates = new TimeRangeWithTargetDTO()
                     {
-                        Oldest = x.MarketItems.Min(y => y.LastCheckedOrdersOn),
-                        Newest = x.MarketItems.Max(y => y.LastCheckedOrdersOn)
+                        Oldest = x.MarketItems.Where(x => x.Description.IsMarketable).Min(y => y.LastCheckedOrdersOn),
+                        Newest = x.MarketItems.Where(x => x.Description.IsMarketable).Max(y => y.LastCheckedOrdersOn)
                     },
                     MarketSaleUpdates = new TimeRangeWithTargetDTO()
                     {
-                        Oldest = x.MarketItems.Min(y => y.LastCheckedSalesOn),
-                        Newest = x.MarketItems.Max(y => y.LastCheckedSalesOn)
+                        Oldest = x.MarketItems.Where(x => x.Description.IsMarketable).Min(y => y.LastCheckedSalesOn),
+                        Newest = x.MarketItems.Where(x => x.Description.IsMarketable).Max(y => y.LastCheckedSalesOn)
                     }
                 })
                 .FirstOrDefaultAsync();

@@ -134,6 +134,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="minimumInvestmentReliability"></param>
         /// <param name="sellNow">If true, sell prices are based on highest buy order. If false, sell prices are based on lowest sell order. Default is true.</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
@@ -142,7 +143,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/flips")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
             var appId = this.App().Guid;
@@ -157,6 +158,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
                     .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) > 0)
                     .Where(x => ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
+                    .Where(x => minimumInvestmentReliability == null || x.InvestmentReliability >= minimumInvestmentReliability)
                     .OrderByDescending(x => (decimal)((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((decimal)(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)(x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)));
 
                 count = Math.Max(0, Math.Min(100, count));
@@ -256,6 +258,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="minimumInvestmentReliability"></param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
@@ -263,7 +266,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/cheapestListings")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemListingAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
             var appId = this.App().Guid;
@@ -278,6 +281,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
                     .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) <= x.SellOrderLowestPrice)
                     .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.SellOrderLowestPrice > 0)
+                    .Where(x => minimumInvestmentReliability == null || x.InvestmentReliability >= minimumInvestmentReliability)
                     .OrderByDescending(x => (decimal)(x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.SellOrderLowestPrice);
 
                 count = Math.Max(0, Math.Min(100, count));
@@ -765,7 +769,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeHighestValue > 0)
                 .Where(x => x.SellOrderLowestPrice >= x.AllTimeHighestValue)
-                .OrderBy(x => x.SellOrderLowestPrice - x.AllTimeHighestValue);
+                .OrderBy(x => x.AllTimeHighestValueOn);
 
             count = Math.Max(0, Math.Min(100, count));
             return Ok(
@@ -810,7 +814,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeLowestValue > 0)
                 .Where(x => x.SellOrderLowestPrice <= x.AllTimeLowestValue)
-                .OrderBy(x => x.AllTimeLowestValue - x.SellOrderLowestPrice);
+                .OrderBy(x => x.AllTimeLowestValueOn);
 
             count = Math.Max(0, Math.Min(100, count));
             return Ok(
@@ -887,6 +891,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Where(x => x.AppId == appId)
                 .Where(x => x.WorkshopFileId > 0 && x.SupplyTotalEstimated > 0)
+                .Where(x => x.IsMarketable)
                 .OrderByDescending(x => x.SupplyTotalEstimated)
                 .Select(x => new ItemSupplyStatisticDTO()
                 {

@@ -9,7 +9,7 @@
 }
 else
 {
-    <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@(!State.Is(SteamId) || State.IsPrerendering)" Class="mud-table-dense-extra"
+    <MudTable @ref="Table" Dense="true" Hover="true" Striped="false" FixedHeader="true" FixedFooter="true" ReadOnly="@(!State.Is(SteamId) || State.IsPrerendering)" Class="mud-table-dense-extra"
               ServerData="@LoadItems" RowsPerPage="25" Breakpoint="Breakpoint.Xs" CommitEditTooltip="Save Changes" AllowUnsorted="false">
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
@@ -55,7 +55,7 @@ else
         <RowTemplate>
             <MudTd>
                 <div class="d-flex flex-row justify-start align-center">
-                    <img src="@context.IconUrl" class="icon my-1 mr-2" />
+                    <img src="@context.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{context.ItemType.RustItemTypeToShortName()}.png'")" class="icon my-1 mr-2" />
                     <strong>@context.Name</strong>
                     @if (context.Quantity > 1)
                     { 
@@ -193,7 +193,7 @@ else
         <RowEditingTemplate>
             <MudTd>
                 <div class="d-flex flex-row justify-start align-center">
-                    <img src="@context.IconUrl" class="icon my-1 mr-2" />
+                    <img src="@context.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{context.ItemType.RustItemTypeToShortName()}.png'")" class="icon my-1 mr-2" />
                     <strong>@context.Name</strong>
                     @if (context.Quantity > 1)
                     { 

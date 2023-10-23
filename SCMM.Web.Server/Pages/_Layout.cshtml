@@ -7,8 +7,8 @@
 @model HostModel
 @inject IConfiguration Configuration
 @{
-    var runtime = RuntimeType.WebAssembly;
-    var prerenderMode = RenderMode.WebAssemblyPrerendered;
+    var runtime = Model.AppState.Runtime;
+    var prerenderMode = (Model.AppState.Runtime == Data.Models.RuntimeType.WebAssembly ? RenderMode.WebAssemblyPrerendered : RenderMode.ServerPrerendered);
 }
 <!DOCTYPE html>
 <html>

@@ -128,5 +128,65 @@
         {
             return b == 0 ? Math.Abs(a) : GCD(b, a % b);
         }
+
+        public static IEnumerable<decimal> CumulativeMovingAverage(this IEnumerable<decimal> source)
+        {
+            ulong count = 0;
+            decimal sum = 0;
+
+            foreach (var d in source)
+            {
+                yield return (sum += d) / ++count;
+            }
+        }
+
+        public static IEnumerable<decimal> SimpleMovingAverage(this IEnumerable<decimal> source, int length)
+        {
+            var sample = new Queue<decimal>(length);
+
+            foreach (var d in source)
+            {
+                if (sample.Count == length)
+                {
+                    sample.Dequeue();
+                }
+                sample.Enqueue(d);
+                yield return sample.Average();
+            }
+        }
+
+        public static IEnumerable<decimal> ExponentialMovingAverage(this IEnumerable<decimal> source, int length)
+        {
+            var alpha = 2 / (decimal)(length + 1);
+            var s = source.ToArray();
+            decimal result = 0;
+
+            for (var i = 0; i < s.Length; i++)
+            {
+                result = i == 0
+                    ? s[i]
+                    : alpha * s[i] + (1 - alpha) * result;
+                yield return result;
+            }
+        }
+
+        public static decimal Delta(this IEnumerable<decimal> source)
+        {
+            return source.LastOrDefault() - source.FirstOrDefault();
+        }
+
+        public static int TotalIncrementCount(this decimal[] source)
+        {
+            var numberOfIncrements = 0;
+            for(int i = 1; i < source.Length - 1; i++)
+            {
+                if (source[i] > source[i - 1])
+                {
+                    numberOfIncrements++;
+                }
+            }   
+
+            return numberOfIncrements;
+        }
     }
 }

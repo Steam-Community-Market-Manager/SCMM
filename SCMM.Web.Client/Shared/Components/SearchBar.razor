@@ -61,6 +61,7 @@
                 {
                     ["ListName"] = $"All {result.Description.Pluralise()}",
                     ["ListUrl"] = result.Url,
+                    ["DemandUrl"] = $"api/item/type/{result.Description}/demand",
                     ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
                     ["SortDirection"] = MudBlazor.SortDirection.Descending
                 });

@@ -89,7 +89,9 @@ public static class WebAssemblyHostExtensions
 
         services.AddSyncfusionBlazor();
         SyncfusionLicenseProvider.RegisterLicense(
-            "MTYyNDM4OUAzMjMxMmUzMTJlMzMzOEF1eTFhdk1uNTliandjWDdTT29lbWN0MEtEMytHaU1zN2VxTm1XR0J4TUk9"
+            // FYI: This is a [free] community license key, it isn't a secret.
+            //      Sign up for account at https://www.syncfusion.com/, request a community license
+            "Mjc1MDgyM0AzMjMzMmUzMDJlMzBTbXdzQ24yR21ua0NlT1JVVEdIeTFBK09YZndGb1l2TEJrRHppYUVXOEtrPQ==" // v23.1.39
         );
     }
 }

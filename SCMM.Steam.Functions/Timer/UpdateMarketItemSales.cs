@@ -33,6 +33,7 @@ public class UpdateMarketItemSales
             .Include(x => x.App)
             .Include(x => x.Currency)
             .Include(x => x.Description)
+            .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedSalesOn)
@@ -70,6 +71,7 @@ public class UpdateMarketItemSales
                 // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
                 // TODO: Find/buy a Steam account that is locked to USD for better accuracy
                 await UpdateMarketItemSalesHistory(item, response, nzdCurrency);
+                logger.LogInformation($"Market item sales history updated for '{item.Description?.Name}' ({item.Description?.ClassId})");
             }
             catch (SteamRequestException ex)
             {

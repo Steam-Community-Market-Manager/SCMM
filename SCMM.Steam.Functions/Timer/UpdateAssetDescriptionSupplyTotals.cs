@@ -47,8 +47,8 @@ public class UpdateAssetDescriptionSupplyTotals
                 )
                 UPDATE a
                 SET
-	                [SupplyTotalOwnersEstimated] = ads.SubscriptionsLifetime,
-	                [SupplyTotalOwnersKnown] = ivs.UniqueProfileIds,
+	                [SupplyTotalOwnersEstimated] =  IIF([SupplyTotalOwnersEstimated] > ads.SubscriptionsLifetime, [SupplyTotalOwnersEstimated], ads.SubscriptionsLifetime),
+	                [SupplyTotalOwnersKnown] = IIF([SupplyTotalOwnersKnown] > ivs.UniqueProfileIds, [SupplyTotalOwnersKnown], ivs.UniqueProfileIds),
 	                [SupplyTotalInvestorsKnown] = (ivs.TotalQuantity - ivs.UniqueProfileIds),
 	                [SupplyTotalMarketsKnown] = mks.BuyPricesTotalSupply
                 FROM [SteamAssetDescriptions] a

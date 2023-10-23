@@ -20,7 +20,7 @@
         }
         <MudSpacer />
         <AppBarCurrencyControls class="d-flex mx-1" />
-        @*<AppBarRuntimeControls class="d-flex mx-1" />*@
+        <AppBarRuntimeControls class="d-flex mx-1" />
         <AppBarNotificationControls class="d-flex mx-1" />
         <AppBarProfileControls />
     </MudAppBar>
@@ -36,7 +36,7 @@
                 {
                     <MudAlert Severity="Enum.Parse<Severity>(systemAlert.Severity.ToString(), true)" Variant="Variant.Filled" Icon="fas fa-fw fa-magnifying-glass-chart" Dense="true" Square="true"
                               ShowCloseIcon="@(!systemAlert.IsPersistent)" CloseIcon="fa fa-fw fa-times" CloseIconClicked="@(() => { systemAlert.IsVisible = false; StateHasChanged(); })">
-                        <span>@systemAlert.Message</span>
+                        <MarkdownView Content="@systemAlert.Message"></MarkdownView>
                     </MudAlert>
                 }
             }
@@ -63,7 +63,7 @@
     {
         if (firstRender)
         {
-            var subscriptionResult = await BreakpointService.Subscribe(
+            var subscriptionResult = await BreakpointService.SubscribeAsync(
                 (breakpoint) =>
                 {
                     OnBreakpointChanged(breakpoint);
@@ -88,7 +88,7 @@
     {
         if (_breakpointSubscriptionId != Guid.Empty)
         {
-            await BreakpointService.Unsubscribe(_breakpointSubscriptionId);
+            await BreakpointService.UnsubscribeAsync(_breakpointSubscriptionId);
             _breakpointSubscriptionId = Guid.Empty;
         }
     }

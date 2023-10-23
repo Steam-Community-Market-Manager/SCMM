@@ -240,6 +240,10 @@ public static class WebApplicationExtensions
             options.DetailedErrors = true;
         });
 
+        builder.Services.AddSignalR(e => {
+            e.MaximumReceiveMessageSize = 102400000;
+        });
+
         // Auto-documentation
         builder.Services.AddSwaggerGen(config =>
         {

@@ -7,14 +7,18 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
+using System.Linq;
 using System.Text.Json;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -46,10 +50,12 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="id">Optional array of ids to be included in the list. Helpful when you want search for items and compare against a known (but unrelated) item</param>
         /// <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
+        /// <param name="exactMatch">If true, only items that exactly match <code>filter</code> are returned. If false, partial matches are returned</param>
         /// <param name="type">If specified, only items matching the supplied item type are returned</param>
         /// <param name="collection">If specified, only items matching the supplied item collection are returned</param>
         /// <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
-        /// <param name="breaksIntoComponent">If specified, item items that break in to this component are returned</param>
+        /// <param name="breaksIntoComponent">If specified, only items that break in to this component are returned</param>
+        /// <param name="tag">If specified, only items that contain ALL of the supplied tags are returned</param>
         /// <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
@@ -79,7 +85,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null,
+        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] bool exactMatch = false, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null, [FromQuery] string breaksIntoComponent = null, [FromQuery] string[] tag = null,
                                                   [FromQuery] bool? glow = null, [FromQuery] bool? glowsight = null, [FromQuery] bool? cutout = null, [FromQuery] bool? commodity = null, [FromQuery] bool? marketable = null, [FromQuery] bool? tradable = null,
                                                   [FromQuery] bool? returning = null, [FromQuery] bool? banned = null, [FromQuery] bool? publisherDrop = null, [FromQuery] bool? twitchDrop = null, [FromQuery] bool? lootCrateDrop = null, [FromQuery] bool? craftable = null, [FromQuery] bool? manipulated = null,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
@@ -94,27 +100,60 @@ namespace SCMM.Web.Server.API.Controllers
                 count = int.MaxValue;
             }
 
-            // Filter app
+            // Parse all app asset filters
             var appId = this.App().Guid;
+            var appFilters = await _db.SteamApps.AsNoTracking()
+                .Where(x => x.Id == appId)
+                .SelectMany(x => x.AssetFilters)
+                .Where(x => x.IsEnabled)
+                .ToListAsync();
+            var assetFilters = new Dictionary<string, string>();
+            foreach (var appFilter in appFilters)
+            {
+                var queryStringKey = $"filter.{appFilter.SteamId}";
+                if (Request.Query.ContainsKey(queryStringKey))
+                {
+                    assetFilters[appFilter.SteamId] = Request.Query[queryStringKey];
+                }
+            }
+
+            // Filter app
             var query = _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == appId);
 
             // Filter search
             filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
-            var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            foreach (var filterWord in filterWords)
+            if (exactMatch)
             {
                 query = query.Where(x =>
                     id.Contains(x.ClassId) ||
-                    x.Id.ToString() == filterWord ||
-                    x.ClassId.ToString() == filterWord ||
-                    x.Name.Contains(filterWord) ||
-                    x.Description.Contains(filterWord) ||
-                    (x.CreatorProfile != null && x.CreatorProfile.Name.Contains(filterWord)) ||
-                    x.ItemType.Contains(filterWord) ||
-                    x.ItemCollection.Contains(filterWord) ||
-                    x.Tags.Serialised.Contains(filterWord)
+                    x.Id.ToString() == filter ||
+                    x.ClassId.ToString() == filter ||
+                    x.Name == filter ||
+                    x.Description == filter ||
+                    (x.CreatorProfile != null && x.CreatorProfile.Name == filter) ||
+                    x.ItemType == filter ||
+                    x.ItemCollection == filter ||
+                    x.Tags.Serialised.Contains($"{PersistableStringDictionary.DefaultKeyValueSeperator}{filter}")
                 );
+            }
+            else
+            {
+                var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var filterWord in filterWords)
+                {
+                    query = query.Where(x =>
+                        id.Contains(x.ClassId) ||
+                        x.Id.ToString() == filterWord ||
+                        x.ClassId.ToString() == filterWord ||
+                        x.Name.Contains(filterWord) ||
+                        x.Description.Contains(filterWord) ||
+                        (x.CreatorProfile != null && x.CreatorProfile.Name.Contains(filterWord)) ||
+                        x.ItemType.Contains(filterWord) ||
+                        x.ItemCollection.Contains(filterWord) ||
+                        x.Tags.Serialised.Contains(filterWord)
+                    );
+                }
             }
 
             // Filter toggles
@@ -136,7 +175,21 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (!String.IsNullOrEmpty(breaksIntoComponent))
             {
-                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains(breaksIntoComponent));
+                query = query.Where(x => x.BreaksIntoComponents.Serialised.Contains(Uri.EscapeDataString(breaksIntoComponent)));
+            }
+            if (tag != null && tag.Length > 0)
+            {
+                foreach (var tagValue in tag)
+                {
+                    query = query.Where(x => x.Tags.Serialised.Contains(Uri.EscapeDataString(tagValue)));
+                }
+            }
+            if (assetFilters != null && assetFilters.Count > 0)
+            {
+                foreach (var assetFilter in assetFilters)
+                {
+                    query = query.Where(x => x.Tags.Serialised.Contains($"{Uri.EscapeDataString(assetFilter.Key)}{PersistableStringDictionary.DefaultKeyValueSeperator}{Uri.EscapeDataString(assetFilter.Value)}"));
+                }
             }
             if (glow != null)
             {
@@ -194,6 +247,7 @@ namespace SCMM.Web.Server.API.Controllers
             // Join
             query = query
                 .Include(x => x.App)
+                .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency);
@@ -578,6 +632,64 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get demand statistics for all items of the specified type
+        /// </summary>
+        /// <param name="type">The item type</param>=
+        /// <returns>The demand statistics for the item type</returns>
+        /// <remarks>
+        /// Response is cached for 12hrs.
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <response code="200">The demand statistics for the item type.</response>
+        /// <response code="400">If the item type is missing.</response>
+        /// <response code="404">If the item type doesn't exist (or doesn't contain any marketable items).</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("type/{type}/demand")]
+        [ProducesResponseType(typeof(ItemGroupDemandDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(Duration = (12 * 60 * 60 /* 12hr */))]
+        public async Task<IActionResult> GetItemDemandByItemType([FromRoute] string type)
+        {
+            var appId = this.App().Guid;
+
+            if (string.IsNullOrEmpty(type))
+            {
+                return BadRequest("Item type is missing");
+            }
+
+            var currency = await _db.SteamCurrencies.AsNoTracking().FirstOrDefaultAsync(x => x.Name == Constants.SteamDefaultCurrency);
+            var items = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.IsAccepted == true)
+                .Where(x => x.ItemType == type)
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
+                .ToListAsync();
+            if (items?.Any() != true)
+            {
+                return NotFound("No items found for item type");
+            }
+
+            return Ok(new ItemGroupDemandDTO
+            {
+                TotalItems = items.Count,
+                Last24hrMedianPrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice), currency),
+                Last168hrMedianPrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Last168hrValue), currency),
+                Last24hrMedianMovementFromStorePrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Stable24hrSellOrderLowestPrice > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Stable24hrSellOrderLowestPrice - x.StoreItem.Price.Value), currency),
+                Last168hrMedianMovementFromStorePrice = this.Currency().CalculateExchange(items.Where(x => x.IsMarketable && x.MarketItem != null && x.MarketItem.Last168hrValue > 0 && x.StoreItem != null && x.StoreItem.Price > 0).Median(x => x.MarketItem.Last168hrValue - x.StoreItem.Price.Value), currency),
+                TotalMarketSupply = items.Where(x => x.IsMarketable && x.MarketItem != null).Sum(x => x.MarketItem.SellOrderCount),
+                MedianMarketSupply = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.SellOrderCount),
+                TotalMarketDemand = items.Where(x => x.IsMarketable && x.MarketItem != null).Sum(x => x.MarketItem.Last24hrSales),
+                MedianMarketDemand = items.Where(x => x.IsMarketable && x.MarketItem != null).Median(x => x.MarketItem.Last24hrSales),
+            });
+        }
+
+        /// <summary>
         /// Get all items that belong to the specified collection
         /// </summary>
         /// <param name="name">The name of the item collection</param>
@@ -711,6 +823,30 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(raw
                 ? itemDefinitionArchive
                 : JsonSerializer.Deserialize<ItemDefinition[]>(itemDefinitionArchive)
+            );
+        }
+
+        /// <summary>
+        /// List all known item filters
+        /// </summary>
+        /// <remarks>Response is cached for 24hrs</remarks>
+        /// <response code="200">List of unique item filters</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("filters")]
+        [ProducesResponseType(typeof(IEnumerable<ItemFilterDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(Duration = (24 * 60 * 60 /* 24hr */))]
+        public async Task<IActionResult> GetItemFilters()
+        {
+            var appId = this.App().Guid;
+            var itemFilters = await _db.SteamApps.AsNoTracking()
+                .Where(x => x.Id == appId)
+                .SelectMany(x => x.AssetFilters)
+                .ToArrayAsync();
+
+            return Ok(
+                _mapper.Map<SteamAssetFilter, ItemFilterDTO>(itemFilters, this)
             );
         }
 

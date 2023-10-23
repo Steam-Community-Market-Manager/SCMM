@@ -4,6 +4,7 @@
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
 
 <MudDialog>
     <TitleContent>
@@ -31,7 +32,7 @@
                                 <i class="far fa-fw fa-circle mud-text-disabled mx-1" />
                             }
                         </MudTooltip>
-                        <img src="@(Item.IconUrl)" class="icon mx-1" />
+                        <img src="@(Item.IconUrl)" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="icon mx-1" />
                         <div class="d-flex flex-column">
                             <MudText Typo="Typo.body2" 
                                         Class="@($"mx-1 {(SelectedStacks.Contains(stack) ? null : "mud-text-disabled")}")"
@@ -73,7 +74,7 @@
                 {
                     <MudPaper Outlined="true" Class="d-flex flex-row align-center pa-1 ma-1 ">
                         <i class="fa fa-fw fa-plus-circle mud-success-text mx-1" />
-                        <img src="@(Item.IconUrl)" class="icon mx-1" />
+                        <img src="@(Item.IconUrl)" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="icon mx-1" />
                         <div class="d-flex flex-column">
                             <MudText Typo="Typo.body2" Class="mx-1" Style="@($"color: {(Item.ForegroundColour)}")">
                                 <strong>@SelectedStacks.Sum(x => x.Quantity).ToQuantityString()</strong>

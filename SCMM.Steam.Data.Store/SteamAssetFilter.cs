@@ -17,8 +17,15 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public string Name { get; set; }
 
+        public string Type { get; set; }
+
+        public int Size { get; set; }
+
+        public string Icon { get; set; }
+
         [Required]
         public PersistableStringDictionary Options { get; set; }
 
+        public bool IsEnabled { get; set; }
     }
 }

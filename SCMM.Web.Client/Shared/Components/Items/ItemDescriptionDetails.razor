@@ -28,7 +28,7 @@
                             <MudCarousel ShowArrows="true" ShowBullets="false" AutoCycle="true" TData="object" Class="full-width full-height" Style="min-height: 25rem;">
                                 <MudCarouselItem Transition="Transition.Fade" Class="d-flex flex-grow-1 align-center justify-center">
                                     <div class="d-flex flex-grow-1 align-center justify-center">
-                                        <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
+                                        <img src="@Item.IconLargeUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
                                     </div>
                                 </MudCarouselItem>
                                 @foreach (var preview in Item.Previews.Where(x => x.Value == SteamMediaType.Image))
@@ -42,7 +42,7 @@
                         else
                         {
                             <div class="d-flex flex-grow-1 align-center justify-center">
-                                <img src="@(Item.IconLargeUrl ?? Item.IconUrl)" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
+                                <img src="@(Item.IconLargeUrl ?? Item.IconUrl)" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{Item.ItemType.RustItemTypeToShortName()}.png'")" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
                             </div>
                         }
                         @if (Item.WorkshopFileId != null)
@@ -285,7 +285,7 @@
                                 </span>
                             </MudText>
                         }
-                        @if (Item.TimeCreated != null && Item.TimeAccepted != null)
+                        @if (Item.TimeCreated != null && Item.TimeAccepted != null && (Item.TimeAccepted.Value - Item.TimeCreated.Value) > TimeSpan.Zero)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-stopwatch mud-secondary-text"></i>
@@ -729,7 +729,7 @@
                         {
                             <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)">
                                 <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} has {itemHolder.Items} of these items")" RootClass="mx-2">
-                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="9999" Overlap="true" Bordered="true" Origin="Origin.BottomCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
+                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="99999" Overlap="true" Bordered="true" Origin="Origin.BottomCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
                                         <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="rounded-pill mr-1" style="width:3rem; height:3rem;" />
                                     </MudBadge>
                                 </MudTooltip>
@@ -992,7 +992,7 @@
                                                                 <MudTooltip Text="@($"{item.Name} was accepted")">
                                                                     <MudChip Size="Size.Small" Class="pa-1" Style="height:auto">
                                                                         <div class="hover-zoom hover-zoom-extra">
-                                                                            <img src="@item.IconUrl" alt="@item.Name" style="width:3em; height:3em" />
+                                                                            <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" alt="@item.Name" style="width:3em; height:3em" />
                                                                         </div>
                                                                     </MudChip>
                                                                 </MudTooltip>
@@ -1035,7 +1035,7 @@
                                         }
                                         <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">@GetActivityDescription(item)</MudText>
                                         <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.Quantity.ToQuantityString()x</MudText>
-                                        <img src="@item.IconUrl" class="mx-1" style="width:32px; height:32px;" />
+                                        <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" class="mx-1" style="width:32px; height:32px;" />
                                         <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">for</MudText>
                                         <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                                         @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
@@ -1395,11 +1395,12 @@
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
-            ["ListName"] = $"Marketable {Item.ItemType.Pluralise()}",
+            ["ListName"] = $"All {Item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?type={Item.ItemType}&count=-1",
+            ["DemandUrl"] = $"api/item/type/{Item.ItemType}/demand",
             ["HighlightedItemId"] = Item.Id,
-            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.BuyNowPrice),
-            ["SortDirection"] = MudBlazor.SortDirection.Ascending
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+            ["SortDirection"] = MudBlazor.SortDirection.Descending
         });
     }
 

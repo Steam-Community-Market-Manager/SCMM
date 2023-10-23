@@ -753,6 +753,33 @@ namespace SCMM.Steam.API.Commands
                             }
                         }
                     }
+
+                    // SCMM item category asset filter
+                    if (!String.IsNullOrEmpty(assetDescription.ItemType) && !assetDescription.Tags.ContainsKey(Constants.AssetTagItemCategory))
+                    {
+                        assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                        if (assetDescription.ItemType.IsRustArmourItemType() || assetDescription.ItemType.IsRustClothingItemType())
+                        {
+                            assetDescription.Tags.Add(Constants.AssetTagItemCategory, Constants.AssetTagItemCategoryWearable);
+                        }
+                        else if (assetDescription.ItemType.IsRustGunItemType() || assetDescription.ItemType.IsRustWeaponItemType() || assetDescription.ItemType.IsRustToolItemType())
+                        {
+                            assetDescription.Tags.Add(Constants.AssetTagItemCategory, Constants.AssetTagItemCategoryEquipable);
+                        }
+                        else if (assetDescription.ItemType.IsRustConstructionItemType() || assetDescription.ItemType.IsRustDeployableItemType())
+                        {
+                            assetDescription.Tags.Add(Constants.AssetTagItemCategory, Constants.AssetTagItemCategoryDeployable);
+                        }
+                        else if (assetDescription.IsCraftingComponent)
+                        {
+                            assetDescription.Tags.Add(Constants.AssetTagItemCategory, Constants.RustItemTypeResource);
+                        }
+                        else if (assetDescription.IsCraftable)
+                        {
+                            assetDescription.Tags.Add(Constants.AssetTagItemCategory, Constants.RustItemTypeSkinContainer);
+                        }
+                    }
+
                     break;
 
                 // Unturned

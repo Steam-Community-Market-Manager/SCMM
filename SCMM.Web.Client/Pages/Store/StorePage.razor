@@ -6,6 +6,7 @@
 @page "/store"
 @page "/store/{StoreId}"
 @page "/steam/store"
+@page "/"
 @inherits PersistentComponent
 @inject ILogger<StorePage> Logger
 @inject IDialogService Dialogs
@@ -98,7 +99,7 @@ else if (StoreList.Any())
                                              Placeholder="Add an item to this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" Disabled="State.IsPrerendering">
                                 <ItemTemplate Context="item">
                                     <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                        <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" class="mr-1" style="width:32px; height:32px;" />
                                         <MudText Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
                                     </div>
                                 </ItemTemplate>
@@ -184,7 +185,7 @@ else if (StoreList.Any())
                                         <MudItem xs="12" xl="5" Class="d-flex flex-column flex-grow-1">
                                             <MudTooltip Text="View more item details" RootClass="d-flex flex-grow-1 align-center justify-center full-width full-height">
                                                 <div class="d-flex flex-grow-1 align-center justify-center hover-zoom hover-zoom-extra ">
-                                                    <img src="@item.IconUrl" @onclick="@(() => ShowItemDetailsDialog(item))" class="@($"{GetItemIconClass(item)} icon full-width pa-2")" style="@($"{GetItemIconStyles(item)}")" />
+                                                    <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" @onclick="@(() => ShowItemDetailsDialog(item))" class="@($"{GetItemIconClass(item)} icon full-width pa-2")" style="@($"{GetItemIconStyles(item)}")" />
                                                 </div>
                                             </MudTooltip>
                                             <div class="d-flex flex-column flex-grow-0 flex-shrink-1 align-center justify-center">
@@ -296,7 +297,7 @@ else if (StoreList.Any())
                                                     </span>
                                                 </MudText>
                                             }
-                                            @if (item.TimeCreated != null && item.TimeAccepted != null)
+                                            @if (item.TimeCreated != null && item.TimeAccepted != null && (item.TimeAccepted.Value - item.TimeCreated.Value) > TimeSpan.Zero)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-stopwatch mud-secondary-text"></i>
@@ -823,9 +824,10 @@ else
         {
             ["ListName"] = $"Marketable {item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
+            ["DemandUrl"] = $"api/item/type/{item.ItemType}/demand",
             ["HighlightedItemId"] = item.AssetDescriptionId,
-            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.BuyNowPrice),
-            ["SortDirection"] = MudBlazor.SortDirection.Ascending
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+            ["SortDirection"] = MudBlazor.SortDirection.Descending
         });
     }
 

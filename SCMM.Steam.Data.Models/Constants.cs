@@ -114,6 +114,13 @@
 
         public const string LatestSystemUpdatesCacheKey = "latest-system-updates";
 
+        public const string AssetTagItemCategory = "scmmcat";
+        public const string AssetTagItemCategoryWearable = "Wearable";
+        public const string AssetTagItemCategoryEquipable = "Equipable";
+        public const string AssetTagItemCategoryDeployable = "Deployable";
+        public const string AssetTagItemCategoryResource = "Resource";
+        public const string AssetTagItemCategoryContainer = "Container";
+
         #endregion
     }
 }

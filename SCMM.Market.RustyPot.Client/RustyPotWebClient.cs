@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
+using SocketIO.Core;
 using SocketIOClient;
 using SocketIOClient.Transport;
 using System.Net;
@@ -30,7 +31,7 @@ namespace SCMM.Market.RustyPot.Client
 
         public async Task<IDisposable> MonitorAsync()
         {
-            var client = new SocketIO($"wss://{WebsiteHostname}", new SocketIOOptions
+            var client = new SocketIOClient.SocketIO($"wss://{WebsiteHostname}", new SocketIOOptions
             {
                 Path = "/socket.io",
                 EIO = EngineIO.V4,

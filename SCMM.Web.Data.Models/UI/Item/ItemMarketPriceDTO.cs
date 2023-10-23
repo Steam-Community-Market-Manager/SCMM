@@ -21,5 +21,10 @@ namespace SCMM.Web.Data.Models.UI.Item
         public bool IsAvailable { get; set; }
 
         public string Url { get; set; }
+
+        public override string ToString()
+        {
+            return $"{MarketType}:{Price}x{(Supply?.ToString() ?? "?")}";
+        }
     }
 }

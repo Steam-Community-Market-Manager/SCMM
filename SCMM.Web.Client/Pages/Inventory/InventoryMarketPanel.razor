@@ -166,7 +166,7 @@ else
                     {
                         <MudTooltip Text="@($"{State.Currency.ToPriceString(item.Value - item.Movement)} → {State.Currency.ToPriceString(item.Value, dense: true)}")">
                             <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
-                                <img src="@(item.Item.IconUrl)" class="icon mx-1" />
+                                <img src="@(item.Item.IconUrl)" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.Item.ItemType.RustItemTypeToShortName()}.png'")" class="icon mx-1" />
                                 <div class="d-flex flex-column">
                                     <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
                                         <span>@(item.Item.Name)</span>
@@ -197,7 +197,7 @@ else
                     {
                         <MudTooltip Text="@($"{State.Currency.ToPriceString(item.Value - item.Movement)} ➜ {State.Currency.ToPriceString(item.Value, dense: true)}")">
                             <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
-                                <img src="@(item.Item.IconUrl)" class="icon mx-1" />
+                                <img src="@(item.Item.IconUrl)" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.Item.ItemType.RustItemTypeToShortName()}.png'")" class="icon mx-1" />
                                 <div class="d-flex flex-column">
                                     <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
                                         <span>@(item.Item.Name)</span>
