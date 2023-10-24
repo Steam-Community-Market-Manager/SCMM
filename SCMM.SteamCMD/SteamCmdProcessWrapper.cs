@@ -7,47 +7,90 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace SCMM.SteamCMD;
+
 public class SteamCmdProcessWrapper : ISteamConsoleClient
 {
     private readonly ILogger<SteamCmdProcessWrapper> _logger;
 
+    private const string DownloadSteamCmdUrl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip";
+    
+    private const string SteamCmdRootPath = "steam";
+    private const string SteamCmdExecutableName = "steamcmd.exe";
+    
     public SteamCmdProcessWrapper(ILogger<SteamCmdProcessWrapper> logger)
     {
         _logger = logger;
     }
 
+    private string GetSteamCmdExecutablePath()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return $"{SteamCmdRootPath}{Path.DirectorySeparatorChar}{SteamCmdExecutableName}";
+        }
+
+        throw new PlatformNotSupportedException($"SteamCmd does not support this OS platform");
+    }
+
+    private async Task<bool> DownloadSteamCmdExecutable()
+    {
+        // If already exists, exit early
+        var steamCmdExecutablePath = GetSteamCmdExecutablePath();
+        if (File.Exists(steamCmdExecutablePath))
+        {
+            return true;
+        }
+
+        // If the tools directory doesn't exist, create it now
+        if (!Directory.Exists(SteamCmdRootPath))
+        {
+            Directory.CreateDirectory(SteamCmdRootPath);
+        }
+
+        // Download SteamCmd from the internet
+        using (var httpClient  = new HttpClient())
+        {
+            var steamCmdZipBytes = await httpClient.GetByteArrayAsync(DownloadSteamCmdUrl);
+            if (steamCmdZipBytes?.Length > 0)
+            {
+                var steamCmdZipPath = $"{steamCmdExecutablePath}.zip";
+                File.WriteAllBytes(steamCmdZipPath, steamCmdZipBytes);
+                ZipFile.ExtractToDirectory(steamCmdZipPath, SteamCmdRootPath, true);
+                File.Delete(steamCmdZipPath);
+            }
+        }
+
+        return File.Exists(steamCmdExecutablePath);
+    }
+
     public async Task<WebFileData?> DownloadWorkshopFile(string appId, string workshopFileId, bool clearCache = true)
     {
         var workshopFileName = $"{appId}-{workshopFileId}.zip";
-        var workshopFileBasePath = $"Tools{Path.DirectorySeparatorChar}steamapps{Path.DirectorySeparatorChar}workshop{Path.DirectorySeparatorChar}content{Path.DirectorySeparatorChar}{appId}{Path.DirectorySeparatorChar}{workshopFileId}";
+        var workshopFileBasePath = $"{SteamCmdRootPath}{Path.DirectorySeparatorChar}steamapps{Path.DirectorySeparatorChar}workshop{Path.DirectorySeparatorChar}content{Path.DirectorySeparatorChar}{appId}{Path.DirectorySeparatorChar}{workshopFileId}";
         var workshopFileZipPath = $"{workshopFileBasePath}{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}{workshopFileName}";
 
         try
         {
-            var steamCmdPath = "";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // Get SteamCmd (if not already present)
+            var steamCmdExecutablePath = GetSteamCmdExecutablePath();
+            if (!File.Exists(steamCmdExecutablePath))
             {
-                steamCmdPath = $"Tools{Path.DirectorySeparatorChar}steamcmd.exe";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                steamCmdPath = $"Tools{Path.DirectorySeparatorChar}steamcmd.sh";
-                // TODO: $"chmod 755 {steamCmdPath}"
-            }
-            if (String.IsNullOrEmpty(steamCmdPath))
-            {
-                throw new PlatformNotSupportedException($"Workshop file download failed, OS platform is not supported");
+                if (!(await DownloadSteamCmdExecutable()))
+                {
+                    throw new Exception($"Workshop file download failed, unable to download Steam command line tools");
+                }
             }
 
+            // Clear SteamCmd cache directories (if requested)
             if (clearCache)
             {
                 // Sometimes Steam will fail with error "Download item {workshopFileId} failed (Failure)".
                 // This is normally a temporary error which can be fixed by deleting the cached download and trying again
                 var cachedPaths = new string[]
                 {
-                    $"Tools{Path.DirectorySeparatorChar}appcache",
-                    $"Tools{Path.DirectorySeparatorChar}steamapps",
-                    $"Tools{Path.DirectorySeparatorChar}userdata"
+                    $"{SteamCmdRootPath}{Path.DirectorySeparatorChar}appcache",
+                    $"{SteamCmdRootPath}{Path.DirectorySeparatorChar}steamapps",
+                    $"{SteamCmdRootPath}{Path.DirectorySeparatorChar}userdata"
                 };
                 foreach (var cachedPath in cachedPaths)
                 {
@@ -58,9 +101,10 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
                 }
             }
 
+            // Use SteamCmd to download the workshop file
             var downloadProcess = Process.Start(new ProcessStartInfo()
             {
-                FileName = steamCmdPath,
+                FileName = steamCmdExecutablePath,
                 Arguments = $"+login anonymous +workshop_download_item {appId} {workshopFileId} +quit",
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -97,6 +141,7 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
                 }
             }
 
+            // Package the workshop file in to a zip archive
             ZipFile.CreateFromDirectory(workshopFileBasePath, workshopFileZipPath, CompressionLevel.SmallestSize, includeBaseDirectory: false);
             if (!File.Exists(workshopFileZipPath))
             {
@@ -117,6 +162,7 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
         }
         finally
         {
+            // Clean up temporary directories
             if (File.Exists(workshopFileZipPath))
             {
                 File.Delete(workshopFileZipPath);
