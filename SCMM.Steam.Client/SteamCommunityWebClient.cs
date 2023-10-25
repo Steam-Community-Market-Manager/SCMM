@@ -29,7 +29,7 @@ namespace SCMM.Steam.Client
     public class ProxiedSteamCommunityWebClient : SteamWebClient
     {
         public ProxiedSteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, IWebProxy proxy)
-            : base(logger, cache, session: null, proxy: proxy)
+            : base(logger, cache, proxy: proxy)
         {
             // Transport
             DefaultHeaders.Add("Host", new Uri(Constants.SteamCommunityUrl).Host);
@@ -90,6 +90,24 @@ namespace SCMM.Steam.Client
             return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request, useCache);
         }
 
+        public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverview(SteamMarketPriceOverviewJsonRequest request, bool useCache = false)
+        {
+            try
+            {
+                DefaultHeaders["Referer"] = new SteamMarketListingPageRequest()
+                {
+                    AppId = request.AppId,
+                    MarketHashName = request.MarketHashName,
+                };
+
+                return await GetJson<SteamMarketPriceOverviewJsonRequest, SteamMarketPriceOverviewJsonResponse>(request, useCache);
+            }
+            finally
+            {
+                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
+            }
+        }
+
         public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request, string appId, string marketNameHash, bool useCache = false)
         {
             try
@@ -119,69 +137,6 @@ namespace SCMM.Steam.Client
                 };
 
                 return await GetJson<SteamMarketItemOrdersHistogramJsonRequest, SteamMarketItemOrdersHistogramJsonResponse>(request, useCache);
-            }
-            finally
-            {
-                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
-            }
-        }
-
-        #endregion
-    }
-
-    /// <inheritdoc />
-    public class AuthenticatedProxiedSteamCommunityWebClient : SteamWebClient
-    {
-        public AuthenticatedProxiedSteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
-            : base(logger, cache, session: session, proxy: proxy)
-        {
-        }
-
-        #region Market
-
-        /*
-        public async Task<SteamMarketMyListingsPaginatedJsonResponse> GetMarketMyListingsPaginated(SteamMarketMyListingsPaginatedJsonRequest request, bool useCache = false)
-        {
-            return await GetJson<SteamMarketMyListingsPaginatedJsonRequest, SteamMarketMyListingsPaginatedJsonResponse>(request, useCache);
-        }
-
-        public async Task<SteamMarketMyHistoryPaginatedJsonResponse> GetMarketMyHistoryPaginated(SteamMarketMyHistoryPaginatedJsonRequest request, bool useCache = false)
-        {
-            return await GetJson<SteamMarketMyHistoryPaginatedJsonRequest, SteamMarketMyHistoryPaginatedJsonResponse>(request, useCache);
-        }
-        */
-
-        // TODO: Move to unauthenticated?
-        public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverview(SteamMarketPriceOverviewJsonRequest request, bool useCache = false)
-        {
-            try
-            {
-                DefaultHeaders["Referer"] = new SteamMarketListingPageRequest()
-                {
-                    AppId = request.AppId,
-                    MarketHashName = request.MarketHashName,
-                };
-
-                return await GetJson<SteamMarketPriceOverviewJsonRequest, SteamMarketPriceOverviewJsonResponse>(request, useCache);
-            }
-            finally
-            {
-                DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
-            }
-        }
-
-        // TODO: Move to unauthenticated?
-        public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request, bool useCache = false)
-        {
-            try
-            {
-                DefaultHeaders["Referer"] = new SteamMarketListingPageRequest()
-                {
-                    AppId = request.AppId,
-                    MarketHashName = request.MarketHashName,
-                };
-
-                return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request, useCache);
             }
             finally
             {

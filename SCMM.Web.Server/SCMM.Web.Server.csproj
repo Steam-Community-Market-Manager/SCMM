@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>E:\Development\SCMM\SCMM.Web.Server\SCMM.Web.Server.xml</DocumentationFile>
+    <DocumentationFile>SCMM.Web.Server.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>E:\Development\SCMM\SCMM.Web.Server\SCMM.Web.Server.xml</DocumentationFile>
+    <DocumentationFile>SCMM.Web.Server.xml</DocumentationFile>
   </PropertyGroup>
   
   <ItemGroup>

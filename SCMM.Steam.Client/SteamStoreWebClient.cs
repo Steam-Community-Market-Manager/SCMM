@@ -25,7 +25,7 @@ namespace SCMM.Steam.Client
     public class ProxiedSteamStoreWebClient : SteamWebClient
     {
         public ProxiedSteamStoreWebClient(ILogger<SteamStoreWebClient> logger, IDistributedCache cache, IWebProxy proxy)
-            : base(logger, cache, session: null, proxy: proxy)
+            : base(logger, cache, proxy: proxy)
         {
             // Transport
             DefaultHeaders.Add("Host", new Uri(Constants.SteamStoreUrl).Host);
@@ -66,14 +66,5 @@ namespace SCMM.Steam.Client
         }
 
         #endregion
-    }
-
-    /// <inheritdoc />
-    public class AuthenticatedProxiedSteamStoreWebClient : SteamWebClient
-    {
-        public AuthenticatedProxiedSteamStoreWebClient(ILogger<SteamStoreWebClient> logger, IDistributedCache cache, SteamSession session, IWebProxy proxy)
-            : base(logger, cache, session: session, proxy: proxy)
-        {
-        }
     }
 }

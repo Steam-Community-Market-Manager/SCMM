@@ -41,12 +41,12 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _steamConfiguration;
         private readonly SteamDbContext _steamDb;
         private readonly SteamWebApiClient _steamApiClient;
-        private readonly AuthenticatedProxiedSteamCommunityWebClient _steamCommunityClient;
+        private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
         private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAppItemDefinitionsArchive(ILogger<ImportSteamAppItemDefinitionsArchive> logger, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamApiClient, AuthenticatedProxiedSteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAppItemDefinitionsArchive(ILogger<ImportSteamAppItemDefinitionsArchive> logger, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _steamConfiguration = steamConfiguration;

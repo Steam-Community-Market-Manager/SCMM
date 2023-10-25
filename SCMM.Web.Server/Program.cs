@@ -185,7 +185,6 @@ public static class WebApplicationExtensions
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
-        builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<IImageAnalysisService, AzureAiClient>();
 
@@ -194,8 +193,6 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamCommunityWebClient>();
         builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
         builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Auto-mapper

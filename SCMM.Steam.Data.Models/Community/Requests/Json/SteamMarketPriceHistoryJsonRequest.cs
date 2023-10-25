@@ -1,5 +1,6 @@
 ﻿namespace SCMM.Steam.Data.Models.Community.Requests.Json
 {
+    /// <remarks>This API requires authentication</remarks>
     public class SteamMarketPriceHistoryJsonRequest : SteamRequest
     {
         public string AppId { get; set; }

@@ -132,6 +132,21 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemDemandByItemType(System.String)">
+            <summary>
+            Get demand statistics for all items of the specified type
+            </summary>
+            <param name="type">The item type</param>=
+            <returns>The demand statistics for the item type</returns>
+            <remarks>
+            Response is cached for 12hrs.
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <response code="200">The demand statistics for the item type.</response>
+            <response code="400">If the item type is missing.</response>
+            <response code="404">If the item type doesn't exist (or doesn't contain any marketable items).</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String,System.Nullable{System.UInt64})">
             <summary>
             Get all items that belong to the specified collection
@@ -380,6 +395,26 @@
             <response code="404">If the inventory item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.CombineInventoryItemStacks(System.String,System.String,System.Boolean)">
+            <summary>
+            Combine all inventory items together in to the smallest possible stack
+            </summary>
+            <remarks>This API requires authentication and a Steam Web API key to use</remarks>
+            <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
+            <param name="apiKey">
+            Valid Steam Web API key with permission to modify the source and destination items.
+            You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
+            Read https://scmm.app/privacy for more about how your Steam API key is handled.
+            </param>
+            <param name="stackUntradableAndUnmarketable">
+            If true, untradeable and unmarketable items will be stacked too, which may cause trade/market restrictions to be applied to the resulting stack.
+            </param>
+            <response code="200">If the inventory items were combined successfully.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
+            <response code="404">If the inventory items cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.CombineInventoryItemStacks(System.String,System.String,System.UInt64,System.Collections.Generic.IDictionary{System.UInt64,System.UInt32})">
             <summary>
             Combine multiple inventory item stacks together
@@ -463,7 +498,7 @@
             <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketFlips(System.String,System.Nullable{SCMM.Steam.Data.Models.Enums.MarketType},System.Boolean,System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketFlips(System.String,System.Nullable{SCMM.Steam.Data.Models.Enums.MarketType},System.Nullable{System.Decimal},System.Boolean,System.Int32,System.Int32)">
             <summary>
             Get items that can be instantly flipped on to the Steam Community Market for profit
             </summary>
@@ -472,13 +507,14 @@
             </remarks>
             <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
             <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+            <param name="minimumInvestmentReliability"></param>
             <param name="sellNow">If true, sell prices are based on highest buy order. If false, sell prices are based on lowest sell order. Default is true.</param>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
             <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketCheapestListings(System.String,System.Nullable{SCMM.Steam.Data.Models.Enums.MarketType},System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketCheapestListings(System.String,System.Nullable{SCMM.Steam.Data.Models.Enums.MarketType},System.Nullable{System.Decimal},System.Int32,System.Int32)">
             <summary>
             Get the cheapeast market listing for items
             </summary>
@@ -487,6 +523,7 @@
             </remarks>
             <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
             <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+            <param name="minimumInvestmentReliability"></param>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
             <response code="200">Paginated list of items matching the request parameters.</response>

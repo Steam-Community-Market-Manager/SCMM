@@ -19,16 +19,12 @@ namespace SCMM.Steam.Client
     {
         private readonly ILogger<SteamWebClient> _logger;
         private readonly IDistributedCache _cache;
-        private readonly SteamSession _session;
 
-        public SteamWebClient(ILogger<SteamWebClient> logger, IDistributedCache cache, SteamSession session = null, IWebProxy proxy = null) : base(cookieContainer: session?.Cookies, proxy)
+        public SteamWebClient(ILogger<SteamWebClient> logger, IDistributedCache cache, IWebProxy proxy = null) : base(webProxy: proxy)
         {
             _logger = logger;
             _cache = cache;
-            _session = session;
         }
-
-        public SteamSession Session => _session;
 
         private string SafeUrl(string requestUrl)
         {
@@ -180,20 +176,6 @@ namespace SCMM.Steam.Client
                     {
                         // Disable the current web proxy and rotate to the next proxy if possible
                         DisableWebProxyForHost(proxyId);
-                        return await GetWithRetry(request, (retryAttempt + 1));
-                    }
-                }
-
-                // Check if the request might have failed due to missing or expired Steam authentication
-                // 400: BadRequest
-                // 401: Unauthorized
-                // 403: Forbidden
-                if (ex.IsSteamAuthenticationRequired && _session != null)
-                {
-                    // If it has been more than 10 minutes since we last authenticated, try login to Steam again. This error might just be that our token has expired.
-                    if (_session.LastLoginOn == null || (DateTimeOffset.Now - _session.LastLoginOn.Value) >= TimeSpan.FromMinutes(10))
-                    {
-                        _session.Refresh();
                         return await GetWithRetry(request, (retryAttempt + 1));
                     }
                 }
