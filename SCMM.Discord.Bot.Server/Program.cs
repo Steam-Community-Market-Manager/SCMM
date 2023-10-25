@@ -181,7 +181,6 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());
         builder.Services.AddSingleton<DiscordClient>();
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
-        builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton(x => builder.Configuration.GetFixerConfiguration());
         builder.Services.AddSingleton<ICurrencyExchangeService, FixerWebClient>();
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
@@ -193,8 +192,6 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamCommunityWebClient>();
         builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
         builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Command/query/message handlers

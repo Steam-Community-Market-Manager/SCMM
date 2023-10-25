@@ -4,20 +4,22 @@ using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
-using SCMM.Steam.Data.Models.Community.Requests.Json;
-using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemSales
 {
     private readonly SteamDbContext _db;
-    private readonly AuthenticatedProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
 
-    public UpdateMarketItemSales(SteamDbContext db, AuthenticatedProxiedSteamCommunityWebClient steamCommunityWebClient)
+    public UpdateMarketItemSales(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -45,8 +47,8 @@ public class UpdateMarketItemSales
             return;
         }
 
-        var nzdCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == "NZD");
-        if (nzdCurrency == null)
+        var usdCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+        if (usdCurrency == null)
         {
             return;
         }
@@ -59,19 +61,25 @@ public class UpdateMarketItemSales
         {
             try
             {
-                var response = await _steamCommunityWebClient.GetMarketPriceHistory(
-                    new SteamMarketPriceHistoryJsonRequest()
-                    {
-                        AppId = item.App.SteamId,
-                        MarketHashName = item.Description.Name,
-                        //CurrencyId = item.Currency.SteamId
-                    }
+                var responseHtml = await _steamCommunityWebClient.GetText(
+                     new SteamMarketListingPageRequest()
+                     {
+                         AppId = item.App.SteamId,
+                         MarketHashName = item.Description.Name,
+                     }
                 );
 
-                // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
-                // TODO: Find/buy a Steam account that is locked to USD for better accuracy
-                await UpdateMarketItemSalesHistory(item, response, nzdCurrency);
-                logger.LogInformation($"Market item sales history updated for '{item.Description?.Name}' ({item.Description?.ClassId})");
+                var salesHistoryGraphArray = Regex.Match(responseHtml, @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
+                if (!string.IsNullOrEmpty(salesHistoryGraphArray))
+                {
+                    var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphArray}]"); 
+                    await UpdateMarketItemSalesHistory(item, salesHistoryGraph, usdCurrency);
+                    logger.LogInformation($"Market item sales history updated for '{item.Description?.Name}' ({item.Description?.ClassId})");
+                }
+                else
+                {
+                    throw new Exception("Unable to find sales history graph data in response");
+                }
             }
             catch (SteamRequestException ex)
             {
@@ -90,9 +98,9 @@ public class UpdateMarketItemSales
         logger.LogTrace($"Updated market item sales information (id: {id})");
     }
 
-    private async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, SteamMarketPriceHistoryJsonResponse sales, SteamCurrency salesCurrency = null)
+    private async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, string[][] salesGraph, SteamCurrency salesCurrency = null)
     {
-        if (item == null || sales?.Success != true)
+        if (item == null || salesGraph == null || salesGraph.Length == 0)
         {
             return item;
         }
@@ -107,7 +115,7 @@ public class UpdateMarketItemSales
         }
 
         // If the sales are not already in our items currency, exchange them now
-        var itemSales = ParseMarketItemSalesFromGraph(sales.Prices, item.LastCheckedSalesOn);
+        var itemSales = ParseMarketItemSalesFromGraph(salesGraph, item.LastCheckedSalesOn);
         if (itemSales != null && salesCurrency != null && salesCurrency.Id != item.CurrencyId)
         {
             foreach (var sale in itemSales)

@@ -163,7 +163,6 @@ public static class HostExtensions
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetSteamConfiguration();
             });
-            services.AddSingleton<SteamSession>();
             services.AddSingleton((services) =>
             {
                 var configuration = services.GetService<IConfiguration>();
@@ -176,8 +175,6 @@ public static class HostExtensions
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<ProxiedSteamStoreWebClient>();
             services.AddScoped<ProxiedSteamCommunityWebClient>();
-            services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
-            services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
             // Command/query/message handlers

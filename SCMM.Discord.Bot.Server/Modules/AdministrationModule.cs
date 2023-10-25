@@ -26,7 +26,6 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly SteamDbContext _steamDb;
         private readonly SteamWebApiClient _steamWebApiClient;
         private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
-        private readonly AuthenticatedProxiedSteamCommunityWebClient _steamAuthenticatedCommunityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IServiceBus _serviceBus;
@@ -35,14 +34,13 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly IStatisticsService _statisticsService;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(DiscordDbContext discordDb, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, AuthenticatedProxiedSteamCommunityWebClient steamAuthenticatedCommunityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, IStatisticsService statisticsService, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, IStatisticsService statisticsService, CommandService commandService)
         {
             _discordDb = discordDb;
             _steamConfiguration = steamConfiguration;
             _steamDb = steamDb;
             _steamWebApiClient = steamWebApiClient;
             _steamCommunityClient = steamCommunityClient;
-            _steamAuthenticatedCommunityClient = steamAuthenticatedCommunityClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _serviceBus = serviceBus;
