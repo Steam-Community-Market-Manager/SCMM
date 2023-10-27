@@ -8,6 +8,7 @@ using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using System.Collections.Concurrent;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -15,6 +16,9 @@ public class UpdateMarketItemOrders
 {
     private readonly SteamDbContext _db;
     private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+
+    private const int MarketItemBatchSize = 30;
+    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
 
     public UpdateMarketItemOrders(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient)
     {
@@ -25,93 +29,100 @@ public class UpdateMarketItemOrders
     [Function("Update-Market-Item-Orders")]
     public async Task Run([TimerTrigger("15 * * * * *")] /* 15 seconds past every minute */ TimerInfo timerInfo, FunctionContext context)
     {
+        var id = Guid.NewGuid();
         var logger = context.GetLogger("Update-Market-Item-Orders");
+        logger.LogTrace($"Updating market item orders information (id: {id})");
 
-        var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
+        // Find the next batch of items to be updated
+        var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
         var items = _db.SteamMarketItems
-            .Include(x => x.App)
-            .Include(x => x.Currency)
-            .Include(x => x.Description)
+            .AsNoTracking()
             .Where(x => !string.IsNullOrEmpty(x.SteamId))
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedOrdersOn)
-            .Take(30) // batch 30 items per minute
-            .ToList();
-
+            .Take(MarketItemBatchSize)
+            .Select(x => new
+            {
+                Id = x.Id,
+                ItemNameId = x.SteamId,
+                CurrencyId = x.Currency.SteamId,
+                AppId = x.App.SteamId,
+                MarketHashName = x.Description.NameHash
+            })
+            .ToArray();
         if (!items.Any())
         {
             return;
         }
 
-        //_steamCommunityWebClient.IfModifiedSinceTimeAgo = TimeSpan.FromHours(1);
+        // Ignore Steam data which has not changed recently
+        _steamCommunityWebClient.IfModifiedSinceTimeAgo = MarketItemMinimumAgeSinceLastUpdate;
 
-        var id = Guid.NewGuid();
-        logger.LogTrace($"Updating market item orders information (id: {id}, count: {items.Count()})");
-        foreach (var item in items)
+        // Fetch item data from steam in parallel (for better performance)
+        var itemResponseMappings = new ConcurrentDictionary<Guid, SteamMarketItemOrdersHistogramJsonResponse>();
+        await Parallel.ForEachAsync(items, async (item, cancellationToken) =>
         {
             try
             {
-                var response = await _steamCommunityWebClient.GetMarketItemOrdersHistogram(
+                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetMarketItemOrdersHistogram(
                     new SteamMarketItemOrdersHistogramJsonRequest()
                     {
-                        ItemNameId = item.SteamId,
+                        ItemNameId = item.ItemNameId,
                         Language = Constants.SteamDefaultLanguage,
-                        CurrencyId = item.Currency.SteamId,
+                        CurrencyId = item.CurrencyId,
                         NoRender = true
                     },
-                    item.App.SteamId.ToString(),
-                    item.Description.NameHash
+                    item.AppId.ToString(),
+                    item.MarketHashName
                 );
-
-                await UpdateMarketItemOrderHistory(item, response);
-                logger.LogInformation($"Market item orders updated for '{item.Description?.Name}' ({item.Description?.ClassId})");
             }
             catch (SteamRequestException ex)
             {
-                logger.LogError(ex, $"Failed to update market item orders for '{item.SteamId}'. {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item orders for '{item.MarketHashName}' ({item.Id}). {ex.Message}");
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogInformation(ex, $"No change in market item orders for '{item.SteamId}' since last request. {ex.Message}");
+                logger.LogInformation(ex, $"No change in market item orders for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
-            finally
-            {
-                await _db.SaveChangesAsync();
-            }
+        });
+
+        // Parse the responses and update the item prices
+        if (itemResponseMappings.Any())
+        {
+            await UpdateMarketItemOrderHistory(itemResponseMappings);
         }
 
         logger.LogTrace($"Updated market item orders information (id: {id})");
     }
 
-    private async Task<SteamMarketItem> UpdateMarketItemOrderHistory(SteamMarketItem item, SteamMarketItemOrdersHistogramJsonResponse histogram)
+    private async Task UpdateMarketItemOrderHistory(IDictionary<Guid, SteamMarketItemOrdersHistogramJsonResponse> itemResponses)
     {
-        if (item == null || histogram?.Success != true)
+        var itemIds = itemResponses.Keys.ToArray();
+        var items = await _db.SteamMarketItems
+            .Where(x => itemIds.Contains(x.Id))
+            .Include(x => x.App)
+            .Include(x => x.Currency)
+            .Include(x => x.Description)
+            .Include(x => x.BuyOrders)
+            .Include(x => x.SellOrders)
+            .AsSplitQuery()
+            .ToArrayAsync();
+
+        Parallel.ForEach(items, (item) =>
         {
-            return item;
-        }
+            var histogram = itemResponses[item.Id];
+            item.LastCheckedOrdersOn = DateTimeOffset.Now;
+            item.RecalculateOrders(
+                ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
+                histogram.BuyOrderCount.SteamQuantityValueAsInt(),
+                ParseMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
+                histogram.SellOrderCount.SteamQuantityValueAsInt()
+            );
+        });
 
-        // Lazy-load buy/sell order history if missing, required for recalculation
-        if (item.BuyOrders?.Any() != true || item.SellOrders?.Any() != true)// || item.OrdersHistory?.Any() != true)
-        {
-            item = await _db.SteamMarketItems
-                .Include(x => x.BuyOrders)
-                .Include(x => x.SellOrders)
-                //.Include(x => x.OrdersHistory)
-                .AsSplitQuery()
-                .SingleOrDefaultAsync(x => x.Id == item.Id);
-        }
-
-        item.LastCheckedOrdersOn = DateTimeOffset.Now;
-        item.RecalculateOrders(
-            ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
-            histogram.BuyOrderCount.SteamQuantityValueAsInt(),
-            ParseMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
-            histogram.SellOrderCount.SteamQuantityValueAsInt()
-        );
-
-        return item;
+        await _db.SaveChangesAsync();
     }
 
     private T[] ParseMarketItemOrdersFromGraph<T>(string[][] orderGraph)
