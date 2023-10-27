@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
@@ -19,22 +20,35 @@ public class UpdateMarketItemSales
 {
     private readonly SteamDbContext _db;
     private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly IWebProxyManager _webProxyManager;
 
     private const int MarketItemBatchSize = 30;
     private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
 
-    public UpdateMarketItemSales(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient)
+    public UpdateMarketItemSales(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
+        _webProxyManager = webProxyManager;
     }
 
     [Function("Update-Market-Item-Sales")]
     public async Task Run([TimerTrigger("45 * * * * *")] /* 45 seconds past every minute */ TimerInfo timerInfo, FunctionContext context)
     {
-        var id = Guid.NewGuid();
+        var jobId = Guid.NewGuid();
         var logger = context.GetLogger("Update-Market-Item-Sales");
-        logger.LogTrace($"Updating market item sales information (id: {id})");
+
+        // Check that there are enough web proxies available to handle this batch of SCM requests, otherwise we cannot run
+        var availableProxies = _webProxyManager.GetAvailableProxyCount(new Uri(Constants.SteamCommunityUrl));
+        if (availableProxies < MarketItemBatchSize)
+        {
+            logger.LogWarning($"Update of market item sales information will be skipped as there are not enough available web proxies to handle our requests (proxies: {availableProxies}/{MarketItemBatchSize})");
+            return;
+        }
+        else
+        {
+            logger.LogInformation($"Updating market item sales information (id: {jobId})");
+        }
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -87,7 +101,7 @@ public class UpdateMarketItemSales
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogInformation(ex, $"No change in market item sales history for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
+                logger.LogDebug(ex, $"No change in market item sales history for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
         });
 
@@ -97,7 +111,7 @@ public class UpdateMarketItemSales
             await UpdateMarketItemSalesHistory(itemResponseMappings);
         }
 
-        logger.LogTrace($"Updated market item sales information (id: {id})");
+        logger.LogInformation($"Updated {itemResponseMappings.Count} market item sales information (id: {jobId})");
     }
 
     private async Task UpdateMarketItemSalesHistory(IDictionary<Guid, string> itemResponses)
