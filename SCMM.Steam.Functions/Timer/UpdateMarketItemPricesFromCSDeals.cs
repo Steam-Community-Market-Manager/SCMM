@@ -101,7 +101,7 @@ public class UpdateMarketItemPricesFromCSDeals
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
                 {
                     x.TotalItems = csDealsInventoryItemGroups.Count();
                     x.TotalListings = csDealsInventoryItemGroups.Sum(x => x.Sum(y => y.ItemIds?.Length ?? 0));
@@ -116,7 +116,7 @@ public class UpdateMarketItemPricesFromCSDeals
                 try
                 {
                     logger.LogError(ex, $"Failed to update trade item price information from CS.Deals (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;
@@ -168,7 +168,7 @@ public class UpdateMarketItemPricesFromCSDeals
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsMarketplace, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsMarketplace, x =>
                 {
                     x.TotalItems = csDealsLowestPriceItems.Count();
                     x.TotalListings = null;
@@ -183,7 +183,7 @@ public class UpdateMarketItemPricesFromCSDeals
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from CS.Deals (appId: {app.SteamId}, source: lowest price items). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsMarketplace, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsMarketplace, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

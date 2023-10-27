@@ -179,13 +179,13 @@ public static class WebApplicationExtensions
         }
 
         // Web proxies
-        builder.Services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
-        builder.Services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
-        builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
+        builder.Services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
+        builder.Services.AddSingleton<IWebProxyManager>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<IWebProxy>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<RotatingWebProxy>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
-        builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
         builder.Services.AddSingleton<IImageAnalysisService, AzureAiClient>();
 
@@ -194,8 +194,6 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamCommunityWebClient>();
         builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
         builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Auto-mapper

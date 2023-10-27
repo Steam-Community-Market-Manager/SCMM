@@ -1,25 +1,17 @@
-﻿namespace SCMM.Shared.Data.Models.Extensions
+﻿
+namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class ListExtensions
     {
-        public static void AddIfMissing<T>(this ICollection<T> list, T element)
-        {
-            if (!list.Contains(element))
-            {
-                list.Add(element);
-            }
-        }
-
         public static void AddRange<T>(this ICollection<T> destination, IEnumerable<T> source)
         {
-            var list = destination as List<T>;
-            if (list != null)
+            if (destination is List<T> list)
             {
                 list.AddRange(source);
             }
             else
             {
-                foreach (var item in source)
+                foreach (var item in source.ToArray())
                 {
                     destination.Add(item);
                 }
@@ -28,8 +20,7 @@
 
         public static void RemoveAll<T>(this ICollection<T> destination, Predicate<T> match)
         {
-            var list = destination as List<T>;
-            if (list != null)
+            if (destination is List<T> list)
             {
                 list.RemoveAll(match);
             }
@@ -50,11 +41,7 @@
 
             foreach (var item in source)
             {
-                if (bucket == null)
-                {
-                    bucket = new TSource[size];
-                }
-
+                bucket ??= new TSource[size];
                 bucket[count++] = item;
                 if (count != size)
                 {

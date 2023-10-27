@@ -109,7 +109,7 @@ public class UpdateMarketItemPricesFromBuff
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
                 {
                     x.TotalItems = buffItems.Count();
                     x.TotalListings = buffItems.Sum(i => i.SellNum);
@@ -124,7 +124,7 @@ public class UpdateMarketItemPricesFromBuff
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from Buff (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

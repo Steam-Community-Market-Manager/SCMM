@@ -98,7 +98,7 @@ public class UpdateMarketItemPricesFromRustTM
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RustTM, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RustTM, x =>
                 {
                     x.TotalItems = rustTMItems.Count();
                     x.TotalListings = rustTMItems.Sum(i => i.Volume);
@@ -113,7 +113,7 @@ public class UpdateMarketItemPricesFromRustTM
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from Rust.tm (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RustTM, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RustTM, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

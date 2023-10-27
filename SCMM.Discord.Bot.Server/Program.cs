@@ -173,28 +173,27 @@ public static class WebApplicationExtensions
         }
 
         // Web proxies
-        builder.Services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
-        builder.Services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
-        builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
+        builder.Services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
+        builder.Services.AddSingleton<IWebProxyManager>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<IWebProxy>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<RotatingWebProxy>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());
         builder.Services.AddSingleton<DiscordClient>();
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
-        builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton(x => builder.Configuration.GetFixerConfiguration());
         builder.Services.AddSingleton<ICurrencyExchangeService, FixerWebClient>();
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
-        builder.Services.AddSingleton<ITimeSeriesAnalysisService, AzureAiClient>();
-        builder.Services.AddSingleton<IImageAnalysisService, AzureAiClient>();
+        builder.Services.AddSingleton<ITimeSeriesAnalysisService>(x => x.GetRequiredService<AzureAiClient>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<IImageAnalysisService>(x => x.GetRequiredService<AzureAiClient>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<AzureAiClient>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamStoreWebClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
         builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
         builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Command/query/message handlers

@@ -14,10 +14,10 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateCurrencyExchangeRates
 {
     private readonly SteamDbContext _db;
-    private readonly AuthenticatedProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
     private readonly IServiceBus _serviceBus;
 
-    public UpdateCurrencyExchangeRates(SteamDbContext db, AuthenticatedProxiedSteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
+    public UpdateCurrencyExchangeRates(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;

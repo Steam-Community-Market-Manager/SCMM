@@ -99,7 +99,7 @@ public class UpdateMarketItemPricesFromLootFarmJob
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
                 {
                     x.TotalItems = lootFarmItems.Count();
                     x.TotalListings = lootFarmItems.Sum(i => i.Have);
@@ -114,7 +114,7 @@ public class UpdateMarketItemPricesFromLootFarmJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

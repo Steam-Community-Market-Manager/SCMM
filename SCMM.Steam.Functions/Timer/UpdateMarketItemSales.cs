@@ -1,128 +1,151 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
-using SCMM.Steam.Data.Models.Community.Requests.Json;
-using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemSales
 {
     private readonly SteamDbContext _db;
-    private readonly AuthenticatedProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly IWebProxyManager _webProxyManager;
 
-    public UpdateMarketItemSales(SteamDbContext db, AuthenticatedProxiedSteamCommunityWebClient steamCommunityWebClient)
+    private const int MarketItemBatchSize = 30;
+    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
+
+    public UpdateMarketItemSales(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
+        _webProxyManager = webProxyManager;
     }
 
     [Function("Update-Market-Item-Sales")]
     public async Task Run([TimerTrigger("45 * * * * *")] /* 45 seconds past every minute */ TimerInfo timerInfo, FunctionContext context)
     {
+        var jobId = Guid.NewGuid();
         var logger = context.GetLogger("Update-Market-Item-Sales");
 
-        var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
+        // Check that there are enough web proxies available to handle this batch of SCM requests, otherwise we cannot run
+        var availableProxies = _webProxyManager.GetAvailableProxyCount(new Uri(Constants.SteamCommunityUrl));
+        if (availableProxies < MarketItemBatchSize)
+        {
+            logger.LogWarning($"Update of market item sales information will be skipped as there are not enough available web proxies to handle our requests (proxies: {availableProxies}/{MarketItemBatchSize})");
+            return;
+        }
+        else
+        {
+            logger.LogInformation($"Updating market item sales information (id: {jobId})");
+        }
+
+        // Find the next batch of items to be updated
+        var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
         var items = _db.SteamMarketItems
-            .Include(x => x.App)
-            .Include(x => x.Currency)
-            .Include(x => x.Description)
+            .AsNoTracking()
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
             .Where(x => x.App.IsActive)
             .OrderBy(x => x.LastCheckedSalesOn)
-            .Take(30) // batch 30 items per minute
-            .ToList();
-
+            .Take(MarketItemBatchSize)
+            .Select(x => new
+            {
+                Id = x.Id,
+                AppId = x.App.SteamId,
+                MarketHashName = x.Description.NameHash
+            })
+            .ToArray();
         if (!items.Any())
         {
             return;
         }
 
-        var nzdCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == "NZD");
-        if (nzdCurrency == null)
+        // We assume all pricing data is in USD
+        var usdCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+        if (usdCurrency == null)
         {
             return;
         }
 
-        //_steamCommunityWebClient.IfModifiedSinceTimeAgo = TimeSpan.FromHours(1);
+        // Ignore Steam data which has not changed recently
+        _steamCommunityWebClient.IfModifiedSinceTimeAgo = MarketItemMinimumAgeSinceLastUpdate;
 
-        var id = Guid.NewGuid();
-        logger.LogTrace($"Updating market item sales information (id: {id}, count: {items.Count()})");
-        foreach (var item in items)
+        // Fetch item data from steam in parallel (for better performance)
+        var itemResponseMappings = new ConcurrentDictionary<Guid, string>();
+        await Parallel.ForEachAsync(items, async (item, cancellationToken) =>
         {
             try
             {
-                var response = await _steamCommunityWebClient.GetMarketPriceHistory(
-                    new SteamMarketPriceHistoryJsonRequest()
-                    {
-                        AppId = item.App.SteamId,
-                        MarketHashName = item.Description.Name,
-                        //CurrencyId = item.Currency.SteamId
-                    }
+                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetText(
+                     new SteamMarketListingPageRequest()
+                     {
+                         AppId = item.AppId,
+                         MarketHashName = item.MarketHashName,
+                     }
                 );
-
-                // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
-                // TODO: Find/buy a Steam account that is locked to USD for better accuracy
-                await UpdateMarketItemSalesHistory(item, response, nzdCurrency);
-                logger.LogInformation($"Market item sales history updated for '{item.Description?.Name}' ({item.Description?.ClassId})");
             }
             catch (SteamRequestException ex)
             {
-                logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'. {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item sales history for '{item.MarketHashName}' ({item.Id}). {ex.Message}");
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogInformation(ex, $"No change in market item sales history for '{item.SteamId}' since last request. {ex.Message}");
+                logger.LogDebug(ex, $"No change in market item sales history for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
-            finally
-            {
-                await _db.SaveChangesAsync();
-            }
+        });
+
+        // Parse the responses and update the item prices
+        if (itemResponseMappings.Any())
+        {
+            await UpdateMarketItemSalesHistory(itemResponseMappings);
         }
 
-        logger.LogTrace($"Updated market item sales information (id: {id})");
+        logger.LogInformation($"Updated {itemResponseMappings.Count} market item sales information (id: {jobId})");
     }
 
-    private async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, SteamMarketPriceHistoryJsonResponse sales, SteamCurrency salesCurrency = null)
+    private async Task UpdateMarketItemSalesHistory(IDictionary<Guid, string> itemResponses)
     {
-        if (item == null || sales?.Success != true)
-        {
-            return item;
-        }
+        var itemIds = itemResponses.Keys.ToArray();
+        var items = await _db.SteamMarketItems
+            .Where(x => itemIds.Contains(x.Id))
+            .Include(x => x.App)
+            .Include(x => x.Currency)
+            .Include(x => x.Description)
+            .Include(x => x.SalesHistory)
+            .AsSplitQuery()
+            .ToArrayAsync();
 
-        // Lazy-load sales history if missing, required for recalculation
-        if (item.SalesHistory?.Any() != true)
+        Parallel.ForEach(items, (item) =>
         {
-            item = await _db.SteamMarketItems
-                .Include(x => x.SalesHistory)
-                .AsSplitQuery()
-                .SingleOrDefaultAsync(x => x.Id == item.Id);
-        }
-
-        // If the sales are not already in our items currency, exchange them now
-        var itemSales = ParseMarketItemSalesFromGraph(sales.Prices, item.LastCheckedSalesOn);
-        if (itemSales != null && salesCurrency != null && salesCurrency.Id != item.CurrencyId)
-        {
-            foreach (var sale in itemSales)
+            var salesHistoryGraphJson = Regex.Match(itemResponses[item.Id], @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
+            if (!string.IsNullOrEmpty(salesHistoryGraphJson))
             {
-                sale.MedianPrice = item.Currency.CalculateExchange(sale.MedianPrice, salesCurrency);
+                var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphJson}]");
+                if (salesHistoryGraph != null)
+                {
+                    item.LastCheckedSalesOn = DateTimeOffset.Now;
+                    item.RecalculateSales(
+                        ParseMarketItemSalesFromGraph(salesHistoryGraph)
+                    );
+                }
             }
-        }
+        });
 
-        item.LastCheckedSalesOn = DateTimeOffset.Now;
-        item.RecalculateSales(itemSales);
-
-        return item;
+        await _db.SaveChangesAsync();
     }
 
-    private SteamMarketItemSale[] ParseMarketItemSalesFromGraph(string[][] salesGraph, DateTimeOffset? ignoreSalesBefore = null)
+    private SteamMarketItemSale[] ParseMarketItemSalesFromGraph(string[][] salesGraph)
     {
         var sales = new List<SteamMarketItemSale>();
         if (salesGraph == null)

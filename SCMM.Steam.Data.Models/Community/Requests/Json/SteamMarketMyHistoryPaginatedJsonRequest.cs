@@ -1,5 +1,6 @@
 ﻿namespace SCMM.Steam.Data.Models.Community.Requests.Json
 {
+    /// <remarks>This API requires authentication</remarks>
     public class SteamMarketMyHistoryPaginatedJsonRequest : SteamCommunityPaginatedJsonRequest
     {
         public const int MaxPageSize = 500;
