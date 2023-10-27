@@ -99,7 +99,7 @@ public class UpdateMarketItemPricesFromSwapGG
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGTrade, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGTrade, x =>
                 {
                     x.TotalItems = swapggTradeItems.Count();
                     x.TotalListings = swapggTradeItems.Sum(i => i.ItemIds?.Length ?? 0);
@@ -114,7 +114,7 @@ public class UpdateMarketItemPricesFromSwapGG
                 try
                 {
                     logger.LogError(ex, $"Failed to update trade item price information from swap.gg (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGTrade, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGTrade, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;
@@ -166,7 +166,7 @@ public class UpdateMarketItemPricesFromSwapGG
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGMarket, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGMarket, x =>
                 {
                     x.TotalItems = swapggMarketItems.Count();
                     x.TotalListings = swapggMarketItems.Sum(i => i.Value.Quantity);
@@ -181,7 +181,7 @@ public class UpdateMarketItemPricesFromSwapGG
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGMarket, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SwapGGMarket, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

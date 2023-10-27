@@ -32,7 +32,7 @@ public class WebshareProxyDetails : IWebProxyDetails
     public bool IsAvailable { get; set; }
 
     [JsonPropertyName("last_verification")]
-    public DateTimeOffset LastCheckedOn { get; set; }
+    public DateTimeOffset? LastCheckedOn { get; set; }
 
     [JsonPropertyName("created_at")]
     public DateTimeOffset CreatedOn { get; set; }

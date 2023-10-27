@@ -273,10 +273,6 @@ namespace SCMM.Discord.Bot.Server.Modules
                         var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphArray}]");
                         await UpdateMarketItemSalesHistory(item, salesHistoryGraph, usdCurrency);
                     }
-                    else
-                    {
-                        throw new Exception("Unable to find sales history graph data in response");
-                    }
                 }
                 catch (SteamRequestException ex)
                 {

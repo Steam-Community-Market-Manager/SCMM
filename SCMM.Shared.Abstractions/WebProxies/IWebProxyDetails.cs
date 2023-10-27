@@ -20,5 +20,5 @@ public interface IWebProxyDetails
 
     bool IsAvailable { get; }
 
-    DateTimeOffset LastCheckedOn { get; }
+    DateTimeOffset? LastCheckedOn { get; }
 }

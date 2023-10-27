@@ -29,10 +29,10 @@ namespace SCMM.Web.Server.Queries
     {
         private readonly SteamDbContext _db;
         private readonly IStatisticsService _statisticsService;
-        private readonly IWebProxyStatisticsService _webProxyStatisticsService;
+        private readonly IWebProxyUsageStatisticsService _webProxyStatisticsService;
         private readonly IMapper _mapper;
 
-        public GetSystemStatus(SteamDbContext db, IStatisticsService statisticsService, IWebProxyStatisticsService webProxyStatisticsService, IMapper mapper)
+        public GetSystemStatus(SteamDbContext db, IStatisticsService statisticsService, IWebProxyUsageStatisticsService webProxyStatisticsService, IMapper mapper)
         {
             _db = db;
             _statisticsService = statisticsService;
@@ -118,8 +118,8 @@ namespace SCMM.Web.Server.Queries
             var webProxies = (IEnumerable<SystemStatusWebProxyDTO>)null;
             if (request.IncludeWebProxies)
             {
-                webProxies = _mapper.Map<IEnumerable<WebProxyStatistic>, IEnumerable<SystemStatusWebProxyDTO>>(
-                    (await _webProxyStatisticsService.GetAllStatisticsAsync())
+                webProxies = _mapper.Map<IEnumerable<WebProxyWithUsageStatistics>, IEnumerable<SystemStatusWebProxyDTO>>(
+                    (await _webProxyStatisticsService.GetAsync())
                         .OrderByDescending(x => x.LastAccessedOn)
                         .ToArray()
                 );

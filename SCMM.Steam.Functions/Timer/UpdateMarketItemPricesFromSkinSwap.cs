@@ -105,7 +105,7 @@ public class UpdateMarketItemPricesFromSkinSwap
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinSwap, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinSwap, x =>
                 {
                     x.TotalItems = skinSwapItemGroups.Count();
                     x.TotalListings = skinSwapItemGroups.Sum(x => x.Sum(y => y.Amount));
@@ -120,7 +120,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from SkinSwap (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinSwap, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinSwap, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

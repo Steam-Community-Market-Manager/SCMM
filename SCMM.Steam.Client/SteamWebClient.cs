@@ -98,17 +98,16 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                // Retry up to 30 times, then give up
-                if (retryAttempt >= 30)
+                // Retry up to the maximum configured times, then give up
+                if (retryAttempt >= MaxRetries)
                 {
                     throw new SteamRequestException($"Request failed after {retryAttempt} attempts");
                 }
 
                 // Use a small delay between retry attempts to avoid further rate-limiting
-                if (retryAttempt > 1)
+                if (retryAttempt > 0)
                 {
                     var delay = TimeSpan.FromSeconds(1);
-                    _logger.LogDebug($"Request is delaying for {delay.TotalSeconds} seconds (retry attempt: {retryAttempt})");
                     await Task.Delay(delay);
                 }
 
