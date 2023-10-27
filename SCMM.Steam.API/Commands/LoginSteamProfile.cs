@@ -112,39 +112,41 @@ namespace SCMM.Steam.API.Commands
 
         private IEnumerable<Claim> GetClaimsFromSteamProfile(SteamProfile profile)
         {
-            var claims = new List<Claim>();
-            claims.AddIfMissing(new Claim(ClaimTypes.Id, profile.Id.ToString()));
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Id, profile.Id.ToString())
+            };
             if (!string.IsNullOrEmpty(profile.SteamId))
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.SteamId, profile.SteamId));
+                claims.Add(new Claim(ClaimTypes.SteamId, profile.SteamId));
             }
             if (!string.IsNullOrEmpty(profile.ProfileId))
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.ProfileId, profile.ProfileId));
+                claims.Add(new Claim(ClaimTypes.ProfileId, profile.ProfileId));
             }
             if (!string.IsNullOrEmpty(profile.Name))
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.Name, profile.Name));
+                claims.Add(new Claim(ClaimTypes.Name, profile.Name));
             }
             if (!string.IsNullOrEmpty(profile.AvatarUrl))
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.AvatarUrl, profile.AvatarUrl));
+                claims.Add(new Claim(ClaimTypes.AvatarUrl, profile.AvatarUrl));
             }
             if (!string.IsNullOrEmpty(profile.AvatarLargeUrl))
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.AvatarLargeUrl, profile.AvatarLargeUrl)); ;
+                claims.Add(new Claim(ClaimTypes.AvatarLargeUrl, profile.AvatarLargeUrl)); ;
             }
             if (profile.Language != null)
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.Language, profile.Language.Name));
+                claims.Add(new Claim(ClaimTypes.Language, profile.Language.Name));
             }
             if (profile.Currency != null)
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.Currency, profile.Currency.Name));
+                claims.Add(new Claim(ClaimTypes.Currency, profile.Currency.Name));
             }
             foreach (var role in profile.Roles)
             {
-                claims.AddIfMissing(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim(ClaimTypes.Role, role));
             }
             return claims;
         }

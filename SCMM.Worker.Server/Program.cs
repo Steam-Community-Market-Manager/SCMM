@@ -153,7 +153,7 @@ public static class HostExtensions
             }
 
             // Web proxies
-            services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
+            services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
             services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
             services.AddSingleton<IWebProxy, RotatingWebProxy>();
 

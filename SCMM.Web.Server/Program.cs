@@ -179,7 +179,7 @@ public static class WebApplicationExtensions
         }
 
         // Web proxies
-        builder.Services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
+        builder.Services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
         builder.Services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
         builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
 

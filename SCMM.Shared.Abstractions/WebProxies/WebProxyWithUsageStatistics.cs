@@ -2,7 +2,7 @@
 
 namespace SCMM.Shared.Abstractions.WebProxies
 {
-    public class WebProxyStatistic : IWebProxyEndpoint
+    public class WebProxyWithUsageStatistics : IWebProxyDetails
     {
         public string Source { get; set; }
 

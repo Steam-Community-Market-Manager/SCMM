@@ -20,7 +20,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.LastUpdateErrorOn, o => o.MapFrom(p => p.Value.LastUpdateErrorOn))
                 .ForMember(x => x.LastUpdateError, o => o.MapFrom(p => p.Value.LastUpdateError));
 
-            CreateMap<WebProxyStatistic, SystemStatusWebProxyDTO>()
+            CreateMap<WebProxyWithUsageStatistics, SystemStatusWebProxyDTO>()
                 .ForMember(x => x.Address, o => o.MapFrom(p => p.Address.MaskIpAddress()))
                 .ForMember(x => x.CountryFlag, o => o.MapFrom(p => p.CountryCode.IsoCountryCodeToFlagEmoji()));
         }

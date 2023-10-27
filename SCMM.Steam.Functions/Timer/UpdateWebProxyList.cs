@@ -6,34 +6,37 @@ using SCMM.Shared.Client;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateWebProxyStatistics
+public class UpdateWebProxyList
 {
-    private readonly IWebProxyManagementService _webProxies;
-    private readonly IWebProxyStatisticsService _webProxyStatisticsService;
+    private readonly IWebProxyManagementService _webProxyManagementService;
+    private readonly IWebProxyUsageStatisticsService _webProxyStatisticsService;
     private readonly IWebProxyManager _webProxyManager;
     private readonly IServiceBus _serviceBus;
 
-    public UpdateWebProxyStatistics(IWebProxyManagementService webProxies, IWebProxyStatisticsService webProxyStatisticsService, IWebProxyManager webProxyManager, IServiceBus serviceBus)
+    public UpdateWebProxyList(IWebProxyManagementService webProxyManagementService, IWebProxyUsageStatisticsService webProxyStatisticsService, IWebProxyManager webProxyManager, IServiceBus serviceBus)
     {
-        _webProxies = webProxies;
+        _webProxyManagementService = webProxyManagementService;
         _webProxyStatisticsService = webProxyStatisticsService;
         _webProxyManager = webProxyManager;
         _serviceBus = serviceBus;
     }
 
-    [Function("Update-Web-Proxy-Statistics")]
+    [Function("Update-Web-Proxy-List")]
     public async Task Run([TimerTrigger("0 0 * * * *")] /* every hour, on the hour */ TimerInfo timerInfo, FunctionContext context)
     {
-        var logger = context.GetLogger("Update-Web-Proxy-Statistics");
+        var logger = context.GetLogger("Update-Web-Proxy-List");
         var proxiesHaveChanged = false;
 
         // Get the latest list of proxies
-        var webProxies = await _webProxies.ListWebProxiesAsync();
+        var webProxies = await _webProxyManagementService.ListWebProxiesAsync();
         if (webProxies != null)
         {
+            // TODO: Web proxy details should be stored in a proper database (CosmosDB?), not the usage statistics cache.
+            //       It's not a good idea to store the proxy ip/username/password here, but it is just too convenient having everything in one place that is fast [like Redis]. 
+
             // Get cached list
-            var cachedWebProxies = new List<WebProxyStatistic>(
-                await _webProxyStatisticsService.GetAllStatisticsAsync() ?? Enumerable.Empty<WebProxyStatistic>()
+            var cachedWebProxies = new List<WebProxyWithUsageStatistics>(
+                await _webProxyStatisticsService.GetAsync() ?? Enumerable.Empty<WebProxyWithUsageStatistics>()
             );
 
             // Remove all empty proxies
@@ -62,7 +65,7 @@ public class UpdateWebProxyStatistics
                 {
                     proxiesHaveChanged = true;
                     cachedWebProxies.Add(
-                        cachedWebProxy = new WebProxyStatistic()
+                        cachedWebProxy = new WebProxyWithUsageStatistics()
                         {
                             Source = webProxy.Source,
                             Id = webProxy.Id
@@ -83,7 +86,7 @@ public class UpdateWebProxyStatistics
             }
 
             // Update cached list
-            await _webProxyStatisticsService.SetAllStatisticsAsync(
+            await _webProxyStatisticsService.SetAsync(
                 cachedWebProxies.Where(x => !String.IsNullOrEmpty(x.Address) && x.Port > 0)
             );
 

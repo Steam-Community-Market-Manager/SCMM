@@ -153,7 +153,7 @@ public static class HostExtensions
                 return configuration.GetWebshareConfiguration();
             });
             services.AddSingleton<IWebProxyManagementService, WebshareWebClient>();
-            services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
+            services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
             services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
             services.AddSingleton<IWebProxy, RotatingWebProxy>();
 

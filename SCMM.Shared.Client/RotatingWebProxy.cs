@@ -5,36 +5,46 @@ using System.Net;
 
 namespace SCMM.Shared.Client;
 
-public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICredentialsByHost
+public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICredentialsByHost, IDisposable
 {
-    private const int WebProxyRefreshIntervalMinutes = 10;
+    private const int WebProxySyncIntervalMinutes = 3;
 
     private readonly ILogger<RotatingWebProxy> _logger;
-    private readonly IWebProxyStatisticsService _webProxyStatisticsService;
-    private readonly Timer _webProxyRefreshTimer;
+    private readonly IWebProxyUsageStatisticsService _webProxyStatisticsService;
+    private readonly Timer _webProxySyncTimer;
 
     private WebProxyWithCooldown[] _proxies = new WebProxyWithCooldown[0];
 
-    public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IWebProxyStatisticsService webProxyStatisticsService)
+    public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IWebProxyUsageStatisticsService webProxyStatisticsService)
     {
         _logger = logger;
         _webProxyStatisticsService = webProxyStatisticsService;
-        _webProxyRefreshTimer = new Timer(
+        _webProxySyncTimer = new Timer(
             (x) => Task.Run(async () => await RefreshProxiesAsync()), 
             null, 
             TimeSpan.Zero, 
-            TimeSpan.FromMinutes(WebProxyRefreshIntervalMinutes)
+            TimeSpan.FromMinutes(WebProxySyncIntervalMinutes)
         );
+    }
+
+    public void Dispose()
+    {
+        _webProxySyncTimer?.Dispose();
     }
 
     public async Task RefreshProxiesAsync()
     {
-        var endpoints = await _webProxyStatisticsService.GetAllStatisticsAsync();
+        // TODO: Web proxy details should be stored in a proper database (CosmosDB?), not the usage statistics cache.
+        //       It's not a good idea to store the proxy ip/username/password here, but it is just too convenient having everything in one place that is fast [like Redis]. 
+
+        var endpoints = await _webProxyStatisticsService.GetAsync();
         if (endpoints != null)
         {
             lock (_proxies)
             {
-                _proxies = endpoints
+                // Add new proxies
+                _proxies.AddRange(endpoints
+                    .Where(x => !_proxies.Any(y => y.Id == x.Id))
                     .Where(x => !String.IsNullOrEmpty(x.Address) && x.Port > 0)
                     .OrderBy(x => x.Id)
                     .Select(x => new WebProxyWithCooldown()
@@ -50,7 +60,19 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
                         LastAccessedOn = x.LastAccessedOn,
                         IsEnabled = x.IsAvailable,
                     })
-                    .ToArray();
+                );
+
+                // Update existing proxies
+                var proxiesToUpdate = _proxies.Join(endpoints, x => x.Id, y => y.Id, (Proxy, Endpoint) => new { Proxy, Endpoint });
+                Parallel.ForEach(proxiesToUpdate, x =>
+                {
+                    x.Proxy.Cooldowns = x.Endpoint.DomainRateLimits?.ToDictionary(k => k.Key, v => v.Value.UtcDateTime) ?? new Dictionary<string, DateTime>();
+                    x.Proxy.LastAccessedOn = x.Endpoint.LastAccessedOn;
+                    x.Proxy.IsEnabled = x.Endpoint.IsAvailable;
+                });
+
+                // Remove old proxies
+                _proxies.RemoveAll(x => !endpoints.Any(y => y.Id == x.Id));
             }
         }
     }
@@ -88,7 +110,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             var lastAccessedOn = DateTimeOffset.Now;
             _logger.LogDebug($"Proxy '{proxyId}' response was {responseStatusCode} for '{proxy.CurrentRequestAddress}'.");
 
-            _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
+            _webProxyStatisticsService.PatchAsync(proxy.Address.ToString(), (value) =>
             {
                 value.LastAccessedOn = lastAccessedOn;
                 if (responseStatusCode >= HttpStatusCode.OK && responseStatusCode < HttpStatusCode.Ambiguous)
@@ -120,7 +142,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             proxy.IncrementHostCooldown(host, cooldown);
             _logger.LogDebug($"Proxy '{proxyId}' incurred a {cooldown.TotalSeconds}s cooldown for '{host?.Host}'.");
 
-            _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
+            _webProxyStatisticsService.PatchAsync(proxy.Address.ToString(), (value) =>
             {
                 value.DomainRateLimits ??= new Dictionary<string, DateTimeOffset>();
                 value.DomainRateLimits[host.Host] = proxy.GetHostCooldown(host);
@@ -141,7 +163,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             proxy.IsEnabled = false;
             _logger.LogDebug($"Proxy '{proxyId}' has been disabled.");
 
-            _webProxyStatisticsService.UpdateStatisticsAsync(proxy.Address.ToString(), (value) =>
+            _webProxyStatisticsService.PatchAsync(proxy.Address.ToString(), (value) =>
             {
                 value.IsAvailable = false;
             });
