@@ -98,7 +98,7 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                // Retry up to 30 times, then give up
+                // Retry up to the maximum configured times, then give up
                 if (retryAttempt >= MaxRetries)
                 {
                     throw new SteamRequestException($"Request failed after {retryAttempt} attempts");

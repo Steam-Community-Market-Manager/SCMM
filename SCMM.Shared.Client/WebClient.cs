@@ -255,5 +255,5 @@ public class WebClient : IDisposable
 
     public TimeSpan? IfModifiedSinceTimeAgo { get; set; }
 
-    public int MaxRetries { get; set; } = 10;
+    public int MaxRetries { get; set; } = 3;
 }
