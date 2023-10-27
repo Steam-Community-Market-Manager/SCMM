@@ -22,7 +22,7 @@ public class UpdateWebProxyList
     }
 
     [Function("Update-Web-Proxy-List")]
-    public async Task Run([TimerTrigger("0 0 * * * *")] /* every hour, on the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0/15 * * * *")] /* every 15 minutes */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Web-Proxy-List");
         var proxiesHaveChanged = false;

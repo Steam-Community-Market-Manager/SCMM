@@ -13,7 +13,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
     private readonly IWebProxyUsageStatisticsService _webProxyStatisticsService;
     private readonly Timer _webProxySyncTimer;
 
-    private WebProxyWithCooldown[] _proxies = new WebProxyWithCooldown[0];
+    private IList<WebProxyWithCooldown> _proxies = new List<WebProxyWithCooldown>();
 
     public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IWebProxyUsageStatisticsService webProxyStatisticsService)
     {
@@ -42,6 +42,18 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         {
             lock (_proxies)
             {
+                // Remove old proxies
+                _proxies.RemoveAll(x => !endpoints.Any(y => y.Id == x.Id));
+
+                // Update existing proxies
+                var proxiesToUpdate = _proxies.Join(endpoints, x => x.Id, y => y.Id, (Proxy, Endpoint) => new { Proxy, Endpoint });
+                Parallel.ForEach(proxiesToUpdate, x =>
+                {
+                    x.Proxy.Cooldowns = x.Endpoint.DomainRateLimits?.ToDictionary(k => k.Key, v => v.Value.UtcDateTime) ?? new Dictionary<string, DateTime>();
+                    x.Proxy.LastAccessedOn = x.Endpoint.LastAccessedOn;
+                    x.Proxy.IsEnabled = x.Endpoint.IsAvailable;
+                });
+
                 // Add new proxies
                 _proxies.AddRange(endpoints
                     .Where(x => !_proxies.Any(y => y.Id == x.Id))
@@ -61,18 +73,6 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
                         IsEnabled = x.IsAvailable,
                     })
                 );
-
-                // Update existing proxies
-                var proxiesToUpdate = _proxies.Join(endpoints, x => x.Id, y => y.Id, (Proxy, Endpoint) => new { Proxy, Endpoint });
-                Parallel.ForEach(proxiesToUpdate, x =>
-                {
-                    x.Proxy.Cooldowns = x.Endpoint.DomainRateLimits?.ToDictionary(k => k.Key, v => v.Value.UtcDateTime) ?? new Dictionary<string, DateTime>();
-                    x.Proxy.LastAccessedOn = x.Endpoint.LastAccessedOn;
-                    x.Proxy.IsEnabled = x.Endpoint.IsAvailable;
-                });
-
-                // Remove old proxies
-                _proxies.RemoveAll(x => !endpoints.Any(y => y.Id == x.Id));
             }
         }
     }
