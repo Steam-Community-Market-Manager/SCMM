@@ -174,8 +174,9 @@ public static class WebApplicationExtensions
 
         // Web proxies
         builder.Services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
-        builder.Services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
-        builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
+        builder.Services.AddSingleton<IWebProxyManager>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<IWebProxy>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<RotatingWebProxy>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());
@@ -184,8 +185,9 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton(x => builder.Configuration.GetFixerConfiguration());
         builder.Services.AddSingleton<ICurrencyExchangeService, FixerWebClient>();
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
-        builder.Services.AddSingleton<ITimeSeriesAnalysisService, AzureAiClient>();
-        builder.Services.AddSingleton<IImageAnalysisService, AzureAiClient>();
+        builder.Services.AddSingleton<ITimeSeriesAnalysisService>(x => x.GetRequiredService<AzureAiClient>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<IImageAnalysisService>(x => x.GetRequiredService<AzureAiClient>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<AzureAiClient>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamStoreWebClient>();

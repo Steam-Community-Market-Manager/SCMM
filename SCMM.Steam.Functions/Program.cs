@@ -154,8 +154,9 @@ public static class HostExtensions
             });
             services.AddSingleton<IWebProxyManagementService, WebshareWebClient>();
             services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
-            services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
-            services.AddSingleton<IWebProxy, RotatingWebProxy>();
+            services.AddSingleton<IWebProxyManager>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+            services.AddSingleton<IWebProxy>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+            services.AddSingleton<RotatingWebProxy>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
             // 3rd party clients
             services.AddSingleton((services) =>
