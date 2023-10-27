@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace SCMM.Market.TradeitGG.Client
 {
-    public class TradeitGGWebClient : Shared.Client.WebClient
+    public class TradeitGGWebClient : Shared.Web.Client.WebClient
     {
         private const string InventoryBaseUri = "https://inventory.tradeit.gg/";
         private const string OldWebsiteBaseUri = "https://old.tradeit.gg/";

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace SCMM.Shared.Client;
+namespace SCMM.Shared.Web.Client;
 
 public interface IWebProxyManager : IWebProxy
 {

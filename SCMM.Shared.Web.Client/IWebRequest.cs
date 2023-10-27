@@ -1,4 +1,4 @@
-﻿namespace SCMM.Shared.Client;
+﻿namespace SCMM.Shared.Web.Client;
 
 public interface IWebRequest
 {

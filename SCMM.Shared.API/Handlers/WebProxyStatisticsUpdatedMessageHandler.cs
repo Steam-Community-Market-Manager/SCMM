@@ -2,9 +2,9 @@
 using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Messaging.Attributes;
 using SCMM.Shared.API.Events;
-using SCMM.Shared.Client;
+using SCMM.Shared.Web.Client;
 
-namespace SCMM.Shared.Web.Handlers
+namespace SCMM.Shared.API.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 100)]
     public class WebProxyStatisticsUpdatedMessageHandler : IMessageHandler<WebProxyStatisticsUpdatedMessage>

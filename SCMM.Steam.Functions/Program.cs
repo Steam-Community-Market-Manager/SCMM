@@ -29,14 +29,14 @@ using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.SkinSwap.Client.Extensions;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
+using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Media;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web.Statistics;
+using SCMM.Shared.Web.Client;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -218,8 +218,7 @@ public static class HostExtensions
                 Assembly.GetEntryAssembly(),
                 Assembly.Load("SCMM.Steam.API"),
                 Assembly.Load("SCMM.Discord.API"),
-                Assembly.Load("SCMM.Shared.API"),
-                Assembly.Load("SCMM.Shared.Web")
+                Assembly.Load("SCMM.Shared.API")
             };
             services.AddCommands(contactAssemblies);
             services.AddQueries(contactAssemblies);

@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.LootFarm.Client
 {
-    public class LootFarmWebClient : Shared.Client.WebClient
+    public class LootFarmWebClient : Shared.Web.Client.WebClient
     {
         private const string BaseUri = "https://loot.farm/";
 

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace SCMM.Shared.Web.Formatters
+namespace SCMM.Shared.Web.Server.Formatters
 {
     public class CsvFormatterOptions
     {

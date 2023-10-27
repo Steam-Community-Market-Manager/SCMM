@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace SCMM.Shared.Client.Extensions;
+namespace SCMM.Shared.Web.Client.Extensions;
 
 public static class DistributedCacheExtensions
 {

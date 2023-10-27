@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.SkinBaron.Client
 {
-    public class SkinBaronWebClient : Shared.Client.WebClient
+    public class SkinBaronWebClient : Shared.Web.Client.WebClient
     {
         private const string ApiBaseUri = "https://skinbaron.de/api/v2/";
 

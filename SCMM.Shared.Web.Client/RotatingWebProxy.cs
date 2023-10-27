@@ -3,7 +3,7 @@ using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.Data.Models.Extensions;
 using System.Net;
 
-namespace SCMM.Shared.Client;
+namespace SCMM.Shared.Web.Client;
 
 public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICredentialsByHost, IDisposable
 {
@@ -20,9 +20,9 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         _logger = logger;
         _webProxyStatisticsService = webProxyStatisticsService;
         _webProxySyncTimer = new Timer(
-            (x) => Task.Run(async () => await RefreshProxiesAsync()), 
-            null, 
-            TimeSpan.Zero, 
+            (x) => Task.Run(async () => await RefreshProxiesAsync()),
+            null,
+            TimeSpan.Zero,
             TimeSpan.FromMinutes(WebProxySyncIntervalMinutes)
         );
     }
@@ -57,7 +57,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
                 // Add new proxies
                 _proxies.AddRange(endpoints
                     .Where(x => !_proxies.Any(y => y.Id == x.Id))
-                    .Where(x => !String.IsNullOrEmpty(x.Address) && x.Port > 0)
+                    .Where(x => !string.IsNullOrEmpty(x.Address) && x.Port > 0)
                     .OrderBy(x => x.Id)
                     .Select(x => new WebProxyWithCooldown()
                     {
@@ -91,7 +91,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
 
     public string GetProxyId(Uri requestAddress)
     {
-        lock(_proxies)
+        lock (_proxies)
         {
             return _proxies?.FirstOrDefault(x => x.CurrentRequestAddress == requestAddress)?.Id;
         }
@@ -105,7 +105,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
         }
 
-        if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
+        if (proxy != null && !string.IsNullOrEmpty(proxy.Address.ToString()))
         {
             var lastAccessedOn = DateTimeOffset.Now;
             _logger.LogDebug($"Proxy '{proxyId}' response was {responseStatusCode} for '{proxy.CurrentRequestAddress}'.");
@@ -137,7 +137,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
         }
 
-        if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
+        if (proxy != null && !string.IsNullOrEmpty(proxy.Address.ToString()))
         {
             proxy.IncrementHostCooldown(host, cooldown);
             _logger.LogDebug($"Proxy '{proxyId}' incurred a {cooldown.TotalSeconds}s cooldown for '{host?.Host}'.");
@@ -158,7 +158,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
         }
 
-        if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
+        if (proxy != null && !string.IsNullOrEmpty(proxy.Address.ToString()))
         {
             proxy.IsEnabled = false;
             _logger.LogDebug($"Proxy '{proxyId}' has been disabled.");
@@ -177,7 +177,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             throw new ArgumentNullException(nameof(destination));
         }
 
-        lock(_proxies)
+        lock (_proxies)
         {
             // Use the least recently accessed proxy that isn't in cooldown for our domain
             var now = DateTime.UtcNow;
@@ -205,7 +205,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             throw new ArgumentNullException(nameof(host));
         }
 
-        var proxiesAreAvailable = (GetAvailableProxyCount(host) > 0);
+        var proxiesAreAvailable = GetAvailableProxyCount(host) > 0;
         if (!proxiesAreAvailable)
         {
             _logger.LogWarning($"There are no available proxies to handle new requests to '{host.Host}'. The request will bypass all configured proxies.");
@@ -290,12 +290,12 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         /// <summary>
         /// True if this proxy is currently busy serving a request
         /// </summary>
-        public bool IsBusy => (CurrentRequestAddress != null);
+        public bool IsBusy => CurrentRequestAddress != null;
 
         /// <summary>
         /// True if this proxy is available to serve a new request
         /// </summary>
-        public bool IsAvailable => (IsEnabled && !IsBusy);
+        public bool IsAvailable => IsEnabled && !IsBusy;
 
         public DateTime GetHostCooldown(Uri address)
         {

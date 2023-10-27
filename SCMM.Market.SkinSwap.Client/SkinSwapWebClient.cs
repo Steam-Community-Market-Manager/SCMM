@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.SkinSwap.Client
 {
-    public class SkinSwapWebClient : Shared.Client.WebClient
+    public class SkinSwapWebClient : Shared.Web.Client.WebClient
     {
         private const string ApiBaseUri = "https://skinswap.com/api";
 

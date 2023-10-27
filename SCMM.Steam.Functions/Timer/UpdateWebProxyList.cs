@@ -2,7 +2,7 @@
 using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Events;
-using SCMM.Shared.Client;
+using SCMM.Shared.Web.Client;
 
 namespace SCMM.Steam.Functions.Timer;
 

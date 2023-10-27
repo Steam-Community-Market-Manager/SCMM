@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
-    public class iTradeggWebClient : Shared.Client.WebClient
+    public class iTradeggWebClient : Shared.Web.Client.WebClient
     {
         private const string WebBaseUri = "https://itrade.gg/";
 

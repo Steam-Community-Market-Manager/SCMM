@@ -13,15 +13,15 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web.Formatters;
-using SCMM.Shared.Web.Middleware;
-using SCMM.Shared.Web.Statistics;
+using SCMM.Shared.Web.Client;
+using SCMM.Shared.Web.Server.Formatters;
+using SCMM.Shared.Web.Server.Middleware;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
@@ -205,8 +205,7 @@ public static class WebApplicationExtensions
             Assembly.GetEntryAssembly(),
             Assembly.Load("SCMM.Steam.API"),
             Assembly.Load("SCMM.Discord.API"),
-            Assembly.Load("SCMM.Shared.API"),
-            Assembly.Load("SCMM.Shared.Web")
+            Assembly.Load("SCMM.Shared.API")
         };
         builder.Services.AddCommands(contactAssemblies);
         builder.Services.AddQueries(contactAssemblies);

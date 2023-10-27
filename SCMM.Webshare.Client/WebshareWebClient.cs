@@ -1,9 +1,10 @@
 ﻿using SCMM.Shared.Abstractions.WebProxies;
+using SCMM.Shared.Web.Client;
 using System.Text.Json;
 
 namespace SCMM.Webshare.Client
 {
-    public class WebshareWebClient : Shared.Client.WebClient, IWebProxyManagementService
+    public class WebshareWebClient : WebClient, IWebProxyManagementService
     {
         private const string BaseUri = "https://proxy.webshare.io/api";
         private const int MaxPageSize = 25;

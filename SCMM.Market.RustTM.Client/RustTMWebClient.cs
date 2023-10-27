@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.RustTM.Client
 {
-    public class RustTMWebClient : Shared.Client.WebClient
+    public class RustTMWebClient : Shared.Web.Client.WebClient
     {
         private const string ApiBaseUri = "https://rust.tm/api/v2/";
 

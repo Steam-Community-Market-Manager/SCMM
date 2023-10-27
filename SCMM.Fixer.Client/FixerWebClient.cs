@@ -1,9 +1,10 @@
 ﻿using SCMM.Shared.Abstractions.Finance;
+using SCMM.Shared.Web.Client;
 using System.Text.Json;
 
 namespace SCMM.Fixer.Client
 {
-    public class FixerWebClient : Shared.Client.WebClient, ICurrencyExchangeService
+    public class FixerWebClient : WebClient, ICurrencyExchangeService
     {
         private const string BaseUri = "https://data.fixer.io/api/";
 

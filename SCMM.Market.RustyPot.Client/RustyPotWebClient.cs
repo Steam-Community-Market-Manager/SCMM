@@ -8,7 +8,7 @@ using System.Net;
 
 namespace SCMM.Market.RustyPot.Client
 {
-    public class RustyPotWebClient : Shared.Client.WebClient
+    public class RustyPotWebClient : Shared.Web.Client.WebClient
     {
         private ILogger<RustyPotWebClient> _logger;
         private readonly IServiceBus _serviceBus;

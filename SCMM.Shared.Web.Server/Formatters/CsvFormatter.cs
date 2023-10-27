@@ -5,7 +5,7 @@ using System.Collections;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
-namespace SCMM.Shared.Web.Formatters
+namespace SCMM.Shared.Web.Server.Formatters
 {
     public class CsvFormatter : OutputFormatter
     {

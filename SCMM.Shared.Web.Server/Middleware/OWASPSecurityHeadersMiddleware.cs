@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using SCMM.Shared.Web.Extensions;
+using SCMM.Shared.Web.Server.Extensions;
 
-namespace SCMM.Shared.Web.Middleware
+namespace SCMM.Shared.Web.Server.Middleware
 {
     public static class OWASPSecurityHeadersMiddleware
     {
@@ -69,7 +69,7 @@ namespace SCMM.Shared.Web.Middleware
 
                 if (cacheControlOptions.Any())
                 {
-                    context.Response.Headers.TryAdd("Cache-Control", String.Join(", ", cacheControlOptions));
+                    context.Response.Headers.TryAdd("Cache-Control", string.Join(", ", cacheControlOptions));
                 }
 
                 //
@@ -137,7 +137,7 @@ namespace SCMM.Shared.Web.Middleware
 
                 if (contentSecurityPolicyOptions.Any())
                 {
-                    context.Response.Headers.TryAdd("Content-Security-Policy", String.Join("; ", contentSecurityPolicyOptions));
+                    context.Response.Headers.TryAdd("Content-Security-Policy", string.Join("; ", contentSecurityPolicyOptions));
                 }
 
                 //

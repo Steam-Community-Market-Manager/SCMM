@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Security.Cryptography;
 
-namespace SCMM.Shared.Web.Extensions;
+namespace SCMM.Shared.Web.Server.Extensions;
 public static class HttpContextExtensions
 {
     public static void GenerateAndSetNonce(this HttpContext context)

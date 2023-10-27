@@ -2,7 +2,7 @@
 using StackExchange.Redis;
 using System.Text.Json;
 
-namespace SCMM.Shared.Web.Statistics;
+namespace SCMM.Redis.Client.Statistics;
 
 public class RedisStatisticsService : IStatisticsService
 {
@@ -18,33 +18,33 @@ public class RedisStatisticsService : IStatisticsService
     public async Task<T> GetAsync<T>(string key)
     {
         var value = await _redis.StringGetAsync(
-            new RedisKey(String.Format(KeyFormat, key))
+            new RedisKey(string.Format(KeyFormat, key))
         );
 
-        return (value.HasValue == true)
+        return value.HasValue == true
             ? JsonSerializer.Deserialize<T>(value.ToString())
-            : default(T);
+            : default;
     }
 
     public async Task SetAsync<T>(string key, T value)
     {
         await _redis.StringSetAsync(
-            new RedisKey(String.Format(KeyFormat, key)),
+            new RedisKey(string.Format(KeyFormat, key)),
             new RedisValue(JsonSerializer.Serialize(value))
         ); ;
     }
 
     public async Task PatchAsync<T>(string key, Action<T> updateValue) where T : new()
     {
-        var value = (await GetAsync<T>(key)) ?? new T();
+        var value = await GetAsync<T>(key) ?? new T();
         updateValue.Invoke(value);
-        await SetAsync<T>(key, value);
+        await SetAsync(key, value);
     }
 
     public async Task<IEnumerable<T>> GetListAsync<T>(string key)
     {
         var values = await _redis.ListRangeAsync(
-            new RedisKey(String.Format(KeyFormat, key))
+            new RedisKey(string.Format(KeyFormat, key))
         );
         if (values?.Any() != true)
         {
@@ -54,9 +54,9 @@ public class RedisStatisticsService : IStatisticsService
         var results = new List<T>();
         foreach (var value in values)
         {
-            results.Add((value.HasValue == true)
+            results.Add(value.HasValue == true
                 ? JsonSerializer.Deserialize<T>(value.ToString())
-                : default(T)
+                : default
             );
         }
 
@@ -68,7 +68,7 @@ public class RedisStatisticsService : IStatisticsService
         if (deleteKeyBeforeSet)
         {
             await _redis.KeyDeleteAsync(
-                new RedisKey(String.Format(KeyFormat, key))
+                new RedisKey(string.Format(KeyFormat, key))
             );
         }
 
@@ -77,7 +77,7 @@ public class RedisStatisticsService : IStatisticsService
         );
 
         await _redis.ListRightPushAsync(
-            new RedisKey(String.Format(KeyFormat, key)),
+            new RedisKey(string.Format(KeyFormat, key)),
             values.ToArray()
         );
     }
@@ -85,7 +85,7 @@ public class RedisStatisticsService : IStatisticsService
     public async Task<IDictionary<TKey, TValue>> GetDictionaryAsync<TKey, TValue>(string key)
     {
         var entries = await _redis.HashGetAllAsync(
-            new RedisKey(String.Format(KeyFormat, key))
+            new RedisKey(string.Format(KeyFormat, key))
         );
         if (entries?.Any() != true)
         {
@@ -114,12 +114,12 @@ public class RedisStatisticsService : IStatisticsService
     public async Task<TValue> GetDictionaryValueAsync<TKey, TValue>(string key, TKey field)
     {
         var entry = await _redis.HashGetAsync(
-            new RedisKey(String.Format(KeyFormat, key)),
+            new RedisKey(string.Format(KeyFormat, key)),
             new RedisValue(JsonSerializer.Serialize(field))
         );
         if (!entry.HasValue)
         {
-            return default(TValue);
+            return default;
         }
 
         return JsonSerializer.Deserialize<TValue>(entry.ToString());
@@ -130,7 +130,7 @@ public class RedisStatisticsService : IStatisticsService
         if (deleteKeyBeforeSet)
         {
             await _redis.KeyDeleteAsync(
-                new RedisKey(String.Format(KeyFormat, key))
+                new RedisKey(string.Format(KeyFormat, key))
             );
         }
 
@@ -142,7 +142,7 @@ public class RedisStatisticsService : IStatisticsService
         );
 
         await _redis.HashSetAsync(
-            new RedisKey(String.Format(KeyFormat, key)),
+            new RedisKey(string.Format(KeyFormat, key)),
             entries.ToArray()
         );
     }
@@ -150,7 +150,7 @@ public class RedisStatisticsService : IStatisticsService
     public async Task SetDictionaryValueAsync<TKey, TValue>(string key, TKey field, TValue value)
     {
         await _redis.HashSetAsync(
-            new RedisKey(String.Format(KeyFormat, key)),
+            new RedisKey(string.Format(KeyFormat, key)),
             new HashEntry[]
             {
                 new HashEntry(
@@ -163,8 +163,8 @@ public class RedisStatisticsService : IStatisticsService
 
     public async Task PatchDictionaryValueAsync<TKey, TValue>(string key, TKey field, Action<TValue> updateValue) where TValue : new()
     {
-        var value = (await GetDictionaryValueAsync<TKey, TValue>(key, field)) ?? new TValue();
+        var value = await GetDictionaryValueAsync<TKey, TValue>(key, field) ?? new TValue();
         updateValue.Invoke(value);
-        await SetDictionaryValueAsync<TKey, TValue>(key, field, value);
+        await SetDictionaryValueAsync(key, field, value);
     }
 }

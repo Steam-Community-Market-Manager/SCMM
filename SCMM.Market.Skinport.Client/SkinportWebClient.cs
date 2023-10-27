@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.Skinport.Client
 {
-    public class SkinportWebClient : Shared.Client.WebClient
+    public class SkinportWebClient : Shared.Web.Client.WebClient
     {
         private const string BaseUri = "https://api.skinport.com/v1/";
 

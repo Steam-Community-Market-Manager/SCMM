@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 
-namespace SCMM.Shared.Client;
+namespace SCMM.Shared.Web.Client;
 
 public class WebClient : IDisposable
 {
@@ -21,15 +21,15 @@ public class WebClient : IDisposable
             UseCookies = cookieContainer != null,
             CookieContainer = cookieContainer ?? new CookieContainer(),
             Proxy = webProxy,
-            PreAuthenticate = (webProxy != null),
+            PreAuthenticate = webProxy != null,
             AutomaticDecompression = DecompressionMethods.All,
             AllowAutoRedirect = true,
             MaxAutomaticRedirections = 3,
             ClientCertificateOptions = ClientCertificateOption.Manual,
-            ServerCertificateCustomValidationCallback = (_webProxy == null ? null :
+            ServerCertificateCustomValidationCallback = _webProxy == null ? null :
                 // Http web proxy might MiTM the SSL certificate, so ignore invalid certs when using a proxy
                 (httpRequestMessage, cert, cetChain, policyErrors) => true
-            )
+
         };
     }
 
@@ -83,7 +83,7 @@ public class WebClient : IDisposable
         {
             if (!httpClient.DefaultRequestHeaders.Contains(authHeaderName))
             {
-                httpClient.DefaultRequestHeaders.Add(authHeaderName, String.Format(authHeaderFormat, authKey));
+                httpClient.DefaultRequestHeaders.Add(authHeaderName, string.Format(authHeaderFormat, authKey));
             }
         }
 
@@ -121,7 +121,7 @@ public class WebClient : IDisposable
         return httpClient;
     }
 
-    protected async Task<HttpResponseMessage> PostAsync<TRequest>(HttpClient client, TRequest request, HttpContent content = null, CancellationToken cancellationToken = default(CancellationToken))
+    protected async Task<HttpResponseMessage> PostAsync<TRequest>(HttpClient client, TRequest request, HttpContent content = null, CancellationToken cancellationToken = default)
         where TRequest : IWebRequest
     {
         return HandleRequestAndAssertWasSuccess(request,
@@ -129,7 +129,7 @@ public class WebClient : IDisposable
         );
     }
 
-    protected async Task<HttpResponseMessage> GetAsync<TRequest>(HttpClient client, TRequest request, CancellationToken cancellationToken = default(CancellationToken))
+    protected async Task<HttpResponseMessage> GetAsync<TRequest>(HttpClient client, TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IWebRequest
     {
         return HandleRequestAndAssertWasSuccess(request,
@@ -148,7 +148,7 @@ public class WebClient : IDisposable
             }
 
             var proxyId = GetRequestProxyId(request?.Uri);
-            if (!String.IsNullOrEmpty(proxyId))
+            if (!string.IsNullOrEmpty(proxyId))
             {
                 UpdateProxyRequestStatistics(proxyId, request.Uri, response.StatusCode);
             }
@@ -156,7 +156,7 @@ public class WebClient : IDisposable
         catch (HttpRequestException ex)
         {
             var proxyId = GetRequestProxyId(request?.Uri);
-            if (!String.IsNullOrEmpty(proxyId) && ex.StatusCode != null)
+            if (!string.IsNullOrEmpty(proxyId) && ex.StatusCode != null)
             {
                 UpdateProxyRequestStatistics(proxyId, request?.Uri, ex.StatusCode.Value);
             }

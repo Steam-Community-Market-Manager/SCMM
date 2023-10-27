@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
-namespace SCMM.Shared.Web.Formatters
+namespace SCMM.Shared.Web.Server.Formatters
 {
     public static class CsvFormatterMvcBuilderExtensions
     {

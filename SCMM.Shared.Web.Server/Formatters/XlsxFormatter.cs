@@ -7,7 +7,7 @@ using SCMM.Shared.Data.Models;
 using System.Collections;
 using System.Reflection;
 
-namespace SCMM.Shared.Web.Formatters
+namespace SCMM.Shared.Web.Server.Formatters
 {
     public class XlsxFormatter : OutputFormatter
     {

@@ -5,7 +5,7 @@ using SCMM.Shared.Data.Models;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace SCMM.Shared.Web.Middleware
+namespace SCMM.Shared.Web.Server.Middleware
 {
     public static class CustomExceptionHandlerMiddleware
     {

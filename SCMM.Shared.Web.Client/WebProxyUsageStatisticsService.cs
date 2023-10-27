@@ -1,7 +1,7 @@
 ﻿using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 
-namespace SCMM.Shared.Client;
+namespace SCMM.Shared.Web.Client;
 
 public class WebProxyUsageStatisticsService : IWebProxyUsageStatisticsService
 {
@@ -23,7 +23,7 @@ public class WebProxyUsageStatisticsService : IWebProxyUsageStatisticsService
 
     public async Task SetAsync(IEnumerable<WebProxyWithUsageStatistics> statistics)
     {
-        await _statisticsService.SetDictionaryAsync<string, WebProxyWithUsageStatistics>(
+        await _statisticsService.SetDictionaryAsync(
             WebProxiesStatsKey,
             statistics.ToDictionary(k => k.Url, v => v),
             deleteKeyBeforeSet: true
@@ -32,7 +32,7 @@ public class WebProxyUsageStatisticsService : IWebProxyUsageStatisticsService
 
     public async Task PatchAsync(string proxyUrl, Action<WebProxyWithUsageStatistics> updateAction)
     {
-        await _statisticsService.PatchDictionaryValueAsync<string, WebProxyWithUsageStatistics>(
+        await _statisticsService.PatchDictionaryValueAsync(
             WebProxiesStatsKey, proxyUrl, updateAction
         );
     }

@@ -15,7 +15,7 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    public abstract class SteamWebClient : Shared.Client.WebClient
+    public abstract class SteamWebClient : Shared.Web.Client.WebClient
     {
         private readonly ILogger<SteamWebClient> _logger;
         private readonly IDistributedCache _cache;
