@@ -69,12 +69,20 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
 
     public string GetProxyId(Uri requestAddress)
     {
-        return _proxies?.FirstOrDefault(x => x.CurrentRequestAddress == requestAddress)?.Id;
+        lock(_proxies)
+        {
+            return _proxies?.FirstOrDefault(x => x.CurrentRequestAddress == requestAddress)?.Id;
+        }
     }
 
     public void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode)
     {
-        var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
+        WebProxyWithCooldown proxy = null;
+        lock (_proxies)
+        {
+            proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
+        }
+
         if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
         {
             var lastAccessedOn = DateTimeOffset.Now;
@@ -101,7 +109,12 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
 
     public void CooldownProxy(string proxyId, Uri host, TimeSpan cooldown)
     {
-        var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
+        WebProxyWithCooldown proxy = null;
+        lock (_proxies)
+        {
+            proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
+        }
+
         if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
         {
             proxy.IncrementHostCooldown(host, cooldown);
@@ -117,7 +130,12 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
 
     public void DisableProxy(string proxyId)
     {
-        var proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
+        WebProxyWithCooldown proxy = null;
+        lock (_proxies)
+        {
+            proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
+        }
+
         if (proxy != null && !String.IsNullOrEmpty(proxy.Address.ToString()))
         {
             proxy.IsEnabled = false;
