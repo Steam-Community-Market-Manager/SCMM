@@ -55,6 +55,18 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         }
     }
 
+    public int GetAvailableProxyCount(Uri host = null)
+    {
+        lock (_proxies)
+        {
+            var now = DateTime.UtcNow;
+            return _proxies
+                ?.Where(x => x.IsAvailable)
+                ?.Where(x => host == null || x.GetHostCooldown(host) <= now)
+                ?.Count() ?? 0;
+        }
+    }
+
     public string GetProxyId(Uri requestAddress)
     {
         return _proxies?.FirstOrDefault(x => x.CurrentRequestAddress == requestAddress)?.Id;
@@ -153,21 +165,13 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             throw new ArgumentNullException(nameof(host));
         }
 
-        lock (_proxies)
+        var proxiesAreAvailable = (GetAvailableProxyCount(host) > 0);
+        if (!proxiesAreAvailable)
         {
-            var now = DateTime.UtcNow;
-            var proxiesAreAvailable = _proxies
-                ?.Where(x => x.IsAvailable)
-                ?.Where(x => x.GetHostCooldown(host) <= now)
-                ?.FirstOrDefault() != null;
-
-            if (!proxiesAreAvailable)
-            {
-                _logger.LogError($"There are no available proxies to handle new requests to '{host.Host}'.");
-            }
-
-            return !proxiesAreAvailable;
+            _logger.LogWarning($"There are no available proxies to handle new requests to '{host.Host}'. The request will bypass all configured proxies.");
         }
+
+        return !proxiesAreAvailable;
     }
 
     NetworkCredential ICredentials.GetCredential(Uri uri, string authType)
