@@ -98,7 +98,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
                 {
                     x.TotalItems = iTradeggItems.Count();
                     x.TotalListings = iTradeggItems.Sum(i => i.Same);
@@ -113,7 +113,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from iTrade.gg (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

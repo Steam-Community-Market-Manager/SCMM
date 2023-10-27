@@ -146,7 +146,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SteamCommunityMarket, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SteamCommunityMarket, x =>
                 {
                     x.TotalItems = allMarketItems.Count();
                     x.TotalListings = allMarketItems.Sum(i => i.SellOrderCount);
@@ -161,7 +161,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
                 try
                 {
                     logger.LogError(ex, $"Failed to update trade item price information from steam community market (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SteamCommunityMarket, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SteamCommunityMarket, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

@@ -98,7 +98,7 @@ public class UpdateMarketItemPricesFromCSTrade
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
                 {
                     x.TotalItems = csTradeAppItems.Count();
                     x.TotalListings = csTradeAppItems.Sum(i => i.Have);
@@ -113,7 +113,7 @@ public class UpdateMarketItemPricesFromCSTrade
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from CS.TRADE (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

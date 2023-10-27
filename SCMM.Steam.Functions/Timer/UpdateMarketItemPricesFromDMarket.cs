@@ -114,7 +114,7 @@ public class UpdateMarketItemPricesFromDMarketJob
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
                 {
                     x.TotalItems = dMarketItemGroups.Count();
                     x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
@@ -129,7 +129,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;
@@ -196,7 +196,7 @@ public class UpdateMarketItemPricesFromDMarketJob
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
                 {
                     x.TotalItems = dMarketItemGroups.Count();
                     x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
@@ -211,7 +211,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: exchange). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;

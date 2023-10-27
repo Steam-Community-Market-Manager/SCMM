@@ -111,7 +111,7 @@ public class UpdateMarketItemPricesFromTradeitGG
 
                 await _db.SaveChangesAsync();
 
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
                 {
                     x.TotalItems = tradeitGGItems.Count();
                     x.TotalListings = tradeitGGItems.Sum(i => i.Value);
@@ -126,7 +126,7 @@ public class UpdateMarketItemPricesFromTradeitGG
                 try
                 {
                     logger.LogError(ex, $"Failed to update market item price information from Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
+                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
                     {
                         x.LastUpdateErrorOn = DateTimeOffset.Now;
                         x.LastUpdateError = ex.Message;
