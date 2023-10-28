@@ -97,7 +97,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         }
     }
 
-    public void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode)
+    public void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode? responseStatusCode = null)
     {
         WebProxyWithCooldown proxy = null;
         lock (_proxies)
@@ -108,7 +108,10 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         if (proxy != null && !string.IsNullOrEmpty(proxy.Address.ToString()))
         {
             var lastAccessedOn = DateTimeOffset.Now;
-            _logger.LogDebug($"Proxy '{proxyId}' response was {responseStatusCode} for '{proxy.CurrentRequestAddress}'.");
+            _logger.LogDebug($"Proxy '{proxyId}' response was {(responseStatusCode?.ToString() ?? "unknown")} for '{proxy.CurrentRequestAddress}'.");
+
+            // Release this proxy back in to the pool
+            proxy.CurrentRequestAddress = null;
 
             _webProxyStatisticsService.PatchAsync(proxy.Address.ToString(), (value) =>
             {

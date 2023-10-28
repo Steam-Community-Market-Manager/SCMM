@@ -16,7 +16,8 @@ public class WebClient : IDisposable
         _defaultHeaders = new Dictionary<string, string>();
         _cookieContainer = cookieContainer;
         _webProxy = webProxy;
-        _httpHandler = new HttpClientHandler()
+
+        var httpClientManager = new HttpClientHandler()
         {
             UseCookies = cookieContainer != null,
             CookieContainer = cookieContainer ?? new CookieContainer(),
@@ -26,11 +27,14 @@ public class WebClient : IDisposable
             AllowAutoRedirect = true,
             MaxAutomaticRedirections = 3,
             ClientCertificateOptions = ClientCertificateOption.Manual,
-            ServerCertificateCustomValidationCallback = _webProxy == null ? null :
+            ServerCertificateCustomValidationCallback = (_webProxy == null) ? null :
                 // Http web proxy might MiTM the SSL certificate, so ignore invalid certs when using a proxy
                 (httpRequestMessage, cert, cetChain, policyErrors) => true
-
         };
+
+        _httpHandler = (_webProxy != null)
+            ? new WebProxyAwareHttpHandler(_webProxy as IWebProxyManager, () => RateLimitCooldown, httpClientManager)
+            : httpClientManager;
     }
 
     protected HttpClient BuildHttpClient()
@@ -121,114 +125,6 @@ public class WebClient : IDisposable
         return httpClient;
     }
 
-    protected async Task<HttpResponseMessage> PostAsync<TRequest>(HttpClient client, TRequest request, HttpContent content = null, CancellationToken cancellationToken = default)
-        where TRequest : IWebRequest
-    {
-        return HandleRequestAndAssertWasSuccess(request,
-            await client.PostAsync(request.Uri, content, cancellationToken)
-        );
-    }
-
-    protected async Task<HttpResponseMessage> GetAsync<TRequest>(HttpClient client, TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IWebRequest
-    {
-        return HandleRequestAndAssertWasSuccess(request,
-            await client.GetAsync(request.Uri, cancellationToken)
-        );
-    }
-
-    protected HttpResponseMessage HandleRequestAndAssertWasSuccess(IWebRequest request, HttpResponseMessage response)
-    {
-        try
-        {
-            response.EnsureSuccessStatusCode();
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"Response did not indicate success. {response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
-            }
-
-            var proxyId = GetRequestProxyId(request?.Uri);
-            if (!string.IsNullOrEmpty(proxyId))
-            {
-                UpdateProxyRequestStatistics(proxyId, request.Uri, response.StatusCode);
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            var proxyId = GetRequestProxyId(request?.Uri);
-            if (!string.IsNullOrEmpty(proxyId) && ex.StatusCode != null)
-            {
-                UpdateProxyRequestStatistics(proxyId, request?.Uri, ex.StatusCode.Value);
-            }
-
-            /*
-            // Check if the content has not been modified since the last request
-            // 304: Not Modified
-            if (ex.IsNotModified)
-            {
-                throw new SteamNotModifiedException();
-            }
-
-            // Check if the request failed due to a temporary or network related error
-            // 408: RequestTimeout
-            // 504: GatewayTimeout
-            // 502: BadGateway
-            if (ex.IsTemporaryError)
-            {
-                _logger.LogWarning($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
-                return await GetWithRetry(request, (retryAttempt + 1));
-            }
-
-            // Check if the request failed due to rate limiting
-            // 429: TooManyRequests
-            if (ex.IsRateLimited)
-            {
-                // Add a cooldown to the current web proxy and rotate to the next proxy if possible
-                // Steam web API terms of use (https://steamcommunity.com/dev/apiterms)
-                //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
-                // Steam community web site rate-limits observed from personal testing:
-                //  - You are limited to 25 requests within 30 seconds, which resets after ???.
-                RotateWebProxyForHost(request?.Uri, cooldown: TimeSpan.FromMinutes(60));
-                return await GetWithRetry(request, (retryAttempt + 1));
-            }
-
-            // Check if the request failed due to missing proxy authentication
-            // 407: ProxyAuthenticationRequired
-            if (ex.IsProxyAuthenticationRequired)
-            {
-                // Disable the current web proxy and rotate to the next proxy if possible
-                DisableWebProxyForHost(request?.Uri);
-                return await GetWithRetry(request, (retryAttempt + 1));
-            }
-
-            // Legitimate error, bubble the error up to the caller
-            throw;
-            */
-        }
-
-        return response;
-    }
-
-    protected string GetRequestProxyId(Uri requestAddress)
-    {
-        return (_webProxy as IWebProxyManager)?.GetProxyId(requestAddress);
-    }
-
-    protected void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode)
-    {
-        (_webProxy as IWebProxyManager)?.UpdateProxyRequestStatistics(proxyId, requestAddress, responseStatusCode);
-    }
-
-    protected void CooldownWebProxyForHost(string proxyId, Uri host, TimeSpan cooldown)
-    {
-        (_webProxy as IWebProxyManager)?.CooldownProxy(proxyId, host, cooldown);
-    }
-
-    protected void DisableWebProxyForHost(string proxyId)
-    {
-        (_webProxy as IWebProxyManager)?.DisableProxy(proxyId);
-    }
-
     protected virtual void Dispose(bool disposing)
     {
         if (!_disposedValue)
@@ -253,7 +149,18 @@ public class WebClient : IDisposable
 
     public CookieContainer Cookies => _cookieContainer;
 
+    /// <summary>
+    /// If set, the server may respond with a 304 response if the resource has not been modified within the specified time frame.
+    /// </summary>
     public TimeSpan? IfModifiedSinceTimeAgo { get; set; }
 
+    /// <summary>
+    /// If a request temporarily fails, how many times should it be retried before permanently failing.
+    /// </summary>
     public int MaxRetries { get; set; } = 3;
+
+    /// <summary>
+    /// When web proxies are being used, how long should the proxy be put in cool down for if it gets rate limited.
+    /// </summary>
+    public TimeSpan? RateLimitCooldown { get; set; } = TimeSpan.FromMinutes(15);
 }

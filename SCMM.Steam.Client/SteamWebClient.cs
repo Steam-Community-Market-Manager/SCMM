@@ -24,6 +24,13 @@ namespace SCMM.Steam.Client
         {
             _logger = logger;
             _cache = cache;
+
+            // Steam web API terms of use (https://steamcommunity.com/dev/apiterms)
+            //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
+            // Steam community web site rate-limits observed from personal testing:
+            //  - You are limited to 25 requests within 30 seconds, which resets after 30 minutes?
+            // TODO: Find a reputable source for Steam rate limit rules and update this.
+            RateLimitCooldown = TimeSpan.FromMinutes(30);
         }
 
         private string SafeUrl(string requestUrl)
@@ -113,22 +120,11 @@ namespace SCMM.Steam.Client
 
                 // Zhu Li, do the thing...
                 var response = await Get(request);
-                var proxyId = GetRequestProxyId(request?.Uri);
-                if (!String.IsNullOrEmpty(proxyId) && response != null)
-                {
-                    UpdateProxyRequestStatistics(proxyId, request?.Uri, response.StatusCode);
-                }
-
+                
                 return response;
             }
             catch (SteamRequestException ex)
             {
-                var proxyId = GetRequestProxyId(request?.Uri);
-                if (!String.IsNullOrEmpty(proxyId) && ex.StatusCode != null)
-                {
-                    UpdateProxyRequestStatistics(proxyId, request?.Uri, ex.StatusCode.Value);
-                }
-
                 // Check if the content has not been modified since the last request
                 // 304: Not Modified
                 if (ex.IsNotModified)
@@ -142,12 +138,6 @@ namespace SCMM.Steam.Client
                 // 502: BadGateway
                 if (ex.IsTemporaryError)
                 {
-                    if (!String.IsNullOrEmpty(proxyId) && retryAttempt > 10)
-                    {
-                        // This proxy is timing out too much, maybe it is offline? Rotate to the next proxy if possible
-                        CooldownWebProxyForHost(proxyId, request?.Uri, cooldown: TimeSpan.FromHours(6));
-                    }
-                    _logger.LogDebug($"{ex.StatusCode} ({((int)ex.StatusCode)}), will retry...");
                     return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
@@ -155,28 +145,14 @@ namespace SCMM.Steam.Client
                 // 429: TooManyRequests
                 if (ex.IsRateLimited)
                 {
-                    if (!String.IsNullOrEmpty(proxyId))
-                    {
-                        // Add a cooldown to the current web proxy and rotate to the next proxy if possible
-                        // Steam web API terms of use (https://steamcommunity.com/dev/apiterms)
-                        //  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
-                        // Steam community web site rate-limits observed from personal testing:
-                        //  - You are limited to 25 requests within 30 seconds, which resets after ???.
-                        CooldownWebProxyForHost(proxyId, request?.Uri, cooldown: TimeSpan.FromMinutes(30));
-                        return await GetWithRetry(request, (retryAttempt + 1));
-                    }
+                    return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
                 // Check if the request failed due to missing proxy authentication or failure to connect
                 // 407: ProxyAuthenticationRequired
                 if (ex.IsProxyAuthenticationRequired || ex.IsConnectionRefused)
                 {
-                    if (!String.IsNullOrEmpty(proxyId))
-                    {
-                        // Disable the current web proxy and rotate to the next proxy if possible
-                        DisableWebProxyForHost(proxyId);
-                        return await GetWithRetry(request, (retryAttempt + 1));
-                    }
+                    return await GetWithRetry(request, (retryAttempt + 1));
                 }
 
                 // Legitimate error, bubble the error up to the caller

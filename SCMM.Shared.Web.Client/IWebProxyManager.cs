@@ -10,7 +10,7 @@ public interface IWebProxyManager : IWebProxy
 
     string GetProxyId(Uri requestAddress);
 
-    void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode responseStatusCode);
+    void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode? responseStatusCode = null);
 
     void CooldownProxy(string proxyId, Uri host, TimeSpan cooldown);
 
