@@ -42,13 +42,10 @@ public class UpdateMarketItemSales
         var availableProxies = _webProxyManager.GetAvailableProxyCount(new Uri(Constants.SteamCommunityUrl));
         if (availableProxies < MarketItemBatchSize)
         {
-            logger.LogWarning($"Update of market item sales information will be skipped as there are not enough available web proxies to handle our requests (proxies: {availableProxies}/{MarketItemBatchSize})");
-            return;
+            throw new Exception($"Update of market item sales information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
-        else
-        {
-            logger.LogInformation($"Updating market item sales information (id: {jobId})");
-        }
+        
+        logger.LogInformation($"Updating market item sales information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
