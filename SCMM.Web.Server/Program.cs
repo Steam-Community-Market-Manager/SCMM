@@ -47,6 +47,7 @@ await WebApplication.CreateBuilder(args)
     .ConfigureClientServices()
     .Build()
     .Configure()
+    .Warmup()
     .RunAsync();
 
 public static class WebApplicationExtensions
@@ -385,14 +386,6 @@ public static class WebApplicationExtensions
             app.UseHsts();
         }
 
-        // Prime caches
-        using (var scope = app.Services.CreateScope())
-        {
-            scope.ServiceProvider.GetService<LanguageCache>()?.RepopulateCache();
-            scope.ServiceProvider.GetService<CurrencyCache>()?.RepopulateCache();
-            scope.ServiceProvider.GetService<AppCache>()?.RepopulateCache();
-        }
-
         // Enable Swagger API auto-docs
         app.UseSwagger(config =>
         {
@@ -438,6 +431,23 @@ public static class WebApplicationExtensions
         app.MapFallbackToPage("/_Host");
 
         app.UseAzureServiceBusProcessor();
+
+        return app;
+    }
+
+    public static WebApplication Warmup(this WebApplication app)
+    {
+        // Prime caches
+        using (var scope = app.Services.CreateScope())
+        {
+            Task.WaitAll(
+                scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync()
+            );
+
+            scope.ServiceProvider.GetRequiredService<LanguageCache>().RepopulateCache();
+            scope.ServiceProvider.GetRequiredService<CurrencyCache>().RepopulateCache();
+            scope.ServiceProvider.GetRequiredService<AppCache>().RepopulateCache();
+        }
 
         return app;
     }

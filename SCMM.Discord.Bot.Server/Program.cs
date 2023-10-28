@@ -46,6 +46,7 @@ await WebApplication.CreateBuilder(args)
     .ConfigureServices()
     .Build()
     .Configure()
+    .Warmup()
     .RunAsync();
 
 public static class WebApplicationExtensions
@@ -264,7 +265,20 @@ public static class WebApplicationExtensions
 
         app.UseDiscordClient();
 
+        return app;
+    }
+
+    public static WebApplication Warmup(this WebApplication app)
+    {
         app.EnsureDatabaseIsInitialised<DiscordDbContext>();
+
+        // Prime caches
+        using (var scope = app.Services.CreateScope())
+        {
+            Task.WaitAll(
+                scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync()
+            );
+        }
 
         return app;
     }

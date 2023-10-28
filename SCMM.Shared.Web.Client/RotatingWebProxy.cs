@@ -22,7 +22,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         _webProxySyncTimer = new Timer(
             (x) => Task.Run(async () => await RefreshProxiesAsync()),
             null,
-            TimeSpan.Zero,
+            TimeSpan.FromMinutes(WebProxySyncIntervalMinutes),
             TimeSpan.FromMinutes(WebProxySyncIntervalMinutes)
         );
     }

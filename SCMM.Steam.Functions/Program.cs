@@ -56,6 +56,7 @@ await new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices()
     .Build()
+    .Warmup()
     .RunAsync();
 
 public static class HostExtensions
@@ -224,5 +225,18 @@ public static class HostExtensions
             services.AddQueries(contactAssemblies);
             services.AddMessages(contactAssemblies);
         });
+    }
+
+    public static IHost Warmup(this IHost app)
+    {
+        // Prime caches
+        using (var scope = app.Services.CreateScope())
+        {
+            Task.WaitAll(
+                scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync()
+            );
+        }
+
+        return app;
     }
 }

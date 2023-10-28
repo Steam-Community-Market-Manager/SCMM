@@ -48,8 +48,25 @@ using (var host = hostBuilder.Build())
 {
     var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
+    // Prime caches
+    using (var scope = host.Services.CreateScope())
+    {
+        await scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync();
+    }
+
+    // Start app
     await host.StartAsync();
 
+    /*
+    // Start RustyPot client web socket processor
+    var rustyPot = new RustyPotWebClient(
+        host.Services.GetRequiredService<ILogger<RustyPotWebClient>>(),
+        host.Services.GetRequiredService<IServiceBus>()
+    );
+    var rustyPotMonitorJob = await rustyPot.MonitorAsync();
+    */
+
+    // Start service bus processor
     var serviceBusProcessor = new ServiceBusProcessorMiddleware(
         (ctx) => Task.CompletedTask,
         host.Services.GetRequiredService<ILogger<ServiceBusProcessorMiddleware>>(),
@@ -58,14 +75,6 @@ using (var host = hostBuilder.Build())
         host.Services.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(),
         host.Services.GetRequiredService<MessageHandlerTypeCollection>()
     );
-    /*
-    var rustyPot = new RustyPotWebClient(
-        host.Services.GetRequiredService<ILogger<RustyPotWebClient>>(),
-        host.Services.GetRequiredService<IServiceBus>()
-    );
-    var rustyPotMonitorJob = await rustyPot.MonitorAsync();
-    */
-    logger.LogInformation("Service bus processor is ready to handle messages.");
     await using (serviceBusProcessor)
     {
         await host.WaitForShutdownAsync();
