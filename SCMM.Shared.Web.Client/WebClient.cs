@@ -17,7 +17,7 @@ public class WebClient : IDisposable
         _cookieContainer = cookieContainer;
         _webProxy = webProxy;
 
-        var httpClientManager = new HttpClientHandler()
+        var httpClientMessageHandler = new HttpClientHandler()
         {
             UseCookies = cookieContainer != null,
             CookieContainer = cookieContainer ?? new CookieContainer(),
@@ -25,16 +25,16 @@ public class WebClient : IDisposable
             PreAuthenticate = webProxy != null,
             AutomaticDecompression = DecompressionMethods.All,
             AllowAutoRedirect = true,
-            MaxAutomaticRedirections = 3,
+            MaxAutomaticRedirections = 5,
             ClientCertificateOptions = ClientCertificateOption.Manual,
             ServerCertificateCustomValidationCallback = (_webProxy == null) ? null :
                 // Http web proxy might MiTM the SSL certificate, so ignore invalid certs when using a proxy
                 (httpRequestMessage, cert, cetChain, policyErrors) => true
         };
 
-        _httpHandler = (_webProxy != null)
-            ? new WebProxyAwareHttpHandler(_webProxy as IWebProxyManager, () => RateLimitCooldown, httpClientManager)
-            : httpClientManager;
+        _httpHandler = (_webProxy is IWebProxyManager webProxyManager)
+            ? new WebProxyAwareHttpMessageHandler(webProxyManager, () => RateLimitCooldown, httpClientMessageHandler)
+            : httpClientMessageHandler;
     }
 
     protected HttpClient BuildHttpClient()
@@ -98,7 +98,7 @@ public class WebClient : IDisposable
     {
         var httpClient = BuildHttpClient();
 
-        // We are a normal looking web browser, honest (helps with WAF rules that block bots)
+        // We are a normal looking web browser, honest (helps with bypassing WAF rules that block bots)
         if (!httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
@@ -109,15 +109,15 @@ public class WebClient : IDisposable
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
         }
 
-        // We made this request from a web browser, honest (helps with WAF rules that enforce OWASP)
+        // We made this request from a web browser, honest (helps with bypassing WAF rules that enforce OWASP)
         if (!httpClient.DefaultRequestHeaders.Contains("X-Requested-With"))
         {
             httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         }
 
+        // We made this request from your website, honest (helps with bypassing WAF rules)
         if (referrer != null)
         {
-            // We made this request from your website, honest...
             httpClient.DefaultRequestHeaders.Host = referrer.Host;
             httpClient.DefaultRequestHeaders.Referrer = referrer;
         }
@@ -150,11 +150,6 @@ public class WebClient : IDisposable
     public CookieContainer Cookies => _cookieContainer;
 
     /// <summary>
-    /// If set, the server may respond with a 304 response if the resource has not been modified within the specified time frame.
-    /// </summary>
-    public TimeSpan? IfModifiedSinceTimeAgo { get; set; }
-
-    /// <summary>
     /// If a request temporarily fails, how many times should it be retried before permanently failing.
     /// </summary>
     public int MaxRetries { get; set; } = 3;
@@ -163,4 +158,9 @@ public class WebClient : IDisposable
     /// When web proxies are being used, how long should the proxy be put in cool down for if it gets rate limited.
     /// </summary>
     public TimeSpan? RateLimitCooldown { get; set; } = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// If set, the server may respond with a 304 response if the resource has not been modified within the specified time frame.
+    /// </summary>
+    public TimeSpan? IfModifiedSinceTimeAgo { get; set; }
 }

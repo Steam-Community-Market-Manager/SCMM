@@ -15,6 +15,9 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
 
     private IList<WebProxyWithCooldown> _proxies = new List<WebProxyWithCooldown>();
 
+    [ThreadStatic]
+    private static string currentThreadReservedWebProxyId;
+
     public RotatingWebProxy(ILogger<RotatingWebProxy> logger, IWebProxyUsageStatisticsService webProxyStatisticsService)
     {
         _logger = logger;
@@ -51,7 +54,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
                 {
                     x.Proxy.Cooldowns = x.Endpoint.DomainRateLimits?.ToDictionary(k => k.Key, v => v.Value.UtcDateTime) ?? new Dictionary<string, DateTime>();
                     x.Proxy.LastAccessedOn = x.Endpoint.LastAccessedOn;
-                    x.Proxy.IsEnabled = x.Endpoint.IsAvailable;
+                    x.Proxy.IsAvailable = x.Endpoint.IsAvailable;
                 });
 
                 // Add new proxies
@@ -70,7 +73,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
                         },
                         Cooldowns = x.DomainRateLimits?.ToDictionary(k => k.Key, v => v.Value.UtcDateTime) ?? new Dictionary<string, DateTime>(),
                         LastAccessedOn = x.LastAccessedOn,
-                        IsEnabled = x.IsAvailable,
+                        IsAvailable = x.IsAvailable,
                     })
                 );
             }
@@ -86,49 +89,6 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
                 ?.Where(x => x.IsAvailable)
                 ?.Where(x => host == null || x.GetHostCooldown(host) <= now)
                 ?.Count() ?? 0;
-        }
-    }
-
-    public string GetProxyId(Uri requestAddress)
-    {
-        lock (_proxies)
-        {
-            return _proxies?.FirstOrDefault(x => x.CurrentRequestAddress == requestAddress)?.Id;
-        }
-    }
-
-    public void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode? responseStatusCode = null)
-    {
-        WebProxyWithCooldown proxy = null;
-        lock (_proxies)
-        {
-            proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
-        }
-
-        if (proxy != null && !string.IsNullOrEmpty(proxy.Address.ToString()))
-        {
-            var lastAccessedOn = DateTimeOffset.Now;
-            _logger.LogDebug($"Proxy '{proxyId}' response was {(responseStatusCode?.ToString() ?? "unknown")} for '{proxy.CurrentRequestAddress}'.");
-
-            // Release this proxy back in to the pool
-            proxy.CurrentRequestAddress = null;
-
-            _webProxyStatisticsService.PatchAsync(proxy.Address.ToString(), (value) =>
-            {
-                value.LastAccessedOn = lastAccessedOn;
-                if (responseStatusCode >= HttpStatusCode.OK && responseStatusCode < HttpStatusCode.Ambiguous)
-                {
-                    value.RequestsSucceededCount++;
-                }
-                else
-                {
-                    value.RequestsFailedCount++;
-                }
-            }).ContinueWith((x) =>
-            {
-                proxy.LastAccessedOn = lastAccessedOn;
-                proxy.CurrentRequestAddress = null;
-            });
         }
     }
 
@@ -163,12 +123,41 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
 
         if (proxy != null && !string.IsNullOrEmpty(proxy.Address.ToString()))
         {
-            proxy.IsEnabled = false;
+            proxy.IsAvailable = false;
             _logger.LogDebug($"Proxy '{proxyId}' has been disabled.");
 
             _webProxyStatisticsService.PatchAsync(proxy.Address.ToString(), (value) =>
             {
                 value.IsAvailable = false;
+            });
+        }
+    }
+
+    public void UpdateProxyRequestStatistics(string proxyId, Uri? requestAddress, HttpStatusCode? responseStatusCode = null)
+    {
+        WebProxyWithCooldown proxy = null;
+        lock (_proxies)
+        {
+            proxy = _proxies?.FirstOrDefault(x => x.Id == proxyId);
+        }
+
+        if (proxy != null && !string.IsNullOrEmpty(proxy.Address.ToString()))
+        {
+            var lastAccessedOn = DateTimeOffset.Now;
+            proxy.LastAccessedOn = lastAccessedOn;
+            _logger.LogDebug($"Proxy '{proxyId}' response was {(responseStatusCode?.ToString() ?? "unknown")} for '{(requestAddress?.ToString() ?? "unknown")}'.");
+
+            _webProxyStatisticsService.PatchAsync(proxy.Address.ToString(), (value) =>
+            {
+                value.LastAccessedOn = lastAccessedOn;
+                if (responseStatusCode >= HttpStatusCode.OK && responseStatusCode < HttpStatusCode.Ambiguous)
+                {
+                    value.RequestsSucceededCount++; // It was a successful request
+                }
+                else
+                {
+                    value.RequestsFailedCount++; // It was an unsuccessful request
+                }
             });
         }
     }
@@ -180,25 +169,28 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
             throw new ArgumentNullException(nameof(destination));
         }
 
+        // Find the least recently accessed proxy that isn't in cooldown for our domain
+        var proxy = (WebProxyWithCooldown)null;
         lock (_proxies)
         {
-            // Use the least recently accessed proxy that isn't in cooldown for our domain
             var now = DateTime.UtcNow;
-            var proxy = _proxies
+            proxy = _proxies
                 ?.Where(x => x.IsAvailable)
                 ?.Where(x => x.GetHostCooldown(destination) <= now)
                 ?.OrderBy(x => x.LastAccessedOn)
                 ?.FirstOrDefault();
-
-            if (proxy != null)
-            {
-                // Mark this proxy as busy
-                proxy.CurrentRequestAddress = destination;
-            }
-
-            _logger.LogDebug($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy.");
-            return proxy?.Address;
         }
+
+        // If a proxy is available, associate it with our thread
+        if (proxy != null)
+        {
+            // NOTE: We update the last access time so this proxy drops to the bottom of the pick list for the next request
+            proxy.LastAccessedOn = DateTimeOffset.Now;
+            currentThreadReservedWebProxyId = proxy.Id;
+        }
+
+        _logger.LogDebug($"'{destination}' is being routed through '{proxy?.Address?.Host ?? "default"}' proxy.");
+        return proxy?.Address;
     }
 
     bool IWebProxy.IsBypassed(Uri host)
@@ -209,12 +201,14 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         }
 
         var proxiesAreAvailable = GetAvailableProxyCount(host) > 0;
-        if (!proxiesAreAvailable)
+        var proxyIsAlreadyAllocatedToThread = !string.IsNullOrEmpty(currentThreadReservedWebProxyId);
+        var proxyIsBypassed = (!proxiesAreAvailable && !proxyIsAlreadyAllocatedToThread);
+        if (proxyIsBypassed)
         {
             _logger.LogWarning($"There are no available proxies to handle new requests to '{host.Host}'. The request will bypass all configured proxies.");
         }
 
-        return !proxiesAreAvailable;
+        return proxyIsBypassed;
     }
 
     NetworkCredential ICredentials.GetCredential(Uri uri, string authType)
@@ -227,7 +221,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         lock (_proxies)
         {
             return _proxies
-                ?.FirstOrDefault(x => x.IsEnabled && x.Address == uri)
+                ?.FirstOrDefault(x => x.IsAvailable && x.Address == uri)
                 ?.Credentials;
         }
     }
@@ -242,7 +236,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         lock (_proxies)
         {
             return _proxies
-                ?.FirstOrDefault(x => x.IsEnabled && x.Address?.Host == host && x.Address?.Port == port)
+                ?.FirstOrDefault(x => x.IsAvailable && x.Address?.Host == host && x.Address?.Port == port)
                 ?.Credentials;
         }
     }
@@ -252,6 +246,8 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         get => this;
         set => throw new NotImplementedException();
     }
+
+    public string CurrentProxyId => currentThreadReservedWebProxyId;
 
     private class WebProxyWithCooldown
     {
@@ -271,11 +267,6 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         public NetworkCredential Credentials { get; set; }
 
         /// <summary>
-        /// The current address this proxy is serving
-        /// </summary>
-        public Uri CurrentRequestAddress { get; set; }
-
-        /// <summary>
         /// Rate-limit cooldown time for each domain
         /// </summary>
         public IDictionary<string, DateTime> Cooldowns { get; internal set; } = new Dictionary<string, DateTime>();
@@ -288,17 +279,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         /// <summary>
         /// True if this proxy is available for us
         /// </summary>
-        public bool IsEnabled { get; set; } = true;
-
-        /// <summary>
-        /// True if this proxy is currently busy serving a request
-        /// </summary>
-        public bool IsBusy => CurrentRequestAddress != null;
-
-        /// <summary>
-        /// True if this proxy is available to serve a new request
-        /// </summary>
-        public bool IsAvailable => IsEnabled && !IsBusy;
+        public bool IsAvailable { get; set; } = true;
 
         public DateTime GetHostCooldown(Uri address)
         {
