@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Web.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
@@ -103,15 +104,21 @@ public class UpdateMarketItemOrders
         // Parse the responses and update the item prices
         if (itemResponseMappings.Any())
         {
-            await UpdateMarketItemOrderHistory(itemResponseMappings);
+            // NOTE: We need to update the database in smaller batches of 10 items at a time.
+            //       The SQL demand of loading the entire buy/sell order history for 50+ items at a time can easily trigger a SQL timeout.
+            foreach (var batch in itemResponseMappings.Batch(10))
+            {
+                await UpdateMarketItemOrderHistory(batch);
+            }
         }
 
         logger.LogInformation($"Updated {itemResponseMappings.Count} market item orders information (id: {jobId})");
     }
 
-    private async Task UpdateMarketItemOrderHistory(IDictionary<Guid, SteamMarketItemOrdersHistogramJsonResponse> itemResponses)
+    private async Task UpdateMarketItemOrderHistory(IEnumerable<KeyValuePair<Guid, SteamMarketItemOrdersHistogramJsonResponse>> itemResponses)
     {
-        var itemIds = itemResponses.Keys.ToArray();
+        // TODO: Optimise this SQL to load faster or remove the eager load of all buy/sell orders
+        var itemIds = itemResponses.Select(x => x.Key).ToArray();
         var items = await _db.SteamMarketItems
             .Where(x => itemIds.Contains(x.Id))
             .Include(x => x.App)
@@ -124,7 +131,7 @@ public class UpdateMarketItemOrders
 
         Parallel.ForEach(items, (item) =>
         {
-            var histogram = itemResponses[item.Id];
+            var histogram = itemResponses.FirstOrDefault(x => x.Key == item.Id).Value;
             item.LastCheckedOrdersOn = DateTimeOffset.Now;
             item.RecalculateOrders(
                 ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),

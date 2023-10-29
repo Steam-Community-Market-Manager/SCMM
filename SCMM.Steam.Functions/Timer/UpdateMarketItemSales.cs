@@ -106,15 +106,21 @@ public class UpdateMarketItemSales
         // Parse the responses and update the item prices
         if (itemResponseMappings.Any())
         {
-            await UpdateMarketItemSalesHistory(itemResponseMappings);
+            // NOTE: We need to update the database in smaller batches of 10 items at a time.
+            //       The SQL demand of loading the entire sales history for 50+ items at a time can easily trigger a SQL timeout.
+            foreach (var batch in itemResponseMappings.Batch(10))
+            {
+                await UpdateMarketItemSalesHistory(batch);
+            }
         }
 
         logger.LogInformation($"Updated {itemResponseMappings.Count} market item sales information (id: {jobId})");
     }
 
-    private async Task UpdateMarketItemSalesHistory(IDictionary<Guid, string> itemResponses)
+    private async Task UpdateMarketItemSalesHistory(IEnumerable<KeyValuePair<Guid, string>> itemResponses)
     {
-        var itemIds = itemResponses.Keys.ToArray();
+        // TODO: Optimise this SQL to load faster or remove the eager load of all sales history
+        var itemIds = itemResponses.Select(x => x.Key).ToArray();
         var items = await _db.SteamMarketItems
             .Where(x => itemIds.Contains(x.Id))
             .Include(x => x.App)
@@ -126,7 +132,8 @@ public class UpdateMarketItemSales
 
         Parallel.ForEach(items, (item) =>
         {
-            var salesHistoryGraphJson = Regex.Match(itemResponses[item.Id], @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
+            var response = itemResponses.FirstOrDefault(x => x.Key == item.Id).Value;
+            var salesHistoryGraphJson = Regex.Match(response, @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
             if (!string.IsNullOrEmpty(salesHistoryGraphJson))
             {
                 var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphJson}]");
