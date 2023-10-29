@@ -19,7 +19,8 @@ public class UpdateMarketItemOrders
     private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
     private readonly IWebProxyManager _webProxyManager;
 
-    private const int MarketItemBatchSize = 50;
+    // TODO: Make these configurable
+    private const int MarketItemBatchSize = 30;
     private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
 
     public UpdateMarketItemOrders(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
