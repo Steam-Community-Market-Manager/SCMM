@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -86,11 +87,11 @@ public class UpdateMarketItemSales
             try
             {
                 itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetTextAsync(
-                     new SteamMarketListingPageRequest()
-                     {
-                         AppId = item.AppId,
-                         MarketHashName = item.MarketHashName,
-                     }
+                    new SteamMarketListingPageRequest()
+                    {
+                        AppId = item.AppId,
+                        MarketHashName = item.MarketHashName,
+                    }
                 );
             }
             catch (SteamRequestException ex)
@@ -106,46 +107,44 @@ public class UpdateMarketItemSales
         // Parse the responses and update the item prices
         if (itemResponseMappings.Any())
         {
-            // NOTE: We need to update the database in smaller batches of 10 items at a time.
-            //       The SQL demand of loading the entire sales history for 50+ items at a time can easily trigger a SQL timeout.
-            foreach (var batch in itemResponseMappings.Batch(10))
+            // NOTE: We need to update the database items one at a time, due to performance limitations.
+            //       The SQL demand of loading the entire sales history history for 50+ items at a time will easily trigger a SQL timeout.
+            var stopwatch = new Stopwatch();
+            foreach (var item in itemResponseMappings)
             {
-                await UpdateMarketItemSalesHistory(batch);
+                stopwatch.Restart();
+                await UpdateMarketItemSalesHistory(item.Key, item.Value);
+                logger.LogInformation($"Updated item sales for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
             }
         }
 
         logger.LogInformation($"Updated {itemResponseMappings.Count} market item sales information (id: {jobId})");
     }
 
-    private async Task UpdateMarketItemSalesHistory(IEnumerable<KeyValuePair<Guid, string>> itemResponses)
+    private async Task UpdateMarketItemSalesHistory(Guid itemId, string itemResponse)
     {
         // TODO: Optimise this SQL to load faster or remove the eager load of all sales history
-        var itemIds = itemResponses.Select(x => x.Key).ToArray();
-        var items = await _db.SteamMarketItems
-            .Where(x => itemIds.Contains(x.Id))
+        var item = await _db.SteamMarketItems
+            .Where(x => x.Id == itemId)
             .Include(x => x.App)
             .Include(x => x.Currency)
             .Include(x => x.Description)
             .Include(x => x.SalesHistory)
             .AsSplitQuery()
-            .ToArrayAsync();
+            .SingleOrDefaultAsync();
 
-        Parallel.ForEach(items, (item) =>
+        var salesHistoryGraphJson = Regex.Match(itemResponse, @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
+        if (!string.IsNullOrEmpty(salesHistoryGraphJson))
         {
-            var response = itemResponses.FirstOrDefault(x => x.Key == item.Id).Value;
-            var salesHistoryGraphJson = Regex.Match(response, @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
-            if (!string.IsNullOrEmpty(salesHistoryGraphJson))
+            var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphJson}]");
+            if (salesHistoryGraph != null)
             {
-                var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphJson}]");
-                if (salesHistoryGraph != null)
-                {
-                    item.LastCheckedSalesOn = DateTimeOffset.Now;
-                    item.RecalculateSales(
-                        ParseMarketItemSalesFromGraph(salesHistoryGraph)
-                    );
-                }
+                item.LastCheckedSalesOn = DateTimeOffset.Now;
+                item.RecalculateSales(
+                    ParseMarketItemSalesFromGraph(salesHistoryGraph)
+                );
             }
-        });
+        }
 
         await _db.SaveChangesAsync();
     }

@@ -11,6 +11,7 @@ using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -104,42 +105,40 @@ public class UpdateMarketItemOrders
         // Parse the responses and update the item prices
         if (itemResponseMappings.Any())
         {
-            // NOTE: We need to update the database in smaller batches of 10 items at a time.
-            //       The SQL demand of loading the entire buy/sell order history for 50+ items at a time can easily trigger a SQL timeout.
-            foreach (var batch in itemResponseMappings.Batch(10))
+            // NOTE: We need to update the database items one at a time, due to performance limitations.
+            //       The SQL demand of loading the entire buy/sell order history for 50+ items at a time will easily trigger a SQL timeout.
+            var stopwatch = new Stopwatch();
+            foreach (var item in itemResponseMappings)
             {
-                await UpdateMarketItemOrderHistory(batch);
+                stopwatch.Restart();
+                await UpdateMarketItemOrderHistory(item.Key, item.Value);
+                logger.LogInformation($"Updated item orders for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
             }
         }
 
         logger.LogInformation($"Updated {itemResponseMappings.Count} market item orders information (id: {jobId})");
     }
 
-    private async Task UpdateMarketItemOrderHistory(IEnumerable<KeyValuePair<Guid, SteamMarketItemOrdersHistogramJsonResponse>> itemResponses)
+    private async Task UpdateMarketItemOrderHistory(Guid itemId, SteamMarketItemOrdersHistogramJsonResponse itemResponse)
     {
         // TODO: Optimise this SQL to load faster or remove the eager load of all buy/sell orders
-        var itemIds = itemResponses.Select(x => x.Key).ToArray();
-        var items = await _db.SteamMarketItems
-            .Where(x => itemIds.Contains(x.Id))
+        var item = await _db.SteamMarketItems
+            .Where(x => x.Id == itemId)
             .Include(x => x.App)
             .Include(x => x.Currency)
             .Include(x => x.Description)
             .Include(x => x.BuyOrders)
             .Include(x => x.SellOrders)
             .AsSplitQuery()
-            .ToArrayAsync();
+            .SingleOrDefaultAsync();
 
-        Parallel.ForEach(items, (item) =>
-        {
-            var histogram = itemResponses.FirstOrDefault(x => x.Key == item.Id).Value;
-            item.LastCheckedOrdersOn = DateTimeOffset.Now;
-            item.RecalculateOrders(
-                ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
-                histogram.BuyOrderCount.SteamQuantityValueAsInt(),
-                ParseMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
-                histogram.SellOrderCount.SteamQuantityValueAsInt()
-            );
-        });
+        item.LastCheckedOrdersOn = DateTimeOffset.Now;
+        item.RecalculateOrders(
+            ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(itemResponse.BuyOrderGraph),
+            itemResponse.BuyOrderCount.SteamQuantityValueAsInt(),
+            ParseMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(itemResponse.SellOrderGraph),
+            itemResponse.SellOrderCount.SteamQuantityValueAsInt()
+        );
 
         await _db.SaveChangesAsync();
     }
