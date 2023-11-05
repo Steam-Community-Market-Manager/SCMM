@@ -25,7 +25,7 @@ namespace SCMM.Market.LootFarm.Client
                 }
 
                 var url = $"{BaseUri}fullprice{appName.ToUpper()}.json";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

@@ -20,7 +20,7 @@ namespace SCMM.Market.SkinsMonkey.Client
             using (var client = BuildSkinsMoneyClient())
             {
                 var url = $"{ApiBaseUri}price/{Uri.EscapeDataString(appId)}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

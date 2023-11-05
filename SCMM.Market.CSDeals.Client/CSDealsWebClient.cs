@@ -16,7 +16,7 @@ namespace SCMM.Market.CSDeals.Client
             using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{ApiBaseUri}IPricing/GetLowestPrices/v1?appid={Uri.EscapeDataString(appId)}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
@@ -40,7 +40,7 @@ namespace SCMM.Market.CSDeals.Client
                     { "page", page.ToString() }
                 });
 
-                var response = await client.PostAsync(url, payload);
+                var response = await RetryPolicy.ExecuteAsync(() => client.PostAsync(url, payload));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
@@ -63,7 +63,7 @@ namespace SCMM.Market.CSDeals.Client
                     { "appid", appId }
                 });
 
-                var response = await client.PostAsync(url, payload);
+                var response = await RetryPolicy.ExecuteAsync(() => client.PostAsync(url, payload));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

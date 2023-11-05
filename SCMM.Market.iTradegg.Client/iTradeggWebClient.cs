@@ -15,7 +15,7 @@ namespace SCMM.Market.iTradegg.Client
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebBaseUri)))
             {
                 var url = $"{WebBaseUri}ajax/getInventory?game={appId}&type=bot";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

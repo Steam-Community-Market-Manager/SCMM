@@ -19,7 +19,7 @@ namespace SCMM.Market.SkinBaron.Client
             using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{ApiBaseUri}Browsing/FilterOffers?appId={Uri.EscapeDataString(appId)}&sort=EF&language=en&page={page}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

@@ -21,7 +21,7 @@ namespace SCMM.Fixer.Client
             using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_configuration.ApiKey}&base={from}&symbols={string.Join(',', to)}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

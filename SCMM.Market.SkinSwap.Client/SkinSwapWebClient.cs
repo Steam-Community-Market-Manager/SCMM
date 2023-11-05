@@ -21,7 +21,7 @@ namespace SCMM.Market.SkinSwap.Client
             using (var client = BuildSkinsSwapClient())
             {
                 var url = $"{ApiBaseUri}/v1/items";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

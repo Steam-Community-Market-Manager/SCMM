@@ -21,7 +21,7 @@ namespace SCMM.Market.Buff.Client
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri($"{WebBaseUri}/market/{appName?.ToLower()}")))
             {
                 var url = $"{ApiBaseUri}market/goods?game={appName?.ToLower()}&page_num={page}&page_size={pageSize}&sort_by=price.desc&trigger=undefined_trigger&_={Random.Shared.NextInt64(1000000000000L, 9999999999999L)}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

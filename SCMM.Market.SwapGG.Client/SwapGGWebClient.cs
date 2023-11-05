@@ -23,7 +23,7 @@ namespace SCMM.Market.SwapGG.Client
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri($"{WebsiteBaseUri}/trade")))
             {
                 var url = $"{TradeApiBaseUri}v2/trade/inventory/bot/{Uri.EscapeDataString(appId)}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
@@ -51,7 +51,7 @@ namespace SCMM.Market.SwapGG.Client
             using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{MarketApiBaseUri}pricing/lowest?appId={Uri.EscapeDataString(appId)}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

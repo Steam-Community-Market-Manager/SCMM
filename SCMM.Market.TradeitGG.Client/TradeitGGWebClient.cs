@@ -21,7 +21,7 @@ namespace SCMM.Market.TradeitGG.Client
                 try
                 {
                     var url = $"{ApiBaseUri}inventory/data?gameId={Uri.EscapeDataString(appId)}&sortType=Popularity&offset={offset}&limit={limit}&fresh=true";
-                    var response = await client.GetAsync(url);
+                    var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                     response.EnsureSuccessStatusCode();
 
                     var textJson = await response.Content.ReadAsStringAsync();
@@ -70,7 +70,7 @@ namespace SCMM.Market.TradeitGG.Client
 
                 foreach (var pageUrl in pageUrls)
                 {
-                    var response = await client.GetAsync(pageUrl);
+                    var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(pageUrl));
                     response.EnsureSuccessStatusCode();
 
                     var text = await response.Content.ReadAsStringAsync();

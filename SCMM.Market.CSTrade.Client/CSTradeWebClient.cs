@@ -22,7 +22,7 @@ namespace SCMM.Market.CSTrade.Client
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
             {
                 var url = $"{PricesApiBaseUri}prices_{appName}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

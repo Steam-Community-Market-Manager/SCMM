@@ -16,7 +16,7 @@ namespace SCMM.Market.RustTM.Client
             using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{ApiBaseUri}prices/{currencyName.ToUpper()}.json";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

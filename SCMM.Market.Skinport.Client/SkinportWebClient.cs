@@ -24,7 +24,7 @@ namespace SCMM.Market.Skinport.Client
             using (var client = BuildWebApiHttpClient(host: new Uri(BaseUri)))
             {
                 var url = $"{BaseUri}items?app_id={Uri.EscapeDataString(appId)}&currency={Uri.EscapeDataString(currency)}&tradable={tradable.ToString().ToLower()}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
