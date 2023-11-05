@@ -7,8 +7,6 @@ namespace SCMM.Market.TradeitGG.Client
 {
     public class TradeitGGWebClient : Shared.Web.Client.WebClientBase
     {
-        private const string InventoryBaseUri = "https://inventory.tradeit.gg/";
-        private const string OldWebsiteBaseUri = "https://old.tradeit.gg/";
         private const string WebsiteBaseUri = "https://tradeit.gg/";
         private const string ApiBaseUri = "https://tradeit.gg/api/v2/";
 
@@ -16,49 +14,7 @@ namespace SCMM.Market.TradeitGG.Client
 
         public TradeitGGWebClient(ILogger<TradeitGGWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <see cref="https://old.tradeit.gg/?back-to-old=true"/>
-        /// <param name="appId"></param>
-        /// <returns></returns>
-        [Obsolete("This API might stop working at any point, use GetNewInventoryDataAsync() instead")]
-        public async Task<IEnumerable<TradeitGGItem>> GetOldInventoryAsync(string appId)
-        {
-            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(OldWebsiteBaseUri)))
-            {
-                var url = $"{InventoryBaseUri}sinv/{Uri.EscapeDataString(appId)}";
-                var response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                var textJson = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(textJson))
-                {
-                    return default;
-                }
-
-                var responseJson = JsonSerializer.Deserialize<IEnumerable<TradeitGGOldBotInventoryResponse>>(textJson);
-                var inventoryData = responseJson?.SelectMany(x =>
-                    x.Items.Select(i => new TradeitGGItem()
-                    {
-                        GroupId = Int64.Parse(i.Key.Split("_", StringSplitOptions.TrimEntries).FirstOrDefault()),
-                        Name = i.Key.Split("_", StringSplitOptions.TrimEntries).FirstOrDefault(),
-                        Price = i.Value.Price
-                    })
-                );
-
-                return inventoryData;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="appId"></param>
-        /// <param name="offset"></param>
-        /// <param name="limit"></param>
-        /// <returns></returns>
-        public async Task<IDictionary<TradeitGGItem, int>> GetNewInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
+        public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
             {

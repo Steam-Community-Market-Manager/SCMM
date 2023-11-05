@@ -56,7 +56,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Fetch the file from its source
-            var response = await _communityClient.GetBinary(new SteamBlobRequest(request.Url));
+            var response = await _communityClient.GetBinaryAsync(new SteamBlobRequest(request.Url));
             if (response == null)
             {
                 return null;

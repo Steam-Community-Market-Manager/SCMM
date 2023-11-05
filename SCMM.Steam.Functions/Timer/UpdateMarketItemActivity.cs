@@ -83,7 +83,7 @@ public class UpdateMarketItemActivity
             var total = assetDescriptions.Count;
             try
             {
-                var response = await _steamCommunityWebClient.GetMarketItemOrdersActivity(
+                var response = await _steamCommunityWebClient.GetMarketItemOrdersActivityAsync(
                     new SteamMarketItemOrdersActivityJsonRequest()
                     {
                         ItemNameId = assetDescription.NameId.ToString(),

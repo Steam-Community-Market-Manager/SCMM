@@ -23,19 +23,19 @@ namespace SCMM.Steam.Client
 
         #region Item Store
 
-        public async Task<XElement> GetStorePage(SteamItemStorePageRequest request, bool useCache = false)
+        public async Task<XElement> GetStorePageAsync(SteamItemStorePageRequest request, bool useCache = false)
         {
-            return await GetHtml<SteamItemStorePageRequest>(request, useCache);
+            return await GetHtmlAsync<SteamItemStorePageRequest>(request, useCache);
         }
 
-        public async Task<XElement> GetStoreDetailPage(SteamItemStoreDetailPageRequest request, bool useCache = false)
+        public async Task<XElement> GetStoreDetailPageAsync(SteamItemStoreDetailPageRequest request, bool useCache = false)
         {
-            return await GetHtml<SteamItemStoreDetailPageRequest>(request, useCache);
+            return await GetHtmlAsync<SteamItemStoreDetailPageRequest>(request, useCache);
         }
 
-        public async Task<SteamItemStoreGetItemDefsPaginatedJsonResponse> GetStorePaginated(SteamItemStoreGetItemDefsPaginatedJsonRequest request, bool useCache = false)
+        public async Task<SteamItemStoreGetItemDefsPaginatedJsonResponse> GetStorePaginatedAsync(SteamItemStoreGetItemDefsPaginatedJsonRequest request, bool useCache = false)
         {
-            return await GetJson<SteamItemStoreGetItemDefsPaginatedJsonRequest, SteamItemStoreGetItemDefsPaginatedJsonResponse>(request, useCache);
+            return await GetJsonAsync<SteamItemStoreGetItemDefsPaginatedJsonRequest, SteamItemStoreGetItemDefsPaginatedJsonResponse>(request, useCache);
         }
 
         #endregion

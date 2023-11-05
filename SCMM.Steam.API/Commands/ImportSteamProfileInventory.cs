@@ -226,7 +226,7 @@ namespace SCMM.Steam.API.Commands
             try
             {
                 // Fetch assets
-                inventory = await _communityClient.GetInventoryPaginated(
+                inventory = await _communityClient.GetInventoryPaginatedAsync(
                     new SteamInventoryPaginatedJsonRequest()
                     {
                         AppId = app.SteamId,

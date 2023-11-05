@@ -86,7 +86,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogInformation($"Importing profile '{resolvedId.SteamId64}' from Steam");
 
                     var steamId = resolvedId.SteamId64.Value.ToString();
-                    var playerSummaryResponse = await _apiClient.SteamUserGetPlayerSummaries(
+                    var playerSummaryResponse = await _apiClient.SteamUserGetPlayerSummariesAsync(
                         new GetPlayerSummariesJsonRequest()
                         {
                             SteamIds = new[] { steamId }
@@ -125,7 +125,7 @@ namespace SCMM.Steam.API.Commands
                     profile.AvatarUrl = playerSummary.AvatarMediumUrl;
                     profile.AvatarLargeUrl = playerSummary.AvatarFullUrl;
 
-                    var playerBanResponse = await _apiClient.SteamUserGetPlayerBans(
+                    var playerBanResponse = await _apiClient.SteamUserGetPlayerBansAsync(
                         new GetPlayerBansJsonRequest()
                         {
                             SteamIds = new[] { steamId }
@@ -148,7 +148,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogInformation($"Importing profile '{resolvedId.CustomUrl}' from Steam");
 
                     var profileId = resolvedId.CustomUrl;
-                    var response = await _communityClient.GetProfileById(
+                    var response = await _communityClient.GetProfileByIdAsync(
                         new SteamProfileByIdPageRequest()
                         {
                             ProfileId = profileId,

@@ -69,7 +69,7 @@ public class UpdateStoreStatistics
         }
 
         logger.LogTrace($"Updating item store workshop statistics (ids: {workshopFileIds.Length})");
-        var response = await _steamApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+        var response = await _steamApiClient.SteamRemoteStorageGetPublishedFileDetailsAsync(new GetPublishedFileDetailsJsonRequest()
         {
             PublishedFileIds = workshopFileIds
         });
@@ -104,7 +104,7 @@ public class UpdateStoreStatistics
     private async Task UpdateItemStoreTopSellers(ILogger logger, SteamItemStore itemStore)
     {
         logger.LogTrace($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
-        var storePage = await _steamStoreWebClient.GetStorePage(new SteamItemStorePageRequest()
+        var storePage = await _steamStoreWebClient.GetStorePageAsync(new SteamItemStorePageRequest()
         {
             AppId = itemStore.App.SteamId,
             Start = 0,

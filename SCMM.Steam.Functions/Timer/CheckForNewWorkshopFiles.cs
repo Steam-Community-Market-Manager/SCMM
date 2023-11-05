@@ -73,7 +73,7 @@ public class CheckForNewWorkshopFiles
             var workshopHtml = (XElement)null;
             try
             {
-                workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                workshopHtml = await _steamCommunityClient.GetHtmlAsync(new SteamProfileMyWorkshopFilesPageRequest()
                 {
                     SteamId = creator.CreatorId.ToString(),
                     AppId = app.SteamId
@@ -95,7 +95,7 @@ public class CheckForNewWorkshopFiles
                 {
                     try
                     {
-                        workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                        workshopHtml = await _steamCommunityClient.GetHtmlAsync(new SteamProfileMyWorkshopFilesPageRequest()
                         {
                             SteamId = creator.CreatorId.ToString(),
                             AppId = app.SteamId,
@@ -138,7 +138,7 @@ public class CheckForNewWorkshopFiles
             {
                 continue;
             }
-            var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+            var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetailsAsync(new GetPublishedFileDetailsJsonRequest()
             {
                 PublishedFileIds = missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
             });

@@ -80,7 +80,7 @@ public class UpdateMarketItemPricesFromTradeitGG
             do
             {
                 // NOTE: Items must be fetched across multiple pages, we keep reading until no new items/pages are found
-                inventoryDataItems = await _tradeitGGWebClient.GetNewInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: inventoryDataLimit);
+                inventoryDataItems = await _tradeitGGWebClient.GetInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: inventoryDataLimit);
                 if (inventoryDataItems?.Any() == true)
                 {
                     tradeitGGItems.AddRange(inventoryDataItems);

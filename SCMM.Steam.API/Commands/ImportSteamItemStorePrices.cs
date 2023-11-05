@@ -40,7 +40,7 @@ namespace SCMM.Steam.API.Commands
         public async Task HandleAsync(ImportSteamItemStorePricesRequest request)
         {
             var currencies = await _db.SteamCurrencies.ToListAsync();
-            var storePageHtml = await _client.GetHtml(new SteamBlobRequest(request.ItemStoreUrl));
+            var storePageHtml = await _client.GetHtmlAsync(new SteamBlobRequest(request.ItemStoreUrl));
             if (storePageHtml == null)
             {
                 throw new Exception("Unable to load store page");

@@ -90,7 +90,7 @@ public class UpdateCurrencyExchangeRates
         {
             try
             {
-                var response = await _steamCommunityWebClient.GetMarketPriceOverview(
+                var response = await _steamCommunityWebClient.GetMarketPriceOverviewAsync(
                     new SteamMarketPriceOverviewJsonRequest()
                     {
                         AppId = mostExpensiveItem.App.SteamId,

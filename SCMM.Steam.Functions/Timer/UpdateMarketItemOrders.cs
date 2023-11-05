@@ -79,7 +79,7 @@ public class UpdateMarketItemOrders
         {
             try
             {
-                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetMarketItemOrdersHistogram(
+                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetMarketItemOrdersHistogramAsync(
                     new SteamMarketItemOrdersHistogramJsonRequest()
                     {
                         ItemNameId = item.ItemNameId,

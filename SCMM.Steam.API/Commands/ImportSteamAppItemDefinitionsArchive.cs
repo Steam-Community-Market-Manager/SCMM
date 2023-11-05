@@ -61,7 +61,7 @@ namespace SCMM.Steam.API.Commands
         public async Task HandleAsync(ImportSteamAppItemDefinitionsArchiveRequest request)
         {
             // Get the item definition archive
-            var itemDefinitionsArchive = await _steamApiClient.GameInventoryGetItemDefArchiveRaw(new GetItemDefArchiveJsonRequest()
+            var itemDefinitionsArchive = await _steamApiClient.GameInventoryGetItemDefArchiveRawAsync(new GetItemDefArchiveJsonRequest()
             {
                 AppId = UInt64.Parse(request.AppId),
                 Digest = request.ItemDefinitionsDigest,
@@ -389,7 +389,7 @@ namespace SCMM.Steam.API.Commands
             {
                 // Get the latest asset description prices
                 var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
-                var assetPricesResponse = await _steamApiClient.SteamEconomyGetAssetPrices(new GetAssetPricesJsonRequest()
+                var assetPricesResponse = await _steamApiClient.SteamEconomyGetAssetPricesAsync(new GetAssetPricesJsonRequest()
                 {
                     AppId = uint.Parse(app.SteamId)
                 });
@@ -675,7 +675,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Double check that this asset description can currently be listed on the Steam community market
-                    var marketPriceOverviewResponse = await _steamCommunityClient.GetMarketPriceOverview(new SteamMarketPriceOverviewJsonRequest()
+                    var marketPriceOverviewResponse = await _steamCommunityClient.GetMarketPriceOverviewAsync(new SteamMarketPriceOverviewJsonRequest()
                     {
                         AppId = app.SteamId,
                         MarketHashName = assetDescription.NameHash,

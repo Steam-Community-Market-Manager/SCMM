@@ -6,6 +6,7 @@ using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
 using System.Net;
+using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
 {
@@ -27,16 +28,21 @@ namespace SCMM.Steam.Client
 
         #region Profile
 
-        public async Task<SteamProfileXmlResponse> GetProfileById(SteamProfileByIdPageRequest request, bool useCache = true)
+        public async Task<SteamProfileXmlResponse> GetProfileByIdAsync(SteamProfileByIdPageRequest request, bool useCache = true)
         {
-            return await GetXml<SteamProfileByIdPageRequest, SteamProfileXmlResponse>(request, useCache);
+            return await GetXmlAsync<SteamProfileByIdPageRequest, SteamProfileXmlResponse>(request, useCache);
+        }
+
+        public async Task<XElement> GetProfileMyWorkshopFilesPageAsync(SteamProfileMyWorkshopFilesPageRequest request, bool useCache = false)
+        {
+            return await GetHtmlAsync<SteamProfileMyWorkshopFilesPageRequest>(request, useCache);
         }
 
         #endregion
 
         #region Inventory
 
-        public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request, bool useCache = true)
+        public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginatedAsync(SteamInventoryPaginatedJsonRequest request, bool useCache = true)
         {
             try
             {
@@ -46,7 +52,7 @@ namespace SCMM.Steam.Client
                     SteamId = request.SteamId,
                 };
 
-                return await GetJson<SteamInventoryPaginatedJsonRequest, SteamInventoryPaginatedJsonResponse>(request, useCache);
+                return await GetJsonAsync<SteamInventoryPaginatedJsonRequest, SteamInventoryPaginatedJsonResponse>(request, useCache);
             }
             finally
             {
@@ -58,12 +64,17 @@ namespace SCMM.Steam.Client
 
         #region Market
 
-        public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request, bool useCache = false)
+        public async Task<SteamMarketAppFiltersJsonResponse> GetMarketAppFiltersAsync(SteamMarketAppFiltersJsonRequest request, bool useCache = false)
         {
-            return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request, useCache);
+            return await GetJsonAsync<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(request, useCache);
         }
 
-        public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverview(SteamMarketPriceOverviewJsonRequest request, bool useCache = false)
+        public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginatedAsync(SteamMarketSearchPaginatedJsonRequest request, bool useCache = false)
+        {
+            return await GetJsonAsync<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request, useCache);
+        }
+
+        public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverviewAsync(SteamMarketPriceOverviewJsonRequest request, bool useCache = false)
         {
             try
             {
@@ -73,7 +84,7 @@ namespace SCMM.Steam.Client
                     MarketHashName = request.MarketHashName,
                 };
 
-                return await GetJson<SteamMarketPriceOverviewJsonRequest, SteamMarketPriceOverviewJsonResponse>(request, useCache);
+                return await GetJsonAsync<SteamMarketPriceOverviewJsonRequest, SteamMarketPriceOverviewJsonResponse>(request, useCache);
             }
             finally
             {
@@ -81,7 +92,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request, string appId, string marketNameHash, bool useCache = false)
+        public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivityAsync(SteamMarketItemOrdersActivityJsonRequest request, string appId, string marketNameHash, bool useCache = false)
         {
             try
             {
@@ -91,7 +102,7 @@ namespace SCMM.Steam.Client
                     MarketHashName = marketNameHash,
                 };
 
-                return await GetJson<SteamMarketItemOrdersActivityJsonRequest, SteamMarketItemOrdersActivityJsonResponse>(request, useCache);
+                return await GetJsonAsync<SteamMarketItemOrdersActivityJsonRequest, SteamMarketItemOrdersActivityJsonResponse>(request, useCache);
             }
             finally
             {
@@ -99,7 +110,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketItemOrdersHistogramJsonResponse> GetMarketItemOrdersHistogram(SteamMarketItemOrdersHistogramJsonRequest request, string appId, string marketNameHash, bool useCache = false)
+        public async Task<SteamMarketItemOrdersHistogramJsonResponse> GetMarketItemOrdersHistogramAsync(SteamMarketItemOrdersHistogramJsonRequest request, string appId, string marketNameHash, bool useCache = false)
         {
             try
             {
@@ -109,12 +120,21 @@ namespace SCMM.Steam.Client
                     MarketHashName = marketNameHash,
                 };
 
-                return await GetJson<SteamMarketItemOrdersHistogramJsonRequest, SteamMarketItemOrdersHistogramJsonResponse>(request, useCache);
+                return await GetJsonAsync<SteamMarketItemOrdersHistogramJsonRequest, SteamMarketItemOrdersHistogramJsonResponse>(request, useCache);
             }
             finally
             {
                 DefaultHeaders["Referer"] = Constants.SteamCommunityUrl + "/";
             }
+        }
+
+        #endregion
+
+        #region Workshop
+
+        public async Task<XElement> GetWorkshopFileChangeNotesPageAsync(SteamWorkshopFileChangeNotesPageRequest request, bool useCache = false)
+        {
+            return await GetHtmlAsync<SteamWorkshopFileChangeNotesPageRequest>(request, useCache);
         }
 
         #endregion

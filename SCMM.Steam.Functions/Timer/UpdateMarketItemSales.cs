@@ -85,7 +85,7 @@ public class UpdateMarketItemSales
         {
             try
             {
-                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetText(
+                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetTextAsync(
                      new SteamMarketListingPageRequest()
                      {
                          AppId = item.AppId,

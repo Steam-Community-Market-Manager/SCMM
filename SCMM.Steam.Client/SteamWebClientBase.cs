@@ -38,7 +38,7 @@ namespace SCMM.Steam.Client
             return Regex.Replace(requestUrl, @"key=([^&]*)", "key=***************", RegexOptions.IgnoreCase);
         }
 
-        private async Task<HttpResponseMessage> Post<TRequest>(TRequest request)
+        private async Task<HttpResponseMessage> PostWithRetryAsync<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             using (var client = BuildHttpClient())
@@ -47,8 +47,8 @@ namespace SCMM.Steam.Client
                 {
                     var formData = (request as SteamFormDataRequest);
                     var response = ((formData != null)
-                        ? await client.PostAsync(request.Uri, formData)
-                        : await client.PostAsync(request.Uri, null)
+                        ? await RetryPolicy.ExecuteAsync(() => client.PostAsync(request.Uri, formData))
+                        : await RetryPolicy.ExecuteAsync(() => client.PostAsync(request.Uri, null))
                     );
                     if (!response.IsSuccessStatusCode)
                     {
@@ -64,14 +64,14 @@ namespace SCMM.Steam.Client
             }
         }
 
-        private async Task<HttpResponseMessage> Get<TRequest>(TRequest request)
+        private async Task<HttpResponseMessage> GetWithRetryAsync<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             using (var client = BuildHttpClient())
             {
                 try
                 {
-                    var response = await client.GetAsync(request.Uri);
+                    var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(request.Uri));
                     if (!response.IsSuccessStatusCode)
                     {
                         throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
@@ -90,6 +90,10 @@ namespace SCMM.Steam.Client
                             Enum.TryParse<HttpStatusCode>(extractedStatusCode, true, out statusCode);
                         }
                     }
+                    if (statusCode == HttpStatusCode.NotModified)
+                    {
+                        throw new SteamNotModifiedException();
+                    }
 
                     throw new SteamRequestException($"GET '{SafeUrl(request)}' failed. {ex.Message}", statusCode, ex);
                 }
@@ -100,74 +104,14 @@ namespace SCMM.Steam.Client
             }
         }
 
-        private async Task<HttpResponseMessage> GetWithRetry<TRequest>(TRequest request, int retryAttempt = 0)
+        private async Task<string> GetStringAsync<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
-            try
-            {
-                // Retry up to the maximum configured times, then give up
-                if (retryAttempt >= MaxRetries)
-                {
-                    throw new SteamRequestException($"Request failed after {retryAttempt} attempts");
-                }
-
-                // Use a small delay between retry attempts to avoid further rate-limiting
-                if (retryAttempt > 0)
-                {
-                    var delay = TimeSpan.FromSeconds(1);
-                    await Task.Delay(delay);
-                }
-
-                // Zhu Li, do the thing...
-                var response = await Get(request);
-
-                return response;
-            }
-            catch (SteamRequestException ex)
-            {
-                // Check if the content has not been modified since the last request
-                // 304: Not Modified
-                if (ex.IsNotModified)
-                {
-                    throw new SteamNotModifiedException();
-                }
-
-                // Check if the request failed due to a temporary or network related error
-                // 408: RequestTimeout
-                // 504: GatewayTimeout
-                // 502: BadGateway
-                if (ex.IsTemporaryError)
-                {
-                    return await GetWithRetry(request, (retryAttempt + 1));
-                }
-
-                // Check if the request failed due to rate limiting
-                // 429: TooManyRequests
-                if (ex.IsRateLimited)
-                {
-                    return await GetWithRetry(request, (retryAttempt + 1));
-                }
-
-                // Check if the request failed due to missing proxy authentication or failure to connect
-                // 407: ProxyAuthenticationRequired
-                if (ex.IsProxyAuthenticationRequired || ex.IsConnectionRefused)
-                {
-                    return await GetWithRetry(request, (retryAttempt + 1));
-                }
-
-                // Legitimate error, bubble the error up to the caller
-                throw;
-            }
-        }
-
-        private async Task<string> GetString<TRequest>(TRequest request)
-            where TRequest : SteamRequest
-        {
-            var response = await GetWithRetry(request);
+            var response = await GetWithRetryAsync(request);
             return await response.Content.ReadAsStringAsync();
         }
 
-        private async Task<string> GetStringCached<TRequest>(TRequest request)
+        private async Task<string> GetStringCachedAsync<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             var content = (string)null;
@@ -186,7 +130,7 @@ namespace SCMM.Steam.Client
             else
             {
                 // Cache miss, try get the request from the originating server
-                content = await GetString(request);
+                content = await GetStringAsync(request);
 
                 // Cache the response for next time (if any)
                 if (!String.IsNullOrEmpty(content))
@@ -201,10 +145,10 @@ namespace SCMM.Steam.Client
             return content;
         }
 
-        public async Task<WebFileData> GetBinary<TRequest>(TRequest request)
+        public async Task<WebFileData> GetBinaryAsync<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
-            var response = await GetWithRetry(request);
+            var response = await GetWithRetryAsync(request);
             return new WebFileData()
             {
                 Name = response.Content.Headers?.ContentDisposition?.FileName,
@@ -213,21 +157,21 @@ namespace SCMM.Steam.Client
             };
         }
 
-        public async Task<string> GetText<TRequest>(TRequest request, bool useCache = false)
+        public async Task<string> GetTextAsync<TRequest>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
             var text = useCache
-                ? await GetStringCached(request)
-                : await GetString(request);
+                ? await GetStringCachedAsync(request)
+                : await GetStringAsync(request);
 
             // Steam has been known to sometimes put a null character at the end of the response, trim it
             return text?.Trim('\0');
         }
 
-        public async Task<XElement> GetHtml<TRequest>(TRequest request, bool useCache = false)
+        public async Task<XElement> GetHtmlAsync<TRequest>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
-            var html = await GetText(request, useCache);
+            var html = await GetTextAsync(request, useCache);
             if (string.IsNullOrEmpty(html))
             {
                 return default;
@@ -246,10 +190,10 @@ namespace SCMM.Steam.Client
             return XElement.Parse(sanitisedHtml.ToString());
         }
 
-        public async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request, bool useCache = false)
+        public async Task<TResponse> GetXmlAsync<TRequest, TResponse>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
-            var xml = await GetText(request, useCache);
+            var xml = await GetTextAsync(request, useCache);
             if (string.IsNullOrEmpty(xml))
             {
                 return default;
@@ -283,10 +227,10 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request, bool useCache = false)
+        public async Task<TResponse> GetJsonAsync<TRequest, TResponse>(TRequest request, bool useCache = false)
             where TRequest : SteamRequest
         {
-            var json = await GetText(request, useCache);
+            var json = await GetTextAsync(request, useCache);
             if (string.IsNullOrEmpty(json))
             {
                 return default;
@@ -295,10 +239,10 @@ namespace SCMM.Steam.Client
             return JsonSerializer.Deserialize<TResponse>(json);
         }
 
-        public async Task<TResponse> PostJson<TRequest, TResponse>(TRequest request)
+        public async Task<TResponse> PostJsonAsync<TRequest, TResponse>(TRequest request)
             where TRequest : SteamRequest
         {
-            var response = await Post(request);
+            var response = await PostWithRetryAsync(request);
             var json = await response.Content.ReadAsStringAsync();
             if (string.IsNullOrEmpty(json))
             {

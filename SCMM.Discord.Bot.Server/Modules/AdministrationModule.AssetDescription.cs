@@ -94,7 +94,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     x => x.Content = $"Importing market item '{name}' ({Array.IndexOf(names, name) + 1}/{names.Length})..."
                 );
 
-                var marketListingPageHtml = await _steamCommunityClient.GetText(new SteamMarketListingPageRequest()
+                var marketListingPageHtml = await _steamCommunityClient.GetTextAsync(new SteamMarketListingPageRequest()
                 {
                     AppId = appId.ToString(),
                     MarketHashName = name,
@@ -160,7 +160,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var workshopHtml = (XElement)null;
                 try
                 {
-                    workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                    workshopHtml = await _steamCommunityClient.GetProfileMyWorkshopFilesPageAsync(new SteamProfileMyWorkshopFilesPageRequest()
                     {
                         SteamId = creator.CreatorId.ToString(),
                         AppId = app.SteamId
@@ -181,7 +181,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     {
                         try
                         {
-                            workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                            workshopHtml = await _steamCommunityClient.GetProfileMyWorkshopFilesPageAsync(new SteamProfileMyWorkshopFilesPageRequest()
                             {
                                 SteamId = creator.CreatorId.ToString(),
                                 AppId = app.SteamId,
@@ -223,7 +223,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 {
                     continue;
                 }
-                var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+                var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetailsAsync(new GetPublishedFileDetailsJsonRequest()
                 {
                     PublishedFileIds = missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
                 });
@@ -517,7 +517,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     classIds[i] = (classId + (ulong)i);
                 }
 
-                var response = await _steamWebApiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
+                var response = await _steamWebApiClient.SteamEconomyGetAssetClassInfoAsync(new GetAssetClassInfoJsonRequest()
                 {
                     AppId = appId,
                     ClassIds = classIds
@@ -543,7 +543,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .Include(x => x.AssetFilters)
                 .FirstOrDefaultAsync(x => x.SteamId == appId.ToString());
 
-            var appFilters = await _steamCommunityClient.GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(new SteamMarketAppFiltersJsonRequest()
+            var appFilters = await _steamCommunityClient.GetMarketAppFiltersAsync(new SteamMarketAppFiltersJsonRequest()
             {
                 AppId = appId.ToString()
             });

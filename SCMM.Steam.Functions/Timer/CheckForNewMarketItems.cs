@@ -77,7 +77,7 @@ public class CheckForNewMarketItems
                     NoRender = true
                 };
 
-                var marketPriceOverviewResponse = await _steamCommunityWebClient.GetMarketPriceOverview(marketPriceOverviewRequest);
+                var marketPriceOverviewResponse = await _steamCommunityWebClient.GetMarketPriceOverviewAsync(marketPriceOverviewRequest);
                 if (marketPriceOverviewResponse?.Success == true)
                 {
                     var newMarketItem = await AddOrUpdateMarketItem(app, usdCurrency, marketPriceOverviewResponse, assetDescription);

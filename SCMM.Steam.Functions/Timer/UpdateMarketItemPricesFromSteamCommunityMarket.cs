@@ -82,7 +82,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
             var allMarketItems = new List<SteamMarketItem>();
             do
             {
-                steamSearchResults = await _steamCommunityWebClient.GetMarketSearchPaginated(
+                steamSearchResults = await _steamCommunityWebClient.GetMarketSearchPaginatedAsync(
                     new SteamMarketSearchPaginatedJsonRequest()
                     {
                         AppId = app.SteamId,
