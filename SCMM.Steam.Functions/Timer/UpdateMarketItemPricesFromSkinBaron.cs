@@ -114,7 +114,6 @@ public class UpdateMarketItemPricesFromSkinBaron
             foreach (var missingItem in missingItems)
             {
                 missingItem.Item.UpdateBuyPrices(SkinBaron, null);
-                missingItem.Item.UpdateBuyPrices(SkinBaron, null);
             }
 
             await _db.SaveChangesAsync();
