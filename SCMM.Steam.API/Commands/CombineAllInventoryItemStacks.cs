@@ -6,7 +6,6 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Store;
 using System.Net;
-using static SCMM.Shared.API.Events.StoreAddedMessage;
 
 namespace SCMM.Steam.API.Commands
 {

@@ -20,12 +20,12 @@ public class CheckForNewWorkshopFiles
     private readonly SteamConfiguration _steamConfiguration;
     private readonly SteamDbContext _steamDb;
     private readonly SteamWebApiClient _steamWebApiClient;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
+    private readonly SteamCommunityWebClient _steamCommunityClient;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly IServiceBus _serviceBus;
 
-    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus)
+    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, SteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus)
     {
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;

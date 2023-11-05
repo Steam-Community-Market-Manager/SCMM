@@ -17,10 +17,10 @@ public class WebProxyAwareHttpMessageHandler : DelegatingHandler
         InnerHandler = innerHandler ?? new HttpClientHandler();
     }
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var requestUri = request?.RequestUri;
-        var responseCode = (HttpStatusCode?) null;
+        var responseCode = (HttpStatusCode?)null;
 
         try
         {

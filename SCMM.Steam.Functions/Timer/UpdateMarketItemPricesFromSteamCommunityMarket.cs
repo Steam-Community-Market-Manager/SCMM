@@ -3,8 +3,8 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Abstractions.Statistics;
-using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Statistics;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
@@ -22,11 +22,11 @@ public class UpdateMarketItemPricesSteamCommunityMarket
     private const MarketType SteamCommunityMarket = MarketType.SteamCommunityMarket;
 
     private readonly SteamDbContext _db;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly IStatisticsService _statisticsService;
     private readonly ICommandProcessor _commandProcessor;
 
-    public UpdateMarketItemPricesSteamCommunityMarket(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IStatisticsService statisticsService, ICommandProcessor commandProcessor)
+    public UpdateMarketItemPricesSteamCommunityMarket(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IStatisticsService statisticsService, ICommandProcessor commandProcessor)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;

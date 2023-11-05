@@ -19,14 +19,14 @@ using System.Text.Json;
 namespace SCMM.Steam.Client
 {
     /// <summary>
-    /// Client for https://api.steampowered.com/.
+    /// Client for https://api.steampowered.com/
     /// Most requests require an API 'Key' parameter. No session cookie required.
     /// </summary>
     /// <remarks>
-    /// Steam web API terms of use (https://steamcommunity.com/dev/apiterms)
-    ///  - You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
+    /// Steam web API terms of use (https://steamcommunity.com/dev/apiterms).
+    /// You are limited to one hundred thousand (100,000) calls to the Steam Web API per day.
     /// </remarks>
-    public class SteamWebApiClient : SteamWebClient
+    public class SteamWebApiClient : SteamWebClientBase
     {
         private readonly SteamConfiguration _configuration;
 

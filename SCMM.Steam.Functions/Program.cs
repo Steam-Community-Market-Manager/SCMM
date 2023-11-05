@@ -209,8 +209,6 @@ public static class HostExtensions
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamStoreWebClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<ProxiedSteamStoreWebClient>();
-            services.AddScoped<ProxiedSteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
             // Command/query/message handlers

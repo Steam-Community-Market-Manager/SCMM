@@ -38,7 +38,7 @@ public class UpdateMarketItemPricesFromBuff
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Buff");
-        
+
         var appIds = Buff.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))

@@ -39,13 +39,13 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamWebApiClient _apiClient;
-        private readonly ProxiedSteamCommunityWebClient _communityClient;
-        private readonly ProxiedSteamStoreWebClient _storeClient;
+        private readonly SteamCommunityWebClient _communityClient;
+        private readonly SteamStoreWebClient _storeClient;
         private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, ProxiedSteamCommunityWebClient communityClient, ProxiedSteamStoreWebClient storeClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, SteamStoreWebClient storeClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;

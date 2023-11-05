@@ -193,8 +193,6 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamStoreWebClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
-        builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Command/query/message handlers

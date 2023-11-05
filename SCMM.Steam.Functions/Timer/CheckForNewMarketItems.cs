@@ -23,10 +23,10 @@ public class CheckForNewMarketItems
     private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly IServiceBus _serviceBus;
 
-    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, ProxiedSteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
+    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;

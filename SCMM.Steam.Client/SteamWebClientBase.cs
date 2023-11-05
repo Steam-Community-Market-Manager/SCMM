@@ -15,12 +15,12 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    public abstract class SteamWebClient : Shared.Web.Client.WebClientBase
+    public abstract class SteamWebClientBase : Shared.Web.Client.WebClientBase
     {
-        private readonly ILogger<SteamWebClient> _logger;
+        private readonly ILogger<SteamWebClientBase> _logger;
         private readonly IDistributedCache _cache;
 
-        public SteamWebClient(ILogger<SteamWebClient> logger, IDistributedCache cache, IWebProxy proxy = null) : base(logger,webProxy: proxy)
+        public SteamWebClientBase(ILogger<SteamWebClientBase> logger, IDistributedCache cache, IWebProxy proxy = null) : base(logger, webProxy: proxy)
         {
             _logger = logger;
             _cache = cache;
@@ -120,7 +120,7 @@ namespace SCMM.Steam.Client
 
                 // Zhu Li, do the thing...
                 var response = await Get(request);
-                
+
                 return response;
             }
             catch (SteamRequestException ex)

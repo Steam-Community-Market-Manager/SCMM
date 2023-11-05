@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
-using Polly;
 using System.Net;
 using System.Net.Http.Headers;
 

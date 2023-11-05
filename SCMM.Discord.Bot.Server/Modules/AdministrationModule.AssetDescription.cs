@@ -512,7 +512,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 );
 
                 var classIds = new ulong[classesPerPage];
-                for(int i = 0; i < classesPerPage; i++)
+                for (int i = 0; i < classesPerPage; i++)
                 {
                     classIds[i] = (classId + (ulong)i);
                 }
@@ -550,7 +550,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (appFilters?.Success == true && appFilters?.Facets?.Any() == true)
             {
-                foreach(var filter in appFilters.Facets)
+                foreach (var filter in appFilters.Facets)
                 {
                     if (app.AssetFilters.Any(x => x.SteamId == filter.Value.Name))
                     {

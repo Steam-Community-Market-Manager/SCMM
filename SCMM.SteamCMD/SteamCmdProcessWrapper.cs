@@ -13,10 +13,10 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
     private readonly ILogger<SteamCmdProcessWrapper> _logger;
 
     private const string DownloadSteamCmdUrl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip";
-    
+
     private const string SteamCmdRootPath = "steam";
     private const string SteamCmdExecutableName = "steamcmd.exe";
-    
+
     public SteamCmdProcessWrapper(ILogger<SteamCmdProcessWrapper> logger)
     {
         _logger = logger;
@@ -48,7 +48,7 @@ public class SteamCmdProcessWrapper : ISteamConsoleClient
         }
 
         // Download SteamCmd from the internet
-        using (var httpClient  = new HttpClient())
+        using (var httpClient = new HttpClient())
         {
             var steamCmdZipBytes = await httpClient.GetByteArrayAsync(DownloadSteamCmdUrl);
             if (steamCmdZipBytes?.Length > 0)

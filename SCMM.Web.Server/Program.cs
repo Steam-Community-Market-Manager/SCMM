@@ -193,8 +193,6 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamStoreWebClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
-        builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Auto-mapper
@@ -238,7 +236,8 @@ public static class WebApplicationExtensions
             options.DetailedErrors = true;
         });
 
-        builder.Services.AddSignalR(e => {
+        builder.Services.AddSignalR(e =>
+        {
             e.MaximumReceiveMessageSize = 102400000;
         });
 
@@ -304,7 +303,7 @@ public static class WebApplicationExtensions
 
         builder.Services.AddRequestDecompression();
         builder.Services.AddResponseCompression();
-        
+
         builder.Services.AddOutputCache(options =>
         {
             options.SizeLimit = 256 * 1024 * 1024; // 256MB
@@ -340,7 +339,7 @@ public static class WebApplicationExtensions
             var cookies = httpContextAccessor.HttpContext.Request.Cookies;
             if (cookies.Any())
             {
-                client.DefaultRequestHeaders.Add("Cookie", 
+                client.DefaultRequestHeaders.Add("Cookie",
                     string.Join(';', cookies.Select(x => $"{x.Key}={x.Value}"))
                 );
 

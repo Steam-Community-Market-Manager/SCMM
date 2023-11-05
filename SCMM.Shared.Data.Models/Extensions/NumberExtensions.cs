@@ -178,13 +178,13 @@
         public static int TotalIncrementCount(this decimal[] source)
         {
             var numberOfIncrements = 0;
-            for(int i = 1; i < source.Length - 1; i++)
+            for (int i = 1; i < source.Length - 1; i++)
             {
                 if (source[i] > source[i - 1])
                 {
                     numberOfIncrements++;
                 }
-            }   
+            }
 
             return numberOfIncrements;
         }

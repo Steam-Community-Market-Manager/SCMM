@@ -147,7 +147,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                             SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName,
                             Start = paginationStart,
                             Count = paginationCount
-                        }, 
+                        },
                         useCache: false
                     );
 

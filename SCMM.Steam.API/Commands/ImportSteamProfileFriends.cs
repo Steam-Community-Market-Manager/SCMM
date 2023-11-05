@@ -38,11 +38,11 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _steamConfiguration;
         private readonly SteamDbContext _steamDb;
         private readonly SteamWebApiClient _steamWebApiClient;
-        private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
+        private readonly SteamCommunityWebClient _steamCommunityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, IServiceBus serviceBus, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, IServiceBus serviceBus, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, SteamCommunityWebClient steamCommunityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _serviceBus = serviceBus;

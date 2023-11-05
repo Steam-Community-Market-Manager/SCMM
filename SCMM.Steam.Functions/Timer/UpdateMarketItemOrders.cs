@@ -17,14 +17,14 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemOrders
 {
     private readonly SteamDbContext _db;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly IWebProxyManager _webProxyManager;
 
     // TODO: Make these configurable
     private const int MarketItemBatchSize = 30;
     private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
 
-    public UpdateMarketItemOrders(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
+    public UpdateMarketItemOrders(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -43,9 +43,9 @@ public class UpdateMarketItemOrders
         {
             throw new Exception($"Update of market item orders information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
-        
+
         logger.LogInformation($"Updating market item orders information (id: {jobId})");
-        
+
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
         var items = _db.SteamMarketItems
