@@ -54,7 +54,14 @@ public abstract class WebClientBase : IDisposable
             .OrResult(x => x.StatusCode == HttpStatusCode.TooManyRequests)
             .WaitAndRetryAsync(MaxRetries, retryAttempt => TimeSpan.FromSeconds(retryAttempt), (result, timeSpan, retryCount, context) =>
             {
-                _logger.LogWarning($"Transient http request failure, {result?.Result?.ReasonPhrase?.ToLower() ?? "no reason specified"} (id: {context.CorrelationId}, attempt: {retryCount}, httpStatusCode: {(int)result?.Result?.StatusCode})'");
+                if (result.Result != null)
+                {
+                    _logger.LogWarning($"Transient http request failure, {result.Result.ReasonPhrase?.ToLower() ?? "no reason specified"} (id: {context.CorrelationId}, attempt: {retryCount}, httpStatusCode: {(int)result.Result.StatusCode})'");
+                }
+                else if (result.Exception != null)
+                {
+                    _logger.LogWarning(result.Exception, $"Transient http request failure, {result.Exception.Message} (id: {context.CorrelationId}, attempt: {retryCount})'");
+                }
             });
     }
 
