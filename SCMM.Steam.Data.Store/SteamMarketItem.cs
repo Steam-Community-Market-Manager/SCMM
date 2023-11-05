@@ -219,6 +219,21 @@ namespace SCMM.Steam.Data.Store
                    (profit > 100 || profit > (SellOrderLowestPrice * 0.5)) /* Profit must be >3.00 USD or >66% of it's Steam value, otherwise it's not worth the effort */;
         }
 
+        public void UpdateSteamBuyPrice(long lowestSellPrice, int totalSellListings)
+        {
+            SellOrderLowestPrice = lowestSellPrice;
+            SellOrderCount = totalSellListings;
+            SellOrderCumulativePrice = 0;
+
+            UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply
+            {
+                Price = SellOrderCount > 0 ? SellOrderLowestPrice : 0,
+                Supply = SellOrderCount
+            });
+
+            RecalulateIsBeingManipulated();
+        }
+
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {
             // Strip out obsolete prices

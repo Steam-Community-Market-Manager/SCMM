@@ -714,21 +714,9 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Update the market item price and volume with what we know so far
-                    if (marketItem.SellOrderLowestPrice == 0 && !String.IsNullOrEmpty(marketPriceOverviewResponse.LowestPrice))
+                    if (!String.IsNullOrEmpty(marketPriceOverviewResponse.LowestPrice))
                     {
-                        marketItem.SellOrderLowestPrice = marketPriceOverviewResponse.LowestPrice.SteamPriceAsInt();
-                    }
-                    if (marketItem.SellOrderCount == 0 && !String.IsNullOrEmpty(marketPriceOverviewResponse.Volume))
-                    {
-                        marketItem.SellOrderCount = marketPriceOverviewResponse.Volume.SteamQuantityValueAsInt();
-                    }
-                    if (marketItem.SellOrderLowestPrice > 0)
-                    {
-                        marketItem.UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply()
-                        {
-                            Price = marketItem.SellOrderLowestPrice,
-                            Supply = (marketItem.SellOrderCount > 0 ? marketItem.SellOrderCount : null)
-                        });
+                        marketItem.UpdateSteamBuyPrice(marketPriceOverviewResponse.LowestPrice.SteamPriceAsInt(), marketPriceOverviewResponse.Volume.SteamQuantityValueAsInt());
                     }
 
                     if (newMarketableItem.HasBecomeMarketable && app.IsActive)

@@ -128,8 +128,9 @@ namespace SCMM.Discord.Bot.Server.Modules
             var usdCurrency = await _steamDb.SteamCurrencies
                 .FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
 
+            var totalCount = 0;
             var paginationStart = 0;
-            var paginationCount = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
+            var paginationSize = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
             var steamSearchResults = (SteamMarketSearchPaginatedJsonResponse)null;
             do
             {
@@ -146,16 +147,24 @@ namespace SCMM.Discord.Bot.Server.Modules
                             GetDescriptions = true,
                             SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName,
                             Start = paginationStart,
-                            Count = paginationCount
+                            Count = paginationSize
                         },
                         useCache: false
                     );
 
-                    if ((steamSearchResults?.Success) != true || !(steamSearchResults?.Results?.Count > 0))
+                    // If the request failed or no items were returned, loop back and request the current page again.
+                    // NOTE: Steam will sometimes return success, but with no items. If you make the same [page] request again, it then returns then items.
+                    //       There must be some kind of caching issue on their end or something...
+                    if (steamSearchResults.Success != true || steamSearchResults.TotalCount <= 0 || !(steamSearchResults.Results?.Count > 0))
                     {
                         continue;
                     }
 
+                    // Success, move to the next page for the next request
+                    paginationStart += steamSearchResults.Results?.Count ?? 0;
+                    totalCount = steamSearchResults.TotalCount;
+
+                    // Parse the items we just fetched
                     var importedAssetDescriptions = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionsRequest()
                     {
                         AppId = appId,
@@ -185,22 +194,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                             };
                         }
 
-                        var item = steamSearchResults.Results.FirstOrDefault(x => x.AssetDescription.ClassId == assetDescription.ClassId);
-                        if (item?.SellPrice > 0)
+                        var steamItem = steamSearchResults.Results.FirstOrDefault(x => x.AssetDescription.ClassId == assetDescription.ClassId);
+                        if (steamItem?.SellPrice > 0)
                         {
-                            dbItem.SellOrderLowestPrice = item.SellPrice;
-                        }
-                        if (item?.SellListings > 0)
-                        {
-                            dbItem.SellOrderCount = item.SellListings;
-                        }
-                        if (dbItem.SellOrderLowestPrice > 0)
-                        {
-                            dbItem.UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply()
-                            {
-                                Price = dbItem.SellOrderLowestPrice,
-                                Supply = (dbItem.SellOrderCount > 0 ? dbItem.SellOrderCount : null)
-                            });
+                            dbItem.UpdateSteamBuyPrice(steamItem.SellPrice, steamItem.SellListings);
                         }
                     }
 
@@ -215,7 +212,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     paginationStart += steamSearchResults.Results?.Count ?? 0;
                 }
 
-            } while (steamSearchResults?.Success == true && steamSearchResults?.Results?.Count > 0 && paginationStart < steamSearchResults?.TotalCount);
+            } while (steamSearchResults?.Success == true && paginationStart < totalCount);
 
             var itemCount = (steamSearchResults?.TotalCount.ToString() ?? "???");
             await message.ModifyAsync(

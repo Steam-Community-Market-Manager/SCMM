@@ -77,8 +77,9 @@ public class UpdateMarketItemPricesSteamCommunityMarket
         {
             stopwatch.Start();
 
+            var totalCount = 0;
             var paginationStart = 0;
-            var paginationCount = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
+            var paginationSize = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
             var steamSearchResults = (SteamMarketSearchPaginatedJsonResponse)null;
             var allMarketItems = new List<SteamMarketItem>();
             do
@@ -90,17 +91,24 @@ public class UpdateMarketItemPricesSteamCommunityMarket
                         GetDescriptions = true,
                         SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName,
                         Start = paginationStart,
-                        Count = paginationCount
+                        Count = paginationSize
                     },
                     useCache: false
                 );
 
-                paginationStart += steamSearchResults.Results?.Count ?? 0;
-                if ((steamSearchResults?.Success) != true || !(steamSearchResults?.Results?.Count > 0))
+                // If the request failed or no items were returned, loop back and request the current page again.
+                // NOTE: Steam will sometimes return success, but with no items. If you make the same [page] request again, it then returns then items.
+                //       There must be some kind of caching issue on their end or something...
+                if (steamSearchResults.Success != true || steamSearchResults.TotalCount <= 0 || !(steamSearchResults.Results?.Count > 0))
                 {
                     continue;
                 }
 
+                // Success, move to the next page for the next request
+                paginationStart += steamSearchResults.Results?.Count ?? 0;
+                totalCount = steamSearchResults.TotalCount;
+
+                // Parse the items we just fetched
                 try
                 {
                     var assetClassIds = steamSearchResults.Results
@@ -144,19 +152,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
                         var steamItem = steamSearchResults.Results.FirstOrDefault(x => x.AssetDescription?.ClassId == assetDescription.ClassId);
                         if (steamItem?.SellPrice > 0)
                         {
-                            dbItem.SellOrderLowestPrice = steamItem.SellPrice;
-                        }
-                        if (steamItem?.SellListings > 0)
-                        {
-                            dbItem.SellOrderCount = steamItem.SellListings;
-                        }
-                        if (dbItem.SellOrderLowestPrice > 0)
-                        {
-                            dbItem.UpdateBuyPrices(SteamCommunityMarket, new PriceWithSupply()
-                            {
-                                Price = dbItem.SellOrderLowestPrice,
-                                Supply = (dbItem.SellOrderCount > 0 ? dbItem.SellOrderCount : null)
-                            });
+                            dbItem.UpdateSteamBuyPrice(steamItem.SellPrice, steamItem.SellListings);
                         }
 
                         allMarketItems.Add(dbItem);
@@ -169,7 +165,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
                     logger.LogError(ex, $"Failed to update batch of market item prices from the steam community market (appId: {app.SteamId}). {ex.Message}");
                 }
 
-            } while (steamSearchResults?.Success == true && steamSearchResults?.Results?.Count > 0);
+            } while (steamSearchResults?.Success == true && paginationStart < totalCount);
 
             await _db.SaveChangesAsync();
 
