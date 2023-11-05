@@ -1,15 +1,16 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.SkinsMonkey.Client
 {
-    public class SkinsMonkeyWebClient : Shared.Web.Client.WebClient
+    public class SkinsMonkeyWebClient : Shared.Web.Client.WebClientBase
     {
         private const string ApiBaseUri = "https://skinsmonkey.com/api/public/v1/";
 
         private readonly SkinsMonkeyConfiguration _configuration;
 
-        public SkinsMonkeyWebClient(SkinsMonkeyConfiguration configuration, IWebProxy webProxy) : base(webProxy: webProxy)
+        public SkinsMonkeyWebClient(ILogger<SkinsMonkeyWebClient> logger, SkinsMonkeyConfiguration configuration, IWebProxy webProxy) : base(logger, webProxy: webProxy)
         {
             _configuration = configuration;
         }
@@ -23,6 +24,11 @@ namespace SCMM.Market.SkinsMonkey.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 return JsonSerializer.Deserialize<IEnumerable<SkinsMonkeyItem>>(textJson);
             }
         }

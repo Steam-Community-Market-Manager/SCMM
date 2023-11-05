@@ -1,14 +1,19 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.SkinBaron.Client
 {
-    public class SkinBaronWebClient : Shared.Web.Client.WebClient
+    /// <see cref="https://skinbaron.de/misc/apidoc/"/>
+    public class SkinBaronWebClient : Shared.Web.Client.WebClientBase
     {
         private const string ApiBaseUri = "https://skinbaron.de/api/v2/";
 
-        public SkinBaronWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public SkinBaronWebClient(ILogger<SkinBaronWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
+        /// <remarks>
+        /// This is currently broken as SkinBaron have changed their APIs and this one is no longer supported
+        /// </remarks>
         public async Task<SkinBaronFilterOffersResponse> GetBrowsingFilterOffersAsync(string appId, int page = 1)
         {
             using (var client = BuildWebApiHttpClient())
@@ -18,6 +23,11 @@ namespace SCMM.Market.SkinBaron.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<SkinBaronFilterOffersResponse>(textJson);
                 return responseJson;
             }

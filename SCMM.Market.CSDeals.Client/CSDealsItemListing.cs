@@ -15,8 +15,5 @@ namespace SCMM.Market.CSDeals.Client
 
         [JsonPropertyName("v")]
         public CSDealsItemId[] ItemIds { get; set; }
-
-        [JsonPropertyName("w")]
-        public bool IsUserListing { get; set; }
     }
 }

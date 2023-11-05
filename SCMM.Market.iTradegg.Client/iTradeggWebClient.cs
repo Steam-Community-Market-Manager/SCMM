@@ -1,13 +1,14 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
-    public class iTradeggWebClient : Shared.Web.Client.WebClient
+    public class iTradeggWebClient : Shared.Web.Client.WebClientBase
     {
         private const string WebBaseUri = "https://itrade.gg/";
 
-        public iTradeggWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public iTradeggWebClient(ILogger<iTradeggWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {
@@ -18,6 +19,11 @@ namespace SCMM.Market.iTradegg.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<iTradeggInventoryResponse>(textJson);
                 return responseJson?.Inventory?.Items?.Select(x => x.Value);
             }

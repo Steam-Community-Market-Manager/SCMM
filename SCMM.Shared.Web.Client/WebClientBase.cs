@@ -1,23 +1,31 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using Polly.Extensions.Http;
+using Polly.Retry;
+using Polly;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace SCMM.Shared.Web.Client;
 
-public class WebClient : IDisposable
+public abstract class WebClientBase : IDisposable
 {
+    private readonly ILogger _logger;
     private readonly IDictionary<string, string> _defaultHeaders;
     private readonly CookieContainer _cookieContainer;
     private readonly IWebProxy _webProxy;
     private readonly HttpMessageHandler _httpHandler;
     private bool _disposedValue;
 
-    public WebClient(CookieContainer cookieContainer = null, IWebProxy webProxy = null)
+    private readonly AsyncRetryPolicy<HttpResponseMessage> _asyncRetryPolicy;
+
+    protected WebClientBase(ILogger logger, HttpMessageHandler httpHandler = null, CookieContainer cookieContainer = null, IWebProxy webProxy = null)
     {
+        _logger = logger;
         _defaultHeaders = new Dictionary<string, string>();
         _cookieContainer = cookieContainer;
         _webProxy = webProxy;
 
-        var httpClientMessageHandler = new HttpClientHandler()
+        httpHandler ??= new HttpClientHandler()
         {
             UseCookies = cookieContainer != null,
             CookieContainer = cookieContainer ?? new CookieContainer(),
@@ -33,8 +41,18 @@ public class WebClient : IDisposable
         };
 
         _httpHandler = (_webProxy is IWebProxyManager webProxyManager)
-            ? new WebProxyAwareHttpMessageHandler(webProxyManager, () => RateLimitCooldown, httpClientMessageHandler)
-            : httpClientMessageHandler;
+            ? new WebProxyAwareHttpMessageHandler(logger, webProxyManager, () => RateLimitCooldown, httpHandler)
+            : httpHandler;
+
+        _asyncRetryPolicy = HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .OrResult(x => x.StatusCode == HttpStatusCode.ProxyAuthenticationRequired)
+            .OrResult(x => x.StatusCode == HttpStatusCode.RequestTimeout)
+            .OrResult(x => x.StatusCode == HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(MaxRetries, retryAttempt => TimeSpan.FromSeconds(retryAttempt), (result, timeSpan, retryCount, context) =>
+            {
+                _logger.LogWarning($"Transient http request failure (code: {result?.Result?.StatusCode})'");
+            });
     }
 
     protected HttpClient BuildHttpClient()
@@ -98,24 +116,36 @@ public class WebClient : IDisposable
     {
         var httpClient = BuildHttpClient();
 
-        // We are a normal looking web browser, honest (helps with bypassing WAF rules that block bots)
+        // Add user agent browser hint headers (helps with bypassing WAF rules that block bots/browsers)
+        if (!httpClient.DefaultRequestHeaders.Any(x => x.Key.StartsWith("Sec")))
+        {
+            httpClient.DefaultRequestHeaders.Add("Sec-Ch-Ua", @"""Chromium"";v=""118"", ""Brave"";v=""118"", ""Not=A?Brand"";v=""99""");
+            httpClient.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?1");
+            httpClient.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", @"""Android""");
+            httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
+            httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
+            httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
+            httpClient.DefaultRequestHeaders.Add("Sec-Gpc", "1");
+        }
+
+        // Add user agent header (helps with bypassing WAF rules that block bots/browsers)
         if (!httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppleWebKit", "537.36"));
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(KHTML, like Gecko)"));
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "118.0.0.0"));
             httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
         }
 
-        // We made this request from a web browser, honest (helps with bypassing WAF rules that enforce OWASP)
+        // Act like a web browser (helps with bypassing WAF rules that enforce OWASP rules or have CSRF protection)
         if (!httpClient.DefaultRequestHeaders.Contains("X-Requested-With"))
         {
             httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         }
 
-        // We made this request from your website, honest (helps with bypassing WAF rules)
+        // Act like we are from your web page (helps with bypassing WAF rules)
         if (referrer != null)
         {
             httpClient.DefaultRequestHeaders.Host = referrer.Host;
@@ -145,6 +175,8 @@ public class WebClient : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    protected AsyncPolicy<HttpResponseMessage> RetryPolicy => _asyncRetryPolicy;
+
     public IDictionary<string, string> DefaultHeaders => _defaultHeaders;
 
     public CookieContainer Cookies => _cookieContainer;
@@ -152,12 +184,12 @@ public class WebClient : IDisposable
     /// <summary>
     /// If a request temporarily fails, how many times should it be retried before permanently failing.
     /// </summary>
-    public int MaxRetries { get; set; } = 3;
+    public int MaxRetries { get; init; } = 3;
 
     /// <summary>
     /// When web proxies are being used, how long should the proxy be put in cool down for if it gets rate limited.
     /// </summary>
-    public TimeSpan? RateLimitCooldown { get; set; } = TimeSpan.FromMinutes(15);
+    public TimeSpan? RateLimitCooldown { get; init; } = TimeSpan.FromMinutes(15);
 
     /// <summary>
     /// If set, the server may respond with a 304 response if the resource has not been modified within the specified time frame.

@@ -1,22 +1,19 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.LootFarm.Client
 {
-    public class LootFarmWebClient : Shared.Web.Client.WebClient
+    public class LootFarmWebClient : Shared.Web.Client.WebClientBase
     {
         private const string BaseUri = "https://loot.farm/";
 
-        public LootFarmWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public LootFarmWebClient(ILogger<LootFarmWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <remarks>
-        /// Updated every minute
+        /// Price list is updated every minute
         /// </remarks>
         /// <see cref="https://loot.farm/en/pricelist.html"/>
-        /// <param name="appName"></param>
         /// <returns></returns>
         public async Task<IEnumerable<LootFarmItemPrice>> GetItemPricesAsync(string appName)
         {
@@ -24,7 +21,7 @@ namespace SCMM.Market.LootFarm.Client
             {
                 if (String.Equals(appName, "CSGO", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    appName = String.Empty; // CSGO is considered the default I guess, don't name it explicitly...
+                    appName = String.Empty; // CSGO is the app name default I guess, they don't name it explicitly like other apps...
                 }
 
                 var url = $"{BaseUri}fullprice{appName.ToUpper()}.json";
@@ -32,6 +29,11 @@ namespace SCMM.Market.LootFarm.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<LootFarmItemPrice[]>(textJson);
                 return responseJson;
             }

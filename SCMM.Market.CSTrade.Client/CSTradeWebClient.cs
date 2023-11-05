@@ -1,14 +1,16 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.CSTrade.Client
 {
-    public class CSTradeWebClient : Shared.Web.Client.WebClient
+    public class CSTradeWebClient : Shared.Web.Client.WebClientBase
     {
+        private const string WebsiteBaseUri = "https://cs.trade/";
         private const string PricesApiBaseUri = "https://cdn.cs.trade:2096/api/";
         private const string WebsiteApiBaseUri = "https://cdn.cs.trade:8443/api/";
 
-        public CSTradeWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public CSTradeWebClient(ILogger<CSTradeWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
         /// <summary>
         /// 
@@ -17,13 +19,18 @@ namespace SCMM.Market.CSTrade.Client
         /// <returns></returns>
         public async Task<IEnumerable<CSTradeItemPrice>> GetPricesAsync(string appName)
         {
-            using (var client = BuildWebApiHttpClient())
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
             {
                 var url = $"{PricesApiBaseUri}prices_{appName}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<IDictionary<string, CSTradeItemPrice>>(textJson);
                 return responseJson?.Select(x =>
                     {
@@ -31,20 +38,6 @@ namespace SCMM.Market.CSTrade.Client
                         return x.Value;
                     })
                     .ToArray();
-            }
-        }
-
-        public async Task<IEnumerable<CSTradeInventoryItem>> GetInventoryAsync()
-        {
-            using (var client = BuildWebApiHttpClient())
-            {
-                var url = $"{WebsiteApiBaseUri}getInventory?order_by=price_desc&bot=all";
-                var response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<CSTradeInventoryResponse>(textJson);
-                return responseJson?.Inventory;
             }
         }
     }

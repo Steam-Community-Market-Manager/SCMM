@@ -1,16 +1,17 @@
-﻿using SCMM.Shared.Abstractions.Finance;
+﻿using Microsoft.Extensions.Logging;
+using SCMM.Shared.Abstractions.Finance;
 using SCMM.Shared.Web.Client;
 using System.Text.Json;
 
 namespace SCMM.Fixer.Client
 {
-    public class FixerWebClient : WebClient, ICurrencyExchangeService
+    public class FixerWebClient : WebClientBase, ICurrencyExchangeService
     {
         private const string BaseUri = "https://data.fixer.io/api/";
 
         private readonly FixerConfiguration _configuration;
 
-        public FixerWebClient(FixerConfiguration configuration)
+        public FixerWebClient(ILogger<FixerWebClient> logger, FixerConfiguration configuration) : base(logger)
         {
             _configuration = configuration;
         }

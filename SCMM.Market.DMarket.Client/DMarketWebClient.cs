@@ -1,10 +1,11 @@
-﻿using SCMM.Steam.Data.Models;
+﻿using Microsoft.Extensions.Logging;
+using SCMM.Steam.Data.Models;
 using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.DMarket.Client
 {
-    public class DMarketWebClient : Shared.Web.Client.WebClient
+    public class DMarketWebClient : Shared.Web.Client.WebClientBase
     {
         private const string ApiBaseUri = "https://api.dmarket.com/";
 
@@ -13,37 +14,26 @@ namespace SCMM.Market.DMarket.Client
         public const string MarketTypeDMarket = "dmarket";
         public const string MarketTypeF2F = "p2p";
 
-        public DMarketWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public DMarketWebClient(ILogger<DMarketWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
+        /// <see cref="https://docs.dmarket.com/v1/swagger.html#/Sell%20Items/getMarketItems"/>
+        /// <seealso cref="https://dmarket.com/faq#rateLimits"/>
         public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string marketType = MarketTypeDMarket, string currencyName = Constants.SteamCurrencyUSD, string cursor = null, int limit = MaxPageLimit)
         {
-            const int rateLimitDelay = 3000;
-            const int rateLimitMaxRetryCount = 3;
-            var rateLimitRetryCount = 0;
-        retry:
-
-            try
+            using (var client = BuildWebApiHttpClient())
             {
-                using (var client = BuildWebApiHttpClient())
-                {
-                    var url = $"{ApiBaseUri}exchange/v1/market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
-                    var response = await client.GetAsync(url);
-                    response.EnsureSuccessStatusCode();
+                var url = $"{ApiBaseUri}exchange/v1/market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
+                response.EnsureSuccessStatusCode();
 
-                    var textJson = await response.Content.ReadAsStringAsync();
-                    var responseJson = JsonSerializer.Deserialize<DMarketMarketItemsResponse>(textJson);
-                    return responseJson;
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                if (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests && rateLimitRetryCount < rateLimitMaxRetryCount)
+                var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
                 {
-                    Thread.Sleep(rateLimitDelay);
-                    rateLimitRetryCount++;
-                    goto retry;
+                    return default;
                 }
-                throw;
+
+                var responseJson = JsonSerializer.Deserialize<DMarketMarketItemsResponse>(textJson);
+                return responseJson;
             }
         }
     }

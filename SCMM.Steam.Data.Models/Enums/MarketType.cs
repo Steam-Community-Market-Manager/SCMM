@@ -32,7 +32,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://loot.farm/", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         LOOTFarm = 11,
 
-        [Display(Name = "Swap.gg")]
+        [Display(Name = "Swap.gg - Trade")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF")]
         [BuyFrom(Url = "https://swap.gg/?r=iHUYPlp5ehjhrD5DXf0FF&game={0}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash)]
         SwapGGTrade = 12,
@@ -42,15 +42,15 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://market.swap.gg/{1}?r=iHUYPlp5ehjhrD5DXf0FF&search={3}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF", AcceptedPaymentTypes = PriceTypes.Cash)]
         SwapGGMarket = 13,
 
-        // TODO: Get API key to bypass web scraping
-        [Obsolete("Aggressive CloudFlare anti-scrapping policies")]
+        // TODO: Use API key to bypass web scraping protection. Dev team haven't responded to my requests
+        [Obsolete("Tradeit.gg uses aggressive CloudFlare anti-scrapping policies, current web client gets blocked")]
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F")]
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto, DiscountMultiplier = 0.25f /* 25% */)]
         TradeitGG = 14,
 
-        [Display(Name = "CS.Deals")]
+        [Display(Name = "CS.Deals - Trade")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/trade-skins?appid={0}", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsTrade = 15,
@@ -61,8 +61,8 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsMarketplace = 16,
 
-        // TODO: Client code needs updating
-        [Obsolete("Client code needs updating, currently broken")]
+        // TODO: SkinBaronWebClient needs updating, current APIs no longer work (they've changed them)
+        [Obsolete("SkinBaron web client code needs updating, current APIs no longer work (they've changed them)")]
         [Display(Name = "Skin Baron")]
         [Market(Constants.CSGOAppId, Color = "#2A2745")]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", AcceptedPaymentTypes = PriceTypes.Cash)]

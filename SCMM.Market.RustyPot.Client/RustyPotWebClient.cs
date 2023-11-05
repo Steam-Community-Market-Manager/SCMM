@@ -4,41 +4,38 @@ using SCMM.Shared.API.Messages;
 using SocketIO.Core;
 using SocketIOClient;
 using SocketIOClient.Transport;
-using System.Net;
 
 namespace SCMM.Market.RustyPot.Client
 {
-    public class RustyPotWebClient : Shared.Web.Client.WebClient
+    public class RustyPotWebClient
     {
         private ILogger<RustyPotWebClient> _logger;
         private readonly IServiceBus _serviceBus;
-        private readonly ICollection<string> _steamIds;
+        private readonly ICollection<string> _profileSteamIds;
 
-        private const string WebsiteHostname = "rustypot.com";
-
-        public RustyPotWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        private const string WebsiteBaseHostname = "rustypot.com";
 
         public RustyPotWebClient(ILogger<RustyPotWebClient> logger, IServiceBus serviceBus)
         {
             _logger = logger;
             _serviceBus = serviceBus;
-            _steamIds = new HashSet<string>();
-
-            DefaultHeaders.Add("Host", WebsiteHostname);
-            DefaultHeaders.Add("Origin", $"http://{WebsiteHostname}");
-            DefaultHeaders.Add("User-Agent", "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36");
+            _profileSteamIds = new HashSet<string>();
         }
 
         public async Task<IDisposable> MonitorAsync()
         {
-            var client = new SocketIOClient.SocketIO($"wss://{WebsiteHostname}", new SocketIOOptions
+            var client = new SocketIOClient.SocketIO($"wss://{WebsiteBaseHostname}", new SocketIOOptions
             {
                 Path = "/socket.io",
                 EIO = EngineIO.V4,
                 Transport = TransportProtocol.WebSocket,
-                ExtraHeaders = DefaultHeaders.ToDictionary(x => x.Key, x => x.Value)
+                ExtraHeaders = new Dictionary<string, string>
+                {
+                    { "Host", WebsiteBaseHostname },
+                    { "Origin", $"http://{WebsiteBaseHostname}" },
+                    { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36" },
+                }
             });
-
             client.OnConnected += async (sender, e) =>
             {
                 await client.EmitAsync("jackpot get deposits");
@@ -151,7 +148,7 @@ namespace SCMM.Market.RustyPot.Client
         private async Task ImportProfiles(params string[] steamIds)
         {
             var importProfileTasks = new List<ImportProfileMessage>();
-            lock (_steamIds)
+            lock (_profileSteamIds)
             {
                 foreach (var steamId in steamIds.Distinct())
                 {
@@ -159,9 +156,9 @@ namespace SCMM.Market.RustyPot.Client
                     {
                         continue;
                     }
-                    if (!_steamIds.Contains(steamId))
+                    if (!_profileSteamIds.Contains(steamId))
                     {
-                        _steamIds.Add(steamId);
+                        _profileSteamIds.Add(steamId);
                         importProfileTasks.Add(new ImportProfileMessage()
                         {
                             ProfileId = steamId

@@ -1,20 +1,23 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace SCMM.Shared.Web.Client;
 
 public class WebProxyAwareHttpMessageHandler : DelegatingHandler
 {
+    private readonly ILogger _logger;
     private readonly IWebProxyManager _webProxyManager;
     private readonly Func<TimeSpan?> _webProxyCooldownTimeResolver;
 
-    public WebProxyAwareHttpMessageHandler(IWebProxyManager webProxyManager, Func<TimeSpan?> webProxyCooldownTimeResolver, HttpMessageHandler innerHandler = null)
+    public WebProxyAwareHttpMessageHandler(ILogger logger, IWebProxyManager webProxyManager, Func<TimeSpan?> webProxyCooldownTimeResolver, HttpMessageHandler innerHandler = null)
     {
+        _logger = logger;
         _webProxyManager = webProxyManager;
         _webProxyCooldownTimeResolver = webProxyCooldownTimeResolver;
         InnerHandler = innerHandler ?? new HttpClientHandler();
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken)
     {
         var requestUri = request?.RequestUri;
         var responseCode = (HttpStatusCode?) null;
@@ -31,7 +34,7 @@ public class WebProxyAwareHttpMessageHandler : DelegatingHandler
             // Parse the htp response
             var response = sendTask.Result;
             responseCode = response?.StatusCode;
-            return response;
+            return sendTask;
         }
         finally
         {
@@ -60,9 +63,9 @@ public class WebProxyAwareHttpMessageHandler : DelegatingHandler
             }
             else
             {
-                throw new Exception(
+                _logger.LogError(
                     $"Unable to update web proxy statistics for request '{requestUri}' with response '{responseCode}', no proxy id is set on the current thread. " +
-                    $"It is likely that the thread that handled sending the request differs from the thread that handled the response."
+                    $"Either the request didn't pass through a web proxy or the thread that handled sending the request differs from the thread that handled the response."
                 );
             }
         }

@@ -1,17 +1,18 @@
-﻿using SCMM.Shared.Abstractions.WebProxies;
+﻿using Microsoft.Extensions.Logging;
+using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.Web.Client;
 using System.Text.Json;
 
 namespace SCMM.Webshare.Client
 {
-    public class WebshareWebClient : WebClient, IWebProxyManagementService
+    public class WebshareWebClient : WebClientBase, IWebProxyManagementService
     {
         private const string BaseUri = "https://proxy.webshare.io/api";
         private const int MaxPageSize = 25;
 
         private readonly WebshareConfiguration _configuration;
 
-        public WebshareWebClient(WebshareConfiguration configuration)
+        public WebshareWebClient(ILogger<WebshareWebClient> logger, WebshareConfiguration configuration) : base(logger)
         {
             _configuration = configuration;
         }

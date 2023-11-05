@@ -1,10 +1,11 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace SCMM.Market.TradeitGG.Client
 {
-    public class TradeitGGWebClient : Shared.Web.Client.WebClient
+    public class TradeitGGWebClient : Shared.Web.Client.WebClientBase
     {
         private const string InventoryBaseUri = "https://inventory.tradeit.gg/";
         private const string OldWebsiteBaseUri = "https://old.tradeit.gg/";
@@ -13,7 +14,7 @@ namespace SCMM.Market.TradeitGG.Client
 
         public const int MaxPageLimit = 1000;
 
-        public TradeitGGWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public TradeitGGWebClient(ILogger<TradeitGGWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
         /// <summary>
         /// 
@@ -31,6 +32,11 @@ namespace SCMM.Market.TradeitGG.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<IEnumerable<TradeitGGOldBotInventoryResponse>>(textJson);
                 var inventoryData = responseJson?.SelectMany(x =>
                     x.Items.Select(i => new TradeitGGItem()
@@ -63,6 +69,11 @@ namespace SCMM.Market.TradeitGG.Client
                     response.EnsureSuccessStatusCode();
 
                     var textJson = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(textJson))
+                    {
+                        return default;
+                    }
+
                     var responseJson = JsonSerializer.Deserialize<TradeitGGInventoryDataResponse>(textJson);
                     var inventoryDataJoined = responseJson?.Items?.Join(responseJson.Counts ?? new Dictionary<string, int>(),
                         x => x.GroupId.ToString(),
@@ -107,6 +118,11 @@ namespace SCMM.Market.TradeitGG.Client
                     response.EnsureSuccessStatusCode();
 
                     var text = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        return default;
+                    }
+
                     var profiles = Regex.Matches(text, @"\/profiles\/([0-9]+)");
                     foreach (var profile in profiles.OfType<Match>())
                     {

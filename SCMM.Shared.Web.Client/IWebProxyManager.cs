@@ -12,7 +12,7 @@ public interface IWebProxyManager : IWebProxy
 
     void DisableProxy(string proxyId);
 
-    void UpdateProxyRequestStatistics(string proxyId, Uri? requestAddress, HttpStatusCode? responseStatusCode = null);
+    void UpdateProxyRequestStatistics(string proxyId, Uri requestAddress, HttpStatusCode? responseStatusCode = null);
 
     /// <summary>
     /// Gets the web proxy id assigned to the current thread (if any).

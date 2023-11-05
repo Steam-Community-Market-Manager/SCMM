@@ -388,7 +388,7 @@ namespace SCMM.Steam.API.Commands
             if (addedStoreItems.Any())
             {
                 // Get the latest asset description prices
-                var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
+                var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
                 var assetPricesResponse = await _steamApiClient.SteamEconomyGetAssetPrices(new GetAssetPricesJsonRequest()
                 {
                     AppId = uint.Parse(app.SteamId)
@@ -493,7 +493,7 @@ namespace SCMM.Steam.API.Commands
 
                         var storeItemAsset = assetPricesResponse?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId?.ToString() || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
                         var storeItemPrices = storeItemAsset?.Prices ?? new Dictionary<string, long>();
-                        var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailableAsync(app, assetDescription, storeItemAsset, defaultCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
+                        var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailableAsync(app, assetDescription, storeItemAsset, usdCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
                         if (storeItem == null)
                         {
                             continue;
@@ -506,9 +506,9 @@ namespace SCMM.Steam.API.Commands
                             {
                                 Store = store,
                                 Item = storeItem,
-                                Currency = defaultCurrency,
-                                CurrencyId = defaultCurrency.Id,
-                                Price = storeItemPrices?.FirstOrDefault(x => x.Key == defaultCurrency.Name).Value,
+                                Currency = usdCurrency,
+                                CurrencyId = usdCurrency.Id,
+                                Price = storeItemPrices?.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
                                 Prices = (storeItemPrices != null ? new PersistablePriceDictionary(storeItemPrices) : new PersistablePriceDictionary()),
                                 IsPriceVerified = true
                             };
@@ -571,12 +571,12 @@ namespace SCMM.Steam.API.Commands
                 var newPermanentStoreItems = newStoreItems.Where(x => x.Description.IsPermanent).ToArray();
                 if (permanentItemStore != null && newPermanentStoreItems.Any())
                 {
-                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, permanentItemStore, newPermanentStoreItems, defaultCurrency);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, permanentItemStore, newPermanentStoreItems, usdCurrency);
                 }
                 var newLimitedStoreItems = newStoreItems.Where(x => !x.Description.IsPermanent).ToArray();
                 if (limitedItemStore != null && newLimitedStoreItems.Any())
                 {
-                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, limitedItemStore, newLimitedStoreItems, defaultCurrency);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, limitedItemStore, newLimitedStoreItems, usdCurrency);
                 }
             }
         }
@@ -699,7 +699,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // If missing, add a new market item for this asset description
-                    var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
+                    var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
                     var marketItem = assetDescription.MarketItem;
                     if (marketItem == null)
                     {
@@ -709,7 +709,7 @@ namespace SCMM.Steam.API.Commands
                             AppId = app.Id,
                             App = app,
                             Description = assetDescription,
-                            Currency = defaultCurrency,
+                            Currency = usdCurrency,
                         });
                     }
 

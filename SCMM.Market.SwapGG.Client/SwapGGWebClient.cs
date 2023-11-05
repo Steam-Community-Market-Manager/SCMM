@@ -1,31 +1,37 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.SwapGG.Client
 {
-    public class SwapGGWebClient : Shared.Web.Client.WebClient
+    public class SwapGGWebClient : Shared.Web.Client.WebClientBase
     {
         private const string WebsiteBaseUri = "https://swap.gg/";
         private const string TradeApiBaseUri = "https://api.swap.gg/";
         private const string MarketApiBaseUri = "https://market-api.swap.gg/v1/";
 
-        public SwapGGWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public SwapGGWebClient(ILogger<SwapGGWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
 
         /// <summary>
-        /// 
+        /// This call will return a list of items held by trade bots on swap.gg/trade
         /// </summary>
-        /// <see cref="https://swap.gg/"/>
+        /// <see cref="https://swap.gg/trade"/>
         /// <param name="appId"></param>
         /// <returns></returns>
         public async Task<IEnumerable<SwapGGTradeItem>> GetTradeBotInventoryAsync(string appId)
         {
-            using (var client = BuildWebApiHttpClient(host: new Uri(TradeApiBaseUri)))
+            using (var client = BuildWebBrowserHttpClient(referrer: new Uri($"{WebsiteBaseUri}/trade")))
             {
-                var url = $"{TradeApiBaseUri}inventory/bot/{Uri.EscapeDataString(appId)}";
+                var url = $"{TradeApiBaseUri}v2/trade/inventory/bot/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<SwapGGResponse<IEnumerable<SwapGGTradeItem>>>(textJson);
                 return responseJson?.Result;
             }
@@ -49,6 +55,11 @@ namespace SCMM.Market.SwapGG.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<SwapGGResponse<IDictionary<string, SwapGGMarketItem>>>(textJson);
                 return responseJson?.Result;
             }
