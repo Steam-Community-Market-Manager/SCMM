@@ -23,8 +23,8 @@ public class UpdateMarketItemSales
     private readonly IWebProxyManager _webProxyManager;
 
     // TODO: Make these configurable
-    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
     private const int MarketItemBatchSize = 50;
+    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(2);
 
     public UpdateMarketItemSales(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
