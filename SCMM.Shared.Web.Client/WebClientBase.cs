@@ -4,6 +4,7 @@ using Polly.Extensions.Http;
 using Polly.Retry;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 
 namespace SCMM.Shared.Web.Client;
 
@@ -46,6 +47,8 @@ public abstract class WebClientBase : IDisposable
 
         _asyncRetryPolicy = HttpPolicyExtensions
             .HandleTransientHttpError()
+            .OrInner<AuthenticationException>()
+            .OrInner<TimeoutException>()
             .OrResult(x => x.StatusCode == HttpStatusCode.ProxyAuthenticationRequired)
             .OrResult(x => x.StatusCode == HttpStatusCode.RequestTimeout)
             .OrResult(x => x.StatusCode == HttpStatusCode.TooManyRequests)
