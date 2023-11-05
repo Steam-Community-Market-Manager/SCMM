@@ -20,9 +20,9 @@ namespace SCMM.Market.SwapGG.Client
         /// <returns></returns>
         public async Task<IEnumerable<SwapGGTradeItem>> GetTradeBotInventoryAsync(string appId)
         {
-            using (var client = BuildWebBrowserHttpClient(referrer: new Uri($"{WebsiteBaseUri}/trade")))
+            using (var client = BuildWebApiHttpClient(host: new Uri(TradeApiBaseUri)))
             {
-                var url = $"{TradeApiBaseUri}v2/trade/inventory/bot/{Uri.EscapeDataString(appId)}";
+                var url = $"{TradeApiBaseUri}inventory/bot/{Uri.EscapeDataString(appId)}";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
