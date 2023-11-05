@@ -15,6 +15,7 @@ using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using System.Diagnostics;
+using System.Linq;
 namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesSteamCommunityMarket
@@ -34,7 +35,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
         _commandProcessor = commandProcessor;
     }
 
-    //[Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
+    [Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
     public async Task Run([TimerTrigger("0 0 0/12 * * *")] /* every 12 hours */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!SteamCommunityMarket.IsEnabled())
@@ -102,23 +103,32 @@ public class UpdateMarketItemPricesSteamCommunityMarket
 
                 try
                 {
-                    var importedAssetDescriptions = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionsRequest()
-                    {
-                        AppId = UInt64.Parse(app.SteamId),
-                        AssetClassIds = steamSearchResults.Results
+                    var assetClassIds = steamSearchResults.Results
                         .Select(x => x?.AssetDescription?.ClassId ?? 0)
                         .Where(x => x > 0)
-                        .ToArray(),
-                    });
-
-                    var assetDescriptionIds = importedAssetDescriptions.AssetDescriptions.Select(x => x.Id).ToArray();
-                    var dbItems = await _db.SteamMarketItems
-                        .Where(x => x.DescriptionId != null && assetDescriptionIds.Contains(x.DescriptionId.Value))
+                        .ToArray();
+                    var assetDescriptions = await _db.SteamAssetDescriptions
+                        .Where(x => x.ClassId != null && assetClassIds.Contains(x.ClassId.Value))
+                        .Include(x => x.MarketItem)
                         .ToListAsync();
 
-                    foreach (var assetDescription in importedAssetDescriptions.AssetDescriptions)
+                    var missingAssetClassIds = assetClassIds.Where(x => !assetDescriptions.Any(y => y.ClassId == x)).ToArray();
+                    if (missingAssetClassIds.Any())
                     {
-                        var dbItem = (assetDescription.MarketItem ?? dbItems?.FirstOrDefault(x => x.DescriptionId == assetDescription.Id));
+                        var importedMissingAssetDescriptions = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionsRequest()
+                        {
+                            AppId = UInt64.Parse(app.SteamId),
+                            AssetClassIds = missingAssetClassIds,
+                        });
+                        if (importedMissingAssetDescriptions?.AssetDescriptions?.Any() == true)
+                        {
+                            assetDescriptions.AddRange(importedMissingAssetDescriptions.AssetDescriptions);
+                        }
+                    }
+
+                    foreach (var assetDescription in assetDescriptions)
+                    {
+                        var dbItem = assetDescription.MarketItem;
                         if (dbItem == null)
                         {
                             dbItem = assetDescription.MarketItem = new SteamMarketItem()

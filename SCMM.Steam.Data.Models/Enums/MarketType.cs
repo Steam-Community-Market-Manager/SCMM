@@ -42,7 +42,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://market.swap.gg/{1}?r=iHUYPlp5ehjhrD5DXf0FF&search={3}", AffiliateCode = "iHUYPlp5ehjhrD5DXf0FF", AcceptedPaymentTypes = PriceTypes.Cash)]
         SwapGGMarket = 13,
 
-        // TODO: Use API key to bypass web scraping protection. Dev team haven't responded to my requests
+        // TODO: Use API key to bypass web scraping protection. Dev team haven't responded to my requests for API access yet
         [Obsolete("Tradeit.gg uses aggressive CloudFlare anti-scrapping policies, current web client gets blocked")]
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F")]
@@ -93,19 +93,19 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinswap.com/r/scmm", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         SkinSwap = 26,
 
-        // TODO: Restricted to 100 items per query, slow
+        // TODO: Restricted to 100 items per query, too slow for CSGO items
         [Display(Name = "DMarket")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=exchange&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         DMarket = 28,
 
-        // TODO: Restricted to 100 items per query, slow
+        // TODO: Restricted to 100 items per query, too slow for CSGO items
         [Display(Name = "DMarket - Face2Face")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=f2fOffers&title={3}", AffiliateCode = "6tlej6xqvD", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         DMarketF2F = 29,
 
-        // TODO: Restricted to 80 items per query, slow
+        // TODO: Restricted to 80 items per query, too slow for CSGO items
         [Display(Name = "BUFF")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#FFFFFF")]
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}", AcceptedPaymentTypes = PriceTypes.Cash)] // Unconfirmed
