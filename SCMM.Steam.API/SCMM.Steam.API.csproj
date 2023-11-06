@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -11,7 +11,7 @@
     <PackageReference Include="CommandQuery" Version="1.0.0" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
 	<PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.0.1" />
 	<PackageReference Include="SixLabors.Fonts" Version="2.0.0" />
   </ItemGroup>
 
