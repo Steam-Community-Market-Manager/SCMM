@@ -35,7 +35,11 @@ public class UpdateMarketItemPricesSteamCommunityMarket
         _commandProcessor = commandProcessor;
     }
 
-    [Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
+    /// <remarks>
+    /// This function is not reliable. Steam will often report abnormally low prices when web scraping the market search pages.
+    /// Calling the price overview/history APIs is much more reliable (albeit, slower).
+    /// </remarks>
+    //[Function("Update-Market-Item-Prices-From-Steam-Community-Market")]
     public async Task Run([TimerTrigger("0 0 0/12 * * *")] /* every 12 hours */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!SteamCommunityMarket.IsEnabled())
