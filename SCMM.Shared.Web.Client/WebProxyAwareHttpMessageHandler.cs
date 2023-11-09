@@ -31,7 +31,7 @@ public class WebProxyAwareHttpMessageHandler : DelegatingHandler
             var sendTask = base.SendAsync(request, cancellationToken);
             sendTask.Wait();
 
-            // Parse the htp response
+            // Parse the http response
             var response = sendTask.Result;
             responseCode = response?.StatusCode;
             return sendTask;
@@ -39,7 +39,7 @@ public class WebProxyAwareHttpMessageHandler : DelegatingHandler
         finally
         {
             // Update the web proxy state based on the received http response code
-            var proxyId = _webProxyManager.CurrentProxyId; // This only works in the same thread that called SendAsync()
+            var proxyId = _webProxyManager.LastProxyId; // This only works if we're the same thread that called SendAsync() above
             if (!string.IsNullOrEmpty(proxyId) && requestUri != null)
             {
                 // Update proxy usage statistics

@@ -18,5 +18,5 @@ public interface IWebProxyManager : IWebProxy
     /// Gets the web proxy id assigned to the current thread (if any).
     /// Used post-request to follow up with proxy actions (e.g. cooldown, disable, update stats)
     /// </summary>
-    string CurrentProxyId { get; }
+    string LastProxyId { get; }
 }

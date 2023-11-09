@@ -220,7 +220,7 @@ public class RotatingWebProxy : IWebProxyManager, IWebProxy, ICredentials, ICred
         set => throw new NotImplementedException();
     }
 
-    public string CurrentProxyId => currentThreadReservedWebProxyId;
+    public string LastProxyId => currentThreadReservedWebProxyId;
 
     private class WebProxyWithCooldown
     {
