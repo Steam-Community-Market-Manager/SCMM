@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.Web.Client\SCMM.Shared.Web.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
   </ItemGroup>
 

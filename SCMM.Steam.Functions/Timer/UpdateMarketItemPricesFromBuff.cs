@@ -38,7 +38,6 @@ public class UpdateMarketItemPricesFromBuff
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Buff");
-        var stopwatch = new Stopwatch();
 
         var appIds = Buff.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -60,84 +59,90 @@ public class UpdateMarketItemPricesFromBuff
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from Buff (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateBuffMarketPricesForApp(logger, app, cnyCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateBuffMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency cnyCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var buffItems = new List<BuffItem>();
+            var buffMarketGoodsResponse = (BuffMarketGoodsResponse)null;
+            do
             {
-                stopwatch.Restart();
-                var buffItems = new List<BuffItem>();
-                var marketGoodsResponse = (BuffMarketGoodsResponse)null;
-                do
-                {
-                    // TODO: Optimise this if/when the API allows it, 80 items per read is too slow
-                    // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    marketGoodsResponse = await _buffWebClient.GetMarketGoodsAsync(app.Name, (marketGoodsResponse?.PageNum ?? 0) + 1);
-                    if (marketGoodsResponse?.Items?.Any() == true)
-                    {
-                        buffItems.AddRange(marketGoodsResponse.Items);
-                    }
-                } while (marketGoodsResponse != null && marketGoodsResponse.PageNum < marketGoodsResponse.TotalPage);
+                // NOTE: BUFF has fairly aggressive rate limiting that is tied to the session id, not the client IP address.
+                //       Because of this, we need to add a small delay between page requests else our session id will be blocked.
+                Thread.Sleep(3000); // wait 3 seconds between page requests
 
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                foreach (var buffItem in buffItems)
+                // TODO: Optimise this if/when the API allows it, 80 items per read is too slow...
+                // NOTE: Items must be fetched across multiple pages, we keep reading until no new items/pages are found
+                buffMarketGoodsResponse = await _buffWebClient.GetMarketGoodsAsync(app.Name, (buffMarketGoodsResponse?.PageNum ?? 0) + 1);
+                if (buffMarketGoodsResponse?.Items?.Any() == true)
                 {
-                    var item = items.FirstOrDefault(x => x.Name == buffItem.MarketHashName)?.Item;
-                    if (item != null)
-                    {
-                        item.UpdateBuyPrices(Buff, new PriceWithSupply
-                        {
-                            Price = buffItem.SellNum > 0 ? item.Currency.CalculateExchange(buffItem.SellMinPrice.SteamPriceAsInt(), cnyCurrency) : 0,
-                            Supply = buffItem.SellNum
-                        });
-                    }
+                    buffItems.AddRange(buffMarketGoodsResponse.Items);
                 }
+            } while (buffMarketGoodsResponse != null && buffMarketGoodsResponse.PageNum < buffMarketGoodsResponse.TotalPage);
 
-                var missingItems = items.Where(x => !buffItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(Buff));
-                foreach (var missingItem in missingItems)
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
                 {
-                    missingItem.Item.UpdateBuyPrices(Buff, null);
-                }
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
 
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
-                {
-                    x.TotalItems = buffItems.Count();
-                    x.TotalListings = buffItems.Sum(i => i.SellNum);
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
+            foreach (var buffItem in buffItems)
             {
-                try
+                var item = dbItems.FirstOrDefault(x => x.Name == buffItem.MarketHashName)?.Item;
+                if (item != null)
                 {
-                    logger.LogError(ex, $"Failed to update market item price information from Buff (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
+                    item.UpdateBuyPrices(Buff, new PriceWithSupply
                     {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = buffItem.SellNum > 0 ? item.Currency.CalculateExchange(buffItem.SellMinPrice.SteamPriceAsInt(), cnyCurrency) : 0,
+                        Supply = buffItem.SellNum
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for Buff (appId: {app.SteamId}). {ex.Message}");
-                }
             }
-            finally
+
+            var missingItems = dbItems.Where(x => !buffItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(Buff));
+            foreach (var missingItem in missingItems)
             {
-                stopwatch.Stop();
+                missingItem.Item.UpdateBuyPrices(Buff, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
+            {
+                x.TotalItems = buffItems.Count();
+                x.TotalListings = buffItems.Sum(i => i.SellNum);
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from Buff (appId: {app.SteamId}). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, Buff, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for Buff (appId: {app.SteamId}). {ex.Message}");
             }
         }
     }

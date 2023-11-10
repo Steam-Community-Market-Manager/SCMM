@@ -32,9 +32,9 @@ namespace SCMM.Steam.API.Commands
     public class ImportFileData : ICommandHandler<ImportFileDataRequest, ImportFileDataResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly ProxiedSteamCommunityWebClient _communityClient;
+        private readonly SteamCommunityWebClient _communityClient;
 
-        public ImportFileData(SteamDbContext db, ProxiedSteamCommunityWebClient communityClient)
+        public ImportFileData(SteamDbContext db, SteamCommunityWebClient communityClient)
         {
             _db = db;
             _communityClient = communityClient;
@@ -56,7 +56,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Fetch the file from its source
-            var response = await _communityClient.GetBinary(new SteamBlobRequest(request.Url));
+            var response = await _communityClient.GetBinaryAsync(new SteamBlobRequest(request.Url));
             if (response == null)
             {
                 return null;

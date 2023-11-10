@@ -38,7 +38,6 @@ public class UpdateMarketItemPricesFromCSTrade
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSTrade");
-        var stopwatch = new Stopwatch();
 
         var appIds = CSTRADE.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -60,73 +59,74 @@ public class UpdateMarketItemPricesFromCSTrade
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from CS.TRADE (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateCSTradeMarketPricesForApp(logger, app, usdCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateCSTradeMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var csTradeAppItems = (await _csTradeWebClient.GetPricesAsync(app.Name)) ?? new List<CSTradeItemPrice>();
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
+            foreach (var csTradeItem in csTradeAppItems)
             {
-                stopwatch.Restart();
-                var csTradeAppItems = (await _csTradeWebClient.GetPricesAsync(app.Name)) ?? new List<CSTradeItemPrice>();
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
+                var item = dbItems.FirstOrDefault(x => x.Name == csTradeItem.Name)?.Item;
+                if (item != null)
+                {
+                    item.UpdateBuyPrices(CSTRADE, new PriceWithSupply
                     {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                foreach (var csTradeItem in csTradeAppItems)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == csTradeItem.Name)?.Item;
-                    if (item != null)
-                    {
-                        item.UpdateBuyPrices(CSTRADE, new PriceWithSupply
-                        {
-                            Price = csTradeItem.Have > 0 ? item.Currency.CalculateExchange(csTradeItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Supply = csTradeItem.Have
-                        });
-                    }
-                }
-
-                var missingItems = items.Where(x => !csTradeAppItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(CSTRADE));
-                foreach (var missingItem in missingItems)
-                {
-                    missingItem.Item.UpdateBuyPrices(CSTRADE, null);
-                }
-
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
-                {
-                    x.TotalItems = csTradeAppItems.Count();
-                    x.TotalListings = csTradeAppItems.Sum(i => i.Have);
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    logger.LogError(ex, $"Failed to update market item price information from CS.TRADE (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
-                    {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = csTradeItem.Have > 0 ? item.Currency.CalculateExchange(csTradeItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                        Supply = csTradeItem.Have
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for CS.TRADE (appId: {app.SteamId}). {ex.Message}");
-                }
             }
-            finally
+
+            var missingItems = dbItems.Where(x => !csTradeAppItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(CSTRADE));
+            foreach (var missingItem in missingItems)
             {
-                stopwatch.Stop();
+                missingItem.Item.UpdateBuyPrices(CSTRADE, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
+            {
+                x.TotalItems = csTradeAppItems.Count();
+                x.TotalListings = csTradeAppItems.Sum(i => i.Have);
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from CS.TRADE (appId: {app.SteamId}). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSTRADE, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for CS.TRADE (appId: {app.SteamId}). {ex.Message}");
             }
         }
     }

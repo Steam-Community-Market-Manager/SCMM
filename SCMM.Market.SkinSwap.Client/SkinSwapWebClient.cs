@@ -1,15 +1,16 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.SkinSwap.Client
 {
-    public class SkinSwapWebClient : Shared.Client.WebClient
+    public class SkinSwapWebClient : Shared.Web.Client.WebClientBase
     {
         private const string ApiBaseUri = "https://skinswap.com/api";
 
         private readonly SkinSwapConfiguration _configuration;
 
-        public SkinSwapWebClient(SkinSwapConfiguration configuration, IWebProxy webProxy) : base(webProxy: webProxy)
+        public SkinSwapWebClient(ILogger<SkinSwapWebClient> logger, SkinSwapConfiguration configuration) : base(logger)
         {
             _configuration = configuration;
             DefaultHeaders.Add("Accept", "application/json");
@@ -20,10 +21,15 @@ namespace SCMM.Market.SkinSwap.Client
             using (var client = BuildSkinsSwapClient())
             {
                 var url = $"{ApiBaseUri}/v1/items";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<SkinSwapResponse<SkinSwapItem[]>>(textJson);
                 return responseJson?.Data;
             }

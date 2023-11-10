@@ -1,15 +1,17 @@
-﻿using SCMM.Shared.Abstractions.Finance;
+﻿using Microsoft.Extensions.Logging;
+using SCMM.Shared.Abstractions.Finance;
+using SCMM.Shared.Web.Client;
 using System.Text.Json;
 
 namespace SCMM.Fixer.Client
 {
-    public class FixerWebClient : Shared.Client.WebClient, ICurrencyExchangeService
+    public class FixerWebClient : WebClientBase, ICurrencyExchangeService
     {
         private const string BaseUri = "https://data.fixer.io/api/";
 
         private readonly FixerConfiguration _configuration;
 
-        public FixerWebClient(FixerConfiguration configuration)
+        public FixerWebClient(ILogger<FixerWebClient> logger, FixerConfiguration configuration) : base(logger)
         {
             _configuration = configuration;
         }
@@ -19,7 +21,7 @@ namespace SCMM.Fixer.Client
             using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_configuration.ApiKey}&base={from}&symbols={string.Join(',', to)}";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();

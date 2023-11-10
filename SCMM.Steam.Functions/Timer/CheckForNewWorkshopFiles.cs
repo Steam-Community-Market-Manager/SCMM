@@ -20,12 +20,12 @@ public class CheckForNewWorkshopFiles
     private readonly SteamConfiguration _steamConfiguration;
     private readonly SteamDbContext _steamDb;
     private readonly SteamWebApiClient _steamWebApiClient;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
+    private readonly SteamCommunityWebClient _steamCommunityClient;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly IServiceBus _serviceBus;
 
-    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus)
+    public CheckForNewWorkshopFiles(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, SteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus)
     {
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
@@ -73,7 +73,7 @@ public class CheckForNewWorkshopFiles
             var workshopHtml = (XElement)null;
             try
             {
-                workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                workshopHtml = await _steamCommunityClient.GetHtmlAsync(new SteamProfileMyWorkshopFilesPageRequest()
                 {
                     SteamId = creator.CreatorId.ToString(),
                     AppId = app.SteamId
@@ -95,7 +95,7 @@ public class CheckForNewWorkshopFiles
                 {
                     try
                     {
-                        workshopHtml = await _steamCommunityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                        workshopHtml = await _steamCommunityClient.GetHtmlAsync(new SteamProfileMyWorkshopFilesPageRequest()
                         {
                             SteamId = creator.CreatorId.ToString(),
                             AppId = app.SteamId,
@@ -138,7 +138,7 @@ public class CheckForNewWorkshopFiles
             {
                 continue;
             }
-            var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+            var missingPublishedFileDetails = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetailsAsync(new GetPublishedFileDetailsJsonRequest()
             {
                 PublishedFileIds = missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
             });

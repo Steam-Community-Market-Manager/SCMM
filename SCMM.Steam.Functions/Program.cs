@@ -18,6 +18,7 @@ using SCMM.Market.Buff.Client.Extensions;
 using SCMM.Market.CSDeals.Client;
 using SCMM.Market.CSTrade.Client;
 using SCMM.Market.DMarket.Client;
+using SCMM.Market.DMarket.Client.Extensions;
 using SCMM.Market.iTradegg.Client;
 using SCMM.Market.LootFarm.Client;
 using SCMM.Market.RustTM.Client;
@@ -29,14 +30,14 @@ using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.SkinSwap.Client.Extensions;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
+using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Media;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web.Statistics;
+using SCMM.Shared.Web.Client;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -56,6 +57,7 @@ await new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices()
     .Build()
+    .Warmup()
     .RunAsync();
 
 public static class HostExtensions
@@ -185,6 +187,11 @@ public static class HostExtensions
             services.AddSingleton<CSDealsWebClient>();
             services.AddSingleton<CSTradeWebClient>();
             services.AddSingleton<DMarketWebClient>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetDMarketConfiguration();
+            });
             services.AddSingleton<iTradeggWebClient>();
             services.AddSingleton<LootFarmWebClient>();
             services.AddSingleton<RustTMWebClient>();
@@ -208,8 +215,6 @@ public static class HostExtensions
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamStoreWebClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<ProxiedSteamStoreWebClient>();
-            services.AddScoped<ProxiedSteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
             // Command/query/message handlers
@@ -218,12 +223,24 @@ public static class HostExtensions
                 Assembly.GetEntryAssembly(),
                 Assembly.Load("SCMM.Steam.API"),
                 Assembly.Load("SCMM.Discord.API"),
-                Assembly.Load("SCMM.Shared.API"),
-                Assembly.Load("SCMM.Shared.Web")
+                Assembly.Load("SCMM.Shared.API")
             };
             services.AddCommands(contactAssemblies);
             services.AddQueries(contactAssemblies);
             services.AddMessages(contactAssemblies);
         });
+    }
+
+    public static IHost Warmup(this IHost app)
+    {
+        // Prime caches
+        using (var scope = app.Services.CreateScope())
+        {
+            Task.WaitAll(
+                scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync()
+            );
+        }
+
+        return app;
     }
 }

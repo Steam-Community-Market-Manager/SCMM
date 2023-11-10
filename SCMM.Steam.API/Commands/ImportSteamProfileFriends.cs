@@ -38,11 +38,11 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _steamConfiguration;
         private readonly SteamDbContext _steamDb;
         private readonly SteamWebApiClient _steamWebApiClient;
-        private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
+        private readonly SteamCommunityWebClient _steamCommunityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, IServiceBus serviceBus, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileFriends(ILogger<ImportSteamProfileFriends> logger, IServiceBus serviceBus, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, SteamCommunityWebClient steamCommunityClient, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _serviceBus = serviceBus;
@@ -74,7 +74,7 @@ namespace SCMM.Steam.API.Commands
                 _logger.LogInformation($"Importing friends of '{resolvedId.SteamId64}' from Steam");
 
                 var steamId = resolvedId.SteamId64.Value;
-                var friendsListResponse = await _steamWebApiClient.SteamUserGetFriendList(new GetFriendListJsonRequest()
+                var friendsListResponse = await _steamWebApiClient.SteamUserGetFriendListAsync(new GetFriendListJsonRequest()
                 {
                     SteamId = steamId.ToString()
                 });
@@ -107,7 +107,7 @@ namespace SCMM.Steam.API.Commands
                         foreach (var app in apps)
                         {
                             // Only import profiles that have a public inventory containing items from at least one of our active apps
-                            var inventory = await _steamCommunityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
+                            var inventory = await _steamCommunityClient.GetInventoryPaginatedAsync(new SteamInventoryPaginatedJsonRequest()
                             {
                                 AppId = app,
                                 SteamId = missingFriendSteamId,

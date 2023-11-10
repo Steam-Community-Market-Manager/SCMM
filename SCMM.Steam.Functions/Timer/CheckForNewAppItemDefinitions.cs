@@ -43,7 +43,7 @@ public class CheckForNewAppItemDefinitions
             logger.LogTrace($"Checking for new item definition archives (appId: {app.SteamId})");
 
             // Get the latest item definition digest info
-            var itemDefMetadata = await _apiClient.InventoryServiceGetItemDefMeta(new GetItemDefMetaJsonRequest()
+            var itemDefMetadata = await _apiClient.InventoryServiceGetItemDefMetaAsync(new GetItemDefMetaJsonRequest()
             {
                 AppId = UInt64.Parse(app.SteamId)
             });

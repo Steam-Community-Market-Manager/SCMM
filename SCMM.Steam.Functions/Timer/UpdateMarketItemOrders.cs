@@ -1,7 +1,8 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Client;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Web.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
@@ -10,19 +11,21 @@ using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemOrders
 {
     private readonly SteamDbContext _db;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly IWebProxyManager _webProxyManager;
 
-    private const int MarketItemBatchSize = 30;
-    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
+    // TODO: Make these configurable
+    private const int MarketItemBatchSize = 50;
+    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(2);
 
-    public UpdateMarketItemOrders(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
+    public UpdateMarketItemOrders(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -39,13 +42,10 @@ public class UpdateMarketItemOrders
         var availableProxies = _webProxyManager.GetAvailableProxyCount(new Uri(Constants.SteamCommunityUrl));
         if (availableProxies < MarketItemBatchSize)
         {
-            logger.LogWarning($"Update of market item orders information will be skipped as there are not enough available web proxies to handle our requests (proxies: {availableProxies}/{MarketItemBatchSize})");
-            return;
+            throw new Exception($"Update of market item orders information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
-        else
-        {
-            logger.LogInformation($"Updating market item orders information (id: {jobId})");
-        }
+
+        logger.LogInformation($"Updating market item orders information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -80,7 +80,7 @@ public class UpdateMarketItemOrders
         {
             try
             {
-                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetMarketItemOrdersHistogram(
+                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetMarketItemOrdersHistogramAsync(
                     new SteamMarketItemOrdersHistogramJsonRequest()
                     {
                         ItemNameId = item.ItemNameId,
@@ -105,36 +105,40 @@ public class UpdateMarketItemOrders
         // Parse the responses and update the item prices
         if (itemResponseMappings.Any())
         {
-            await UpdateMarketItemOrderHistory(itemResponseMappings);
+            // NOTE: We need to update the database items one at a time, due to performance limitations.
+            //       The SQL demand of loading the entire buy/sell order history for 50+ items at a time will easily trigger a SQL timeout.
+            var stopwatch = new Stopwatch();
+            foreach (var item in itemResponseMappings)
+            {
+                stopwatch.Restart();
+                await UpdateMarketItemOrderHistory(item.Key, item.Value);
+                logger.LogInformation($"Updated item orders for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
+            }
         }
 
         logger.LogInformation($"Updated {itemResponseMappings.Count} market item orders information (id: {jobId})");
     }
 
-    private async Task UpdateMarketItemOrderHistory(IDictionary<Guid, SteamMarketItemOrdersHistogramJsonResponse> itemResponses)
+    private async Task UpdateMarketItemOrderHistory(Guid itemId, SteamMarketItemOrdersHistogramJsonResponse itemResponse)
     {
-        var itemIds = itemResponses.Keys.ToArray();
-        var items = await _db.SteamMarketItems
-            .Where(x => itemIds.Contains(x.Id))
+        // TODO: Optimise this SQL to load faster or remove the eager load of all buy/sell orders
+        var item = await _db.SteamMarketItems
+            .Where(x => x.Id == itemId)
             .Include(x => x.App)
             .Include(x => x.Currency)
             .Include(x => x.Description)
             .Include(x => x.BuyOrders)
             .Include(x => x.SellOrders)
             .AsSplitQuery()
-            .ToArrayAsync();
+            .SingleOrDefaultAsync();
 
-        Parallel.ForEach(items, (item) =>
-        {
-            var histogram = itemResponses[item.Id];
-            item.LastCheckedOrdersOn = DateTimeOffset.Now;
-            item.RecalculateOrders(
-                ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
-                histogram.BuyOrderCount.SteamQuantityValueAsInt(),
-                ParseMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
-                histogram.SellOrderCount.SteamQuantityValueAsInt()
-            );
-        });
+        item.LastCheckedOrdersOn = DateTimeOffset.Now;
+        item.RecalculateOrders(
+            ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(itemResponse.BuyOrderGraph),
+            itemResponse.BuyOrderCount.SteamQuantityValueAsInt(),
+            ParseMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(itemResponse.SellOrderGraph),
+            itemResponse.SellOrderCount.SteamQuantityValueAsInt()
+        );
 
         await _db.SaveChangesAsync();
     }

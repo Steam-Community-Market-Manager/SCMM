@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Web.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -19,13 +20,14 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemSales
 {
     private readonly SteamDbContext _db;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly IWebProxyManager _webProxyManager;
 
-    private const int MarketItemBatchSize = 30;
-    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(1);
+    // TODO: Make these configurable
+    private const int MarketItemBatchSize = 50;
+    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromHours(2);
 
-    public UpdateMarketItemSales(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
+    public UpdateMarketItemSales(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -42,13 +44,10 @@ public class UpdateMarketItemSales
         var availableProxies = _webProxyManager.GetAvailableProxyCount(new Uri(Constants.SteamCommunityUrl));
         if (availableProxies < MarketItemBatchSize)
         {
-            logger.LogWarning($"Update of market item sales information will be skipped as there are not enough available web proxies to handle our requests (proxies: {availableProxies}/{MarketItemBatchSize})");
-            return;
+            throw new Exception($"Update of market item sales information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
-        else
-        {
-            logger.LogInformation($"Updating market item sales information (id: {jobId})");
-        }
+
+        logger.LogInformation($"Updating market item sales information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -87,12 +86,12 @@ public class UpdateMarketItemSales
         {
             try
             {
-                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetText(
-                     new SteamMarketListingPageRequest()
-                     {
-                         AppId = item.AppId,
-                         MarketHashName = item.MarketHashName,
-                     }
+                itemResponseMappings[item.Id] = await _steamCommunityWebClient.GetTextAsync(
+                    new SteamMarketListingPageRequest()
+                    {
+                        AppId = item.AppId,
+                        MarketHashName = item.MarketHashName,
+                    }
                 );
             }
             catch (SteamRequestException ex)
@@ -108,39 +107,44 @@ public class UpdateMarketItemSales
         // Parse the responses and update the item prices
         if (itemResponseMappings.Any())
         {
-            await UpdateMarketItemSalesHistory(itemResponseMappings);
+            // NOTE: We need to update the database items one at a time, due to performance limitations.
+            //       The SQL demand of loading the entire sales history history for 50+ items at a time will easily trigger a SQL timeout.
+            var stopwatch = new Stopwatch();
+            foreach (var item in itemResponseMappings)
+            {
+                stopwatch.Restart();
+                await UpdateMarketItemSalesHistory(item.Key, item.Value);
+                logger.LogInformation($"Updated item sales for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
+            }
         }
 
         logger.LogInformation($"Updated {itemResponseMappings.Count} market item sales information (id: {jobId})");
     }
 
-    private async Task UpdateMarketItemSalesHistory(IDictionary<Guid, string> itemResponses)
+    private async Task UpdateMarketItemSalesHistory(Guid itemId, string itemResponse)
     {
-        var itemIds = itemResponses.Keys.ToArray();
-        var items = await _db.SteamMarketItems
-            .Where(x => itemIds.Contains(x.Id))
+        // TODO: Optimise this SQL to load faster or remove the eager load of all sales history
+        var item = await _db.SteamMarketItems
+            .Where(x => x.Id == itemId)
             .Include(x => x.App)
             .Include(x => x.Currency)
             .Include(x => x.Description)
             .Include(x => x.SalesHistory)
             .AsSplitQuery()
-            .ToArrayAsync();
+            .SingleOrDefaultAsync();
 
-        Parallel.ForEach(items, (item) =>
+        var salesHistoryGraphJson = Regex.Match(itemResponse, @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
+        if (!string.IsNullOrEmpty(salesHistoryGraphJson))
         {
-            var salesHistoryGraphJson = Regex.Match(itemResponses[item.Id], @"var line1=\[(.*)\];").Groups.OfType<Capture>().LastOrDefault()?.Value;
-            if (!string.IsNullOrEmpty(salesHistoryGraphJson))
+            var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphJson}]");
+            if (salesHistoryGraph != null)
             {
-                var salesHistoryGraph = JsonSerializer.Deserialize<string[][]>($"[{salesHistoryGraphJson}]");
-                if (salesHistoryGraph != null)
-                {
-                    item.LastCheckedSalesOn = DateTimeOffset.Now;
-                    item.RecalculateSales(
-                        ParseMarketItemSalesFromGraph(salesHistoryGraph)
-                    );
-                }
+                item.LastCheckedSalesOn = DateTimeOffset.Now;
+                item.RecalculateSales(
+                    ParseMarketItemSalesFromGraph(salesHistoryGraph)
+                );
             }
-        });
+        }
 
         await _db.SaveChangesAsync();
     }

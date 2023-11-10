@@ -38,7 +38,6 @@ public class UpdateMarketItemPricesFromiTradeggJob
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-iTradegg");
-        var stopwatch = new Stopwatch();
 
         var appIds = iTradegg.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -60,73 +59,74 @@ public class UpdateMarketItemPricesFromiTradeggJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from iTrade.gg (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateiTradeGGMarketPricesForApp(logger, app, usdCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateiTradeGGMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var iTradeggItems = (await _iTradeggWebClient.GetInventoryAsync(app.SteamId)) ?? new List<iTradeggItem>();
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
+            foreach (var iTradeggItem in iTradeggItems)
             {
-                stopwatch.Restart();
-                var iTradeggItems = (await _iTradeggWebClient.GetInventoryAsync(app.SteamId)) ?? new List<iTradeggItem>();
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
+                var item = dbItems.FirstOrDefault(x => x.Name == iTradeggItem.Name)?.Item;
+                if (item != null)
+                {
+                    item.UpdateBuyPrices(iTradegg, new PriceWithSupply
                     {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                foreach (var iTradeggItem in iTradeggItems)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == iTradeggItem.Name)?.Item;
-                    if (item != null)
-                    {
-                        item.UpdateBuyPrices(iTradegg, new PriceWithSupply
-                        {
-                            Price = iTradeggItem.Same > 0 ? item.Currency.CalculateExchange(iTradeggItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Supply = iTradeggItem.Same
-                        });
-                    }
-                }
-
-                var missingItems = items.Where(x => !iTradeggItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(iTradegg));
-                foreach (var missingItem in missingItems)
-                {
-                    missingItem.Item.UpdateBuyPrices(iTradegg, null);
-                }
-
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
-                {
-                    x.TotalItems = iTradeggItems.Count();
-                    x.TotalListings = iTradeggItems.Sum(i => i.Same);
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    logger.LogError(ex, $"Failed to update market item price information from iTrade.gg (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
-                    {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = iTradeggItem.Same > 0 ? item.Currency.CalculateExchange(iTradeggItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                        Supply = iTradeggItem.Same
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for iTrade.gg (appId: {app.SteamId}). {ex.Message}");
-                }
             }
-            finally
+
+            var missingItems = dbItems.Where(x => !iTradeggItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(iTradegg));
+            foreach (var missingItem in missingItems)
             {
-                stopwatch.Stop();
+                missingItem.Item.UpdateBuyPrices(iTradegg, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
+            {
+                x.TotalItems = iTradeggItems.Count();
+                x.TotalListings = iTradeggItems.Sum(i => i.Same);
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from iTrade.gg (appId: {app.SteamId}). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for iTrade.gg (appId: {app.SteamId}). {ex.Message}");
             }
         }
     }

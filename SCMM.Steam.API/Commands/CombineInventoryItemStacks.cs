@@ -68,7 +68,7 @@ namespace SCMM.Steam.API.Commands
 
             foreach (var sourceItem in sourceItems)
             {
-                var response = await _steamWebApiClient.InventoryServiceCombineItemStack(new CombineItemStacksJsonRequest()
+                var response = await _steamWebApiClient.InventoryServiceCombineItemStackAsync(new CombineItemStacksJsonRequest()
                 {
                     Key = request.ApiKey,
                     AppId = destinationAppId,

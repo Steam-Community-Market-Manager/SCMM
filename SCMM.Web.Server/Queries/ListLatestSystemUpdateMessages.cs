@@ -1,8 +1,8 @@
 ﻿using CommandQuery;
 using Microsoft.Extensions.Caching.Distributed;
 using SCMM.Discord.Data.Models;
-using SCMM.Shared.Client.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Web.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Web.Data.Models.UI.System;
 

@@ -13,12 +13,10 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
-using System.Linq;
 using System.Text.Json;
 
 namespace SCMM.Web.Server.API.Controllers

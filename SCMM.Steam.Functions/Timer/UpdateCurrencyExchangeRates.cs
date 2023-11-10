@@ -14,10 +14,10 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateCurrencyExchangeRates
 {
     private readonly SteamDbContext _db;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly IServiceBus _serviceBus;
 
-    public UpdateCurrencyExchangeRates(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
+    public UpdateCurrencyExchangeRates(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IServiceBus serviceBus)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -90,7 +90,7 @@ public class UpdateCurrencyExchangeRates
         {
             try
             {
-                var response = await _steamCommunityWebClient.GetMarketPriceOverview(
+                var response = await _steamCommunityWebClient.GetMarketPriceOverviewAsync(
                     new SteamMarketPriceOverviewJsonRequest()
                     {
                         AppId = mostExpensiveItem.App.SteamId,

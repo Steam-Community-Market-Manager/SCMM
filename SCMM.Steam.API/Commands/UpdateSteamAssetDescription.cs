@@ -150,7 +150,7 @@ namespace SCMM.Steam.API.Commands
                         if (tag == "nocrate")
                         {
                             dropsFromLootCrates = false;
-                        } 
+                        }
                         else if (tag == "crate")
                         {
                             dropsFromLootCrates = true;
@@ -190,7 +190,7 @@ namespace SCMM.Steam.API.Commands
                     // https://partner.steamgames.com/doc/features/inventory/schema#ExchangeFormat
                     // TODO: assetDescription.Exchange = itemDefinition.Exchange.ParseSteamExchanges();
                 }
-                 
+
                 // Parse prices
                 if (!String.IsNullOrEmpty(itemDefinition.Price) || !String.IsNullOrEmpty(itemDefinition.PriceCategory))
                 {

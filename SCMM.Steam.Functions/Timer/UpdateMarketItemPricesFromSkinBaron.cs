@@ -16,7 +16,9 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromSkinBaron
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     private const MarketType SkinBaron = MarketType.SkinBaron;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     private readonly SteamDbContext _db;
     private readonly SkinBaronWebClient _skinBaronWebClient;
@@ -38,7 +40,6 @@ public class UpdateMarketItemPricesFromSkinBaron
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinBaron");
-        var stopwatch = new Stopwatch();
 
         var appIds = SkinBaron.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -60,87 +61,87 @@ public class UpdateMarketItemPricesFromSkinBaron
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinBaron (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateSkinBaronMarketPricesForApp(logger, app, eurCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateSkinBaronMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency eurCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var skinBaronItems = new List<SkinBaronItemOffer>();
+            var offersResponse = (SkinBaronFilterOffersResponse)null;
+            var browsingPage = 1;
+            do
             {
-                stopwatch.Restart();
-                var skinBaronItems = new List<SkinBaronItemOffer>();
-                var offersResponse = (SkinBaronFilterOffersResponse)null;
-                var browsingPage = 1;
-                do
+                // NOTE: Items must be fetched across multiple pages, we keep reading until no new items/pages are found
+                offersResponse = await _skinBaronWebClient.GetBrowsingFilterOffersAsync(app.SteamId, browsingPage);
+                if (offersResponse?.AggregatedMetaOffers?.Any() == true)
                 {
-                    // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    // TODO: Needs optimisation, too slow, too many requests (429)
-                    offersResponse = await _skinBaronWebClient.GetBrowsingFilterOffersAsync(app.SteamId, browsingPage);
-                    if (offersResponse?.AggregatedMetaOffers?.Any() == true)
-                    {
-                        skinBaronItems.AddRange(offersResponse.AggregatedMetaOffers);
-                        browsingPage++;
-                    }
-                } while (offersResponse != null && offersResponse.ItemsPerPage > 0);
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                foreach (var skinBaronItem in skinBaronItems)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == skinBaronItem.ExtendedProductInformation?.LocalizedName)?.Item;
-                    if (item != null)
-                    {
-                        item.UpdateBuyPrices(SkinBaron, new PriceWithSupply
-                        {
-                            Price = skinBaronItem.NumberOfOffers > 0 ? item.Currency.CalculateExchange(skinBaronItem.LowestPrice.ToString().SteamPriceAsInt(), eurCurrency) : 0,
-                            Supply = skinBaronItem.NumberOfOffers
-                        });
-                    }
+                    skinBaronItems.AddRange(offersResponse.AggregatedMetaOffers);
+                    browsingPage++;
                 }
+            } while (offersResponse != null && offersResponse.ItemsPerPage > 0);
 
-                var missingItems = items.Where(x => !skinBaronItems.Any(y => x.Name == y.ExtendedProductInformation?.LocalizedName) && x.Item.BuyPrices.ContainsKey(SkinBaron));
-                foreach (var missingItem in missingItems)
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
                 {
-                    missingItem.Item.UpdateBuyPrices(SkinBaron, null);
-                    missingItem.Item.UpdateBuyPrices(SkinBaron, null);
-                }
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
 
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinBaron, x =>
-                {
-                    x.TotalItems = skinBaronItems.Count();
-                    x.TotalListings = skinBaronItems.Sum(i => i.NumberOfOffers);
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
+            foreach (var skinBaronItem in skinBaronItems)
             {
-                try
+                var item = dbItems.FirstOrDefault(x => x.Name == skinBaronItem.ExtendedProductInformation?.LocalizedName)?.Item;
+                if (item != null)
                 {
-                    logger.LogError(ex, $"Failed to update market item price information from SkinBaron (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinBaron, x =>
+                    item.UpdateBuyPrices(SkinBaron, new PriceWithSupply
                     {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = skinBaronItem.NumberOfOffers > 0 ? item.Currency.CalculateExchange(skinBaronItem.LowestPrice.ToString().SteamPriceAsInt(), eurCurrency) : 0,
+                        Supply = skinBaronItem.NumberOfOffers
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for SkinBaron (appId: {app.SteamId}). {ex.Message}");
-                }
             }
-            finally
+
+            var missingItems = dbItems.Where(x => !skinBaronItems.Any(y => x.Name == y.ExtendedProductInformation?.LocalizedName) && x.Item.BuyPrices.ContainsKey(SkinBaron));
+            foreach (var missingItem in missingItems)
             {
-                stopwatch.Stop();
+                missingItem.Item.UpdateBuyPrices(SkinBaron, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinBaron, x =>
+            {
+                x.TotalItems = skinBaronItems.Count();
+                x.TotalListings = skinBaronItems.Sum(i => i.NumberOfOffers);
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from SkinBaron (appId: {app.SteamId}). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinBaron, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for SkinBaron (appId: {app.SteamId}). {ex.Message}");
             }
         }
     }

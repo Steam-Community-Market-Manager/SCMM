@@ -13,15 +13,15 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web.Formatters;
-using SCMM.Shared.Web.Middleware;
-using SCMM.Shared.Web.Statistics;
+using SCMM.Shared.Web.Client;
+using SCMM.Shared.Web.Server.Formatters;
+using SCMM.Shared.Web.Server.Middleware;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
@@ -47,6 +47,7 @@ await WebApplication.CreateBuilder(args)
     .ConfigureClientServices()
     .Build()
     .Configure()
+    .Warmup()
     .RunAsync();
 
 public static class WebApplicationExtensions
@@ -192,8 +193,6 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamStoreWebClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
-        builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Auto-mapper
@@ -205,8 +204,7 @@ public static class WebApplicationExtensions
             Assembly.GetEntryAssembly(),
             Assembly.Load("SCMM.Steam.API"),
             Assembly.Load("SCMM.Discord.API"),
-            Assembly.Load("SCMM.Shared.API"),
-            Assembly.Load("SCMM.Shared.Web")
+            Assembly.Load("SCMM.Shared.API")
         };
         builder.Services.AddCommands(contactAssemblies);
         builder.Services.AddQueries(contactAssemblies);
@@ -238,7 +236,8 @@ public static class WebApplicationExtensions
             options.DetailedErrors = true;
         });
 
-        builder.Services.AddSignalR(e => {
+        builder.Services.AddSignalR(e =>
+        {
             e.MaximumReceiveMessageSize = 102400000;
         });
 
@@ -304,7 +303,7 @@ public static class WebApplicationExtensions
 
         builder.Services.AddRequestDecompression();
         builder.Services.AddResponseCompression();
-        
+
         builder.Services.AddOutputCache(options =>
         {
             options.SizeLimit = 256 * 1024 * 1024; // 256MB
@@ -340,7 +339,7 @@ public static class WebApplicationExtensions
             var cookies = httpContextAccessor.HttpContext.Request.Cookies;
             if (cookies.Any())
             {
-                client.DefaultRequestHeaders.Add("Cookie", 
+                client.DefaultRequestHeaders.Add("Cookie",
                     string.Join(';', cookies.Select(x => $"{x.Key}={x.Value}"))
                 );
 
@@ -384,14 +383,6 @@ public static class WebApplicationExtensions
             app.UseProductionExceptionHandler();
             // Force HTTPS using HSTS
             app.UseHsts();
-        }
-
-        // Prime caches
-        using (var scope = app.Services.CreateScope())
-        {
-            scope.ServiceProvider.GetService<LanguageCache>()?.RepopulateCache();
-            scope.ServiceProvider.GetService<CurrencyCache>()?.RepopulateCache();
-            scope.ServiceProvider.GetService<AppCache>()?.RepopulateCache();
         }
 
         // Enable Swagger API auto-docs
@@ -439,6 +430,23 @@ public static class WebApplicationExtensions
         app.MapFallbackToPage("/_Host");
 
         app.UseAzureServiceBusProcessor();
+
+        return app;
+    }
+
+    public static WebApplication Warmup(this WebApplication app)
+    {
+        // Prime caches
+        using (var scope = app.Services.CreateScope())
+        {
+            Task.WaitAll(
+                scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync()
+            );
+
+            scope.ServiceProvider.GetRequiredService<LanguageCache>().RepopulateCache();
+            scope.ServiceProvider.GetRequiredService<CurrencyCache>().RepopulateCache();
+            scope.ServiceProvider.GetRequiredService<AppCache>().RepopulateCache();
+        }
 
         return app;
     }

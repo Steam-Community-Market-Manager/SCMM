@@ -41,12 +41,12 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _steamConfiguration;
         private readonly SteamDbContext _steamDb;
         private readonly SteamWebApiClient _steamApiClient;
-        private readonly ProxiedSteamCommunityWebClient _steamCommunityClient;
+        private readonly SteamCommunityWebClient _steamCommunityClient;
         private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAppItemDefinitionsArchive(ILogger<ImportSteamAppItemDefinitionsArchive> logger, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamApiClient, ProxiedSteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAppItemDefinitionsArchive(ILogger<ImportSteamAppItemDefinitionsArchive> logger, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamApiClient, SteamCommunityWebClient steamCommunityClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _steamConfiguration = steamConfiguration;
@@ -61,7 +61,7 @@ namespace SCMM.Steam.API.Commands
         public async Task HandleAsync(ImportSteamAppItemDefinitionsArchiveRequest request)
         {
             // Get the item definition archive
-            var itemDefinitionsArchive = await _steamApiClient.GameInventoryGetItemDefArchiveRaw(new GetItemDefArchiveJsonRequest()
+            var itemDefinitionsArchive = await _steamApiClient.GameInventoryGetItemDefArchiveRawAsync(new GetItemDefArchiveJsonRequest()
             {
                 AppId = UInt64.Parse(request.AppId),
                 Digest = request.ItemDefinitionsDigest,
@@ -388,8 +388,8 @@ namespace SCMM.Steam.API.Commands
             if (addedStoreItems.Any())
             {
                 // Get the latest asset description prices
-                var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
-                var assetPricesResponse = await _steamApiClient.SteamEconomyGetAssetPrices(new GetAssetPricesJsonRequest()
+                var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+                var assetPricesResponse = await _steamApiClient.SteamEconomyGetAssetPricesAsync(new GetAssetPricesJsonRequest()
                 {
                     AppId = uint.Parse(app.SteamId)
                 });
@@ -493,7 +493,7 @@ namespace SCMM.Steam.API.Commands
 
                         var storeItemAsset = assetPricesResponse?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId?.ToString() || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
                         var storeItemPrices = storeItemAsset?.Prices ?? new Dictionary<string, long>();
-                        var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailableAsync(app, assetDescription, storeItemAsset, defaultCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
+                        var storeItem = await CreateOrUpdateStoreItemAndMarkAsAvailableAsync(app, assetDescription, storeItemAsset, usdCurrency, itemDefinition.Modified.SteamTimestampToDateTimeOffset());
                         if (storeItem == null)
                         {
                             continue;
@@ -506,9 +506,9 @@ namespace SCMM.Steam.API.Commands
                             {
                                 Store = store,
                                 Item = storeItem,
-                                Currency = defaultCurrency,
-                                CurrencyId = defaultCurrency.Id,
-                                Price = storeItemPrices?.FirstOrDefault(x => x.Key == defaultCurrency.Name).Value,
+                                Currency = usdCurrency,
+                                CurrencyId = usdCurrency.Id,
+                                Price = storeItemPrices?.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
                                 Prices = (storeItemPrices != null ? new PersistablePriceDictionary(storeItemPrices) : new PersistablePriceDictionary()),
                                 IsPriceVerified = true
                             };
@@ -571,12 +571,12 @@ namespace SCMM.Steam.API.Commands
                 var newPermanentStoreItems = newStoreItems.Where(x => x.Description.IsPermanent).ToArray();
                 if (permanentItemStore != null && newPermanentStoreItems.Any())
                 {
-                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, permanentItemStore, newPermanentStoreItems, defaultCurrency);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, permanentItemStore, newPermanentStoreItems, usdCurrency);
                 }
                 var newLimitedStoreItems = newStoreItems.Where(x => !x.Description.IsPermanent).ToArray();
                 if (limitedItemStore != null && newLimitedStoreItems.Any())
                 {
-                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, limitedItemStore, newLimitedStoreItems, defaultCurrency);
+                    await RegenerateStoreItemsThumbnailAndSendStoreAddedMessageAsync(app, limitedItemStore, newLimitedStoreItems, usdCurrency);
                 }
             }
         }
@@ -675,7 +675,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Double check that this asset description can currently be listed on the Steam community market
-                    var marketPriceOverviewResponse = await _steamCommunityClient.GetMarketPriceOverview(new SteamMarketPriceOverviewJsonRequest()
+                    var marketPriceOverviewResponse = await _steamCommunityClient.GetMarketPriceOverviewAsync(new SteamMarketPriceOverviewJsonRequest()
                     {
                         AppId = app.SteamId,
                         MarketHashName = assetDescription.NameHash,
@@ -699,7 +699,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // If missing, add a new market item for this asset description
-                    var defaultCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
+                    var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
                     var marketItem = assetDescription.MarketItem;
                     if (marketItem == null)
                     {
@@ -709,26 +709,14 @@ namespace SCMM.Steam.API.Commands
                             AppId = app.Id,
                             App = app,
                             Description = assetDescription,
-                            Currency = defaultCurrency,
+                            Currency = usdCurrency,
                         });
                     }
 
                     // Update the market item price and volume with what we know so far
-                    if (marketItem.SellOrderLowestPrice == 0 && !String.IsNullOrEmpty(marketPriceOverviewResponse.LowestPrice))
+                    if (!String.IsNullOrEmpty(marketPriceOverviewResponse.LowestPrice))
                     {
-                        marketItem.SellOrderLowestPrice = marketPriceOverviewResponse.LowestPrice.SteamPriceAsInt();
-                    }
-                    if (marketItem.SellOrderCount == 0 && !String.IsNullOrEmpty(marketPriceOverviewResponse.Volume))
-                    {
-                        marketItem.SellOrderCount = marketPriceOverviewResponse.Volume.SteamQuantityValueAsInt();
-                    }
-                    if (marketItem.SellOrderLowestPrice > 0)
-                    {
-                        marketItem.UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply()
-                        {
-                            Price = marketItem.SellOrderLowestPrice,
-                            Supply = (marketItem.SellOrderCount > 0 ? marketItem.SellOrderCount : null)
-                        });
+                        marketItem.UpdateSteamBuyPrice(marketPriceOverviewResponse.LowestPrice.SteamPriceAsInt(), marketPriceOverviewResponse.Volume.SteamQuantityValueAsInt());
                     }
 
                     if (newMarketableItem.HasBecomeMarketable && app.IsActive)

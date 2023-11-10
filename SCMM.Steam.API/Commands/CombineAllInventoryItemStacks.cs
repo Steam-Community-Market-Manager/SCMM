@@ -6,7 +6,6 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Store;
 using System.Net;
-using static SCMM.Shared.API.Events.StoreAddedMessage;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -66,7 +65,7 @@ namespace SCMM.Steam.API.Commands
 
                 foreach (var sourceItem in sourceItems)
                 {
-                    var response = await _steamWebApiClient.InventoryServiceCombineItemStack(new CombineItemStacksJsonRequest()
+                    var response = await _steamWebApiClient.InventoryServiceCombineItemStackAsync(new CombineItemStacksJsonRequest()
                     {
                         Key = request.ApiKey,
                         AppId = destinationAppId,
