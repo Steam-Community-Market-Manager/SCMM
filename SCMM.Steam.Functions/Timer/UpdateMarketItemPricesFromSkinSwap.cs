@@ -75,7 +75,7 @@ public class UpdateMarketItemPricesFromSkinSwap
             // The SkinSwap API returns all items for all apps, so make sure we only request them once even if this function is called multiple times (for multiple app updates)
             if (!skinSwapItems.Any())
             {
-                skinSwapItems = await _skinSwapWebClient.GetItemAsync();
+                skinSwapItems = await _skinSwapWebClient.GetItemsAsync();
             }
 
             var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);

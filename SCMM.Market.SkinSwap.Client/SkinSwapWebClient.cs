@@ -16,7 +16,7 @@ namespace SCMM.Market.SkinSwap.Client
             DefaultHeaders.Add("Accept", "application/json");
         }
 
-        public async Task<IEnumerable<SkinSwapItem>> GetItemAsync()
+        public async Task<IEnumerable<SkinSwapItem>> GetItemsAsync()
         {
             using (var client = BuildSkinsSwapClient())
             {
