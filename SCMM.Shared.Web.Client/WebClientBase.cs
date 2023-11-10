@@ -19,7 +19,7 @@ public abstract class WebClientBase : IDisposable
 
     private readonly AsyncRetryPolicy<HttpResponseMessage> _asyncRetryPolicy;
 
-    protected WebClientBase(ILogger logger, HttpMessageHandler httpHandler = null, CookieContainer cookieContainer = null, IWebProxy webProxy = null)
+    protected WebClientBase(ILogger logger, HttpMessageHandler httpHandler = null, CookieContainer cookieContainer = null, IWebProxy webProxy = null, bool ignoreServerCertificationValidation = false)
     {
         _logger = logger;
         _defaultHeaders = new Dictionary<string, string>();
@@ -36,7 +36,7 @@ public abstract class WebClientBase : IDisposable
             AllowAutoRedirect = true,
             MaxAutomaticRedirections = 5,
             ClientCertificateOptions = ClientCertificateOption.Manual,
-            ServerCertificateCustomValidationCallback = (_webProxy == null) ? null :
+            ServerCertificateCustomValidationCallback = (_webProxy == null && !ignoreServerCertificationValidation) ? null :
                 // Http web proxy might MiTM the SSL certificate, so ignore invalid certs when using a proxy
                 (httpRequestMessage, cert, cetChain, policyErrors) => true
         };
