@@ -8,7 +8,7 @@ namespace SCMM.Market.iTradegg.Client
     {
         private const string WebBaseUri = "https://itrade.gg/";
 
-        public iTradeggWebClient(ILogger<iTradeggWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public iTradeggWebClient(ILogger<iTradeggWebClient> logger) : base(logger) { }
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {

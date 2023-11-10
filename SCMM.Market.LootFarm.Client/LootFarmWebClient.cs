@@ -8,7 +8,7 @@ namespace SCMM.Market.LootFarm.Client
     {
         private const string BaseUri = "https://loot.farm/";
 
-        public LootFarmWebClient(ILogger<LootFarmWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public LootFarmWebClient(ILogger<LootFarmWebClient> logger) : base(logger) { }
 
         /// <remarks>
         /// Price list is updated every minute

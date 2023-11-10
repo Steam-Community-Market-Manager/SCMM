@@ -10,7 +10,7 @@ namespace SCMM.Market.SwapGG.Client
         private const string TradeApiBaseUri = "https://api.swap.gg/";
         private const string MarketApiBaseUri = "https://market-api.swap.gg/v1/";
 
-        public SwapGGWebClient(ILogger<SwapGGWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public SwapGGWebClient(ILogger<SwapGGWebClient> logger) : base(logger) { }
 
         /// <summary>
         /// This call will return a list of items held by trade bots on swap.gg/trade

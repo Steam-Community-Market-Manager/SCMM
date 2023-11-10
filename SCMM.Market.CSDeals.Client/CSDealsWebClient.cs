@@ -9,7 +9,7 @@ namespace SCMM.Market.CSDeals.Client
         private const string WebsiteBaseUri = "https://cs.deals/";
         private const string ApiBaseUri = "https://cs.deals/API/";
 
-        public CSDealsWebClient(ILogger<CSDealsWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public CSDealsWebClient(ILogger<CSDealsWebClient> logger) : base(logger) { }
 
         public async Task<IEnumerable<CSDealsItemPrice>> GetPricingGetLowestPricesAsync(string appId)
         {

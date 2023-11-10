@@ -9,7 +9,7 @@ namespace SCMM.Market.RustTM.Client
     {
         private const string ApiBaseUri = "https://rust.tm/api/v2/";
 
-        public RustTMWebClient(ILogger<RustTMWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public RustTMWebClient(ILogger<RustTMWebClient> logger) : base(logger) { }
 
         public async Task<IEnumerable<RustTMItem>> GetPricesAsync(string currencyName = Constants.SteamCurrencyUSD)
         {

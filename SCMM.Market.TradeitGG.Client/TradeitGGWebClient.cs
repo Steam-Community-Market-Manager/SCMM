@@ -12,7 +12,7 @@ namespace SCMM.Market.TradeitGG.Client
 
         public const int MaxPageLimit = 1000;
 
-        public TradeitGGWebClient(ILogger<TradeitGGWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public TradeitGGWebClient(ILogger<TradeitGGWebClient> logger) : base(logger) { }
 
         public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {

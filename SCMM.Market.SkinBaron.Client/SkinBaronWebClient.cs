@@ -9,7 +9,7 @@ namespace SCMM.Market.SkinBaron.Client
     {
         private const string ApiBaseUri = "https://skinbaron.de/api/v2/";
 
-        public SkinBaronWebClient(ILogger<SkinBaronWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public SkinBaronWebClient(ILogger<SkinBaronWebClient> logger) : base(logger) { }
 
         /// <remarks>
         /// This is currently broken as SkinBaron have changed their APIs and this one is no longer supported

@@ -10,7 +10,7 @@ namespace SCMM.Market.CSTrade.Client
         private const string PricesApiBaseUri = "https://cdn.cs.trade:2096/api/";
         private const string WebsiteApiBaseUri = "https://cdn.cs.trade:8443/api/";
 
-        public CSTradeWebClient(ILogger<CSTradeWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        public CSTradeWebClient(ILogger<CSTradeWebClient> logger) : base(logger) { }
 
         /// <summary>
         /// 

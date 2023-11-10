@@ -16,7 +16,7 @@ namespace SCMM.Market.DMarket.Client
 
         private readonly DMarketConfiguration _configuration;
 
-        public DMarketWebClient(ILogger<DMarketWebClient> logger, DMarketConfiguration configuration, IWebProxy webProxy) : base(logger, webProxy: webProxy) 
+        public DMarketWebClient(ILogger<DMarketWebClient> logger, DMarketConfiguration configuration) : base(logger) 
         {
             _configuration = configuration;
         }

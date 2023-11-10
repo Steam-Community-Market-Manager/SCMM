@@ -10,7 +10,7 @@ namespace SCMM.Market.SkinSwap.Client
 
         private readonly SkinSwapConfiguration _configuration;
 
-        public SkinSwapWebClient(ILogger<SkinSwapWebClient> logger, SkinSwapConfiguration configuration, IWebProxy webProxy) : base(logger, webProxy: webProxy)
+        public SkinSwapWebClient(ILogger<SkinSwapWebClient> logger, SkinSwapConfiguration configuration) : base(logger)
         {
             _configuration = configuration;
             DefaultHeaders.Add("Accept", "application/json");
