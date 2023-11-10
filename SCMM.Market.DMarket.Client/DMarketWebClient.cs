@@ -14,15 +14,20 @@ namespace SCMM.Market.DMarket.Client
         public const string MarketTypeDMarket = "dmarket";
         public const string MarketTypeF2F = "p2p";
 
-        public DMarketWebClient(ILogger<DMarketWebClient> logger, IWebProxy webProxy) : base(logger, webProxy: webProxy) { }
+        private readonly DMarketConfiguration _configuration;
+
+        public DMarketWebClient(ILogger<DMarketWebClient> logger, DMarketConfiguration configuration, IWebProxy webProxy) : base(logger, webProxy: webProxy) 
+        {
+            _configuration = configuration;
+        }
 
         /// <see cref="https://docs.dmarket.com/v1/swagger.html#/Sell%20Items/getMarketItems"/>
         /// <seealso cref="https://dmarket.com/faq#rateLimits"/>
-        public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string marketType = MarketTypeDMarket, string currencyName = Constants.SteamCurrencyUSD, string cursor = null, int limit = MaxPageLimit)
+        public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string marketType = MarketTypeDMarket, string orderBy = "price", bool orderDescending = true, string currencyName = Constants.SteamCurrencyUSD, string cursor = null, int? offset = null, int limit = MaxPageLimit)
         {
-            using (var client = BuildWebApiHttpClient())
+            using (var client = BuildDMarketClient())
             {
-                var url = $"{ApiBaseUri}exchange/v1/market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
+                var url = $"{ApiBaseUri}exchange/v1/market/items?side=market&orderBy={orderBy}&orderDir={(orderDescending ? "desc" : "asc")}&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}{(offset != null ? $"&offset={offset.Value}" : string.Empty)}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
@@ -36,5 +41,11 @@ namespace SCMM.Market.DMarket.Client
                 return responseJson;
             }
         }
+
+        private HttpClient BuildDMarketClient() => BuildWebApiHttpClient(
+            authHeaderName: "X-Api-Key",
+            authHeaderFormat: "{0}",
+            authKey: _configuration.ApiKey
+        );
     }
 }

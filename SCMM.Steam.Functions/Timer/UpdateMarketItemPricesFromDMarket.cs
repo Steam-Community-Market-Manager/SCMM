@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
@@ -73,21 +74,7 @@ public class UpdateMarketItemPricesFromDMarketJob
         {
             stopwatch.Start();
 
-            var dMarketItems = new List<DMarketItem>();
-            var dMarketItemsResponse = (DMarketMarketItemsResponse)null;
-            do
-            {
-                // TODO: Optimise this if/when the API allows it, 100 items per read is too slow...
-                // NOTE: Items must be fetched across multiple pages, we keep reading until the next page cursor is empty
-                dMarketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
-                    app.Name, marketType: DMarketWebClient.MarketTypeDMarket, currencyName: usdCurrency.Name, cursor: dMarketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
-                );
-                if (dMarketItemsResponse?.Objects?.Any() == true)
-                {
-                    dMarketItems.AddRange(dMarketItemsResponse.Objects);
-                }
-            } while (dMarketItemsResponse != null && !String.IsNullOrEmpty(dMarketItemsResponse.Cursor));
-
+            var dMarketItems = await GetDMarketItemsAsync(logger, app, usdCurrency, DMarketWebClient.MarketTypeDMarket);
             var dbItems = await _db.SteamMarketItems
                 .Where(x => x.AppId == app.Id)
                 .Select(x => new
@@ -157,21 +144,7 @@ public class UpdateMarketItemPricesFromDMarketJob
         {
             stopwatch.Start();
 
-            var dMarketItems = new List<DMarketItem>();
-            var dMarketItemsResponse = (DMarketMarketItemsResponse)null;
-            do
-            {
-                // TODO: Optimise this if/when the API allows it, 100 items per read is too slow...
-                // NOTE: Items must be fetched across multiple pages, we keep reading until the next page cursor is empty
-                dMarketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
-                    app.Name, marketType: DMarketWebClient.MarketTypeF2F, currencyName: usdCurrency.Name, cursor: dMarketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
-                );
-                if (dMarketItemsResponse?.Objects?.Any() == true)
-                {
-                    dMarketItems.AddRange(dMarketItemsResponse.Objects);
-                }
-            } while (dMarketItemsResponse != null && !String.IsNullOrEmpty(dMarketItemsResponse.Cursor));
-
+            var dMarketItems = await GetDMarketItemsAsync(logger, app, usdCurrency, DMarketWebClient.MarketTypeF2F);
             var dbItems = await _db.SteamMarketItems
                 .Where(x => x.AppId == app.Id)
                 .Select(x => new
@@ -232,4 +205,52 @@ public class UpdateMarketItemPricesFromDMarketJob
             }
         }
     }
+
+    private async Task<DMarketItem[]> GetDMarketItemsAsync(ILogger logger, SteamApp app, SteamCurrency usdCurrency, string marketType)
+    {
+        var dMarketItemDictionary = new ConcurrentDictionary<string, DMarketItem>();
+        try
+        {
+            // NOTE: Brace yourself, this gets a bit wacky...
+            //       DMarket APIs limit us to 100 items per page and pages cannot be fetched manually using an offset or page number (boo!).
+            //       So what we do here is attack the item list from both ends using two threads. One thread starts from ascending order, the other starts from descending order.
+            //       Once the two threads meet in the middle then we should have captured all the items in 50% of the time.
+            var sortOrders = new[] { true, false };
+            await Parallel.ForEachAsync(sortOrders, async (sortOrder, cancellationToken) =>
+            {
+                var newItemWasFound = false;
+                var dMarketItemsResponse = (DMarketMarketItemsResponse)null;
+                do
+                {
+                    // Reset. If we don't end up adding at least one new item in this page call, then we're probably overlapping with the other thread.
+                    newItemWasFound = false;
+
+                    // TODO: Optimise this if/when the API allows it, 100 items per read is too slow...
+                    // NOTE: Items must be fetched across multiple pages, we keep reading until the next page cursor is empty
+                    dMarketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
+                        app.Name, marketType: marketType, orderDescending: sortOrder, currencyName: usdCurrency.Name, cursor: dMarketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
+                    );
+                    if (dMarketItemsResponse?.Objects?.Any() == true)
+                    {
+                        foreach (var item in dMarketItemsResponse.Objects)
+                        {
+                            if (!dMarketItemDictionary.ContainsKey(item.ItemId))
+                            {
+                                dMarketItemDictionary[item.ItemId] = item;
+                                newItemWasFound = true; // we found a new item, so keep going!
+                            }
+                        }
+                    }
+
+                } while (newItemWasFound && dMarketItemsResponse != null && !String.IsNullOrEmpty(dMarketItemsResponse.Cursor));
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Failed to fetch all market items from DMarket (appId: {app.SteamId}, source: {marketType}). Request failed after fetching {dMarketItemDictionary.Count} items.");
+        }
+
+        return dMarketItemDictionary.Select(x => x.Value).ToArray();
+    }
+
 }

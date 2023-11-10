@@ -18,6 +18,7 @@ using SCMM.Market.Buff.Client.Extensions;
 using SCMM.Market.CSDeals.Client;
 using SCMM.Market.CSTrade.Client;
 using SCMM.Market.DMarket.Client;
+using SCMM.Market.DMarket.Client.Extensions;
 using SCMM.Market.iTradegg.Client;
 using SCMM.Market.LootFarm.Client;
 using SCMM.Market.RustTM.Client;
@@ -186,6 +187,11 @@ public static class HostExtensions
             services.AddSingleton<CSDealsWebClient>();
             services.AddSingleton<CSTradeWebClient>();
             services.AddSingleton<DMarketWebClient>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetDMarketConfiguration();
+            });
             services.AddSingleton<iTradeggWebClient>();
             services.AddSingleton<LootFarmWebClient>();
             services.AddSingleton<RustTMWebClient>();
