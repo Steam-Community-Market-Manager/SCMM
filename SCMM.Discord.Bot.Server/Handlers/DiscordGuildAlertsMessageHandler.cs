@@ -19,6 +19,7 @@ using DiscordGuild = SCMM.Discord.Data.Store.DiscordGuild;
 namespace SCMM.Discord.Bot.Server.Handlers
 {
     public class DiscordGuildAlertsMessageHandler :
+        IMessageHandler<AppAcceptedWorkshopFilesUpdatedMessage>,
         IMessageHandler<AppItemDefinitionsUpdatedMessage>,
         IMessageHandler<ItemDefinitionAddedMessage>,
         IMessageHandler<MarketItemAddedMessage>,
@@ -47,6 +48,30 @@ namespace SCMM.Discord.Bot.Server.Handlers
             _discordDb = discordDb;
             _discordConfiguration = _configuration.GetDiscordConfiguration();
             _client = client;
+        }
+
+        public async Task HandleAsync(AppAcceptedWorkshopFilesUpdatedMessage appAcceptedWorkshopFiles, IMessageContext context)
+        {
+            //if (appItemDefinition?.AppId != _discordConfiguration.AppId)
+            //    return;
+
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppAcceptedWorkshopFilesUpdated, (guildId, channelId) =>
+            {
+                var description = new StringBuilder();
+                description.AppendLine($"{appAcceptedWorkshopFiles.AcceptedWorkshopFileIds?.Count() ?? 0} new item(s) have just been accepted in-game to {appAcceptedWorkshopFiles.AppName}.");
+                description.AppendLine($"[view accepted items]({appAcceptedWorkshopFiles.ViewAcceptedWorkshopFilesPageUrl})");
+
+                return _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    title: $"{appAcceptedWorkshopFiles.AppName} New Accepted Workshop Items",
+                    url: appAcceptedWorkshopFiles.ViewAcceptedWorkshopFilesPageUrl,
+                    thumbnailUrl: !String.IsNullOrEmpty(appAcceptedWorkshopFiles.AppIconUrl) ? appAcceptedWorkshopFiles.AppIconUrl : null,
+                    description: description.ToString(),
+                    color: !String.IsNullOrEmpty(appAcceptedWorkshopFiles.AppColour) ? (uint?)UInt32.Parse(appAcceptedWorkshopFiles.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
+                );
+            });
         }
 
         public async Task HandleAsync(AppItemDefinitionsUpdatedMessage appItemDefinition, IMessageContext context)
