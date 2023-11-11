@@ -237,7 +237,7 @@ else if (StoreList.Any())
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-shopping-cart mud-secondary-text"></i>
                                                     <span>
-                                                        <MudLink @onclick="@(() => ShowItemEstimatedSupplyDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.SupplyTotalEstimated.Value.ToQuantityString()+ estimated sales</MudLink>
+                                                        <MudLink @onclick="@(() => ShowItemEstimatedSupplyDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.SupplyTotalEstimated.Value.ToQuantityString()+ minimum sales</MudLink>
                                                         <span class="mud-secondary-text"> from the store</span>
                                                     </span>
                                                 </MudText>

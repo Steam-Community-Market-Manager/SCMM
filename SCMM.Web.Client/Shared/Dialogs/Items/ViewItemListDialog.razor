@@ -45,8 +45,8 @@
                             }
                             @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
                             {
-                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudMenuItem>
-                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Minimum Supply</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Minimum Supply</MudMenuItem>
                             }
                         </ChildContent>
                     </MudMenu>

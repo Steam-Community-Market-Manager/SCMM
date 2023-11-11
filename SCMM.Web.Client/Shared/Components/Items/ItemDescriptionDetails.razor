@@ -241,7 +241,7 @@
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-cubes-stacked mud-secondary-text"></i>
                                 <span>
-                                    <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ <span class="mud-secondary-text">estimated total</span> supply</span>
+                                    <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ <span class="mud-secondary-text">minimum</span> supply</span>
                                 </span>
                             </MudText>
                         }
@@ -744,7 +744,7 @@
                 <MudItem xs="12" xl="@((Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null || Item.MarketSellOrderCount > 0 || Item.MarketBuyOrderCount > 0) ? 6 : 12)">
                     <MudPaper Outlined="true" Class="text-centered full-height" Style="min-height:20vh">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 text-centered">
-                            <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ estimated total supply</span>
+                            <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ minimum supply</span>
                         </MudText>
                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="px-4 text-centered">
                             @if (((Item.SupplyTotalOwnersEstimated ?? 0) + (Item.SupplyTotalInvestorsEstimated ?? 0)) > ((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)))

@@ -48,7 +48,7 @@
                 {
                     @if (OwnableItem?.SupplyTotalEstimated > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply)))
                     {
-                        <MudTooltip Text="Estimated total supply">
+                        <MudTooltip Text="Minimum supply">
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
                                 <i class="fas fa-fw fa-cubes-stacked"></i>
                                 <span>@OwnableItem.SupplyTotalEstimated.Value.ToQuantityString()+</span>
