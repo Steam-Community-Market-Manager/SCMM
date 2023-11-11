@@ -822,8 +822,8 @@ else
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
-            ["ListName"] = $"Marketable {item.ItemType.Pluralise()}",
-            ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
+            ["ListName"] = $"All {item.ItemType.Pluralise()}",
+            ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&count=-1",
             ["DemandUrl"] = $"api/item/type/{item.ItemType}/demand",
             ["HighlightedItemId"] = item.AssetDescriptionId,
             ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
