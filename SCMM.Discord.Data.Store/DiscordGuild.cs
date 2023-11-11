@@ -28,6 +28,7 @@ namespace SCMM.Discord.Data.Store
         {
             public const string Currency = "Currency";
 
+            public const string AlertChannelAppAcceptedWorkshopFilesUpdated = "Alert-Channel-App-Accepted-Workshop-Files-Updated";
             public const string AlertChannelAppItemDefinitionsUpdated = "Alert-Channel-App-Item-Definitions-Updated";
             public const string AlertChannelAppItemDefinitionsItemAdded = "Alert-Channel-App-Item-Definitions-Item-Added";
             public const string AlertChannelMarketItemAdded = "Alert-Channel-Market-Item-Added";
@@ -71,6 +72,12 @@ namespace SCMM.Discord.Data.Store
                         "AED","ARS","NOK","PEN","PHP","TRY","AUD","MYR","HKD","UYU","CNY","CHF","UAH",
                         "INR","CAD","JPY","USD","COP","EUR","QAR","PLN","RUB","TWD","SAR","KRW","ILS"
                     }
+                },
+                new ConfigurationDefinition()
+                {
+                    Name = AlertChannelAppAcceptedWorkshopFilesUpdated,
+                    Description =  "The channel where alerts will be posted when new workshop files are accepted to the game.",
+                    RequiredFlags = (int) GuildFlags.Alerts
                 },
                 new ConfigurationDefinition()
                 {

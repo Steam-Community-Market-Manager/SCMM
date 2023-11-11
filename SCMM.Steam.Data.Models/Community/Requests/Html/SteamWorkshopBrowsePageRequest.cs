@@ -6,6 +6,7 @@
         public const string BrowseSortMostPopular = "mostpopular";
         public const string BrowseSortMostRecent = "mostrecent";
         public const string SectionItems = "mtxitems";
+        public const string SectionAccepted = "accepted";
 
         public string AppId { get; set; }
 
