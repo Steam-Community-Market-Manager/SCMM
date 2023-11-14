@@ -16,7 +16,9 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromTradeitGG
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     private const MarketType TradeitGG = MarketType.TradeitGG;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     private readonly SteamDbContext _db;
     private readonly TradeitGGWebClient _tradeitGGWebClient;
@@ -38,7 +40,6 @@ public class UpdateMarketItemPricesFromTradeitGG
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeitGG");
-        var stopwatch = new Stopwatch();
 
         var appIds = TradeitGG.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -60,86 +61,88 @@ public class UpdateMarketItemPricesFromTradeitGG
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateTradeitGGMarketPricesForApp(logger, app, usdCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateTradeitGGMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var tradeitGGItems = new Dictionary<TradeitGGItem, int>();
+            var inventoryDataItems = (IDictionary<TradeitGGItem, int>)null;
+            var inventoryDataOffset = 0;
+            var inventoryDataLimit = TradeitGGWebClient.MaxPageLimit;
+            do
             {
-                stopwatch.Restart();
-                var tradeitGGItems = new Dictionary<TradeitGGItem, int>();
-                var inventoryDataItems = (IDictionary<TradeitGGItem, int>)null;
-                var inventoryDataOffset = 0;
-                var inventoryDataLimit = TradeitGGWebClient.MaxPageLimit;
-                do
+                // NOTE: Items must be fetched across multiple pages, we keep reading until no new items/pages are found
+                inventoryDataItems = await _tradeitGGWebClient.GetInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: inventoryDataLimit);
+                if (inventoryDataItems?.Any() == true)
                 {
-                    // NOTE: Items have to be fetched in multiple batches, keep reading until no new items are found
-                    inventoryDataItems = await _tradeitGGWebClient.GetNewInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: inventoryDataLimit);
-                    if (inventoryDataItems?.Any() == true)
-                    {
-                        tradeitGGItems.AddRange(inventoryDataItems);
-                        inventoryDataOffset += inventoryDataLimit;
-                    }
-                } while (inventoryDataItems?.Any() == true && inventoryDataItems?.Count == inventoryDataLimit);
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                foreach (var tradeitGGItem in tradeitGGItems)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == tradeitGGItem.Key.Name)?.Item;
-                    if (item != null)
-                    {
-                        item.UpdateBuyPrices(TradeitGG, new PriceWithSupply
-                        {
-                            Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
-                            Supply = tradeitGGItem.Value
-                        });
-                    }
+                    tradeitGGItems.AddRange(inventoryDataItems);
+                    inventoryDataOffset += inventoryDataLimit;
                 }
+            } while (inventoryDataItems?.Any() == true && inventoryDataItems?.Count == inventoryDataLimit);
 
-                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(TradeitGG));
-                foreach (var missingItem in missingItems)
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
                 {
-                    missingItem.Item.UpdateBuyPrices(TradeitGG, null);
-                }
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
 
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
-                {
-                    x.TotalItems = tradeitGGItems.Count();
-                    x.TotalListings = tradeitGGItems.Sum(i => i.Value);
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
+            foreach (var tradeitGGItem in tradeitGGItems)
             {
-                try
+                var item = dbItems.FirstOrDefault(x => x.Name == tradeitGGItem.Key.Name)?.Item;
+                if (item != null)
                 {
-                    logger.LogError(ex, $"Failed to update market item price information from Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
+                    item.UpdateBuyPrices(TradeitGG, new PriceWithSupply
                     {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
+                        Supply = tradeitGGItem.Value
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
-                }
             }
-            finally
+
+            var missingItems = dbItems.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(TradeitGG));
+            foreach (var missingItem in missingItems)
             {
-                stopwatch.Stop();
+                missingItem.Item.UpdateBuyPrices(TradeitGG, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
+            {
+                x.TotalItems = tradeitGGItems.Count();
+                x.TotalListings = tradeitGGItems.Sum(i => i.Value);
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, TradeitGG, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
             }
         }
     }

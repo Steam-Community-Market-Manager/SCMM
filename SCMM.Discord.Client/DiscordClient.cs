@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Client;
+using SCMM.Shared.Web.Client;
 
 namespace SCMM.Discord.Client
 {

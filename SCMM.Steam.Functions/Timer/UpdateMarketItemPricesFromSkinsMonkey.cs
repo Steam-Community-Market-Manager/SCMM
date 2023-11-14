@@ -38,7 +38,6 @@ public class UpdateMarketItemPricesFromSkinsMonkey
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinsMonkey");
-        var stopwatch = new Stopwatch();
 
         var appIds = SkinsMonkey.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -60,73 +59,74 @@ public class UpdateMarketItemPricesFromSkinsMonkey
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from SkinsMonkey (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateSkinsMonkeyMarketPricesForApp(logger, app, usdCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateSkinsMonkeyMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var skinsMonkeyItems = await _skinsMonkeyWebClient.GetItemPricesAsync(app.SteamId);
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
+            foreach (var skinsMonkeyItem in skinsMonkeyItems)
             {
-                stopwatch.Restart();
-                var skinsMonkeyItems = await _skinsMonkeyWebClient.GetItemPricesAsync(app.SteamId);
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
+                var item = dbItems.FirstOrDefault(x => x.Name == skinsMonkeyItem.MarketHashName)?.Item;
+                if (item != null)
+                {
+                    item.UpdateBuyPrices(SkinsMonkey, new PriceWithSupply
                     {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                foreach (var skinsMonkeyItem in skinsMonkeyItems)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == skinsMonkeyItem.MarketHashName)?.Item;
-                    if (item != null)
-                    {
-                        item.UpdateBuyPrices(SkinsMonkey, new PriceWithSupply
-                        {
-                            Price = skinsMonkeyItem.Stock > 0 ? item.Currency.CalculateExchange(skinsMonkeyItem.PriceTrade, usdCurrency) : 0,
-                            Supply = skinsMonkeyItem.Stock
-                        });
-                    }
-                }
-
-                var missingItems = items.Where(x => !skinsMonkeyItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(SkinsMonkey));
-                foreach (var missingItem in missingItems)
-                {
-                    missingItem.Item.UpdateBuyPrices(SkinsMonkey, null);
-                }
-
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinsMonkey, x =>
-                {
-                    x.TotalItems = skinsMonkeyItems.Count();
-                    x.TotalListings = skinsMonkeyItems.Sum(i => i.Stock);
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    logger.LogError(ex, $"Failed to update market item price information from SkinsMonkey (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinsMonkey, x =>
-                    {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = skinsMonkeyItem.Stock > 0 ? item.Currency.CalculateExchange(skinsMonkeyItem.PriceTrade, usdCurrency) : 0,
+                        Supply = skinsMonkeyItem.Stock
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for SkinsMonkey (appId: {app.SteamId}). {ex.Message}");
-                }
             }
-            finally
+
+            var missingItems = dbItems.Where(x => !skinsMonkeyItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(SkinsMonkey));
+            foreach (var missingItem in missingItems)
             {
-                stopwatch.Stop();
+                missingItem.Item.UpdateBuyPrices(SkinsMonkey, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinsMonkey, x =>
+            {
+                x.TotalItems = skinsMonkeyItems.Count();
+                x.TotalListings = skinsMonkeyItems.Sum(i => i.Stock);
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from SkinsMonkey (appId: {app.SteamId}). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SkinsMonkey, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for SkinsMonkey (appId: {app.SteamId}). {ex.Message}");
             }
         }
     }

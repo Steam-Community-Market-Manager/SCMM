@@ -3,16 +3,16 @@
   "logging": {
     "logLevel": {
       "Default": "Warning",
-      "Microsoft": "Warning",
-      "Microsoft.Hosting.Lifetime": "Warning",
-      "Microsoft.EntityFrameworkCore.Database": "Warning"
+      "Function": "Information", // dependency telemetry, used to analyzing dependencies and their performance
+      "Host.Results": "Information", // request telemetry, used for analyzing execution performance
+      "Azure.Core": "Error" // suppressing sdk blob warnings
     },
     "applicationInsights": {
       "logLevel": {
         "Default": "Warning",
-        "Microsoft": "Warning",
-        "Microsoft.Hosting.Lifetime": "Warning",
-        "Microsoft.EntityFrameworkCore.Database": "Warning"
+        "Function": "Information", // dependency telemetry, used to analyzing dependencies and their performance
+        "Host.Results": "Information", // request telemetry, used for analyzing execution performance
+        "Azure.Core": "Error" // suppressing sdk blob warnings
       },
       "samplingSettings": {
         "isEnabled": true,

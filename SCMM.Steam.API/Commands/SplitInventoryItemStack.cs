@@ -66,7 +66,7 @@ namespace SCMM.Steam.API.Commands
             while (quantityRemaining > 0)
             {
                 var quantityToSplit = (request.StackNewItems ? quantityRemaining : 1);
-                var response = await _steamWebApiClient.InventoryServiceSplitItemStack(new SplitItemStackJsonRequest()
+                var response = await _steamWebApiClient.InventoryServiceSplitItemStackAsync(new SplitItemStackJsonRequest()
                 {
                     Key = request.ApiKey,
                     AppId = appId,

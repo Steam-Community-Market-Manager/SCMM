@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<AzureFunctionsVersion>v4</AzureFunctionsVersion>
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>true</ImplicitUsings>
@@ -9,17 +9,17 @@
 	
 	<ItemGroup>
 		<PackageReference Include="Azure.Identity" Version="1.10.3" />
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.19.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.19.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.15.1" OutputItemType="Analyzer" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.13.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.9.0" OutputItemType="Analyzer" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.2.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="6.2.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.14.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="5.0.1" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.7.0" />
 		<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-rc.2.23480.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.13" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.1" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -41,8 +41,8 @@
 		<ProjectReference Include="..\SCMM.Market.SkinSwap.Client\SCMM.Market.SkinSwap.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SwapGG.Client\SCMM.Market.SwapGG.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.TradeitGG.Client\SCMM.Market.TradeitGG.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
-		<ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />

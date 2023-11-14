@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -10,10 +10,10 @@
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.10.3" />
 	<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
-	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-rc.2.23480.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.2.23479.6" />
-	<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.0" />
+	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,8 +21,8 @@
 	<ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
 	<ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
 	<ProjectReference Include="..\SCMM.Market.RustyPot.Client\SCMM.Market.RustyPot.Client.csproj" />
+	<ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
 	<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
-	<ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
 	<ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
 	<ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
 	<ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />

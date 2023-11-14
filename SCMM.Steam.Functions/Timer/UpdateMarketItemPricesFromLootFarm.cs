@@ -38,7 +38,6 @@ public class UpdateMarketItemPricesFromLootFarmJob
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
-        var stopwatch = new Stopwatch();
 
         var appIds = LOOTFarm.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -60,75 +59,75 @@ public class UpdateMarketItemPricesFromLootFarmJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateLootFarmMarketPricesForApp(logger, app, usdCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateLootFarmMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var lootFarmItems = (await _lootFarmWebClient.GetItemPricesAsync(app.Name)) ?? new List<LootFarmItemPrice>();
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
+            foreach (var lootFarmItem in lootFarmItems)
             {
-                stopwatch.Restart();
-                var lootFarmItems = (await _lootFarmWebClient.GetItemPricesAsync(app.Name)) ?? new List<LootFarmItemPrice>();
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
+                var item = dbItems.FirstOrDefault(x => x.Name == lootFarmItem.Name)?.Item;
+                if (item != null)
+                {
+                    var available = lootFarmItem.Have;
+                    item.UpdateBuyPrices(LOOTFarm, new PriceWithSupply
                     {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                foreach (var lootFarmItem in lootFarmItems)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == lootFarmItem.Name)?.Item;
-                    if (item != null)
-                    {
-                        var available = lootFarmItem.Have;
-                        item.UpdateBuyPrices(LOOTFarm, new PriceWithSupply
-                        {
-                            Price = available > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
-                            Supply = available
-                        });
-                    }
-                }
-
-                var missingItems = items.Where(x => !lootFarmItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(LOOTFarm));
-                foreach (var missingItem in missingItems)
-                {
-                    missingItem.Item.UpdateBuyPrices(LOOTFarm, null);
-                }
-
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
-                {
-                    x.TotalItems = lootFarmItems.Count();
-                    x.TotalListings = lootFarmItems.Sum(i => i.Have);
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    logger.LogError(ex, $"Failed to update market item price information from LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
-                    {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = available > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
+                        Supply = available
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
-                }
-                continue;
             }
-            finally
+
+            var missingItems = dbItems.Where(x => !lootFarmItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(LOOTFarm));
+            foreach (var missingItem in missingItems)
             {
-                stopwatch.Stop();
+                missingItem.Item.UpdateBuyPrices(LOOTFarm, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
+            {
+                x.TotalItems = lootFarmItems.Count();
+                x.TotalListings = lootFarmItems.Sum(i => i.Have);
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, LOOTFarm, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
             }
         }
     }

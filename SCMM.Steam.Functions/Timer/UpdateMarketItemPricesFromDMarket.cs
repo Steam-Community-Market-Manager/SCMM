@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace SCMM.Steam.Functions.Timer;
@@ -39,7 +40,6 @@ public class UpdateMarketItemPricesFromDMarketJob
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-DMarket");
-        var stopwatch = new Stopwatch();
 
         var appIds = DMarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
@@ -61,171 +61,196 @@ public class UpdateMarketItemPricesFromDMarketJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from DMarket (appId: {app.SteamId})");
-            var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+            await UpdateDMarketF2FPricesForApp(logger, app, usdCurrency);
+            await UpdateDMarketPricesForApp(logger, app, usdCurrency);
+        }
+    }
 
-            try
+    private async Task UpdateDMarketPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var dMarketItems = await GetDMarketItemsAsync(logger, app, usdCurrency, DMarketWebClient.MarketTypeDMarket);
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
+            var dMarketItemGroups = dMarketItems.Where(x => x.Extra == null || (x.Extra.Tradable && !x.Extra.SaleRestricted)).GroupBy(x => x.Title);
+            foreach (var dMarketInventoryItemGroup in dMarketItemGroups)
             {
-                stopwatch.Restart();
-                var dMarketItems = new List<DMarketItem>();
-                var marketItemsResponse = (DMarketMarketItemsResponse)null;
-                do
+                var item = dbItems.FirstOrDefault(x => x.Name == dMarketInventoryItemGroup.Key)?.Item;
+                if (item != null)
                 {
-                    // TODO: Optimise this if/when the API allows it, 100 items per read is too slow
-                    // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
-                        app.Name, marketType: DMarketWebClient.MarketTypeF2F, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
-                    );
-                    if (marketItemsResponse?.Objects?.Any() == true)
+                    var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
+                    item.UpdateBuyPrices(DMarket, new PriceWithSupply
                     {
-                        dMarketItems.AddRange(marketItemsResponse.Objects);
-                    }
-                } while (marketItemsResponse != null && !String.IsNullOrEmpty(marketItemsResponse.Cursor));
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                var dMarketItemGroups = dMarketItems.Where(x => x.Extra == null || (x.Extra.Tradable && !x.Extra.SaleRestricted)).GroupBy(x => x.Title);
-                foreach (var dMarketInventoryItemGroup in dMarketItemGroups)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == dMarketInventoryItemGroup.Key)?.Item;
-                    if (item != null)
-                    {
-                        var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
-                        item.UpdateBuyPrices(DMarketF2F, new PriceWithSupply
-                        {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
-                            Supply = supply
-                        });
-                    }
-                }
-
-                var missingItems = items.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(DMarketF2F));
-                foreach (var missingItem in missingItems)
-                {
-                    missingItem.Item.UpdateBuyPrices(DMarketF2F, null);
-                }
-
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
-                {
-                    x.TotalItems = dMarketItemGroups.Count();
-                    x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
-                });
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
-                    {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
+                        Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
+                        Supply = supply
                     });
                 }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
-                }
-            }
-            finally
-            {
-                stopwatch.Stop();
             }
 
+            var missingItems = dbItems.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(DMarket));
+            foreach (var missingItem in missingItems)
+            {
+                missingItem.Item.UpdateBuyPrices(DMarket, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
+            {
+                x.TotalItems = dMarketItemGroups.Count();
+                x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
             try
             {
-                stopwatch.Restart();
-                var dMarketItems = new List<DMarketItem>();
-                var marketItemsResponse = (DMarketMarketItemsResponse)null;
-                do
+                logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: exchange). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
                 {
-                    // TODO: Optimise this if/when the API allows it, 100 items per read is too slow
-                    // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
-                        app.Name, marketType: DMarketWebClient.MarketTypeDMarket, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
-                    );
-                    if (marketItemsResponse?.Objects?.Any() == true)
-                    {
-                        dMarketItems.AddRange(marketItemsResponse.Objects);
-                    }
-                } while (marketItemsResponse != null && !String.IsNullOrEmpty(marketItemsResponse.Cursor));
-
-                var items = await _db.SteamMarketItems
-                    .Where(x => x.AppId == app.Id)
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                var dMarketItemGroups = dMarketItems.Where(x => x.Extra == null || (x.Extra.Tradable && !x.Extra.SaleRestricted)).GroupBy(x => x.Title);
-                foreach (var dMarketInventoryItemGroup in dMarketItemGroups)
-                {
-                    var item = items.FirstOrDefault(x => x.Name == dMarketInventoryItemGroup.Key)?.Item;
-                    if (item != null)
-                    {
-                        var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
-                        item.UpdateBuyPrices(DMarket, new PriceWithSupply
-                        {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
-                            Supply = supply
-                        });
-                    }
-                }
-
-                var missingItems = items.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(DMarket));
-                foreach (var missingItem in missingItems)
-                {
-                    missingItem.Item.UpdateBuyPrices(DMarket, null);
-                }
-
-                await _db.SaveChangesAsync();
-
-                await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
-                {
-                    x.TotalItems = dMarketItemGroups.Count();
-                    x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
-                    x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                    x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                    x.LastUpdateErrorOn = null;
-                    x.LastUpdateError = null;
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                try
-                {
-                    logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: exchange). {ex.Message}");
-                    await _statisticsService.UpdateDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarket, x =>
-                    {
-                        x.LastUpdateErrorOn = DateTimeOffset.Now;
-                        x.LastUpdateError = ex.Message;
-                    });
-                }
-                catch (Exception)
-                {
-                    logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}, exchange). {ex.Message}");
-                }
-            }
-            finally
-            {
-                stopwatch.Stop();
+                logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}, exchange). {ex.Message}");
             }
         }
     }
+
+    private async Task UpdateDMarketF2FPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
+    {
+        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+
+            var dMarketItems = await GetDMarketItemsAsync(logger, app, usdCurrency, DMarketWebClient.MarketTypeF2F);
+            var dbItems = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
+            var dMarketItemGroups = dMarketItems.Where(x => x.Extra == null || (x.Extra.Tradable && !x.Extra.SaleRestricted)).GroupBy(x => x.Title);
+            foreach (var dMarketInventoryItemGroup in dMarketItemGroups)
+            {
+                var item = dbItems.FirstOrDefault(x => x.Name == dMarketInventoryItemGroup.Key)?.Item;
+                if (item != null)
+                {
+                    var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
+                    item.UpdateBuyPrices(DMarketF2F, new PriceWithSupply
+                    {
+                        Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
+                        Supply = supply
+                    });
+                }
+            }
+
+            var missingItems = dbItems.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(DMarketF2F));
+            foreach (var missingItem in missingItems)
+            {
+                missingItem.Item.UpdateBuyPrices(DMarketF2F, null);
+            }
+
+            await _db.SaveChangesAsync();
+
+            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
+            {
+                x.TotalItems = dMarketItemGroups.Count();
+                x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
+                x.LastUpdatedItemsOn = DateTimeOffset.Now;
+                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
+                x.LastUpdateErrorOn = null;
+                x.LastUpdateError = null;
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
+                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
+                {
+                    x.LastUpdateErrorOn = DateTimeOffset.Now;
+                    x.LastUpdateError = ex.Message;
+                });
+            }
+            catch (Exception)
+            {
+                logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
+            }
+        }
+    }
+
+    private async Task<DMarketItem[]> GetDMarketItemsAsync(ILogger logger, SteamApp app, SteamCurrency usdCurrency, string marketType)
+    {
+        var dMarketItemDictionary = new ConcurrentDictionary<string, DMarketItem>();
+        try
+        {
+            // NOTE: Brace yourself, this gets a bit wacky...
+            //       DMarket APIs limit us to 100 items per page and pages cannot be fetched manually using an offset or page number (boo!).
+            //       So what we do here is attack the item list from both ends using two threads. One thread starts from ascending order, the other starts from descending order.
+            //       Once the two threads meet in the middle then we should have captured all the items in 50% of the time.
+            var sortOrders = new[] { true, false };
+            await Parallel.ForEachAsync(sortOrders, async (sortOrder, cancellationToken) =>
+            {
+                var newItemWasFound = false;
+                var dMarketItemsResponse = (DMarketMarketItemsResponse)null;
+                do
+                {
+                    // Reset. If we don't end up adding at least one new item in this page call, then we're probably overlapping with the other thread.
+                    newItemWasFound = false;
+
+                    // TODO: Optimise this if/when the API allows it, 100 items per read is too slow...
+                    // NOTE: Items must be fetched across multiple pages, we keep reading until the next page cursor is empty
+                    dMarketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
+                        app.Name, marketType: marketType, orderDescending: sortOrder, currencyName: usdCurrency.Name, cursor: dMarketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
+                    );
+                    if (dMarketItemsResponse?.Objects?.Any() == true)
+                    {
+                        foreach (var item in dMarketItemsResponse.Objects)
+                        {
+                            if (!dMarketItemDictionary.ContainsKey(item.ItemId))
+                            {
+                                dMarketItemDictionary[item.ItemId] = item;
+                                newItemWasFound = true; // we found a new item, so keep going!
+                            }
+                        }
+                    }
+
+                } while (newItemWasFound && dMarketItemsResponse != null && !String.IsNullOrEmpty(dMarketItemsResponse.Cursor));
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Failed to fetch all market items from DMarket (appId: {app.SteamId}, source: {marketType}). Request failed after fetching {dMarketItemDictionary.Count} items.");
+        }
+
+        return dMarketItemDictionary.Select(x => x.Value).ToArray();
+    }
+
 }

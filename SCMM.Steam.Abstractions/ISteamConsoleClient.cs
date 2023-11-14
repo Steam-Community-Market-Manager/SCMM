@@ -4,5 +4,5 @@ namespace SCMM.Steam.Abstractions;
 
 public interface ISteamConsoleClient
 {
-    Task<WebFileData> DownloadWorkshopFile(string appId, string workshopFileId);
+    Task<WebFileData> DownloadWorkshopFile(string appId, string workshopFileId, bool clearCache = true);
 }

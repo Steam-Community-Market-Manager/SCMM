@@ -14,9 +14,9 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemActivity
 {
     private readonly SteamDbContext _db;
-    private readonly ProxiedSteamCommunityWebClient _steamCommunityWebClient;
+    private readonly SteamCommunityWebClient _steamCommunityWebClient;
 
-    public UpdateMarketItemActivity(SteamDbContext db, ProxiedSteamCommunityWebClient steamCommunityWebClient)
+    public UpdateMarketItemActivity(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
@@ -83,7 +83,7 @@ public class UpdateMarketItemActivity
             var total = assetDescriptions.Count;
             try
             {
-                var response = await _steamCommunityWebClient.GetMarketItemOrdersActivity(
+                var response = await _steamCommunityWebClient.GetMarketItemOrdersActivityAsync(
                     new SteamMarketItemOrdersActivityJsonRequest()
                     {
                         ItemNameId = assetDescription.NameId.ToString(),

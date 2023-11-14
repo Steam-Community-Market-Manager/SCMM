@@ -308,13 +308,13 @@ namespace SCMM.Discord.Bot.Server.Modules
                     if ((ulong)(assetDescription.StoreItem.Price ?? 0) != usdPrice.Price)
                     {
                         // Update the price for the store item releases
-                        foreach(var storeItem in assetDescription.StoreItem.Stores)
+                        foreach (var storeItem in assetDescription.StoreItem.Stores)
                         {
                             if ((storeItem.Price ?? 0) == (assetDescription.StoreItem.Price ?? 0))
                             {
                                 storeItem.CurrencyId = usdCurrency.Id;
                                 storeItem.Currency = usdCurrency;
-                                storeItem.Price = (long) usdPrice.Price;
+                                storeItem.Price = (long)usdPrice.Price;
                                 storeItem.Prices = new PersistablePriceDictionary()
                                 {
                                     { usdCurrency.Name, (long) usdPrice.Price }
@@ -345,7 +345,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 {
                     Currency = x,
                     StoreItemsWithMissingPrices = _steamDb.SteamStoreItemItemStore
-                        .Where(y => y.Item.App.SteamId == appId.ToString()) 
+                        .Where(y => y.Item.App.SteamId == appId.ToString())
                         .Where(y => y.Price != null)
                         .Where(y => !String.IsNullOrEmpty(y.Prices.Serialised) && !y.Prices.Serialised.Contains(x.Name))
                         .Where(y => y.CurrencyId == usdCurrency.Id)

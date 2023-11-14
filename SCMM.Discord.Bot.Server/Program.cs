@@ -19,16 +19,16 @@ using SCMM.Discord.Client.Extensions;
 using SCMM.Discord.Data.Store;
 using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
+using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Finance;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
-using SCMM.Shared.Web.Middleware;
-using SCMM.Shared.Web.Statistics;
+using SCMM.Shared.Web.Client;
+using SCMM.Shared.Web.Server.Middleware;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -46,6 +46,7 @@ await WebApplication.CreateBuilder(args)
     .ConfigureServices()
     .Build()
     .Configure()
+    .Warmup()
     .RunAsync();
 
 public static class WebApplicationExtensions
@@ -173,28 +174,25 @@ public static class WebApplicationExtensions
         }
 
         // Web proxies
-        builder.Services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
-        builder.Services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
-        builder.Services.AddSingleton<IWebProxy, RotatingWebProxy>();
+        builder.Services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
+        builder.Services.AddSingleton<IWebProxyManager>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<IWebProxy>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<RotatingWebProxy>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());
         builder.Services.AddSingleton<DiscordClient>();
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
-        builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton(x => builder.Configuration.GetFixerConfiguration());
         builder.Services.AddSingleton<ICurrencyExchangeService, FixerWebClient>();
         builder.Services.AddSingleton(x => builder.Configuration.GetAzureAiConfiguration());
-        builder.Services.AddSingleton<ITimeSeriesAnalysisService, AzureAiClient>();
-        builder.Services.AddSingleton<IImageAnalysisService, AzureAiClient>();
+        builder.Services.AddSingleton<ITimeSeriesAnalysisService>(x => x.GetRequiredService<AzureAiClient>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<IImageAnalysisService>(x => x.GetRequiredService<AzureAiClient>()); // Forward interface requests to our singleton
+        builder.Services.AddSingleton<AzureAiClient>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamStoreWebClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
-        builder.Services.AddScoped<ProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<ProxiedSteamCommunityWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
-        builder.Services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Command/query/message handlers
@@ -203,8 +201,7 @@ public static class WebApplicationExtensions
             Assembly.GetEntryAssembly(),
             Assembly.Load("SCMM.Steam.API"),
             Assembly.Load("SCMM.Discord.API"),
-            Assembly.Load("SCMM.Shared.API"),
-            Assembly.Load("SCMM.Shared.Web")
+            Assembly.Load("SCMM.Shared.API")
         };
         builder.Services.AddCommands(contactAssemblies);
         builder.Services.AddQueries(contactAssemblies);
@@ -266,7 +263,20 @@ public static class WebApplicationExtensions
 
         app.UseDiscordClient();
 
+        return app;
+    }
+
+    public static WebApplication Warmup(this WebApplication app)
+    {
         app.EnsureDatabaseIsInitialised<DiscordDbContext>();
+
+        // Prime caches
+        using (var scope = app.Services.CreateScope())
+        {
+            Task.WaitAll(
+                scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync()
+            );
+        }
 
         return app;
     }

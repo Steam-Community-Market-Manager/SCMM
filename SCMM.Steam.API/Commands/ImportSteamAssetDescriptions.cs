@@ -45,7 +45,7 @@ namespace SCMM.Steam.API.Commands
         public async Task<ImportSteamAssetDescriptionsResponse> HandleAsync(ImportSteamAssetDescriptionsRequest request)
         {
             // Get asset class info
-            var assetClassInfoResponse = await _steamWebApiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
+            var assetClassInfoResponse = await _steamWebApiClient.SteamEconomyGetAssetClassInfoAsync(new GetAssetClassInfoJsonRequest()
             {
                 AppId = request.AppId,
                 ClassIds = request.AssetClassIds
@@ -112,7 +112,7 @@ namespace SCMM.Steam.API.Commands
             var publishedFiles = (IEnumerable<PublishedFileDetails>)null;
             if (publishedFileIds.Any())
             {
-                var publishedFileDetailsResponse = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+                var publishedFileDetailsResponse = await _steamWebApiClient.SteamRemoteStorageGetPublishedFileDetailsAsync(new GetPublishedFileDetailsJsonRequest()
                 {
                     PublishedFileIds = publishedFileIds.Select(x => x.Value).ToArray()
                 });

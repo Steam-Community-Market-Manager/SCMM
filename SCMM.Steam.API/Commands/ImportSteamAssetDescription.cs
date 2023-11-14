@@ -39,13 +39,13 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamWebApiClient _apiClient;
-        private readonly ProxiedSteamCommunityWebClient _communityClient;
-        private readonly ProxiedSteamStoreWebClient _storeClient;
+        private readonly SteamCommunityWebClient _communityClient;
+        private readonly SteamStoreWebClient _storeClient;
         private readonly IServiceBus _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, ProxiedSteamCommunityWebClient communityClient, ProxiedSteamStoreWebClient storeClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, SteamStoreWebClient storeClient, IServiceBus serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
@@ -61,7 +61,7 @@ namespace SCMM.Steam.API.Commands
         public async Task<ImportSteamAssetDescriptionResponse> HandleAsync(ImportSteamAssetDescriptionRequest request)
         {
             // Get asset class info
-            var assetClassInfoResponse = await _apiClient.SteamEconomyGetAssetClassInfo(new GetAssetClassInfoJsonRequest()
+            var assetClassInfoResponse = await _apiClient.SteamEconomyGetAssetClassInfoAsync(new GetAssetClassInfoJsonRequest()
             {
                 AppId = request.AppId,
                 ClassIds = new[] { request.AssetClassId }
@@ -118,7 +118,7 @@ namespace SCMM.Steam.API.Commands
             if (publishedFileId > 0)
             {
                 // Get file details
-                var publishedFileDetailsResponse = await _apiClient.SteamRemoteStorageGetPublishedFileDetails(new GetPublishedFileDetailsJsonRequest()
+                var publishedFileDetailsResponse = await _apiClient.SteamRemoteStorageGetPublishedFileDetailsAsync(new GetPublishedFileDetailsJsonRequest()
                 {
                     PublishedFileIds = new[] { publishedFileId }
                 });
@@ -135,7 +135,7 @@ namespace SCMM.Steam.API.Commands
                 if ((assetDescription.VotesDown == null || assetDescription.VotesUp == null || !assetDescription.IsAccepted) && !string.IsNullOrEmpty(publishedFile.Title))
                 {
                     // NOTE: We have to do two seperate calls to "QueryFiles" as for some strange reason Steam only returns vote counts if requested in isolation
-                    var queryVoteData = await _apiClient.PublishedFileServiceQueryFiles(new QueryFilesJsonRequest()
+                    var queryVoteData = await _apiClient.PublishedFileServiceQueryFilesAsync(new QueryFilesJsonRequest()
                     {
                         QueryType = QueryFilesJsonRequest.QueryTypeRankedByTextSearch,
                         SearchText = publishedFile.Title,
@@ -152,7 +152,7 @@ namespace SCMM.Steam.API.Commands
                 if ((publishedFileHasChanged || !assetDescription.Previews.Any()) && !string.IsNullOrEmpty(publishedFile.Title))
                 {
                     // NOTE: We have to do two seperate calls to "QueryFiles" as for some strange reason Steam only returns vote counts if requested in isolation
-                    var queryPreviews = await _apiClient.PublishedFileServiceQueryFiles(new QueryFilesJsonRequest()
+                    var queryPreviews = await _apiClient.PublishedFileServiceQueryFilesAsync(new QueryFilesJsonRequest()
                     {
                         QueryType = QueryFilesJsonRequest.QueryTypeRankedByTextSearch,
                         SearchText = publishedFile.Title,
@@ -168,7 +168,7 @@ namespace SCMM.Steam.API.Commands
                 // Get change history (if changed since our last check)
                 if (publishedFileHasChanged && assetDescription.TimeAccepted != null)
                 {
-                    publishedFileChangeNotesPageHtml = await _communityClient.GetHtml(new SteamWorkshopFileChangeNotesPageRequest()
+                    publishedFileChangeNotesPageHtml = await _communityClient.GetHtmlAsync(new SteamWorkshopFileChangeNotesPageRequest()
                     {
                         Id = publishedFile.PublishedFileId.ToString()
                     });
@@ -194,7 +194,7 @@ namespace SCMM.Steam.API.Commands
             var needsNameId = (assetDescription.NameId == null);
             if (assetIsMarketable && (needsDescription || needsNameId))
             {
-                marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
+                marketListingPageHtml = await _communityClient.GetTextAsync(new SteamMarketListingPageRequest()
                 {
                     AppId = request.AppId.ToString(),
                     MarketHashName = assetClass.MarketHashName,
@@ -206,7 +206,7 @@ namespace SCMM.Steam.API.Commands
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(10)));
             if (assetIsRecentlyAccepted && needsDescription)
             {
-                var storeItems = await _storeClient.GetStorePaginated(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
+                var storeItems = await _storeClient.GetStorePaginatedAsync(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
                 {
                     AppId = request.AppId.ToString(),
                     Filter = SteamItemStoreGetItemDefsPaginatedJsonRequest.FilterAll,
@@ -222,7 +222,7 @@ namespace SCMM.Steam.API.Commands
                             ? itemIdMatchGroup[1].Value.Trim()
                             : null;
 
-                        storeItemPageHtml = await _storeClient.GetStoreDetailPage(new SteamItemStoreDetailPageRequest()
+                        storeItemPageHtml = await _storeClient.GetStoreDetailPageAsync(new SteamItemStoreDetailPageRequest()
                         {
                             AppId = request.AppId.ToString(),
                             ItemId = itemId,

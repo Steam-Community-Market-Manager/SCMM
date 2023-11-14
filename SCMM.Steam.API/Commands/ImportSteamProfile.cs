@@ -47,10 +47,10 @@ namespace SCMM.Steam.API.Commands
         private readonly IServiceBus _serviceBus;
         private readonly SteamDbContext _db;
         private readonly SteamWebApiClient _apiClient;
-        private readonly ProxiedSteamCommunityWebClient _communityClient;
+        private readonly SteamCommunityWebClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, IServiceBus serviceBus, SteamDbContext db, SteamWebApiClient apiClient, ProxiedSteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
+        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, IServiceBus serviceBus, SteamDbContext db, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _serviceBus = serviceBus;
@@ -86,7 +86,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogInformation($"Importing profile '{resolvedId.SteamId64}' from Steam");
 
                     var steamId = resolvedId.SteamId64.Value.ToString();
-                    var playerSummaryResponse = await _apiClient.SteamUserGetPlayerSummaries(
+                    var playerSummaryResponse = await _apiClient.SteamUserGetPlayerSummariesAsync(
                         new GetPlayerSummariesJsonRequest()
                         {
                             SteamIds = new[] { steamId }
@@ -125,7 +125,7 @@ namespace SCMM.Steam.API.Commands
                     profile.AvatarUrl = playerSummary.AvatarMediumUrl;
                     profile.AvatarLargeUrl = playerSummary.AvatarFullUrl;
 
-                    var playerBanResponse = await _apiClient.SteamUserGetPlayerBans(
+                    var playerBanResponse = await _apiClient.SteamUserGetPlayerBansAsync(
                         new GetPlayerBansJsonRequest()
                         {
                             SteamIds = new[] { steamId }
@@ -148,7 +148,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogInformation($"Importing profile '{resolvedId.CustomUrl}' from Steam");
 
                     var profileId = resolvedId.CustomUrl;
-                    var response = await _communityClient.GetProfileById(
+                    var response = await _communityClient.GetProfileByIdAsync(
                         new SteamProfileByIdPageRequest()
                         {
                             ProfileId = profileId,

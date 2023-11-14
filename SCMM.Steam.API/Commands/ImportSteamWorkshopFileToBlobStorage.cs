@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
+using SCMM.Shared.Data.Models;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
@@ -64,7 +65,7 @@ namespace SCMM.Steam.API.Commands
                 else
                 {
                     _logger.LogWarning($"Download was skipped, workshop is known to be unavailable");
-                    await UpdateAssetDescriptionsWorkshopFileAsUnavilable(request.PublishedFileId);
+                    await UpdateAssetDescriptionsWorkshopFileAsPermanentlyUnavilable(request.PublishedFileId);
                     return null;
                 }
             }
@@ -78,16 +79,30 @@ namespace SCMM.Steam.API.Commands
             }
             if (blob.Exists()?.Value != true)
             {
-                // Download the workshop file from steam
-                _logger.LogInformation($"Downloading workshop file {request.PublishedFileId} from steam");
-                var publishedFileData = await _steamConsoleClient.DownloadWorkshopFile(
-                    appId: request.AppId.ToString(),
-                    workshopFileId: request.PublishedFileId.ToString()
-                );
-                if (publishedFileData?.Data == null)
+                var publishedFileData = (WebFileData)null;
+
+                try
                 {
-                    // This file likely has been removed from steam, tag it as missing so we don't try again in the future
-                    _logger.LogWarning("Workshop file cannot be downloaded, will ignore next time");
+                    // Download the workshop file from Steam
+                    _logger.LogInformation($"Downloading workshop file {request.PublishedFileId} from steam");
+                    publishedFileData = await _steamConsoleClient.DownloadWorkshopFile(
+                        appId: request.AppId.ToString(),
+                        workshopFileId: request.PublishedFileId.ToString(),
+                        clearCache: true
+                    );
+                    if (publishedFileData?.Data != null)
+                    {
+                        _logger.LogInformation($"Download of {request.PublishedFileId} complete, '{publishedFileData.Name}'");
+                    }
+                    else
+                    {
+                        throw new NullReferenceException("Workshop file data was expected but is null");
+                    }
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // This file is permanently unavailable, tag it as missing so we don't try again in the future
+                    _logger.LogWarning(ex, $"Workshop file {request.PublishedFileId} is permanently unavailable, will ignore next time");
                     await blobMissing.UploadAsync(
                         new BinaryData(new byte[0])
                     );
@@ -95,12 +110,30 @@ namespace SCMM.Steam.API.Commands
                     {
                         { Constants.BlobMetadataPublishedFileId, request.PublishedFileId.ToString() }
                     });
-                    await UpdateAssetDescriptionsWorkshopFileAsUnavilable(request.PublishedFileId);
+
+                    await UpdateAssetDescriptionsWorkshopFileAsPermanentlyUnavilable(request.PublishedFileId);
                     return null;
                 }
-                else
+                catch (FileNotFoundException ex)
                 {
-                    _logger.LogInformation($"Download complete, '{publishedFileData.Name}'");
+                    // This file is permanently unavailable, tag it as missing so we don't try again in the future
+                    _logger.LogWarning(ex, $"Workshop file {request.PublishedFileId} is permanently unavailable, will ignore next time");
+                    await blobMissing.UploadAsync(
+                        new BinaryData(new byte[0])
+                    );
+                    await blobMissing.SetMetadataAsync(new Dictionary<string, string>()
+                    {
+                        { Constants.BlobMetadataPublishedFileId, request.PublishedFileId.ToString() }
+                    });
+
+                    await UpdateAssetDescriptionsWorkshopFileAsPermanentlyUnavilable(request.PublishedFileId);
+                    return null;
+                }
+                catch (IOException ex)
+                {
+                    // This file is temporarily unavailable, either it failed to download or failed to read it. Try again later
+                    _logger.LogWarning(ex, $"Workshop file {request.PublishedFileId} is temporarily unavailable, try again later");
+                    throw;
                 }
 
                 // Upload the workshop file to blob storage
@@ -115,11 +148,11 @@ namespace SCMM.Steam.API.Commands
                 });
 
                 blobContentsWasModified = true;
-                _logger.LogInformation($"Upload complete, '{blob.Name}'");
+                _logger.LogInformation($"Upload of {request.PublishedFileId} complete, '{blob.Name}'");
             }
             else
             {
-                _logger.LogWarning($"Download was skipped, blob already exists");
+                _logger.LogWarning($"Download of {request.PublishedFileId} was skipped, blob already exists");
             }
 
             // Update all asset descriptions that reference this workshop file with the blob url
@@ -170,7 +203,7 @@ namespace SCMM.Steam.API.Commands
             await _steamDb.SaveChangesAsync();
         }
 
-        private async Task UpdateAssetDescriptionsWorkshopFileAsUnavilable(ulong publishedFileId)
+        private async Task UpdateAssetDescriptionsWorkshopFileAsPermanentlyUnavilable(ulong publishedFileId)
         {
             var assetDescriptions = await _steamDb.SteamAssetDescriptions
                     .Where(x => x.WorkshopFileId == publishedFileId)

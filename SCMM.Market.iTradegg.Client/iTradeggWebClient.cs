@@ -1,23 +1,29 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
-    public class iTradeggWebClient : Shared.Client.WebClient
+    public class iTradeggWebClient : Shared.Web.Client.WebClientBase
     {
         private const string WebBaseUri = "https://itrade.gg/";
 
-        public iTradeggWebClient(IWebProxy webProxy) : base(webProxy: webProxy) { }
+        public iTradeggWebClient(ILogger<iTradeggWebClient> logger) : base(logger) { }
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebBaseUri)))
             {
                 var url = $"{WebBaseUri}ajax/getInventory?game={appId}&type=bot";
-                var response = await client.GetAsync(url);
+                var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(textJson))
+                {
+                    return default;
+                }
+
                 var responseJson = JsonSerializer.Deserialize<iTradeggInventoryResponse>(textJson);
                 return responseJson?.Inventory?.Items?.Select(x => x.Value);
             }

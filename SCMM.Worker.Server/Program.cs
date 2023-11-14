@@ -12,13 +12,13 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Client;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web.Statistics;
+using SCMM.Shared.Web.Client;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -48,8 +48,25 @@ using (var host = hostBuilder.Build())
 {
     var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
+    // Prime caches
+    using (var scope = host.Services.CreateScope())
+    {
+        await scope.ServiceProvider.GetRequiredService<IWebProxyManager>().RefreshProxiesAsync();
+    }
+
+    // Start app
     await host.StartAsync();
 
+    /*
+    // Start RustyPot client web socket processor
+    var rustyPot = new RustyPotWebClient(
+        host.Services.GetRequiredService<ILogger<RustyPotWebClient>>(),
+        host.Services.GetRequiredService<IServiceBus>()
+    );
+    var rustyPotMonitorJob = await rustyPot.MonitorAsync();
+    */
+
+    // Start service bus processor
     var serviceBusProcessor = new ServiceBusProcessorMiddleware(
         (ctx) => Task.CompletedTask,
         host.Services.GetRequiredService<ILogger<ServiceBusProcessorMiddleware>>(),
@@ -58,14 +75,6 @@ using (var host = hostBuilder.Build())
         host.Services.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(),
         host.Services.GetRequiredService<MessageHandlerTypeCollection>()
     );
-    /*
-    var rustyPot = new RustyPotWebClient(
-        host.Services.GetRequiredService<ILogger<RustyPotWebClient>>(),
-        host.Services.GetRequiredService<IServiceBus>()
-    );
-    var rustyPotMonitorJob = await rustyPot.MonitorAsync();
-    */
-    logger.LogInformation("Service bus processor is ready to handle messages.");
     await using (serviceBusProcessor)
     {
         await host.WaitForShutdownAsync();
@@ -153,9 +162,10 @@ public static class HostExtensions
             }
 
             // Web proxies
-            services.AddSingleton<IWebProxyStatisticsService, WebProxyStatisticsService>();
-            services.AddSingleton<IWebProxyManager, RotatingWebProxy>();
-            services.AddSingleton<IWebProxy, RotatingWebProxy>();
+            services.AddSingleton<IWebProxyUsageStatisticsService, WebProxyUsageStatisticsService>();
+            services.AddSingleton<IWebProxyManager>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+            services.AddSingleton<IWebProxy>(x => x.GetRequiredService<RotatingWebProxy>()); // Forward interface requests to our singleton
+            services.AddSingleton<RotatingWebProxy>(); // Boo Elion! (https://github.com/aspnet/DependencyInjection/issues/360)
 
             // 3rd party clients
             services.AddSingleton((services) =>
@@ -163,7 +173,6 @@ public static class HostExtensions
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetSteamConfiguration();
             });
-            services.AddSingleton<SteamSession>();
             services.AddSingleton((services) =>
             {
                 var configuration = services.GetService<IConfiguration>();
@@ -174,10 +183,6 @@ public static class HostExtensions
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamStoreWebClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<ProxiedSteamStoreWebClient>();
-            services.AddScoped<ProxiedSteamCommunityWebClient>();
-            services.AddScoped<AuthenticatedProxiedSteamStoreWebClient>();
-            services.AddScoped<AuthenticatedProxiedSteamCommunityWebClient>();
             services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
             // Command/query/message handlers
