@@ -107,7 +107,7 @@ namespace SCMM.Google.Client
         /// <remarks>
         /// A call to this method has a quota cost of 100 units for every page of videos returned (see PageMaxResults).
         /// </remarks>
-        public async Task<IEnumerable<IVideo>> SearchForVideosAsync(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int? maxResults = PageMaxResults)
+        public async Task<IEnumerable<IVideo>> SearchForVideosAsync(string query, string channelId = null, DateTimeOffset? publishedBefore = null, DateTimeOffset? publishedAfter = null, int? maxResults = PageMaxResults)
         {
             if (maxResults == null || maxResults < 0 || maxResults > PageMaxResults)
             {
@@ -121,8 +121,8 @@ namespace SCMM.Google.Client
                 var videosListRequest = _service.Search.List(Snippet);
                 videosListRequest.Q = query;
                 videosListRequest.ChannelId = channelId;
-                videosListRequest.PublishedBefore = publishedBefore;
-                videosListRequest.PublishedAfter = publishedAfter;
+                videosListRequest.PublishedBeforeDateTimeOffset = publishedBefore;
+                videosListRequest.PublishedAfterDateTimeOffset = publishedAfter;
                 videosListRequest.Order = SearchResource.ListRequest.OrderEnum.Relevance;
                 videosListRequest.MaxResults = PageMaxResults;
                 videosListRequest.PageToken = nextPageToken;
