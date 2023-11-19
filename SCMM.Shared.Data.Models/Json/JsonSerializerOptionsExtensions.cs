@@ -35,11 +35,12 @@ public static class JsonSerializerOptionsExtensions
         options.Converters.Add(new JsonNumberBooleanConverter());
         options.Converters.Add(new JsonNumberStringConverter());
         options.AllowTrailingCommas = true;
-        options.IgnoreReadOnlyProperties = false; // explicitly use [JsonIgnore] instead
         options.IgnoreReadOnlyFields = true; // use properties only
+        options.IgnoreReadOnlyProperties = false; // explicitly use [JsonIgnore] instead
         options.IncludeFields = false; // use properties only
         options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
         options.PropertyNameCaseInsensitive = true; // because javascript
+        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.ReadCommentHandling = JsonCommentHandling.Skip;
         options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 #if DEBUG
