@@ -1,4 +1,5 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
 @page "/inventory/{SteamId}"
 @page "/steam/inventory/{SteamId}"
@@ -57,7 +58,7 @@
                     <ChildContent>
                         <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
-                                <InventoryItemsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
+                                <InventoryItemsPanel SteamId="@Profile?.SteamId" Filter="@Filter" SortBy="@SortBy" SortDirection="@SortDirection" />
                             </MudPaper>
                         </MudTabPanel>
                         <MudTabPanel Icon="fas fa-fw fa-tshirt mr-4" Text="Collections" Disabled="State.IsPrerendering">
@@ -88,6 +89,24 @@
                         <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
                             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
                                           Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                            <MudMenu Icon="fas fa-fw fa-sort-alpha-down" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Quantity), Data.Models.SortDirection.Ascending))">Lowest Quantity</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Quantity), Data.Models.SortDirection.Descending))">Highest Quantity</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice), Data.Models.SortDirection.Ascending))">Lowest Unit Price</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice), Data.Models.SortDirection.Descending))">Highest Unit Price</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.TotalBuyNowPrice), Data.Models.SortDirection.Ascending))">Lowest Stacked Price</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.TotalBuyNowPrice), Data.Models.SortDirection.Descending))">Highest Stacked Price</MudMenuItem>
+                                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
+                                {
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Subscriptions), Data.Models.SortDirection.Ascending))">Lowest Subscribers</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Subscriptions), Data.Models.SortDirection.Descending))">Highest Subscribers</MudMenuItem>
+                                }
+                                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
+                                {
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
+                                }
+                            </MudMenu>
 					    </MudHidden>
                         <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
                             <MudMenuItem OnTouch="@ViewProfileOnSteam" OnClick="@ViewProfileOnSteam">
@@ -121,6 +140,14 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortBy { get; set; } = nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice);
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortDirection { get; set; } = Data.Models.SortDirection.Descending.ToString();
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -194,6 +221,13 @@
     private void OnSearch(string text)
     {
         Filter = text;
+        StateHasChanged();
+    }
+
+    private void SetSortOrder(string sortBy, Data.Models.SortDirection sortDirection)
+    {
+        SortBy = sortBy;
+        SortDirection = sortDirection.ToString();
         StateHasChanged();
     }
 
