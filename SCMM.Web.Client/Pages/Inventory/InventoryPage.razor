@@ -86,11 +86,11 @@
                         </MudTabPanel>
 					</ChildContent>
 	                <Header>
-                        @if (PanelIndex == 0)
-                        {
-                            <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
-                                <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
-                                              Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                        <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
+                            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
+                                            Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                            @if (PanelIndex == 0)
+                            {
                                 <MudMenu Icon="fas fa-fw fa-sort-alpha-down" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
                                     <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Quantity), Data.Models.SortDirection.Ascending))">Lowest Quantity</MudMenuItem>
                                     <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Quantity), Data.Models.SortDirection.Descending))">Highest Quantity</MudMenuItem>
@@ -109,8 +109,8 @@
                                         <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
                                     }
                                 </MudMenu>
-                            </MudHidden>
-                        }
+                            }
+                        </MudHidden>
                         <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
                             <MudMenuItem OnTouch="@ViewProfileOnSteam" OnClick="@ViewProfileOnSteam">
                                 <i class="fab fa-fw fa-steam mr-1"></i>
