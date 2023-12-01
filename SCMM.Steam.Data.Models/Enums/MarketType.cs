@@ -129,23 +129,27 @@ namespace SCMM.Steam.Data.Models.Enums
         ShadowPay = 32,
         */
 
-        // https://pricempire.com/api
-
         /*
-        BUY:  https://lis-skins.ru/market/rust/
-        BUY:  https://mannco.store/market
-        BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc
-        BUY:  https://buff.market/ (is this an alias for https://buff.163.com/?)
-        BUY:  https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
-        BUY:  https://www.rustreaper.com/marketplace/RUST
-        BUY:  https://rustysaloon.com/withdraw
-        BUY:  https://bandit.camp/
-        BUY:  https://trade.skin/ (looks sus...)
-        BUY:  https://rustplus.com/ (looks sus...)
-        SELL: https://rustysell.com/
-        SELL: https://skincashier.com/
-        SELL: https://skins.cash/
+         * MARKETS TO BE INVESTIGATED
+         * 
+         BUY:  https://lis-skins.ru/market/rust/
+         BUY:  https://mannco.store/market
+         BUY:  https://waxpeer.com/rust
+         BUY:  https://skin.land/market/rust/
+         BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc
+         BUY:  https://buff.market/ (is this an alias for https://buff.163.com/?)
+         BUY:  https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
+         BUY:  https://www.rustreaper.com/marketplace/RUST
+         BUY:  https://rustysaloon.com/withdraw
+         BUY:  https://bandit.camp/
+         BUY:  https://trade.skin/ (looks sus...)
+         BUY:  https://rustplus.com/ (looks sus...)
+         SELL: https://rustysell.com/
+         SELL: https://skincashier.com/
+         SELL: https://skins.cash/
         */
+
+        // https://pricempire.com/api
 
         #region Deprecated Markets
 
