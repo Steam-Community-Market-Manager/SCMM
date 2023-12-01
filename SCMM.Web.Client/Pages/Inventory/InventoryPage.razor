@@ -79,11 +79,6 @@
                                 </MudPaper>
                             </MudTabPanel>
                         }
-                        <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="State.IsPrerendering">
-                            <MudPaper Outlined="true">
-                                <InventoryStatisticsPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
-                            </MudPaper>
-                        </MudTabPanel>
 					</ChildContent>
 	                <Header>
                         <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
