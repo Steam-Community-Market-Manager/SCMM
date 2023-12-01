@@ -143,12 +143,8 @@ else
     {
         if (!String.IsNullOrEmpty(Filter))
         {
-            items = items.Where(x =>
-                x.Name.Contains(Filter, StringComparison.InvariantCultureIgnoreCase) ||
-                x.ItemType.Contains(Filter, StringComparison.InvariantCultureIgnoreCase)
-            );
+            items = items.FilterBy(Filter);
         }
-
         if (!String.IsNullOrEmpty(SortBy))
         {
             items = items.AsQueryable().SortBy(SortBy, Enum.Parse<Data.Models.SortDirection>(SortDirection));
