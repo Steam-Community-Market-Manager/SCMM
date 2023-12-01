@@ -62,13 +62,15 @@
                 <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("PriceMovement", Data.Models.SortDirection.Ascending))">Highest Loss</MudSelectItem>
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply))
                 {
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Ascending))">Lowest Market Supply</MudSelectItem>
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Descending))">Highest Market Supply</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Ascending))">Lowest Sell Orders (Supply)</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Descending))">Highest Sell Orders (Supply)</MudSelectItem>
                 }
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Demand))
                 {
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Ascending))">Lowest Market Demand</MudSelectItem>
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Descending))">Highest Market Demand</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Ascending))">Lowest 24hr Sales (Demand)</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Descending))">Highest 24hr Sales (Demand)</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.BuyOrderCount", Data.Models.SortDirection.Ascending))">Lowest Buy Orders</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.BuyOrderCount", Data.Models.SortDirection.Descending))">Highest Buy Orders</MudSelectItem>
                 }
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
                 {
