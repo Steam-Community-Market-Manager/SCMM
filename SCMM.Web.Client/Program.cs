@@ -91,7 +91,7 @@ public static class WebAssemblyHostExtensions
         SyncfusionLicenseProvider.RegisterLicense(
             // FYI: This is a [free] community license key, it isn't a secret.
             //      Sign up for account at https://www.syncfusion.com/account/downloads, request a community license
-            "Mjk1OTUyN0AzMjMzMmUzMDJlMzBmVFM3c3RLc0YrcUhTdnk0N2h6YUxlNDBpb1doUHEvdU0xQnFiWGxyMlB3PQ=="
+            "Mjk3ODk1MEAzMjMzMmUzMDJlMzBtSExDclZQSlBmVFpPeHJBYTFqeUFIb0ZLb2tMLys0d3FDb1oweVZiaDFVPQ=="
         );
     }
 }
