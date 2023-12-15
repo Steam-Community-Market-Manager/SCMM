@@ -273,6 +273,16 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     query = query.OrderByDirection(x => (x.MarketItem.SellOrderLowestPrice - x.StoreItem.Price) ?? 0, sortDirection);
                 }
+                else if (String.Equals(sortBy, "DistanceToAllTimeLowestValue", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(x => x.MarketItem.SellOrderLowestPrice > 0 && x.MarketItem.AllTimeLowestValue > 0)
+                        .OrderByDirection(x => ((float)x.MarketItem.SellOrderLowestPrice / (float)x.MarketItem.AllTimeLowestValue), sortDirection);
+                }
+                else if (String.Equals(sortBy, "DistanceToAllTimeHighestValue", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(x => x.MarketItem.SellOrderLowestPrice > 0 && x.MarketItem.AllTimeHighestValue > 0)
+                        .OrderByDirection(x => ((float)x.MarketItem.SellOrderLowestPrice / (float)x.MarketItem.AllTimeHighestValue), sortDirection);
+                }
                 else
                 {
                     query = query.SortBy(sortBy, sortDirection);
