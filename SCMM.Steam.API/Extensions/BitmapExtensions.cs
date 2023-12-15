@@ -1,4 +1,7 @@
-﻿namespace SCMM.Steam.API.Extensions
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+namespace SCMM.Steam.API.Extensions
 {
     public static class BitmapExtensions
     {
