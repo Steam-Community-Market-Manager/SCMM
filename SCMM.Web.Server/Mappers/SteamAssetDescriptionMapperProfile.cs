@@ -66,6 +66,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.SupplyTotalEstimated, o => o.MapFrom(p => p.SupplyTotalEstimated))
                 .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.SellOrderCount : null)))
                 .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))
+                .ForMember(x => x.AllTimeLowestValue, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.AllTimeLowestValue : null)))
+                .ForMember(x => x.AllTimeHighestValue, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.AllTimeHighestValue : null)))
                 .ForMember(x => x.Actions, o => o.MapFrom(p => p.GetInteractions()));
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemDescriptionDTO>()
@@ -79,6 +81,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.SupplyTotalEstimated, o => o.MapFrom(p => p.SupplyTotalEstimated))
                 .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.SellOrderCount : null)))
                 .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))
+                .ForMember(x => x.AllTimeLowestValue, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.AllTimeLowestValue : null)))
+                .ForMember(x => x.AllTimeHighestValue, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.AllTimeHighestValue : null)))
                 .ForMember(x => x.Actions, o => o.MapFrom(p => p.GetInteractions()));
 
             CreateMap<SteamAssetDescription, ItemBestMarketPriceDTO>()

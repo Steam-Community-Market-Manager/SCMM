@@ -20,8 +20,16 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? Demand { get; set; }
 
+        public long? AllTimeLowestValue { get; set; }
+
+        public long? AllTimeHighestValue { get; set; }
+
         public ItemInteractionDTO[] Actions { get; set; }
 
         public long? PriceMovement => (BuyNowPrice - OriginalPrice) ?? 0;
+
+        public float DistanceToAllTimeLowestValue => (BuyNowPrice > 0 && AllTimeLowestValue > 0) ? ((float)BuyNowPrice / (float)AllTimeLowestValue) : 0;
+
+        public float DistanceToAllTimeHighestValue => (BuyNowPrice > 0 && AllTimeHighestValue > 0) ? ((float)BuyNowPrice / (float)AllTimeHighestValue) : 0;
     }
 }
