@@ -17,6 +17,7 @@
     <PackageReference Include="AspNet.Security.OpenId.Steam" Version="7.0.0" />
     <PackageReference Include="Azure.Identity" Version="1.10.4" />
     <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
+    <PackageReference Include="DiffPlex" Version="1.7.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.13" />
