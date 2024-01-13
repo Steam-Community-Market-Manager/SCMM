@@ -12,12 +12,12 @@ namespace SCMM.Steam.Data.Models.Enums
         Unknown = 0,
 
         [Display(Name = "Steam Store")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId, Color = "#171A21")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId, IsFirstParty = true, Color = "#171A21")]
         [BuyFrom(Url = "https://store.steampowered.com/itemstore/{0}/", AcceptedPaymentTypes = PriceTypes.Cash)]
         SteamStore = 1,
 
         [Display(Name = "Steam Community Market")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId, Color = "#171A21")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Constants.UnturnedAppId, IsFirstParty = true, Color = "#171A21")]
         [BuyFrom(Url = "https://steamcommunity.com/market/listings/{0}/{3}", AcceptedPaymentTypes = PriceTypes.Cash)]
         [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", AcceptedPaymentTypes = PriceTypes.Cash, FeeRate = 13.0f)]
         SteamCommunityMarket = 2,

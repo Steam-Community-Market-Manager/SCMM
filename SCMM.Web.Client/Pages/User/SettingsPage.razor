@@ -143,6 +143,17 @@
                                         }
                                     </MudSelect>
                                 </Preference>
+                                <Preference Title="Market Types" 
+                                            Description="Which third-party markets are shown when displaying item prices.">
+                                    <MudSelect T="MarketType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering"
+                                               @bind-SelectedValues="@SelectedMarketTypes" ToStringFunc="@((x) => x.GetDisplayName())" OnClose="@((x) => UpdateProfile())"
+                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No third-party markets"))">
+                                        @foreach (var value in Enum.GetValues<MarketType>().Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()).OrderBy(x => x.ToString()))
+                                        {
+                                            <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </Preference>
                                 <Preference Title="Market 'Value'" 
                                             Description="Which data source is used to determine an items price/value.">
                                     <MudSelect T="MarketValueType" Value="@Update.MarketValue" ValueChanged="((x) => { Update.MarketValue = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering || true">
@@ -174,15 +185,15 @@
                                 </Preference>
                                 <Preference Title="Item Market Fees" 
                                             Description="Should market sales fees be included in all resell, profit, and investment gain/loss calculations. This is recommended if you primarily sell your items on skin marketplaces (as opposed to selling for cash).">  
-                                    <MudSwitch T="bool" Checked="@Update.ItemIncludeMarketFees" CheckedChanged="((x) => { Update.ItemIncludeMarketFees = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.ItemIncludeMarketFees ? "Include" : "Exclude")</MudSwitch>
+                                    <MudSwitch T="bool" Value="@Update.ItemIncludeMarketFees" ValueChanged="((x) => { Update.ItemIncludeMarketFees = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.ItemIncludeMarketFees ? "Include" : "Exclude")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Item Drops" 
                                             Description="@($"Should 'free' item drops (e.g. Twitch and {State.App.PublisherName} items) be shown when viewing item inventories and item collections.")">
-                                    <MudSwitch T="bool" Checked="@Update.InventoryShowItemDrops" CheckedChanged="((x) => { Update.InventoryShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.InventoryShowItemDrops ? "Show" : "Hide")</MudSwitch>
+                                    <MudSwitch T="bool" Value="@Update.InventoryShowItemDrops" ValueChanged="((x) => { Update.InventoryShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.InventoryShowItemDrops ? "Show" : "Hide")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Unmarketable Items" 
                                             Description="Should unmarketable items (e.g. Permanent store and charity items) be shown when viewing item inventories and item collections.">  
-                                    <MudSwitch T="bool" Checked="@Update.InventoryShowUnmarketableItems" CheckedChanged="((x) => { Update.InventoryShowUnmarketableItems = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.InventoryShowUnmarketableItems ? "Show" : "Hide")</MudSwitch>
+                                    <MudSwitch T="bool" Value="@Update.InventoryShowUnmarketableItems" ValueChanged="((x) => { Update.InventoryShowUnmarketableItems = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="State.IsPrerendering">@(Update.InventoryShowUnmarketableItems ? "Show" : "Hide")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Value Movement Display" 
                                             Description="How should inventory value movements be shown.">  
@@ -361,6 +372,8 @@
     private bool IsUpdating { get; set; }
 
     private UpdateProfileCommand Update { get; set; }
+    
+    private IEnumerable<MarketType> SelectedMarketTypes { get; set; }
 
     private IEnumerable<ItemInfoType> SelectedItemInfoTypes { get; set; }
 
@@ -374,6 +387,7 @@
         }
         else 
         {
+            SelectedMarketTypes = State.Profile.MarketTypes;
             SelectedItemInfoTypes = State.Profile.ItemInfo;
             Update = new UpdateProfileCommand()
             {
@@ -401,6 +415,7 @@
         try 
         {
             IsUpdating = true;
+            Update.MarketTypes = SelectedMarketTypes?.ToArray();
             Update.ItemInfo = SelectedItemInfoTypes?.ToArray();
             StateHasChanged();
 

@@ -18,6 +18,13 @@ namespace SCMM.Steam.Data.Models.Extensions
             return market?.SupportedAppIds ?? new ulong[0];
         }
 
+        public static bool IsFirstParty(this MarketType marketType)
+        {
+            var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);
+            var market = marketTypeField?.GetCustomAttribute<MarketAttribute>();
+            return market?.IsFirstParty ?? false;
+        }
+
         public static string GetColor(this MarketType marketType)
         {
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);

@@ -1,5 +1,6 @@
 ﻿using SCMM.Shared.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 
 namespace SCMM.Steam.Data.Models
 {
@@ -25,7 +26,7 @@ namespace SCMM.Steam.Data.Models
         /// <summary>
         /// If true, price is from a 1st party market, run by Steam/Value
         /// </summary>
-        public bool IsFirstPartyMarket => (MarketType == MarketType.SteamStore || MarketType == MarketType.SteamCommunityMarket);
+        public bool IsFirstPartyMarket => MarketType.IsFirstParty();
 
         public string Url { get; set; }
     }
