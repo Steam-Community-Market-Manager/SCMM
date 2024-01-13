@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Store.Requests.Html;
 using SCMM.Steam.Data.Store.Types;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -232,17 +233,17 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency)
+        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency, MarketType[] marketTypes = null)
         {
             // TODO: Currently prioritises first part markets over third party markets, re-think this....
-            return GetBuyPrices(currency)
+            return GetBuyPrices(currency, marketTypes)
                 .Where(x => x.IsAvailable)
                 .OrderByDescending(x => x.IsFirstPartyMarket)
                 .ThenBy(x => x.Price + x.Fee)
                 .FirstOrDefault();
         }
 
-        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency)
+        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency, MarketType[] marketTypes = null)
         {
             // Store price
             if (StoreItem != null && StoreItem.Currency != null)
@@ -316,7 +317,10 @@ namespace SCMM.Steam.Data.Store
             if (MarketItem != null && MarketItem.Currency != null)
             {
                 var app = (MarketItem.App ?? App);
-                foreach (var marketPrice in MarketItem.BuyPrices.Where(x => x.Key.IsEnabled() && (app == null || x.Key.IsAppSupported(UInt64.Parse(app.SteamId)))))
+                var marketPrices = MarketItem.BuyPrices
+                    .Where(x => x.Key.IsEnabled() && (app == null || x.Key.IsAppSupported(UInt64.Parse(app.SteamId))))
+                    .Where(x => marketTypes == null || marketTypes.Contains(x.Key));
+                foreach (var marketPrice in marketPrices)
                 {
                     var lowestPrice = 0L;
                     if (currency != null)

@@ -16,7 +16,7 @@
         <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mt-n3 mb-2 mx-n6" />
     }
 
-    <MudTabs Elevation="0" Class="mud-tabs-transparent">
+    <MudTabs @bind-ActivePanelIndex="PanelIndex" Elevation="0" KeepPanelsAlive="false" Class="mud-tabs-transparent">
         <MudTabPanel Icon="fas fa-fw fa-user mr-2" Text="Profile" Disabled="State.IsPrerendering">
             <MudGrid Spacing="3">
                 <MudItem xs="12">
@@ -128,7 +128,7 @@
                         <MudCardHeader>
                             <CardHeaderContent>
                                 <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                                    <i class="fas fa-fw fa-star mr-2"></i><span>Customisation</span>
+                                    <i class="fas fa-fw fa-star mr-2"></i><span>Website Customisation</span>
                                 </MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
@@ -144,13 +144,18 @@
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="Market Types" 
-                                            Description="Which third-party markets are shown when displaying item prices.">
+                                            Description="Which third-party markets are shown when displaying item prices. If you don't use third-party markets, de-select all markets to force the use of Steam market prices only.">
                                     <MudSelect T="MarketType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering"
                                                @bind-SelectedValues="@SelectedMarketTypes" ToStringFunc="@((x) => x.GetDisplayName())" OnClose="@((x) => UpdateProfile())"
-                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No third-party markets"))">
-                                        @foreach (var value in Enum.GetValues<MarketType>().Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()).OrderBy(x => x.ToString()))
+                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "Do not show third-party markets"))">
+                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()).OrderBy(x => x.ToString()))
                                         {
-                                            <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
+                                            <MudSelectItem Value="@marketType">
+                                                <div class="d-flex justify-start align-center">
+                                                    <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                    <span>@marketType.GetDisplayName()</span>
+                                                </div>
+                                            </MudSelectItem>
                                         }
                                     </MudSelect>
                                 </Preference>
@@ -210,112 +215,7 @@
                 </MudItem>
             </MudGrid>
         </MudTabPanel>
-        <MudTabPanel Icon="fas fa-fw fa-bell mr-4" Text="Notifications" Disabled="State.IsPrerendering">
-            <MudGrid Spacing="3">
-                <MudItem xs="12">
-                    <MudCard class="full-height d-flex flex-column mud-card">
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                                    <i class="fas fa-fw fa-bell mr-2"></i><span>Notifications</span>
-                                </MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent class="pt-0">
-                            <MudGrid Spacing="4">
-                                <Preference Title="New Workshop Item Submission" 
-                                            Description="Be notified when an accepted item author submits a new item to the workshop. Items from accepted authors are generally the highest quality workshop submissions. Recommended if you like to stay up to date with the latest item submissions that have the potentional to be accepted in-game.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                                <Preference Title="New Workshop Collection Submission" 
-                                            Description="Be notifieid when a accepted item collection gets continued with a new workshop submission. Recommended if you like to stay up to date with ermering collections and continuations.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                                <Preference Title="New Store Items" 
-                                            Description="Be notified when new items are released to the store. This generally happens every Thursday around 8PM UTC, exact times vary week to week.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                                <Preference Title="New Store Video" 
-                                            Description="Be notified when a new community video featuring the item store has been uploaded. Recommended if you like to watch commentary about the weeks store items.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                                <Preference Title="New Market Items" 
-                                            Description="Be notified when new items are release to the Steam Community Market. This generally happens every Thursday at 12AM UTC and 8PM UTC (when the item store updates). Recommended if you prefer to buy items from the market and want to get a low buy order in early.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                                <Preference Title="Item Updated" 
-                                            Description="@($"Be notified when accepted items are updated. This doesn't happen often, but occasionally {State.App.PublisherName} will modify or fix items after they have been accepted in-game. In rare instances, the appearance of items can be modified. Recommended if you'd like to stay up to day with potential changes to in-game items.")">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                                <Preference Title="Item Market High" 
-                                            Description="Be notified when an item reaches a new all-time high price on the Steam Community Market. Recommended if you like to sell items as they peak in price. This notification has a 24hr cool-down to avoid spam.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                                <Preference Title="Item Market Low" 
-                                            Description="Be notified when an item reaches a new all-time low price on the Steam Community Market. Recommended if you like to buy items while at their cheapest. This notification has a 24hr cool-down to avoid spam.">
-                                    <MudSelect T="string" Value="@("Disabled")" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" Disabled="State.IsPrerendering || true">
-                                       <MudSelectItem Value="@("Disabled")" />
-                                    </MudSelect>
-                                </Preference>
-                            </MudGrid>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudCard class="full-height d-flex flex-column mud-card">
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                                    <i class="fab fa-fw fa-discord mr-2"></i><span>Discord</span>
-                                </MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent class="py-0">
-                            <MudAlert Severity="MudBlazor.Severity.Normal" ContentAlignment="HorizontalAlignment.Center" NoIcon="true" Class="pa-8">Empty</MudAlert>
-                        </MudCardContent>
-                        <MudCardActions class="pa-4">
-                            <MudButton Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-link" Disabled="State.IsPrerendering || true">
-                                Link Discord
-                            </MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudCard class="full-height d-flex flex-column mud-card">
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="d-flex align-center">
-                                    <WebHookIcon /><span class="ml-2">Webhooks</span>
-                                </MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent class="py-0">
-                            <MudAlert Severity="MudBlazor.Severity.Normal" ContentAlignment="HorizontalAlignment.Center" NoIcon="true" Class="pa-8">Empty</MudAlert>
-                        </MudCardContent>
-                        <MudCardActions class="pa-4">
-                            <MudButton Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-plus" Disabled="State.IsPrerendering || true">
-                                Add Webhook
-                            </MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-            </MudGrid>
-        </MudTabPanel>
-        <MudTabPanel Icon="fas fa-fw fa-database mr-3" Text="Data" Disabled="State.IsPrerendering">
+        <MudTabPanel Icon="fas fa-fw fa-database mr-3" Text="Account Data" Disabled="State.IsPrerendering">
             <MudGrid Spacing="3">
                 <MudItem xs="12">
                     <MudCard class="full-height d-flex flex-column mud-card">
@@ -369,10 +269,16 @@
 
 @code {
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Panel { get; set; }
+
+    private int PanelIndex { get; set; }
+
     private bool IsUpdating { get; set; }
 
     private UpdateProfileCommand Update { get; set; }
-    
+
     private IEnumerable<MarketType> SelectedMarketTypes { get; set; }
 
     private IEnumerable<ItemInfoType> SelectedItemInfoTypes { get; set; }
@@ -387,7 +293,7 @@
         }
         else 
         {
-            SelectedMarketTypes = State.Profile.MarketTypes;
+            SelectedMarketTypes = State.Profile.MarketTypes.Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()).OrderBy(x => x.ToString());
             SelectedItemInfoTypes = State.Profile.ItemInfo;
             Update = new UpdateProfileCommand()
             {
@@ -403,6 +309,19 @@
                 InventoryShowUnmarketableItems = State.Profile.InventoryShowUnmarketableItems,
                 InventoryValueMovemenDisplay = State.Profile.InventoryValueMovementDisplay
             };
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!String.IsNullOrEmpty(Panel))
+        {
+            switch(Panel)
+            {
+                case "profile": PanelIndex = 0; break;
+                case "preferences": PanelIndex = 1; break;
+                case "data": PanelIndex = 2; break;
+            }
         }
     }
 

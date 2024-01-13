@@ -29,7 +29,7 @@
 }
 else if (StoreList.Any())
 {
-    <MudTabs Elevation="0" Position="MudBlazor.Position.Bottom" ActivePanelIndex="StoreIndex" ActivePanelIndexChanged="OnSelectedStoreChanged" Class="mud-tabs-transparent">
+    <MudTabs Elevation="0" Position="MudBlazor.Position.Bottom" ActivePanelIndex="StoreIndex" ActivePanelIndexChanged="OnSelectedStoreChanged" KeepPanelsAlive="false" Class="mud-tabs-transparent">
         <ChildContent>
 		    @foreach (var store in StoreList)
             {

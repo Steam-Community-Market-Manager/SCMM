@@ -54,7 +54,7 @@
             }
             else
             {
-                <MudTabs Elevation="0" ActivePanelIndex="PanelIndex" ActivePanelIndexChanged="OnSelectedPanelChanged" Class="mud-tabs-transparent">
+                <MudTabs @bind-ActivePanelIndex="PanelIndex" Elevation="0" KeepPanelsAlive="false" Class="mud-tabs-transparent">
                     <ChildContent>
                         <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
@@ -200,13 +200,15 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        switch (Panel)
+        if (!String.IsNullOrEmpty(Panel))
         {
-            case "items": PanelIndex = 0; break;
-            case "collections": PanelIndex = 1; break;
-            case "market": PanelIndex = 2; break;
-            case "investment": PanelIndex = 3; break;
-            case "statistics": PanelIndex = 4; break;
+            switch (Panel)
+            {
+                case "items": PanelIndex = 0; break;
+                case "collections": PanelIndex = 1; break;
+                case "market": PanelIndex = 2; break;
+                case "investment": PanelIndex = 3; break;
+            }
         }
 
         // If we have navigated to a different profile, reload the new profile
@@ -229,24 +231,6 @@
         SortBy = sortBy;
         SortDirection = sortDirection.ToString();
         StateHasChanged();
-    }
-
-    private void OnSelectedPanelChanged(int index)
-    {
-        var filter = !String.IsNullOrEmpty(Filter) ? $"&filter={Uri.EscapeDataString(Filter)}" : String.Empty;
-
-        PanelIndex = index;
-        if (!State.IsPrerendering)
-        {
-            switch (index)
-            {
-                case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items{filter}"); break;
-                case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=collections{filter}"); break;
-                case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market{filter}"); break;
-                case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment{filter}"); break;
-                case 4: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics{filter}"); break;
-            }
-        }
     }
 
     private void ViewProfileOnSteam()
