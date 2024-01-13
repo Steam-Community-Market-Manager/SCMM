@@ -12,11 +12,11 @@
 @if (Notifications?.Any() == true)
 {
     <div @attributes="AdditionalAttributes">
-        <MudTooltip IsVisible="NotificationsAreNew" Placement="Placement.Bottom" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)">
+        <MudTooltip Placement="Placement.Bottom" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)">
             <TooltipContent>
                 @if(NotificationsAreNew)
                 {
-                    <span class="text-centered">New updates are here! Click the bell for info</span>
+                    <span class="text-centered">New updates are here! Click to view more info</span>
                 }
                 else
                 {
