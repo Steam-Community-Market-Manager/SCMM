@@ -110,7 +110,7 @@
         if (IsOpen)
         {
             NotificationsLastViewedOn = DateTimeOffset.Now;
-            CookieManager.Set("notifications-last-viewed", NotificationsLastViewedOn.ToUnixTimeMilliseconds());
+            CookieManager.Set("notifications-last-viewed", NotificationsLastViewedOn.ToUnixTimeMilliseconds(), 365);
         }
     }
 

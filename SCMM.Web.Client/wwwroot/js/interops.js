@@ -34,9 +34,8 @@ var CookieInterop = CookieInterop || {};
 CookieInterop.setCookie = (name, value, days) => {
     var expires = "";
     if (days) {
-        var date = new Date();
-        date.setDate(date.getDate() + days);
-        expires = "; expires=" + date.toUTCString();
+        var expiryDate = new Date(Date.now() + ((days * 86400) * 1000));
+        expires = "; expires=" + expiryDate.toUTCString();
     }
     document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }

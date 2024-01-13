@@ -12,7 +12,7 @@ public class JavascriptCookieManager : ICookieManager
         _jsRuntime = jsRuntime;
     }
 
-    public virtual void Set<T>(string name, T value, int? expiresInDays = 3650)
+    public virtual void Set<T>(string name, T value, int? expiresInDays = 90)
     {
         // TODO: Change this to sync if/when Blazor supports it
         _ = _jsRuntime.InvokeVoidAsync("CookieInterop.setCookie", name, value, expiresInDays);
