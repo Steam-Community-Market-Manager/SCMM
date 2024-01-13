@@ -41,7 +41,7 @@
         <ChildContent>
             @if (IsAnalyticsPanelOpen)
             {
-                <MudTabs @bind-ActivePanelIndex="AnalyticsPanelIndex" Rounded="true" Centered="true" PanelClass="ma-2">
+                <MudTabs @bind-ActivePanelIndex="AnalyticsPanelIndex" Rounded="true" Centered="true" KeepPanelsAlive="false" PanelClass="ma-2">
                     @if (Store?.Start != null)
                     {
                         <MudTabPanel Icon="fas fa-fw fa-trophy mr-2" Text="Top Selling Items" Disabled="@(Store?.Items?.Any() != true || TopSellers?.Any() != true)">
