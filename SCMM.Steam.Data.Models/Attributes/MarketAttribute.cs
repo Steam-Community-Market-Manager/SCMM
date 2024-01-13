@@ -13,4 +13,6 @@ public class MarketAttribute : Attribute
     public bool IsFirstParty { get; set; }
 
     public string Color { get; set; }
+
+    public string AffiliateUrl { get; set; }
 }

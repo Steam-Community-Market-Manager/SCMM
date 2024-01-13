@@ -8,10 +8,6 @@ public class SellToAttribute : Attribute
 {
     public string Url { get; set; }
 
-    public string AffiliateCode { get; set; }
-
-    public bool HasAffiliateProgram => !String.IsNullOrEmpty(AffiliateCode);
-
     public PriceTypes AcceptedPaymentTypes { get; set; }
 
     public long FeeSurcharge { get; set; }
