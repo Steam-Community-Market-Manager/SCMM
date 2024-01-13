@@ -43,7 +43,7 @@ else
                 @if(SelectedInventoryItems != null && State.Is(SteamId))
                 {
                     <div class="@($"item-multi-select {((SelectedInventoryItems.ContainsKey(item.Id) && SelectedInventoryItems[item.Id] == true) ? "item-selected" : "item-hover-to-select")}")">
-                        <MudCheckBox T="bool" @bind-Checked="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" Disabled="State.IsPrerendering" />
+                        <MudCheckBox T="bool" @bind-Value="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" Disabled="State.IsPrerendering" />
                     </div>
                 }
             </div>
