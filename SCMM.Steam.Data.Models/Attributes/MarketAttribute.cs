@@ -10,5 +10,9 @@ public class MarketAttribute : Attribute
 
     public ulong[] SupportedAppIds { get; set; }
 
+    public bool IsFirstParty { get; set; }
+
     public string Color { get; set; }
+
+    public string AffiliateUrl { get; set; }
 }

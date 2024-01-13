@@ -6,6 +6,7 @@ using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
+using SCMM.Web.Data.Models.UI.Profile;
 using System.Linq.Expressions;
 
 namespace SCMM.Web.Server.Extensions
@@ -13,6 +14,7 @@ namespace SCMM.Web.Server.Extensions
     public static class AutoMapperConfigurationExtensions
     {
         public const string ContextKeyUser = "user";
+        public const string ContextKeyProfile = "profile";
         public const string ContextKeyLanguage = "language";
         public const string ContextKeyCurrency = "currency";
         public const string ContextKeyApp = "app";
@@ -190,7 +192,8 @@ namespace SCMM.Web.Server.Extensions
                         return default;
                     }
 
-                    var price = assetDescription.GetCheapestBuyPrice(currency);
+                    var profile = (MyProfileDTO)context.Items.GetOrDefault(ContextKeyProfile);
+                    var price = assetDescription.GetCheapestBuyPrice(currency, profile?.MarketTypes);
                     if (price == null)
                     {
                         return default;
@@ -228,8 +231,10 @@ namespace SCMM.Web.Server.Extensions
                         return null;
                     }
 
-                    return assetDescription.GetBuyPrices(currency)
+                    var profile = (MyProfileDTO)context.Items.GetOrDefault(ContextKeyProfile);
+                    return assetDescription.GetBuyPrices(currency, profile?.MarketTypes)
                         .Where(x => includeThirdPartyMarkets || x.IsFirstPartyMarket)
+                        .Where(x => x.IsFirstPartyMarket || (profile == null || profile.MarketTypes.Contains(x.MarketType)))
                         .OrderBy(x => x.Price)
                         .ToList();
                 }

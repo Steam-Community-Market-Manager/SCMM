@@ -38,7 +38,7 @@
                 <MudDivider />
                 <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=items")" Disabled="State.IsPrerendering">
                     <i class="fas fa-fw fa-th" ></i>
-                    <span>Item Inventory</span>
+                    <span>Your Items</span>
                     @if (InventoryTotals?.Items > 0)
                     {
                         <span class="mud-secondary-text"> (@InventoryTotals.Items.ToQuantityString())</span>
@@ -46,11 +46,11 @@
                 </MudMenuItem>
                 <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=collections")" Disabled="State.IsPrerendering">
                     <i class="fas fa-fw fa-tshirt" ></i>
-                    <span>Item Collections</span>
+                    <span>Your Collections</span>
                 </MudMenuItem>
                 <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=market")" Disabled="State.IsPrerendering">
                     <i class="fas fa-fw fa-balance-scale-left" ></i>
-                    <span>Market Performance</span>
+                    <span>Your Market Performance</span>
                     @if (InventoryTotals?.MarketValue > 0)
                     {
                         <span class="mud-secondary-text"> (@State.Currency?.ToPriceString(InventoryTotals.MarketValue))</span>
@@ -58,32 +58,24 @@
                 </MudMenuItem>
                 <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=investment")" Disabled="State.IsPrerendering">
                     <i class="fas fa-fw fa-hand-holding-usd" ></i>
-                    <span>Investment Performance</span>
+                    <span>Your Investments</span>
                     @if (InventoryTotals?.InvestmentNetReturn > 0)
                     {
                         <span class="mud-secondary-text"> (@State.Currency?.ToPriceString(InventoryTotals.InvestmentNetReturn.Value))</span>
                     }
                 </MudMenuItem>
-                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=statistics")" Disabled="State.IsPrerendering">
-                    <i class="fas fa-fw fa-chart-pie" ></i>
-                    <span>Inventory Statistics</span>
-                </MudMenuItem>
                 <MudDivider />
-                <MudMenuItem Href="/settings?panel=general" Disabled="State.IsPrerendering">
+                <MudMenuItem Href="/settings?panel=profile" Disabled="State.IsPrerendering">
                     <i class="fas fa-fw fa-user" ></i>
-                    <span>Profile</span>
+                    <span>Your Profile</span>
                 </MudMenuItem>
                 <MudMenuItem Href="/settings?panel=preferences" Disabled="State.IsPrerendering">
                     <i class="fas fa-fw fa-sliders-h" ></i>
-                    <span>Preferences</span>
-                </MudMenuItem>
-                <MudMenuItem Href="/settings?panel=notifications" Disabled="State.IsPrerendering">
-                    <i class="fas fa-fw fa-bell" ></i>
-                    <span>Notifications</span>
+                    <span>Your Preferences</span>
                 </MudMenuItem>
                 <MudMenuItem Href="/settings?panel=data" Disabled="State.IsPrerendering">
                     <i class="fas fa-fw fa-database" ></i>
-                    <span>Your Data</span>
+                    <span>Your Account Data</span>
                 </MudMenuItem>
                 <MudDivider />
                 <MudMenuItem OnTouch="NavigateToSignOut" OnClick="NavigateToSignOut" Disabled="State.IsPrerendering">

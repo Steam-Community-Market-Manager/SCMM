@@ -16,6 +16,7 @@ using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.Item;
+using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Server.Extensions;
 using System.Text.Json;
 
@@ -293,11 +294,19 @@ namespace SCMM.Web.Server.API.Controllers
                 query = query.OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
             }
 
+            var profileId = User.Id();
+            var profile = (profileId == Guid.Empty ? null : await _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Language)
+                .Include(x => x.Currency)
+                .FirstOrDefaultAsync(x => x.Id == profileId)
+            );
+
             // Paginate
             count = Math.Max(0, Math.Min(5000, count));
             return Ok(!detailed
-                ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this))
-                : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this))
+                ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null)))
+                : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null)))
             );
         }
 
@@ -345,7 +354,15 @@ namespace SCMM.Web.Server.API.Controllers
                     (x.Name == id)
                 );
 
-            var itemDetails = _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this);
+            var profileId = User.Id();
+            var profile = (profileId == Guid.Empty ? null : await _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Language)
+                .Include(x => x.Currency)
+                .FirstOrDefaultAsync(x => x.Id == profileId)
+            );
+
+            var itemDetails = _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null));
             if (itemDetails == null)
             {
                 return NotFound($"Item was not found");
@@ -758,14 +775,22 @@ namespace SCMM.Web.Server.API.Controllers
                 .GroupBy(x => x.CreatorProfile)
                 .FirstOrDefault();
 
+            var profileId = User.Id();
+            var profile = (profileId == Guid.Empty ? null : await _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Language)
+                .Include(x => x.Currency)
+                .FirstOrDefaultAsync(x => x.Id == profileId)
+            );
+
             return Ok(new ItemCollectionDTO()
             {
                 Name = name,
                 CreatorName = creator?.Key.Name,
                 CreatorAvatarUrl = creator?.Key.AvatarUrl,
-                BuyNowPrice = acceptedAssetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency())?.Price ?? 0),
-                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this)?.ToArray(),
-                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this)?.ToArray()
+                BuyNowPrice = acceptedAssetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency(), profile?.MarketTypes)?.Price ?? 0),
+                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null))?.ToArray(),
+                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null))?.ToArray()
             });
         }
 
