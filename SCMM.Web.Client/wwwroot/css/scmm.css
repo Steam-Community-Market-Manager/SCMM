@@ -95,20 +95,20 @@
     background-color: var(--mud-palette-overlay-dark);
 }
 
-.hover-zoom img {
+.hover-zoom img, .hover-zoom i {
     transition: transform .5s ease, filter .25s ease;
 }
 
-.hover-zoom:hover img {
+.hover-zoom:hover img, .hover-zoom:hover i {
     transform: scale(1.25);
     filter: drop-shadow(2px 4px 6px black);
 }
 
-.hover-zoom-extra:hover img {
+.hover-zoom-extra:hover img,.hover-zoom-extra:hover i {
     transform: scale(1.5) !important;
 }
 
-.hover-zoom-extreme:hover img {
+.hover-zoom-extreme:hover img, .hover-zoom-extreme:hover i {
     transform: scale(3) !important;
 }
 
