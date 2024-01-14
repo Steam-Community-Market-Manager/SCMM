@@ -176,8 +176,12 @@ public class UpdateMarketItemActivity
                     }
 
                     await _db.SaveChangesAsync();
+
+                    await _db.SteamMarketItems
+                        .Where(x => x.Id == item.Id)
+                        .ExecuteUpdateAsync(u => u.SetProperty(x => x.LastCheckedActivityOn, DateTimeOffset.UtcNow));
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.LogError(ex, $"Failed to process and save market item activity for '{item.MarketHashName}' ({item.Id}). {ex.Message}");
                     continue;
