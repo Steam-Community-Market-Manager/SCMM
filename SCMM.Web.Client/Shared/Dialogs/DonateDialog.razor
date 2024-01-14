@@ -4,7 +4,7 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">Donate and show your support</MudText>
+        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">Ways you can say thank you</MudText>
     </TitleContent>
     <DialogContent>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom="true">
@@ -14,12 +14,20 @@
             <span>If you found it useful and would like to do something to say thanks, any of the below really helps out.</span>
         </MudText>
         <MudList Clickable="true" DisablePadding="true" DisableGutters="true" Class="my-2 mx-n6">
+            <MudListItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync("https://trustpilot.com/review/scmm.app"))">
+                <div class="d-flex flex-column align-start justify-start mx-6">
+                    <img src="/images/trust-pilot-white.svg" alt="Write a review on Trustpilot" style="height:2em" />
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Default">
+                        <small class="mud-secondary-text">Write about your experience in a Trustpilot review.</small>
+                    </MudText>
+                </div>
+            </MudListItem>
             <MudListItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync("https://steamcommunity.com/tradeoffer/new/?partner=121835790&token=AjBXyQhL"))">
                 <div class="d-flex align-center justify-start hover-zoom">
                     <img src="/images/donate-steam.png" alt="Donate with Steam" class="mx-6" style="width:3em; height:3em" />
                     <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Default" Class="pr-4">
-                        <span>Steam</span><br />
-                        <small class="mud-secondary-text">Send me a skin trade on Steam</small>
+                        <span>Steam trade</span><br />
+                        <small class="mud-secondary-text">Send me a skin on Steam. Your trash is my treasure :)</small>
                     </MudText>
                 </div>
             </MudListItem>
@@ -29,8 +37,8 @@
                     <div class="d-flex align-center justify-start hover-zoom">
                         <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" alt="@marketType.GetDisplayName()" title="@marketType.GetDisplayName()" class="mx-6" style="width:3em; height:3em" />
                         <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Default" Class="pr-4">
-                            <span>@marketType.GetDisplayName()</span><br/>
-                            <small class="mud-secondary-text">Click to use my affiliate link. It gives me a small kick back whenever you buy skins on @marketType.GetDisplayName()</small>
+                            <span>@marketType.GetDisplayName() affiliate</span><br />
+                            <small class="mud-secondary-text">Click to use my affiliate link. It gives me a small kick back whenever you buy skins on @marketType.GetDisplayName().</small>
                         </MudText>
                     </div>
                 </MudListItem>
