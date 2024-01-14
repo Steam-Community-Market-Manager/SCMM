@@ -38,23 +38,6 @@ public class UpdateMarketItemActivity
         var jobId = Guid.NewGuid();
         var logger = context.GetLogger("Update-Market-Item-Activity");
 
-        /*
-        // TODO: Move to another job
-        // Delete all market activity older than 7 days
-        var cutoffData = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(7));
-        var expiredActivity = await _db.SteamMarketItemActivity
-            .Where(x => x.Timestamp < cutoffData)
-            .ToListAsync();
-        if (expiredActivity.Any())
-        {
-            foreach (var batch in expiredActivity.Batch(100))
-            {
-                _db.SteamMarketItemActivity.RemoveRange(batch);
-                _db.SaveChanges();
-            }
-        }
-        */
-
         // Check that there are enough web proxies available to handle this batch of SCM requests, otherwise we cannot run
         var availableProxies = _webProxyManager.GetAvailableProxyCount(new Uri(Constants.SteamCommunityUrl));
         if (availableProxies < MarketItemBatchSize)
