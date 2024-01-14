@@ -9,7 +9,44 @@
         }
         else
         {
-            <MudAvatar Image="@Profile.AvatarUrl" />
+            @if (Profile?.Roles?.Contains(Roles.VIP) == true)
+            {
+                <div class="d-flex flex-column justify-center align-center" style="position:relative">
+                    <MudAvatar Image="@Profile.AvatarUrl" style="border:1px solid gold" />
+                    @if (Profile?.Roles?.Contains(Roles.VIP) == true)
+                    {
+                        <i class="fas fa-fw fa-crown fa-bounce" style="position:absolute; top:-0.75em; font-size:1.5em; color:gold; z-index:999999"></i>
+                    }
+                    <MudText Typo="MudBlazor.Typo.caption" Class="ma-1" Style="color:gold">
+                        <MudTooltip Placement="Placement.Right" Arrow="true">
+                            <TooltipContent>
+                                @if (Profile?.Roles?.Contains(Roles.Donator) == true)
+                                {
+                                    <span>Thank you for your generous support and/or donation(s) to the SCMM project</span>
+                                }
+                                else
+                                {
+                                    <span>Thank you for contributing to the SCMM project</span>
+                                }
+                            </TooltipContent>
+                            <ChildContent>
+                                @if (Profile?.Roles?.Contains(Roles.Donator) == true)
+                                {
+                                    <span>Donator</span>
+                                }
+                                else
+                                {
+                                    <span>VIP</span>
+                                }
+                            </ChildContent>
+                        </MudTooltip>
+                    </MudText>
+                </div>
+            }
+            else
+            {
+                <MudAvatar Image="@Profile.AvatarUrl" />
+            }
         }
         <div class="ml-2">
             @if (Profile == null)
@@ -67,27 +104,6 @@
                 }
             }
         </div>
-        @if (Profile?.Roles?.Contains(Roles.VIP) == true)
-        {
-            <MudSpacer />
-            <MudTooltip>
-                <TooltipContent>
-                    @if (Profile?.Roles?.Contains(Roles.Donator) == true)
-                    {
-                        <span>Donator. Thank you for your generous support and donation(s) to the SCMM project</span>
-                    }
-                    else
-                    {
-                        <span>VIP. Thank you for contributing to the SCMM project</span>
-                    }
-                </TooltipContent>
-                <ChildContent>
-                    <MudAvatar Class="ml-2" Style="background-color: transparent; color: gold">
-                        <i class="fas fa-fw fa-crown"></i>
-                    </MudAvatar>
-                </ChildContent>
-            </MudTooltip>
-        }
     </div>
 </MudItem>
 

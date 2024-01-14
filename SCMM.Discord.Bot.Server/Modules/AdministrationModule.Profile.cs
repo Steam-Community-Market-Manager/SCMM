@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client.Commands;
 using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -90,6 +91,15 @@ namespace SCMM.Discord.Bot.Server.Modules
                 if (donatorLevel != null)
                 {
                     profile.DonatorLevel = donatorLevel.Value;
+                    profile.Roles = new PersistableStringCollection(profile.Roles);
+                    if (!profile.Roles.Any(x => x == Roles.Donator))
+                    {
+                        profile.Roles.Add(Roles.Donator);
+                    }
+                    if (!profile.Roles.Any(x => x == Roles.VIP))
+                    {
+                        profile.Roles.Add(Roles.VIP);
+                    }
                     await _steamDb.SaveChangesAsync();
                 }
 

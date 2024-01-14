@@ -319,7 +319,7 @@ namespace SCMM.Steam.Data.Store
                 var app = (MarketItem.App ?? App);
                 var marketPrices = MarketItem.BuyPrices
                     .Where(x => x.Key.IsEnabled() && (app == null || x.Key.IsAppSupported(UInt64.Parse(app.SteamId))))
-                    .Where(x => marketTypes == null || marketTypes.Contains(x.Key));
+                    .Where(x => x.Key == MarketType.SteamCommunityMarket || (marketTypes == null || marketTypes.Contains(x.Key)));
                 foreach (var marketPrice in marketPrices)
                 {
                     var lowestPrice = 0L;
