@@ -1,20 +1,47 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Statistic
+@using SCMM.Web.Client.Shared.Dialogs.Items
 @page "/market/activity"
 @inject ILogger<MarketActivityPage> Logger
+@inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 @inject AppState State
 
 <PageContainer Title="@($"{State?.App?.Name} Market Activity")">
+    
+    <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning" Variant="MudBlazor.Variant.Text" Class="mud-alert-outlined-warning mb-5">
+        <span>This is <strong>not</strong> a complete history of all Steam community market activity. Due to limitations of the Steam APIs, only a small subset of all activity can be public discovered.</span>
+    </MudAlert>
 
     <MudGrid Spacing="2">
 
-        <MudItem xs="12">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search market activity..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+        <MudItem xs="2">
+            <MudSelect T="SteamMarketItemActivityType?" Value="FilterType" ValueChanged="@OnFilterType" Label="Activity Type" Placeholder="Filter activity type..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+                       FullWidth="true" Class="mud-input-transparent ma-0" Clearable="true" Disabled="State.IsPrerendering">
+                <MudSelectItem T="SteamMarketItemActivityType?" Value="@null">Any</MudSelectItem>
+                @foreach (var value in Enum.GetValues<SteamMarketItemActivityType>())
+                {
+                    <MudSelectItem Value="@((SteamMarketItemActivityType?)value)">@value.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="5">
+            <MudTextField T="string" Value="@FilterUser" ValueChanged="@OnFilterUser" DebounceInterval="500" Label="User" Placeholder="Filter user name..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
                           FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
+        </MudItem>
+        <MudItem xs="5">
+            <MudAutocomplete T="ItemDescriptionDTO" ValueChanged="@OnFilterItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Label="Item" Placeholder="Filter item..."  Margin="MudBlazor.Margin.None" Variant="Variant.Outlined"  
+                             FullWidth="true" Class="mud-input-transparent ma-0" Clearable="true" Disabled="State.IsPrerendering">
+                <ItemTemplate Context="item">
+                    <div class="d-flex flex-row justify-start align-center">
+                        <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" class="mr-1" style="width:32px; height:32px;" />
+                        <MudText Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
+                    </div>
+                </ItemTemplate>
+            </MudAutocomplete>
         </MudItem>
         
         <MudItem xs="12" Class="pa-0">
@@ -35,12 +62,12 @@
                             <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">@GetActivityDescription(item)</MudText>
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.Quantity.ToQuantityString()x</MudText>
                             <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" class="mx-1 clickable" style="width:32px; height:32px;" @onclick="@(() => ViewItem(item))" />
-                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {item.ForegroundColour}")" @onclick="@(() => ViewItem(item))">@item.Name</MudText>
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {item.ForegroundColour}")" @onclick="@(() => ShowItemDetailsDialog(item))">@item.Name</MudText>
                             <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">for</MudText>
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                             @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
                             {
-                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">from</MudText>
+                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap"> which was fulfilled by a listing from </MudText>
                                 <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                 <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                             }
@@ -67,47 +94,80 @@
 
 @code {
 
+    private SteamMarketItemActivityType? FilterType { get; set; }
+
+    private string FilterUser { get; set; }
+
+    private ItemDescriptionDTO FilterItem { get; set; }
+
     private Virtualize<ItemActivityStatisticDTO> MarketActivityTable { get; set; }
+
+    private async Task<IEnumerable<ItemDescriptionDTO>> SearchItem(string value)
+    {
+        try
+        {
+            var search = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionDTO>>(
+                $"api/item?filter={Uri.EscapeDataString(value ?? String.Empty)}&count=30"
+            );
+
+            return search.Items;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing items");
+            return null;
+        }
+    }
     
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string Filter { get; set; }
+    private void ShowItemDetailsDialog(ItemDescriptionDTO item)
+    {
+        Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemName"] = item.Name,
+            ["ItemUrl"] = $"/api/item/{item.Id}"
+        });
+    }
 
     private void ViewItem(ItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToItemAsync(item);
     }
     
-    private async void OnSearch(string text)
+    private async void OnFilterType(SteamMarketItemActivityType? type)
     {
-        if (Filter != text)
+        if (FilterType != type)
         {
-            Filter = text;
+            FilterType = type;
             await MarketActivityTable.RefreshDataAsync();
             StateHasChanged();
         };
     }
     
-    private async void ToggleItemFilter(ItemDescriptionDTO item)
+    private async void OnFilterUser(string user)
     {
-        if (Filter != item.Name)
+        if (FilterUser != user)
         {
-            Filter = item.Name;
-        }
-        else
+            FilterUser = user;
+            await MarketActivityTable.RefreshDataAsync();
+            StateHasChanged();
+        };
+    }
+    
+    private async void OnFilterItem(ItemDescriptionDTO item)
+    {
+        if (FilterItem != item)
         {
-            Filter = null;
-        }
-
-        await MarketActivityTable.RefreshDataAsync();
-        StateHasChanged();
+            FilterItem = item;
+            await MarketActivityTable.RefreshDataAsync();
+            StateHasChanged();
+        };
     }
     
     protected async ValueTask<ItemsProviderResult<ItemActivityStatisticDTO>> LoadMarketActivity(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?type={FilterType?.ToString() ?? String.Empty}&user={Uri.EscapeDataString(FilterUser ?? String.Empty)}&item={Uri.EscapeDataString(FilterItem?.Name ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemActivityStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -119,10 +179,6 @@
     
     private string GetActivityDescription(ItemActivityStatisticDTO activity)
     {
-        if (activity.IsSale)
-        {
-            return "purchased";
-        }
         switch (activity.Type)
         {
             case SteamMarketItemActivityType.CreatedSellOrder: return $"created a listing of";

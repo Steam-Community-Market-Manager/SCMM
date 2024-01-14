@@ -571,7 +571,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get marketplace listing activity from the last 24hrs
         /// </summary>
-        /// <param name="filter">Optional filter, matches against the buyer name, seller name, or item name</param>
+        /// <param name="type">Optional filter, matches against the activity event type</param>
+        /// <param name="user">Optional filter, matches against the buyer name or seller name</param>
         /// <param name="item">Optional filter, matches against the item name</param>
         /// <param name="start">Return activity starting at this specific index (pagination)</param>
         /// <param name="count">Number activity to be returned (can be less if not enough data). Max 100.</param>
@@ -581,7 +582,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/activity")]
         [ProducesResponseType(typeof(PaginatedResult<ItemActivityStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketActivity([FromQuery] string filter = null, [FromQuery] string item = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketActivity([FromQuery] SteamMarketItemActivityType? type = null, [FromQuery] string user = null, [FromQuery] string item = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var appId = this.App().Guid;
             var query = _db.SteamMarketItemActivity
@@ -589,7 +590,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description).ThenInclude(x => x.App)
                 .Include(x => x.Currency)
                 .Where(x => x.Item.AppId == appId)
-                .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.BuyerName.Contains(filter) || x.SellerName.Contains(filter))
+                .Where(x => type == null || x.Type == type)
+                .Where(x => string.IsNullOrEmpty(user) || x.BuyerName.Contains(user) || x.SellerName.Contains(user))
                 .Where(x => string.IsNullOrEmpty(item) || x.Description.Name.Contains(item))
                 .OrderByDescending(x => x.Timestamp);
 
