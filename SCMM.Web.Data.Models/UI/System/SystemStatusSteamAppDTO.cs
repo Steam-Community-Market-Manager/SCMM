@@ -16,5 +16,7 @@ public class SystemStatusSteamAppDTO
 
     public TimeRangeWithTargetDTO MarketSaleUpdates { get; set; }
 
+    public TimeRangeWithTargetDTO MarketActivityUpdates { get; set; }
+
     public SystemStatusAppMarketDTO[] Markets { get; set; }
 }

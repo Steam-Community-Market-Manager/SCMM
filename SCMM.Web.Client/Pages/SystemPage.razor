@@ -148,6 +148,33 @@
                                         </td>
                                     </tr>
                                 }
+                                @if (SystemStatus.SteamApp.MarketActivityUpdates.Newest != null && SystemStatus.SteamApp.MarketActivityUpdates.Oldest != null)
+                                {
+                                    <tr>
+                                        <td>@SystemStatus.SteamApp.Name Market Item Activity History</td>
+                                        <td>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketActivityUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (most recent item update) </small>
+                                            <br/>
+                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketActivityUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                            <small class="mud-secondary-text"> (oldest item update) </small>
+                                        </td>
+                                        <td>@SystemStatus.SteamApp.MarketActivityUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
+                                        <td>Less than @SystemStatus.SteamApp.MarketActivityUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.inherit" Color="@(SystemStatus.SteamApp.MarketActivityUpdates.IsOnTarget ? Color.Success : Color.Warning)">
+                                                @if (SystemStatus.SteamApp.MarketActivityUpdates.IsOnTarget)
+                                                {
+                                                    <span><i class="fas fa-fw fa-circle-check mr-1"></i>Running on schedule</span>
+                                                }
+                                                else
+                                                {
+                                                    <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Running behind schedule</span>
+                                                }
+                                            </MudText>
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                         </MudSimpleTable>
                     </MudPaper>

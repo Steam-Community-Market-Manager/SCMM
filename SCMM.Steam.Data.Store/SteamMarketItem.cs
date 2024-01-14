@@ -195,6 +195,9 @@ namespace SCMM.Steam.Data.Store
         // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
+        // How long since activity was last checked
+        public DateTimeOffset? LastCheckedActivityOn { get; set; }
+
         // How long since a price alert was last sent
         public DateTimeOffset? LastPriceAlertOn { get; set; }
 
