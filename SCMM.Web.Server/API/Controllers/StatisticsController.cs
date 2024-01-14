@@ -142,7 +142,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/cheapestListings")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemListingAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
@@ -229,7 +229,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/flips")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
@@ -421,7 +421,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/cheapestCraftableContainerCosts")]
         [ProducesResponseType(typeof(PaginatedResult<MarketCraftableItemCostAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketCheapestCraftableContainerCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketCheapestCraftableContainerCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
