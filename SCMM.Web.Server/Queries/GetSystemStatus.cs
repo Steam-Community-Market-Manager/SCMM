@@ -104,7 +104,7 @@ namespace SCMM.Web.Server.Queries
                 steamApp.AssetDescriptionsUpdates.TargetDelta = TimeSpan.FromDays(1);
                 steamApp.MarketOrderUpdates.TargetDelta = TimeSpan.FromHours(3);
                 steamApp.MarketSaleUpdates.TargetDelta = TimeSpan.FromHours(3);
-                steamApp.MarketActivityUpdates.TargetDelta = TimeSpan.FromHours(1);
+                steamApp.MarketActivityUpdates.TargetDelta = TimeSpan.FromMinutes(10);
                 if (request.IncludeAppMarkets)
                 {
                     // TODO: Add target "ast updated" time for markets
