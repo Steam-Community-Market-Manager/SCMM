@@ -1014,12 +1014,11 @@
                 </MudItem>
             }
             
-            @*
             @if(Item.IsAvailableOnMarket && Item.MarketLastSaleOn != null && (DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 7)
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
-            <Virtualize ItemsProvider="LoadItemActivity" Context="item" SpacerElement="tr">
+                        <Virtualize ItemsProvider="LoadItemActivity" Context="item" SpacerElement="tr">
                             <ItemContent>
                                 <div class="@($"{(item.IsSale ? "mud-theme-dark" : null)} hover-darken pa-1")">
                                     <div class="d-flex flex-row flex-wrap justify-start align-center">
@@ -1062,7 +1061,6 @@
 				    </MudPaper>
                 </MudItem>
             }
-            *@
 
             @if (!String.IsNullOrEmpty(Item.ItemCollection))
             {
