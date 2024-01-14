@@ -21,7 +21,9 @@
         <MudSpacer />
         <AppBarCurrencyControls class="d-flex mx-1" />
         <AppBarRuntimeControls class="d-flex mx-1" />
-        <AppBarNotificationControls class="d-flex mx-1" />
+        <MudHidden Breakpoint="MudBlazor.Breakpoint.Xs">
+            <AppBarNotificationControls class="d-flex mx-1" />
+        </MudHidden>
         <AppBarProfileControls />
     </MudAppBar>
     <MudDrawer @bind-Open="DrawerIsOpen" @bind-Variant="DrawerVariant" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always" Breakpoint="Breakpoint.Md" Elevation="2">
