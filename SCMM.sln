@@ -106,7 +106,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Redis.Client", "SCMM.R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Shared.Web.Server", "SCMM.Shared.Web.Server\SCMM.Shared.Web.Server.csproj", "{455996D6-462A-46A6-AB46-B3A43BA56F77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCMM.Shared.Web.Client.Tests", "SCMM.Shared.Web.Client.Tests\SCMM.Shared.Web.Client.Tests.csproj", "{DC0295D6-1CED-443A-B5AC-BB603EDAB65A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Shared.Web.Client.Tests", "SCMM.Shared.Web.Client.Tests\SCMM.Shared.Web.Client.Tests.csproj", "{DC0295D6-1CED-443A-B5AC-BB603EDAB65A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Market.Waxpeer.Client", "SCMM.Market.Waxpeer.Client\SCMM.Market.Waxpeer.Client.csproj", "{C7004FC8-E7F0-4621-816E-4C0522D28C77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -646,6 +648,18 @@ Global
 		{DC0295D6-1CED-443A-B5AC-BB603EDAB65A}.Release|x64.Build.0 = Release|Any CPU
 		{DC0295D6-1CED-443A-B5AC-BB603EDAB65A}.Release|x86.ActiveCfg = Release|Any CPU
 		{DC0295D6-1CED-443A-B5AC-BB603EDAB65A}.Release|x86.Build.0 = Release|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Debug|x64.Build.0 = Debug|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Debug|x86.Build.0 = Debug|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Release|x64.ActiveCfg = Release|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Release|x64.Build.0 = Release|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Release|x86.ActiveCfg = Release|Any CPU
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -695,6 +709,7 @@ Global
 		{C95F46E0-382F-463E-8528-CF312512E20D} = {8AE530FB-A593-4733-AF49-D1AFE5E5C01E}
 		{455996D6-462A-46A6-AB46-B3A43BA56F77} = {7E2E7FB5-0C7A-4B48-815B-4E0FFB4D2388}
 		{DC0295D6-1CED-443A-B5AC-BB603EDAB65A} = {7E2E7FB5-0C7A-4B48-815B-4E0FFB4D2388}
+		{C7004FC8-E7F0-4621-816E-4C0522D28C77} = {8AE530FB-A593-4733-AF49-D1AFE5E5C01E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {53C48CAC-8050-44A2-B930-9273F442173C}
