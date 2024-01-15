@@ -77,7 +77,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Rust.tm")]
         [Market(Constants.RustAppId, Color = "#4E2918")]
-        [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
+        [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         RustTM = 19,
 
         //[Display(Name = "RUSTVendor")]
@@ -98,12 +98,12 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "CS.TRADE")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#F3C207", AffiliateUrl = "https://cs.trade/ref/SCMM")]
-        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
+        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         CSTRADE = 22,
 
         [Display(Name = "iTrade.gg")]
         [Market(Constants.RustAppId, Color = "#EA473B", AffiliateUrl = "https://itrade.gg/r/scmm")]
-        [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AcceptedPaymentTypes = PriceTypes.Trade)] // Unconfirmed
+        [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AcceptedPaymentTypes = PriceTypes.Trade)]
         iTradegg = 23,
 
         //[Display(Name = "Trade Skins Fast")]
@@ -114,12 +114,12 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "SkinsMonkey")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#F5C71B")]
-        [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
+        [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         SkinsMonkey = 25,
 
         [Display(Name = "Skin Swap")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FF4B4B", AffiliateUrl = "https://skinswap.com/r/scmm")]
-        [BuyFrom(Url = "https://skinswap.com/r/scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
+        [BuyFrom(Url = "https://skinswap.com/r/scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
         SkinSwap = 26,
 
         // TODO: Restricted to 100 items per query, too slow for CSGO items
@@ -137,33 +137,33 @@ namespace SCMM.Steam.Data.Models.Enums
         // TODO: Restricted to 80 items per query, too slow for CSGO items
         [Display(Name = "BUFF")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#FFFFFF")]
-        [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}", AcceptedPaymentTypes = PriceTypes.Cash)] // Unconfirmed
+        [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}", AcceptedPaymentTypes = PriceTypes.Cash)]
         Buff = 30,
 
-        /*
-         * https://docs.waxpeer.com/?method=prices-get
-         * https://api.waxpeer.com/v1/prices?game=rust&minified=1
         [Display(Name = "Waxpeer")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FFFFFF", AffiliateUrl = "https://waxpeer.com/r/scmm")]
-        [BuyFrom(Url = "https://waxpeer.com/rust/r/scmm?game={1}&sort=ASC&order=price&all=0&exact=0&search={3}", AffiliateCode = "scmm", AcceptedPaymentTypes = PriceTypes.Crypto)] // Unconfirmed
+        [BuyFrom(Url = "https://waxpeer.com/{1}?r=scmm&game={1}&sort=ASC&order=price&all=0&exact=0&search={3}", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         Waxpeer = 31,
-        */
 
-        /*
-         * https://doc.shadowpay.com/docs/shadowpay/96108be6ddc1e-get-items-on-sale
-         * https://api.shadowpay.com/api/market/get_items?currency=USD&sort_column=price&sort_dir=asc&stack=false&offset=0&limit=50&sort=asc&game=rust
         [Display(Name = "ShadowPay")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#005BBB", AffiliateUrl = "https://shadowpay.com?utm_campaign=e6PlQUT3mUC06NL")]
         [BuyFrom(Url = "https://shadowpay.com/en/{1}-items?utm_campaign=e6PlQUT3mUC06NL&price_from=0&price_to=500&currency=USD&search={3}&sort_column=price&sort_dir=asc", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
         ShadowPay = 32,
-        */
+
+        [Display(Name = "Mannco.store")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#5ad1e8")]
+        [BuyFrom(Url = "https://mannco.store/rust?a=&b=&c=&d=&e={3}&f=ASC&g=&h=2&j=1&t=&s=&appid={0}", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
+        ManncoStore = 33,
+
+        [Display(Name = "RapidSkins")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#ffd500", AffiliateUrl = "https://rapidskins.com/a/scmm")]
+        [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)] // Unconfirmed
+        RapidSkins = 34,
 
         /*
          * MARKETS TO BE INVESTIGATED
          * 
          BUY:  https://lis-skins.ru/market/rust/
-         BUY:  https://mannco.store/market
-         BUY:  https://waxpeer.com/rust
          BUY:  https://skin.land/market/rust/
          BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc
          BUY:  https://buff.market/ (is this an alias for https://buff.163.com/?)
@@ -173,7 +173,6 @@ namespace SCMM.Steam.Data.Models.Enums
          BUY:  https://bandit.camp/
          BUY:  https://trade.skin/ (looks sus...)
          BUY:  https://rustplus.com/ (looks sus...)
-         BUY:  https://rapidskins.com/
          SELL: https://rustysell.com/
          SELL: https://skincashier.com/
          SELL: https://skins.cash/
