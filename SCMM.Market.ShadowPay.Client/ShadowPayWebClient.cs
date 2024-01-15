@@ -13,7 +13,7 @@ namespace SCMM.Market.ShadowPay.Client
         }
 
         /// <see cref="https://doc.shadowpay.com/docs/shadowpay/96108be6ddc1e-get-items-on-sale"/>
-        public async Task<ShadowPayItemsResponse> GetItemsAsync(string appName, int offset, int limit)
+        public async Task<IEnumerable<ShadowPayItem>> GetItemsAsync(string appName, int offset, int limit)
         {
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
             {
@@ -28,7 +28,7 @@ namespace SCMM.Market.ShadowPay.Client
                 }
 
                 var responseJson = JsonSerializer.Deserialize<ShadowPayItemsResponse>(textJson);
-                return responseJson;
+                return responseJson?.Data;
             }
         }
     }
