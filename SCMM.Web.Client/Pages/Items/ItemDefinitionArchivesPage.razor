@@ -35,36 +35,30 @@
                 <MudExpansionPanels MultiExpansion="true" Dense="true" DisableGutters="true">
                     @foreach (var itemDefinitionArchive in ItemDefinitionArchivesList)
                     {
-                        <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))">
+                        <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))" Disabled="itemDefinitionArchive.PreviousDigest == null">
                             <TitleContent>
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
                                     <MudStack Spacing="1">
                                         <MudText Typo="MudBlazor.Typo.body1">
                                             <i class="fas fa-fw fa-archive mr-1"></i>
                                             <span>@itemDefinitionArchive.Digest</span>
-                                            <span class="mud-secondary-text"> (@itemDefinitionArchive.Info.Size.ToFileSizeString()) </span>
                                         </MudText>
                                         <MudStack Spacing="2" Row="true" AlignItems="AlignItems.Center">
-                                            <MudChip Color="Color.Secondary" Size="Size.Small">@itemDefinitionArchive.Info.ItemCount item(s)</MudChip>
+                                            <MudButton OnClick="@(() => DownloadArchive(itemDefinitionArchive))" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                                <span><i class="fa fa-fw fa-download mr-1"></i> Download</span>
+                                            </MudButton>
+                                            <MudChip Color="Color.Secondary" Size="Size.Small">@(itemDefinitionArchive.Info.ItemCount.ToQuantityString()) item(s)</MudChip>
                                             <MudText Color="Color.Secondary" Typo="Typo.body2">
-                                                <span>This archive </span>
+                                                <span>This change </span>
                                                 @if (itemDefinitionArchive.DiffItemCount != 0)
                                                 {
-                                                    <span class="@(itemDefinitionArchive.DiffItemCount > 0 ? "mud-success-text" : "mud-error-text")">
-                                                        @(itemDefinitionArchive.DiffItemCount > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffItemCount).ToQuantityString()) item(s)
+                                                    <span>
+                                                        @(itemDefinitionArchive.DiffItemCount > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffItemCount).ToQuantityString()) @(itemDefinitionArchive.DiffItemCount > 0 ? "new" : "existing") item(s).
                                                     </span>
-                                                    <span> and </span>
-                                                }
-                                                @if (itemDefinitionArchive.DiffSize != 0)
-                                                {
-                                                    <span class="@(itemDefinitionArchive.DiffSize > 0 ? "mud-success-text" : "mud-error-text")">
-                                                        @(itemDefinitionArchive.DiffSize > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffSize).ToQuantityString()) character(s)
-                                                    </span>
-                                                    <span> to the game item definitions. </span>
                                                 }
                                                 else
                                                 {
-                                                    <span> didn't change anything noteworthy.</span>
+                                                    <span> modified existing items.</span>
                                                 }
                                             </MudText>
                                         </MudStack>
@@ -76,21 +70,9 @@
                                 </MudStack>
                             </TitleContent>
                             <ChildContent>
-                                @*
-                                @if (!ItemDefinitionArchives.ContainsKey(itemDefinitionArchive.Digest))
-                                {
-                                    <Loading Message="Loading item definition archive..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
-                                }
-                                else
-                                {
-                                    <div style="width:100%; height:75vh;">
-                                        <JsonEditor Json="@ItemDefinitionArchives[itemDefinitionArchive.Digest]" SelectionPath="@($@"[{itemDefinitionArchive.Archive.ItemCount - 1}, ""itemdefid""]")" ReadOnly="true" />
-                                    </div>
-                                }
-                                *@
                                 @if (!ItemDefinitionArchiveDiffs.ContainsKey(itemDefinitionArchive.Digest))
                                 {
-                                    <Loading Message="Loading changes from previous item definition archive..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+                                    <Loading Message="Loading changes text diff..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
                                 }
                                 else
                                 {
@@ -190,7 +172,6 @@
                             Info = archive,
                             Digest = archive.Digest,
                             PreviousDigest = lastArchive?.Digest,
-                            DiffSize = lastArchive != null ? (archive.Size - (lastArchive?.Size ?? 0)) : 0,
                             DiffItemCount = lastArchive != null ? (archive.ItemCount - (lastArchive?.ItemCount ?? 0)) : 0
                         });
                     }
@@ -224,13 +205,6 @@
                 {
                     try
                     {
-                        /*
-                        if (!ItemDefinitionArchives.ContainsKey(archive.Digest))
-                        {
-                            var digest = await Http.GetStringAsync($"api/item/definitionArchive/{archive.Digest}?raw=true");
-                            ItemDefinitionArchives[archive.Digest] = digest;
-                        }
-                        */
                         if (!ItemDefinitionArchiveDiffs.ContainsKey(archive.Digest) && !String.IsNullOrEmpty(archive.PreviousDigest))
                         {
                             var archiveDiff = await Http.GetFromJsonAsync<TextDiffDTO>($"api/item/definitionArchive/{archive.PreviousDigest}/compareTo/{archive.Digest}");
@@ -256,6 +230,11 @@
         }
     }
 
+    private void DownloadArchive(ItemDefinitionArchiveIdentifierWithDiff archive)
+    {
+        ExternalNavigationManager.NavigateToNewTabAsync($"api/item/definitionArchive/{archive.Digest}");
+    }
+
     public class ItemDefinitionArchiveIdentifierWithDiff
     {
         public ItemDefinitionArchiveIdentifierDTO Info { get; set; }
@@ -263,8 +242,6 @@
         public string Digest { get; set; }
 
         public string PreviousDigest { get; set; }
-
-        public int DiffSize { get; set; }
 
         public int DiffItemCount { get; set; }
     }
