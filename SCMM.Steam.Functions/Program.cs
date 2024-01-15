@@ -106,9 +106,15 @@ public static class HostExtensions
         return builder.ConfigureServices(services =>
         {
             // Logging
-            //services.AddApplicationInsightsTelemetry(); // Application Insights is added by Azure Functions automatically
-            services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+            /*services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.EnableDependencyTrackingTelemetryModule = false;
+                options.EnableAppServicesHeartbeatTelemetryModule = false;
+                options.EnableHeartbeat = false;
+            });*/
             services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
+            services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+            services.AddApplicationInsightsTelemetryProcessor<IgnoreStaticWebFilesFilter>();
 
             // Database
             var steamDbConnectionString = Environment.GetEnvironmentVariable("SteamDbConnection");
