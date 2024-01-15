@@ -16,7 +16,7 @@ namespace SCMM.Market.Waxpeer.Client
         {
             using (var client = BuildWebApiHttpClient())
             {
-                var url = $"{ApiBaseUri}v1/prices/items?game={appName.ToLower()}t&minified=1";
+                var url = $"{ApiBaseUri}v1/prices?game={appName.ToLower()}&minified=1";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
