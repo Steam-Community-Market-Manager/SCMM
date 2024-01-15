@@ -147,14 +147,12 @@
 
     private ItemDefinitionArchiveIdentifierWithDiff[] ItemDefinitionArchivesList;
 
-    private IDictionary<string, string> ItemDefinitionArchives;
     private IDictionary<string, TextDiffDTO> ItemDefinitionArchiveDiffs;
 
     private Exception LoadException;
 
     protected override async Task OnLoadStateAsync()
     {
-        ItemDefinitionArchives = RestoreFromStateOrDefault(nameof(ItemDefinitionArchives), new Dictionary<string, string>());
         ItemDefinitionArchiveDiffs = RestoreFromStateOrDefault(nameof(ItemDefinitionArchiveDiffs), new Dictionary<string, TextDiffDTO>());
         ItemDefinitionArchivesList = await RestoreFromStateOrLoad(nameof(ItemDefinitionArchivesList), async () =>
         {
@@ -191,7 +189,6 @@
 
     protected override Task OnPersistStateAsync()
     {
-        PersistToState(nameof(ItemDefinitionArchives), ItemDefinitionArchives);
         PersistToState(nameof(ItemDefinitionArchiveDiffs), ItemDefinitionArchiveDiffs);
         PersistToState(nameof(ItemDefinitionArchivesList), ItemDefinitionArchivesList);
         return Task.CompletedTask;
