@@ -232,7 +232,7 @@
 
     private void DownloadArchive(ItemDefinitionArchiveIdentifierWithDiff archive)
     {
-        ExternalNavigationManager.NavigateToNewTabAsync($"api/item/definitionArchive/{archive.Digest}");
+        ExternalNavigationManager.NavigateToNewTabAsync($"api/item/definitionArchive/{archive.Digest}?raw=true");
     }
 
     public class ItemDefinitionArchiveIdentifierWithDiff
