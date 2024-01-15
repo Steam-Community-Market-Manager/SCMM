@@ -38,7 +38,7 @@
                         <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))" Disabled="itemDefinitionArchive.PreviousDigest == null">
                             <TitleContent>
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                                    <MudStack Spacing="1">
+                                    <MudStack Spacing="1" AlignItems="AlignItems.Start">
                                         <MudText Typo="MudBlazor.Typo.body1">
                                             <i class="fas fa-fw fa-archive mr-1"></i>
                                             <span>@itemDefinitionArchive.Digest</span>
@@ -65,7 +65,10 @@
                                     </MudStack>
                                     @if (itemDefinitionArchive.Info.Timestamp != null)
                                     {
-                                        <MudText Typo="MudBlazor.Typo.body2" Color="Color.Secondary" Class="mx-4">@((DateTimeOffset.Now - itemDefinitionArchive.Info.Timestamp.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</MudText>
+                                        <MudStack Spacing="1" AlignItems="AlignItems.End">
+                                            <MudText Typo="MudBlazor.Typo.body1" Class="mx-4">@(itemDefinitionArchive.Info.Timestamp.Value.ToString("yyyy MMMM dd, HH:mm:ss"))</MudText>
+                                            <MudText Typo="MudBlazor.Typo.body2" Color="Color.Secondary" Class="mx-4">@((DateTimeOffset.Now - itemDefinitionArchive.Info.Timestamp.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</MudText>
+                                        </MudStack>
                                     }
                                 </MudStack>
                             </TitleContent>
