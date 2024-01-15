@@ -170,6 +170,16 @@
             <response code="200">List of known item definition archives.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemDefinitionArchive(System.String,System.String)">
+            <summary>
+            Compare two item definition archive contents and return a text diff
+            </summary>
+            <param name="oldDigest">The first digest for comparison</param>
+            <param name="newDigest">The second digest for comparison</param>
+            <response code="200">The text diff between the two item definition archives.</response>
+            <response code="404">If either of the item definition archives don't exist.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemDefinitionArchive(System.String,System.Boolean)">
             <summary>
             Get item definition archive contents
