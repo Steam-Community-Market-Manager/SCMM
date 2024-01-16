@@ -43,7 +43,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://market.swap.gg/{1}?search={3}", AcceptedPaymentTypes = PriceTypes.Cash)]
         SwapGGMarket = 13,
 
-        // TODO: Use API key to bypass web scraping protection. Dev team haven't responded to my requests for API access yet
+        // TODO: Use API key to bypass web scraping protection. Their dev team haven't responded to my requests for API access yet
         [Obsolete("Tradeit.gg uses aggressive CloudFlare anti-scrapping policies, current web client gets blocked")]
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F", AffiliateUrl = "https://tradeit.gg/?aff=scmm")]
@@ -62,7 +62,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         CSDealsMarketplace = 16,
 
-        // TODO: SkinBaronWebClient needs updating, current APIs no longer work (they've changed them)
+        // TODO: Our web client needs updating, the current APIs no longer work (they've changed them)
         [Obsolete("SkinBaron web client code needs updating, current APIs no longer work (they've changed them)")]
         [Display(Name = "Skin Baron")]
         [Market(Constants.CSGOAppId, Color = "#2A2745")]
@@ -80,20 +80,16 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc", AcceptedPaymentTypes = PriceTypes.Cash | PriceTypes.Crypto)]
         RustTM = 19,
 
-        //[Display(Name = "RUSTVendor")]
-        //[Market(Constants.RustAppId)]
-        //[BuyFrom(Url = "https://rustvendor.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash)]
         [Obsolete("Website is dead")]
+        [Display(Name = "RUSTVendor")]
+        [Market(Constants.RustAppId)]
+        [BuyFrom(Url = "https://rustvendor.com/trade", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash)]
         RUSTVendor = 20,
 
-        // TODO: Implement web socket client support
-        //       wss://rustytrade.com/socket.io/?EIO=3&transport=websocket&sid=xxx
-        //          => 42["get bots inv"]
-        //          <= 42["bots inv",…]
-        //[Display(Name = "RustyTrade")]
-        //[Market(Constants.RustAppId)]
-        //[BuyFrom(Url = "https://rustytrade.com/", AcceptedPaymentTypes = PriceTypes.Trade)] // Unconfirmed
         [Obsolete("Website is live, but seems to be inactive now")]
+        [Display(Name = "RustyTrade")]
+        [Market(Constants.RustAppId)]
+        [BuyFrom(Url = "https://rustytrade.com/", AcceptedPaymentTypes = PriceTypes.Trade)]
         RustyTrade = 21,
 
         [Display(Name = "CS.TRADE")]
@@ -106,10 +102,10 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AcceptedPaymentTypes = PriceTypes.Trade)]
         iTradegg = 23,
 
-        //[Display(Name = "Trade Skins Fast")]
-        //[Market(Constants.RustAppId, Constants.CSGOAppId)]
-        //[BuyFrom(Url = "https://tradeskinsfast.com/", AcceptedPaymentTypes = PriceTypes.Trade)]
         [Obsolete("Website is dead")]
+        [Display(Name = "Trade Skins Fast")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId)]
+        [BuyFrom(Url = "https://tradeskinsfast.com/", AcceptedPaymentTypes = PriceTypes.Trade)]
         TradeSkinsFast = 24,
 
         [Display(Name = "SkinsMonkey")]
@@ -161,24 +157,28 @@ namespace SCMM.Steam.Data.Models.Enums
         RapidSkins = 34,
 
         /*
-         * MARKETS TO BE INVESTIGATED
-         * 
-         BUY:  https://lis-skins.ru/market/rust/
+         
+         MARKETS TO BE INVESTIGATED
          BUY:  https://skin.land/market/rust/
-         BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc
-         BUY:  https://buff.market/ (is this an alias for https://buff.163.com/?)
+         BUY:  https://rustysaloon.com/withdraw (gambling site)
+         BUY:  https://bandit.camp/ (gambling site)
+         BUY:  https://buff.market/ (western sister-site for https://buff.163.com/, no rust)
+         BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc (has low stock)
+         BUY:  https://lis-skins.ru/market/rust/ (has overly aggressive CloudFlare WAF policies, need to scrap HTML code)
          BUY:  https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
-         BUY:  https://www.rustreaper.com/marketplace/RUST
-         BUY:  https://rustysaloon.com/withdraw
-         BUY:  https://bandit.camp/
-         BUY:  https://trade.skin/ (looks sus...)
-         BUY:  https://rustplus.com/ (looks sus...)
          SELL: https://rustysell.com/
          SELL: https://skincashier.com/
          SELL: https://skins.cash/
-        */
 
-        // https://pricempire.com/api
+         SUS LOOKING MARKETS
+         BUY:  https://trade.skin/
+         BUY:  https://rustplus.com/
+         BUY:  https://www.rustreaper.com/marketplace/RUST (bad reviews)
+
+         MARKET AGGRAGATORS
+         https://pricempire.com/api
+
+        */
 
     }
 }
