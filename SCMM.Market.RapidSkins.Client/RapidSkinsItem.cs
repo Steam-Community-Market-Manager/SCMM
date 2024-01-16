@@ -8,7 +8,7 @@ namespace SCMM.Market.RapidSkins.Client
         public string Name { get; set; }
 
         [JsonPropertyName("amount")]
-        public long Amount { get; set; }
+        public int Amount { get; set; }
 
         [JsonPropertyName("price")]
         public long Price { get; set; }
