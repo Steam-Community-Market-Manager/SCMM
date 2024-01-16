@@ -82,17 +82,19 @@ public class UpdateMarketItemPricesFromRapidSkins
                 })
                 .ToListAsync();
 
-            foreach (var rapidSkinsItem in rapidSkinsAppItems)
+            var rapidSkinsItemGroups = rapidSkinsAppItems.GroupBy(x => x.Name);
+            foreach (var rapidSkinsItemGroup in rapidSkinsItemGroups)
             {
-                var item = dbItems.FirstOrDefault(x => x.Name == rapidSkinsItem.Name)?.Item;
+                var item = dbItems.FirstOrDefault(x => x.Name == rapidSkinsItemGroup.Key)?.Item;
                 if (item != null)
                 {
                     // RapidSkins add a 15% fee on top of the API listed price
-                    var price = (long)Math.Round(rapidSkinsItem.Price * 1.15m, 0);
+                    var price = (long)Math.Round(rapidSkinsItemGroup.Min(x => x.Price) * 1.15m, 0);
+                    var supply = rapidSkinsItemGroup.Sum(x => x.Amount);
                     item.UpdateBuyPrices(RapidSkins, new PriceWithSupply
                     {
-                        Price = rapidSkinsItem.Amount > 0 ? item.Currency.CalculateExchange(price, usdCurrency) : 0,
-                        Supply = rapidSkinsItem.Amount
+                        Price = supply > 0 ? item.Currency.CalculateExchange(price, usdCurrency) : 0,
+                        Supply = supply
                     });
                 }
             }
@@ -107,7 +109,7 @@ public class UpdateMarketItemPricesFromRapidSkins
 
             await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RapidSkins, x =>
             {
-                x.TotalItems = rapidSkinsAppItems.Count();
+                x.TotalItems = rapidSkinsItemGroups.Count();
                 x.TotalListings = rapidSkinsAppItems.Sum(i => i.Amount);
                 x.LastUpdatedItemsOn = DateTimeOffset.Now;
                 x.LastUpdatedItemsDuration = stopwatch.Elapsed;
