@@ -34,13 +34,17 @@
 		<ProjectReference Include="..\SCMM.Market.DMarket.Client\SCMM.Market.DMarket.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.iTradegg.Client\SCMM.Market.iTradegg.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.LootFarm.Client\SCMM.Market.LootFarm.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.ManncoStore.Client\SCMM.Market.ManncoStore.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.RapidSkins.Client\SCMM.Market.RapidSkins.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.RustTM.Client\SCMM.Market.RustTM.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.ShadowPay.Client\SCMM.Market.ShadowPay.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SkinBaron.Client\SCMM.Market.SkinBaron.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.Skinport.Client\SCMM.Market.Skinport.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SkinsMonkey.Client\SCMM.Market.SkinsMonkey.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SkinSwap.Client\SCMM.Market.SkinSwap.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SwapGG.Client\SCMM.Market.SwapGG.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.TradeitGG.Client\SCMM.Market.TradeitGG.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.Waxpeer.Client\SCMM.Market.Waxpeer.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
