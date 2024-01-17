@@ -16,9 +16,7 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromTradeitGG
 {
-#pragma warning disable CS0618 // Type or member is obsolete
     private const MarketType TradeitGG = MarketType.TradeitGG;
-#pragma warning restore CS0618 // Type or member is obsolete
 
     private readonly SteamDbContext _db;
     private readonly TradeitGGWebClient _tradeitGGWebClient;
