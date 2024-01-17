@@ -72,7 +72,7 @@ public class UpdateMarketItemPricesFromShadowPay
         {
             stopwatch.Start();
 
-            var shadowPayItems = (await _shadowPayWebClient.GetItemPricesAsync(app.Name)) ?? new List<ShadowPayItemPrice>();
+            var shadowPayItems = (await _shadowPayWebClient.GetItemPricesAsync(app.Name)) ?? new List<ShadowPayItem>();
             var dbItems = await _db.SteamMarketItems
                 .Where(x => x.AppId == app.Id)
                 .Select(x => new
