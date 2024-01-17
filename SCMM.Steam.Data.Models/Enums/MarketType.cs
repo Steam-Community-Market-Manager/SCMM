@@ -44,7 +44,6 @@ namespace SCMM.Steam.Data.Models.Enums
         SwapGGMarket = 13,
 
         // TODO: Use API key to bypass web scraping protection. Their dev team haven't responded to my requests for API access yet
-        [Obsolete("Tradeit.gg uses aggressive CloudFlare anti-scrapping policies, current web client gets blocked")]
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F", AffiliateUrl = "https://tradeit.gg/?aff=scmm")]
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPaymentTypes = PriceTypes.Trade | PriceTypes.Cash | PriceTypes.Crypto)]
