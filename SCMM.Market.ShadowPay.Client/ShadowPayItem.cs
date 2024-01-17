@@ -8,6 +8,9 @@ namespace SCMM.Market.ShadowPay.Client
         public string MarketHashName { get; set; }
 
         [JsonPropertyName("price")]
-        public decimal Price { get; set; }
+        public long Price { get; set; }
+
+        [JsonPropertyName("volume")]
+        public int Volume { get; set; }
     }
 }

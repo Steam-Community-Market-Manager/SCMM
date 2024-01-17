@@ -5,19 +5,21 @@ namespace SCMM.Market.ShadowPay.Client
 {
     public class ShadowPayWebClient : Shared.Web.Client.WebClientBase
     {
-        private const string WebsiteBaseUri = "https://shadowpay.com/";
         private const string ApiBaseUri = "https://api.shadowpay.com/";
 
-        public ShadowPayWebClient(ILogger<ShadowPayWebClient> logger) : base(logger) 
+        private readonly ShadowPayConfiguration _configuration;
+
+        public ShadowPayWebClient(ILogger<ShadowPayWebClient> logger, ShadowPayConfiguration configuration) : base(logger) 
         {
+            _configuration = configuration;
         }
 
-        /// <see cref="https://doc.shadowpay.com/docs/shadowpay/96108be6ddc1e-get-items-on-sale"/>
-        public async Task<IEnumerable<ShadowPayItem>> GetItemsAsync(string appName, int offset, int limit)
+        /// <see cref="https://doc.shadowpay.com/docs/shadowpay/dbd310d5b59c1-get-item-prices"/>
+        public async Task<IEnumerable<ShadowPayItem>> GetItemPricesAsync(string appName)
         {
-            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebsiteBaseUri)))
+            using (var client = BuildShadowPayClient())
             {
-                var url = $"{ApiBaseUri}api/market/get_items?currency=USD&sort_column=price&sort_dir=asc&stack=false&offset={offset}&limit={limit}&sort=asc&game=rust";
+                var url = $"{ApiBaseUri}api/v2/merchant/items/prices?project={appName}";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
@@ -27,9 +29,15 @@ namespace SCMM.Market.ShadowPay.Client
                     return default;
                 }
 
-                var responseJson = JsonSerializer.Deserialize<ShadowPayItemsResponse>(textJson);
+                var responseJson = JsonSerializer.Deserialize<ShadowPayItemPricesResponse>(textJson);
                 return responseJson?.Data;
             }
         }
+
+        private HttpClient BuildShadowPayClient() => BuildWebApiHttpClient(
+            authHeaderName: "Authorization",
+            authHeaderFormat: "Bearer {0}",
+            authKey: _configuration.ApiKey
+        );
     }
 }

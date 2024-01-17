@@ -2,8 +2,11 @@
 
 namespace SCMM.Market.ShadowPay.Client
 {
-    public class ShadowPayItemsResponse
+    public class ShadowPayItemPricesResponse
     {
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
         [JsonPropertyName("data")]
         public IEnumerable<ShadowPayItem> Data { get; set; }
     }
