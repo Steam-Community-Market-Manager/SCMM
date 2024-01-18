@@ -2,17 +2,21 @@
   "version": "2.0",
   "logging": {
     "logLevel": {
-      "Default": "Warning",
-      "Function": "Information", // dependency telemetry, used to analyzing dependencies and their performance
-      "Host.Results": "Information", // request telemetry, used for analyzing execution performance
-      "Azure.Core": "Error" // suppressing sdk blob warnings
+      "Default": "Information",
+      "Azure": "Warning",
+      "Function": "Warning",
+      "Host": "Warning",
+      "Microsoft": "Warning",
+      "System": "Warning"
     },
     "applicationInsights": {
       "logLevel": {
-        "Default": "Warning",
-        "Function": "Information", // dependency telemetry, used to analyzing dependencies and their performance
-        "Host.Results": "Information", // request telemetry, used for analyzing execution performance
-        "Azure.Core": "Error" // suppressing sdk blob warnings
+        "Default": "Information",
+        "Azure": "Warning",
+        "Function": "Warning",
+        "Host": "Warning",
+        "Microsoft": "Warning",
+        "System": "Warning"
       },
       "samplingSettings": {
         "isEnabled": true,

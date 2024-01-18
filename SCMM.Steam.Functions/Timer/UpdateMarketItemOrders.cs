@@ -45,7 +45,7 @@ public class UpdateMarketItemOrders
             throw new Exception($"Update of market item orders information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
 
-        logger.LogInformation($"Updating market item orders information (id: {jobId})");
+        logger.LogTrace($"Updating market item orders information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -98,7 +98,7 @@ public class UpdateMarketItemOrders
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogDebug(ex, $"No change in market item orders for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
+                logger.LogTrace(ex, $"No change in market item orders for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
         });
 
@@ -112,11 +112,11 @@ public class UpdateMarketItemOrders
             {
                 stopwatch.Restart();
                 await UpdateMarketItemOrderHistory(item.Key, item.Value);
-                logger.LogInformation($"Updated item orders for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
+                logger.LogTrace($"Updated item orders for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
             }
         }
 
-        logger.LogInformation($"Updated {itemResponseMappings.Count} market item orders information (id: {jobId})");
+        logger.LogTrace($"Updated {itemResponseMappings.Count} market item orders information (id: {jobId})");
     }
 
     private async Task UpdateMarketItemOrderHistory(Guid itemId, SteamMarketItemOrdersHistogramJsonResponse itemResponse)

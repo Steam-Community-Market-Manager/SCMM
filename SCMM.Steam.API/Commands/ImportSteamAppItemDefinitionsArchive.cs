@@ -135,7 +135,7 @@ namespace SCMM.Steam.API.Commands
                 try
                 {
                     // Parse all item definition changes in the archive
-                    _logger.LogInformation($"Parsing item definitions for missing ids (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                    _logger.LogTrace($"Parsing item definitions for missing ids (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                     LinkAssetDescriptionsToItemDefinitionsFromArchive(app, itemDefinitions, assetDescriptions);
                 }
                 catch (Exception ex)
@@ -150,7 +150,7 @@ namespace SCMM.Steam.API.Commands
                 try
                 {
                     // Parse all new asset description in the archive
-                    _logger.LogInformation($"Parsing item definitions for new asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                    _logger.LogTrace($"Parsing item definitions for new asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                     await AddNewAssetDescriptionsFromArchiveAsync(app, itemDefinitions, assetDescriptions);
                 }
                 catch (Exception ex)
@@ -171,7 +171,7 @@ namespace SCMM.Steam.API.Commands
                         // Parse store item changes in the archive
                         if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
                         {
-                            _logger.LogInformation($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                            _logger.LogTrace($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                             RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
                             await _steamDb.SaveChangesAsync();
                             await AddOrUpdateStoreItemsFromArchiveAsync(app, itemDefinitions, assetDescriptions, currencies);
@@ -189,7 +189,7 @@ namespace SCMM.Steam.API.Commands
                     try
                     {
                         // Parse market item changes in the archive
-                        _logger.LogInformation($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                        _logger.LogTrace($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                         await AddOrUpdateMarketItemsFromArchiveAsync(app, itemDefinitions, assetDescriptions, currencies);
                     }
                     catch (Exception ex)
@@ -206,7 +206,7 @@ namespace SCMM.Steam.API.Commands
                 try
                 {
                     // Parse asset description changes in the archive
-                    _logger.LogInformation($"Parsing item definitions for updated asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                    _logger.LogTrace($"Parsing item definitions for updated asset descriptions (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                     await UpdateExistingAssetDescriptionsFromArchiveAsync(app, itemDefinitions, assetDescriptions);
                 }
                 catch (Exception ex)
@@ -255,7 +255,7 @@ namespace SCMM.Steam.API.Commands
                 try
                 {
                     // Add the new asset description
-                    _logger.LogInformation($"A new item definition was found! (appId: {app.SteamId}, itemId: {newItem.ItemDefId}, name: '{newItem.Name}')");
+                    _logger.LogTrace($"A new item definition was found! (appId: {app.SteamId}, itemId: {newItem.ItemDefId}, name: '{newItem.Name}')");
                     var importedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionRequest()
                     {
                         AppId = UInt64.Parse(app.SteamId),
@@ -329,7 +329,7 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    _logger.LogInformation($"An item definition update was detected! (appId: {app.SteamId}, itemId: {updatedItem.ItemDefinition.ItemDefId}, name: '{updatedItem.ItemDefinition.Name}')");
+                    _logger.LogTrace($"An item definition update was detected! (appId: {app.SteamId}, itemId: {updatedItem.ItemDefinition.ItemDefId}, name: '{updatedItem.ItemDefinition.Name}')");
                     await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
                     {
                         AssetDescription = updatedItem.AssetDescription,
@@ -361,7 +361,7 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    _logger.LogInformation($"An item has been removed from the store! (appId: {app.SteamId}, itemId: {removedStoreItem.ItemDefinition.ItemDefId}, name: '{removedStoreItem.ItemDefinition.Name}')");
+                    _logger.LogTrace($"An item has been removed from the store! (appId: {app.SteamId}, itemId: {removedStoreItem.ItemDefinition.ItemDefId}, name: '{removedStoreItem.ItemDefinition.Name}')");
                     removedStoreItem.AssetDescription.StoreItem.IsAvailable = false;
                 }
                 catch (Exception ex)
@@ -420,7 +420,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         if (activeItemStore.Items.All(x => !x.Item.IsAvailable))
                         {
-                            _logger.LogInformation($"An item store is now unavailable, no [available] items remaining (appId: {app.SteamId}, storeId: {activeItemStore.StoreId()})");
+                            _logger.LogTrace($"An item store is now unavailable, no [available] items remaining (appId: {app.SteamId}, storeId: {activeItemStore.StoreId()})");
                             activeItemStore.End = DateTimeOffset.UtcNow;
                             activeItemStores.Remove(activeItemStore);
                         }
@@ -438,7 +438,7 @@ namespace SCMM.Steam.API.Commands
                                 AppId = app.Id,
                                 Name = "General"
                             });
-                            _logger.LogInformation($"A new permanent item store was added (appId: {app.SteamId}, storeId: {permanentItemStore.StoreId()})");
+                            _logger.LogTrace($"A new permanent item store was added (appId: {app.SteamId}, storeId: {permanentItemStore.StoreId()})");
                         }
                     }
 
@@ -456,7 +456,7 @@ namespace SCMM.Steam.API.Commands
                                 Start = DateTimeOffset.UtcNow
                             });
 
-                            _logger.LogInformation($"A new limited item store was added (appId: {app.SteamId}, storeId: {limitedItemStore.StoreId()})");
+                            _logger.LogTrace($"A new limited item store was added (appId: {app.SteamId}, storeId: {limitedItemStore.StoreId()})");
 
                             var existingLimitedItemsThatAreStillAvailable = activeItemStores.SelectMany(x => x.Items)
                                 .Where(x => x.Item.IsAvailable && !x.Item.Description.IsPermanent)
@@ -489,7 +489,7 @@ namespace SCMM.Steam.API.Commands
                         var storeType = addedStoreItem.AssetDescription.IsPermanent ? "permanent" : "limited";
                         var store = addedStoreItem.AssetDescription.IsPermanent ? permanentItemStore : limitedItemStore;
 
-                        _logger.LogInformation($"A new item has been added to the {storeType} item store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
+                        _logger.LogTrace($"A new item has been added to the {storeType} item store! (appId: {app.SteamId}, itemId: {addedStoreItem.ItemDefinition.ItemDefId}, name: '{addedStoreItem.ItemDefinition.Name}')");
 
                         var storeItemAsset = assetPricesResponse?.Assets?.FirstOrDefault(x => x.ClassId == assetDescription.ClassId?.ToString() || x.Class?.Any(y => y.Value == itemDefinition.ItemDefId.ToString()) == true);
                         var storeItemPrices = storeItemAsset?.Prices ?? new Dictionary<string, long>();
@@ -671,7 +671,7 @@ namespace SCMM.Steam.API.Commands
 
                     if (newMarketableItem.HasBecomeMarketable)
                     {
-                        _logger.LogInformation($"An new item has been become marketable! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
+                        _logger.LogTrace($"An new item has been become marketable! (appId: {app.SteamId}, itemId: {itemDefinition.ItemDefId}, name: '{itemDefinition.Name}')");
                     }
 
                     // Double check that this asset description can currently be listed on the Steam community market

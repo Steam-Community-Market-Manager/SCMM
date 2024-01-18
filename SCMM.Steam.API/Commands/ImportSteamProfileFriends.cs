@@ -71,7 +71,7 @@ namespace SCMM.Steam.API.Commands
 
             try
             {
-                _logger.LogInformation($"Importing friends of '{resolvedId.SteamId64}' from Steam");
+                _logger.LogTrace($"Importing friends of '{resolvedId.SteamId64}' from Steam");
 
                 var steamId = resolvedId.SteamId64.Value;
                 var friendsListResponse = await _steamWebApiClient.SteamUserGetFriendListAsync(new GetFriendListJsonRequest()

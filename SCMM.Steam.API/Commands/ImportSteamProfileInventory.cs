@@ -113,7 +113,7 @@ namespace SCMM.Steam.API.Commands
             // Fetch the profiles inventory for each of the apps we monitor
             foreach (var app in apps)
             {
-                _logger.LogInformation($"Importing inventory of '{resolvedId.CustomUrl}' from Steam (appId: {app.SteamId})");
+                _logger.LogTrace($"Importing inventory of '{resolvedId.CustomUrl}' from Steam (appId: {app.SteamId})");
 
                 var steamInventoryItems = await FetchInventoryRecursive(profile, app, useCache: !request.Force);
                 if (steamInventoryItems == null || profile.Privacy == SteamVisibilityType.Private)

@@ -91,9 +91,15 @@ public static class WebApplicationExtensions
     {
         // Logging
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-        builder.Services.AddApplicationInsightsTelemetry();
-        builder.Services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+        builder.Services.AddApplicationInsightsTelemetry(options =>
+        {
+            options.EnableDependencyTrackingTelemetryModule = false;
+            options.EnableAppServicesHeartbeatTelemetryModule = false;
+            options.EnableHeartbeat = false;
+        });
         builder.Services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<IgnoreStaticWebFilesFilter>();
 
         // Authentication
         builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)

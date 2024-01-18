@@ -83,7 +83,7 @@ public class CheckForNewMarketItems
                     var newMarketItem = await AddOrUpdateMarketItem(app, usdCurrency, marketPriceOverviewResponse, assetDescription);
                     if (newMarketItem != null)
                     {
-                        logger.LogTrace($"New market item found (appId: {app.SteamId}, classId: {assetDescription.ClassId}, name: '{assetDescription.Name}')");
+                        logger.LogInformation($"New market item found (appId: {app.SteamId}, classId: {assetDescription.ClassId}, name: '{assetDescription.Name}')");
                         await _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
                         {
                             AppId = UInt64.Parse(app.SteamId),
