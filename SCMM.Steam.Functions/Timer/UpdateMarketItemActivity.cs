@@ -45,7 +45,7 @@ public class UpdateMarketItemActivity
             throw new Exception($"Update of market item activity information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
 
-        logger.LogInformation($"Updating market item activity information (id: {jobId})");
+        logger.LogTrace($"Updating market item activity information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -100,7 +100,7 @@ public class UpdateMarketItemActivity
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogDebug(ex, $"No change in market item activity for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
+                logger.LogTrace(ex, $"No change in market item activity for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
         });
 
@@ -172,6 +172,6 @@ public class UpdateMarketItemActivity
             }
         }
 
-        logger.LogInformation($"Updated {itemResponseMappings.Count} market item activity information (id: {jobId})");
+        logger.LogTrace($"Updated {itemResponseMappings.Count} market item activity information (id: {jobId})");
     }
 }

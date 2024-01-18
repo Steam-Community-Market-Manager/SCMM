@@ -25,6 +25,6 @@ public class DeleteMarketItemActivityOlderThanSevenDays
             .Where(x => x.Timestamp < cutoffDate)
             .ExecuteDeleteAsync();
 
-        logger.LogInformation($"Deleted {deletedActivity} market item activities");
+        logger.LogTrace($"Deleted {deletedActivity} market item activities");
     }
 }
