@@ -13,13 +13,13 @@
 <PageContainer Title="@($"{State?.App?.Name} Market Activity")">
     
     <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning" Variant="MudBlazor.Variant.Text" Class="mud-alert-outlined-warning mb-5">
-        <span>This is <strong>not</strong> a complete history of all Steam community market activity. Due to limitations of the Steam APIs, only a small subset of all activity can be public discovered.</span>
+        <span>This is <strong>not</strong> a complete history of all Steam community market activity. The Steam APIs only reveal a small subset of all market activity to the public. We attempt to track as much activity as is reasonably possible within the limitations of the APIs.</span>
     </MudAlert>
 
     <MudGrid Spacing="2">
 
         <MudItem xs="2">
-            <MudSelect T="SteamMarketItemActivityType?" Value="FilterType" ValueChanged="@OnFilterType" Label="Activity Type" Placeholder="Filter activity type..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+            <MudSelect T="SteamMarketItemActivityType?" Value="FilterType" ValueChanged="@OnFilterType" Label="Activity Type" Placeholder="Filter by activity type..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
                        FullWidth="true" Class="mud-input-transparent ma-0" Clearable="true" Disabled="State.IsPrerendering">
                 <MudSelectItem T="SteamMarketItemActivityType?" Value="@null">Any</MudSelectItem>
                 @foreach (var value in Enum.GetValues<SteamMarketItemActivityType>())
@@ -29,11 +29,11 @@
             </MudSelect>
         </MudItem>
         <MudItem xs="5">
-            <MudTextField T="string" Value="@FilterUser" ValueChanged="@OnFilterUser" DebounceInterval="500" Label="User" Placeholder="Filter user name..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+            <MudTextField T="string" Value="@FilterUser" ValueChanged="@OnFilterUser" DebounceInterval="500" Label="User" Placeholder="Filter by user name..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
                           FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         <MudItem xs="5">
-            <MudAutocomplete T="ItemDescriptionDTO" ValueChanged="@OnFilterItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Label="Item" Placeholder="Filter item..."  Margin="MudBlazor.Margin.None" Variant="Variant.Outlined"  
+            <MudAutocomplete T="ItemDescriptionDTO" ValueChanged="@OnFilterItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Label="Item" Placeholder="Filter by item..."  Margin="MudBlazor.Margin.None" Variant="Variant.Outlined"  
                              FullWidth="true" Class="mud-input-transparent ma-0" Clearable="true" Disabled="State.IsPrerendering">
                 <ItemTemplate Context="item">
                     <div class="d-flex flex-row justify-start align-center">
@@ -67,7 +67,7 @@
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                             @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
                             {
-                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap"> from </MudText>
+                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap"> from a listing by </MudText>
                                 <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                 <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                             }
