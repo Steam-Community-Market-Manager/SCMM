@@ -83,7 +83,7 @@ namespace SCMM.Steam.API.Commands
                 // If we know the exact steam id, fetch using the Steam API
                 if (resolvedId?.SteamId64 != null)
                 {
-                    _logger.LogInformation($"Importing profile '{resolvedId.SteamId64}' from Steam");
+                    _logger.LogTrace($"Importing profile '{resolvedId.SteamId64}' from Steam");
 
                     var steamId = resolvedId.SteamId64.Value.ToString();
                     var playerSummaryResponse = await _apiClient.SteamUserGetPlayerSummariesAsync(
@@ -145,7 +145,7 @@ namespace SCMM.Steam.API.Commands
                 // Else, if we know the custom profile id, fetch using the legacy XML API
                 else if (!string.IsNullOrEmpty(resolvedId?.CustomUrl))
                 {
-                    _logger.LogInformation($"Importing profile '{resolvedId.CustomUrl}' from Steam");
+                    _logger.LogTrace($"Importing profile '{resolvedId.CustomUrl}' from Steam");
 
                     var profileId = resolvedId.CustomUrl;
                     var response = await _communityClient.GetProfileByIdAsync(
