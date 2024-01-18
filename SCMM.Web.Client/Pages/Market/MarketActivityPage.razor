@@ -67,7 +67,7 @@
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                             @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
                             {
-                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap"> which was fulfilled by a listing from </MudText>
+                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap"> from </MudText>
                                 <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                 <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                             }
@@ -179,6 +179,10 @@
     
     private string GetActivityDescription(ItemActivityStatisticDTO activity)
     {
+        if (activity.IsSale)
+        {
+            return "purchased";
+        }
         switch (activity.Type)
         {
             case SteamMarketItemActivityType.CreatedSellOrder: return $"created a listing of";
