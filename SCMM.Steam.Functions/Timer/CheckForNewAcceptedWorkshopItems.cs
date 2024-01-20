@@ -11,6 +11,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
 using SCMM.Steam.Data.Store;
+using System.Linq;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -73,22 +74,30 @@ public class CheckForNewAcceptedWorkshopItems
                 app.MostRecentlyAcceptedWorkshopFileId = newlyAcceptedItems.First().PublishedFileId;
                 await _steamDb.SaveChangesAsync();
 
-                await _serviceBus.SendMessageAsync(new AppAcceptedWorkshopFilesUpdatedMessage()
-                {
-                    AppId = UInt64.Parse(app.SteamId),
-                    AppName = app.Name,
-                    AppIconUrl = app.IconUrl,
-                    AppColour = app.PrimaryColor,
-                    AcceptedWorkshopFileIds = newlyAcceptedItems.Select(x => x.PublishedFileId).ToArray(),
-                    ViewAcceptedWorkshopFilesPageUrl = new SteamWorkshopBrowsePageRequest()
-                    {
-                        AppId = app.SteamId,
-                        Section = SteamWorkshopBrowsePageRequest.SectionAccepted,
-                        BrowseSort = SteamWorkshopBrowsePageRequest.BrowseSortAccepted
-                    },
-                    TimeUpdated = DateTimeOffset.UtcNow,
-                });
+                var newWorkshopFileIds = newlyAcceptedItems.Select(x => x.PublishedFileId).ToArray();
+                var existingItemsWithWorkshopFileIdsCount = await _steamDb.SteamAssetDescriptions
+                    .Where(x => x.WorkshopFileId != null && newWorkshopFileIds.Contains(x.WorkshopFileId.Value))
+                    .CountAsync();
 
+                if (newWorkshopFileIds.Length > existingItemsWithWorkshopFileIdsCount)
+                {
+                    logger.LogInformation($"Found {newWorkshopFileIds.Length - existingItemsWithWorkshopFileIdsCount} new workshop items that are not in the database yet (appId: {app.SteamId})");
+                    await _serviceBus.SendMessageAsync(new AppAcceptedWorkshopFilesUpdatedMessage()
+                    {
+                        AppId = UInt64.Parse(app.SteamId),
+                        AppName = app.Name,
+                        AppIconUrl = app.IconUrl,
+                        AppColour = app.PrimaryColor,
+                        AcceptedWorkshopFileIds = newlyAcceptedItems.Select(x => x.PublishedFileId).ToArray(),
+                        ViewAcceptedWorkshopFilesPageUrl = new SteamWorkshopBrowsePageRequest()
+                        {
+                            AppId = app.SteamId,
+                            Section = SteamWorkshopBrowsePageRequest.SectionAccepted,
+                            BrowseSort = SteamWorkshopBrowsePageRequest.BrowseSortAccepted
+                        },
+                        TimeUpdated = DateTimeOffset.UtcNow,
+                    });
+                }
             }
         }
     }
