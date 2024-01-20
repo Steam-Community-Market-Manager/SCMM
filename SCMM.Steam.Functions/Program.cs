@@ -113,6 +113,7 @@ public static class HostExtensions
             // Logging
             /*services.AddApplicationInsightsTelemetry(options =>
             {
+                options.EnableRequestTrackingTelemetryModule = true;
                 options.EnableDependencyTrackingTelemetryModule = false;
                 options.EnableAppServicesHeartbeatTelemetryModule = false;
                 options.EnableHeartbeat = false;

@@ -93,6 +93,7 @@ public static class WebApplicationExtensions
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
         builder.Services.AddApplicationInsightsTelemetry(options =>
         {
+            options.EnableRequestTrackingTelemetryModule = true;
             options.EnableDependencyTrackingTelemetryModule = false;
             options.EnableAppServicesHeartbeatTelemetryModule = false;
             options.EnableHeartbeat = false;

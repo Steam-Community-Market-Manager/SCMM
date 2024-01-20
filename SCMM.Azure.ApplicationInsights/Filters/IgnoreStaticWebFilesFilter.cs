@@ -6,14 +6,11 @@ namespace SCMM.Azure.ApplicationInsights.Filters;
 
 public class IgnoreStaticWebFilesFilter : ITelemetryProcessor
 {
-    private readonly string[] paths;
-
     private ITelemetryProcessor Next { get; set; }
 
-    public IgnoreStaticWebFilesFilter(ITelemetryProcessor next, string[] paths)
+    public IgnoreStaticWebFilesFilter(ITelemetryProcessor next)
     {
         this.Next = next;
-        this.paths = paths;
     }
 
     public void Process(ITelemetry item)
