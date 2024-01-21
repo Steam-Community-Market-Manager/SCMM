@@ -71,6 +71,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                 SteamAppFeatureFlags.ItemInventory |
                 SteamAppFeatureFlags.ItemInventoryTracking |
                 SteamAppFeatureFlags.AssetDescriptionTracking |
+                SteamAppFeatureFlags.AssetDescriptionSupplyTracking |
                 SteamAppFeatureFlags.AssetDescriptionIconCaching |
                 SteamAppFeatureFlags.AssetDescriptionFeatureCrafting |
                 SteamAppFeatureFlags.AssetDescriptionFeatureGlowing |

@@ -27,7 +27,8 @@
         ItemInventoryTracking = 0x200000000,
 
         AssetDescriptionTracking = 0x1000000000000,
-        AssetDescriptionIconCaching = 0x2000000000000,
+        AssetDescriptionSupplyTracking = 0x2000000000000,
+        AssetDescriptionIconCaching = 0x4000000000000,
 
         AssetDescriptionFeatureCrafting = 0x10000000000000,
         AssetDescriptionFeatureGlowing = 0x20000000000000,
