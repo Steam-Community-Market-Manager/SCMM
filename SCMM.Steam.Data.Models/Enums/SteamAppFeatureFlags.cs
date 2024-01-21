@@ -1,7 +1,7 @@
 ﻿namespace SCMM.Steam.Data.Models.Enums
 {
     [Flags]
-    public enum SteamAppFeatureFlags : ulong
+    public enum SteamAppFeatureFlags : long
     {
         None = 0x0,
 

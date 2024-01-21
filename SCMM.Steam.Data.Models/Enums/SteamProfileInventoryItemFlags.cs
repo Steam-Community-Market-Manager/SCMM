@@ -1,7 +1,7 @@
 ﻿namespace SCMM.Steam.Data.Models.Enums
 {
     [Flags]
-    public enum SteamProfileInventoryItemFlags : uint
+    public enum SteamProfileInventoryItemFlags : int
     {
         None = 0x00,
         Investment = 0x01,
