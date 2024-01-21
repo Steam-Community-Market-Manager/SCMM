@@ -1,0 +1,23 @@
+﻿@page "/"
+@inject AppState State
+@inject NavigationManager NavigationManager
+
+@code {
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            if (State?.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreBrowser) == true)
+            {
+                NavigationManager.NavigateTo("/store");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/items");
+            }
+        }
+    }
+
+}
