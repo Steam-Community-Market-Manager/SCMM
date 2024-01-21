@@ -24,7 +24,7 @@
                 }
             </TooltipContent>
             <ChildContent>
-                <MudToggleIconButton Toggled="@IsOpen" ToggledChanged="OnToggleMenu" Icon="@(NotificationsAreNew ? "fas fa-fw fa-bell bell-ring" : "far fa-fw fa-bell")" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)" ToggledIcon="fas fa-fw fa-bell" ToggledColor="@Color.Secondary" />
+                <MudToggleIconButton Toggled="@IsOpen" ToggledChanged="OnToggleMenu" Icon="@(NotificationsAreNew ? "fas fa-fw fa-bell bell-ring" : "far fa-fw fa-bell")" Color="@(NotificationsAreNew ? Color.Secondary : Color.Secondary)" ToggledIcon="fas fa-fw fa-bell" ToggledColor="@Color.Secondary" />
             </ChildContent>
         </MudTooltip>
         <MudPopover Open="IsOpen" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Paper="false">
