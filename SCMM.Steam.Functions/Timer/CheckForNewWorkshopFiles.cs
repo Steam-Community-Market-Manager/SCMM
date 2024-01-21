@@ -44,7 +44,7 @@ public class CheckForNewWorkshopFiles
         var deepScan = false; // TODO: Make configurable?
 
         var apps = await _steamDb.SteamApps.AsNoTracking()
-            .Where(x => (x.FeatureFlags & SteamAppFeatureFlags.ItemWorkshopSubmissionTracking) != 0)
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemWorkshopSubmissionTracking))
             .ToListAsync();
 
         var assetDescriptions = await _steamDb.SteamAssetDescriptions.AsNoTracking()

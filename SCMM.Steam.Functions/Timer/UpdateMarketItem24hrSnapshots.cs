@@ -21,7 +21,7 @@ public class UpdateMarketItem24hrSnapshots
         var logger = context.GetLogger("Update-24hr-Value-Snapshots");
 
         var marketItems = await _db.SteamMarketItems
-            .Where(x => (x.App.FeatureFlags & SteamAppFeatureFlags.ItemMarketPriceTracking) != 0)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .ToListAsync();
 
         if (!marketItems.Any())

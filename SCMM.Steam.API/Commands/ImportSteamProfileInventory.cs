@@ -98,7 +98,7 @@ namespace SCMM.Steam.API.Commands
             // Use either the requested apps, or all supported apps (if requested apps is empty)
             var apps = await _db.SteamApps
                 .Where(x =>
-                    ((request.AppIds == null || request.AppIds.Length == 0) && (x.FeatureFlags & SteamAppFeatureFlags.ItemInventory) != 0) ||
+                    ((request.AppIds == null || request.AppIds.Length == 0) && x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemInventory)) ||
                     (request.AppIds != null && request.AppIds.Contains(x.SteamId))
                 )
                 .ToListAsync();

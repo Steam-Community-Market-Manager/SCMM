@@ -97,7 +97,7 @@ namespace SCMM.Steam.API.Commands
                     .ToArray();
 
                 var apps = await _steamDb.SteamApps.AsNoTracking()
-                    .Where(x => (x.FeatureFlags & SteamAppFeatureFlags.ItemInventoryTracking) != 0)
+                    .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemInventoryTracking))
                     .Select(x => x.SteamId)
                     .ToListAsync();
 

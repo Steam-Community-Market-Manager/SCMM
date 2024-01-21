@@ -33,7 +33,7 @@ public class CheckForNewStoreVideos
         var logger = context.GetLogger("Check-New-Store-Videos");
 
         var steamApps = await _db.SteamApps
-            .Where(x => (x.FeatureFlags & SteamAppFeatureFlags.ItemStoreMediaTracking) != 0)
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreMediaTracking))
             .ToListAsync();
         if (!steamApps.Any())
         {

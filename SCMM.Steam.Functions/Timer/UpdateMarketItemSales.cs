@@ -56,7 +56,7 @@ public class UpdateMarketItemSales
             .AsNoTracking()
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
-            .Where(x => (x.App.FeatureFlags & SteamAppFeatureFlags.ItemMarketPriceTracking) != 0)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .OrderBy(x => x.LastCheckedSalesOn)
             .Take(MarketItemBatchSize)
             .Select(x => new
