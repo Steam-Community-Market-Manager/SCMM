@@ -36,7 +36,7 @@ public class CheckForNewAppItemDefinitions
         var logger = context.GetLogger("Check-New-App-Item-Definitions");
 
         var apps = await _steamDb.SteamApps
-            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemDefinitions))
+            .Where(x => (x.FeatureFlags & SteamAppFeatureFlags.ItemDefinitions) != 0)
             .ToArrayAsync();
 
         foreach (var app in apps)

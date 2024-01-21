@@ -47,7 +47,7 @@ public class CheckForNewMarketItems
             .Where(x => !String.IsNullOrEmpty(x.NameHash))
             .Where(x => !x.IsPublisherDrop && !x.IsTwitchDrop)
             .Where(x => x.IsAccepted)
-            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
+            .Where(x => (x.App.FeatureFlags & SteamAppFeatureFlags.ItemMarketPriceTracking) != 0)
             .Include(x => x.App)
             .Include(x => x.CreatorProfile)
             .ToList();

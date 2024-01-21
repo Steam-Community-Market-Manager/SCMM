@@ -28,7 +28,7 @@ public class UpdateAssetDescriptions
         var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(23));
         var assetDescriptions = await _db.SteamAssetDescriptions
             .Where(x => x.ClassId != null)
-            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionTracking))
+            .Where(x => (x.App.FeatureFlags & SteamAppFeatureFlags.AssetDescriptionTracking) != 0)
             .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
             .OrderBy(x => x.TimeRefreshed)
             .Select(x => new

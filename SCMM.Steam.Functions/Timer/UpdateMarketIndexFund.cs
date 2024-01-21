@@ -25,7 +25,7 @@ public class UpdateMarketIndexFund
         var logger = context.GetLogger("Update-Market-Index-Fund");
 
         var apps = await _db.SteamApps
-            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
+            .Where(x => (x.FeatureFlags & SteamAppFeatureFlags.ItemMarketPriceTracking) != 0)
             .ToArrayAsync();
 
         foreach (var app in apps)
