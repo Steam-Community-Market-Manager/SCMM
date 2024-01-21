@@ -38,9 +38,8 @@ public class CheckForNewAcceptedWorkshopItems
         var logger = context.GetLogger("Check-New-Accepted-Workshop-Items");
 
         var steamApps = await _steamDb.SteamApps
-            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop))
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemWorkshopAcceptedTracking))
             .Where(x => x.MostRecentlyAcceptedWorkshopFileId > 0)
-            .Where(x => x.IsActive)
             .ToListAsync();
         
         foreach (var app in steamApps)

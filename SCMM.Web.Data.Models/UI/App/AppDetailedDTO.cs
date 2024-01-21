@@ -10,7 +10,7 @@ namespace SCMM.Web.Data.Models.UI.App
 
         public string PublisherName { get; set; }
 
-        public SteamAppFeatureTypes Features { get; set; }
+        public SteamAppFeatureFlags FeatureFlags { get; set; }
 
         public string[] DiscordCommunities { get; set; }
 

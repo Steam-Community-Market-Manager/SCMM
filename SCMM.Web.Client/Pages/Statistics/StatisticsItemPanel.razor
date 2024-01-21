@@ -88,7 +88,7 @@
         </StatisticsPanel>
     </MudItem>
 
-    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-cubes-stacked mr-1" Title="Highest Estimated Item Supply" Subtitle="Which items have the highest estimated total supply?" Dense="true">
@@ -163,7 +163,7 @@
         </StatisticsPanel>
     </MudItem>
     
-    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-user mr-1" Title="Largest Item Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">

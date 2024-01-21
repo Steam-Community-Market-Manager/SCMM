@@ -200,7 +200,7 @@
 
             destinationItem.Quantity = SelectedStacks.Sum(x => x.Quantity);
             destinationItem.TradableAndMarketable = SelectedStacks.All(x => x.TradableAndMarketable);
-            destinationItem.TradableAndMarketablAfter = SelectedStacks.Max(x => x.TradableAndMarketablAfter);
+            destinationItem.TradableAndMarketableAfter = SelectedStacks.Max(x => x.TradableAndMarketableAfter);
             foreach (var removedItem in sourceItems)
             {
                 Item.Stacks = Item.Stacks?.Except(new[] { removedItem })?.ToArray();

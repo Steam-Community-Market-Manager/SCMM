@@ -283,7 +283,7 @@ namespace SCMM.Steam.Data.Store
                 BuyNowFrom = lowestBuyPrice.From;
                 BuyNowPrice = lowestBuyPrice.Price;
                 BuyNowFee = lowestBuyPrice.Fee;
-                if (buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: true))
+                if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: true))
                 {
                     RaiseEvent(new MarketItemPriceProfitableBuyDealDetectedMessage()
                     {
@@ -637,7 +637,7 @@ namespace SCMM.Steam.Data.Store
                     {
                         AllTimeLowestValue = allTimeLow.MedianPrice;
                         AllTimeLowestValueOn = allTimeLow.Timestamp;
-                        if (App?.IsActive == true && Description != null)
+                        if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && Description != null)
                         {
                             RaiseEvent(new MarketItemPriceAllTimeLowReachedMessage()
                             {
@@ -671,7 +671,7 @@ namespace SCMM.Steam.Data.Store
                     {
                         AllTimeHighestValue = allTimeHigh.MedianPrice;
                         AllTimeHighestValueOn = allTimeHigh.Timestamp;
-                        if (App?.IsActive == true && Description != null)
+                        if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && Description != null)
                         {
                             RaiseEvent(new MarketItemPriceAllTimeHighReachedMessage()
                             {
@@ -790,7 +790,7 @@ namespace SCMM.Steam.Data.Store
             }
 
             // If the state of manipulation has changed, raise an event
-            if (IsBeingManipulated != wasBeingManipulated && App?.IsActive == true && Description != null)
+            if (IsBeingManipulated != wasBeingManipulated && App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && Description != null)
             {
                 LastManipulationAlertOn = DateTimeOffset.Now;
                 RaiseEvent(new MarketItemManipulationDetectedMessage()

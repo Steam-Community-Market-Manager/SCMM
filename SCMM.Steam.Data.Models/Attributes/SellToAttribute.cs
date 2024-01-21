@@ -8,7 +8,7 @@ public class SellToAttribute : Attribute
 {
     public string Url { get; set; }
 
-    public PriceTypes AcceptedPaymentTypes { get; set; }
+    public PriceFlags AcceptedPayments { get; set; }
 
     public long FeeSurcharge { get; set; }
 

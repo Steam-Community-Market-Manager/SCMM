@@ -8,6 +8,7 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Collections.Concurrent;
@@ -54,7 +55,7 @@ public class UpdateMarketItemOrders
             .Where(x => !string.IsNullOrEmpty(x.SteamId))
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .OrderBy(x => x.LastCheckedOrdersOn)
             .Take(MarketItemBatchSize)
             .Select(x => new

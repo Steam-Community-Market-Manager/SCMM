@@ -9,6 +9,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamUser;
 using SCMM.Steam.Data.Store;
 
@@ -96,7 +97,7 @@ namespace SCMM.Steam.API.Commands
                     .ToArray();
 
                 var apps = await _steamDb.SteamApps.AsNoTracking()
-                    .Where(x => x.IsActive)
+                    .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemInventoryTracking))
                     .Select(x => x.SteamId)
                     .ToListAsync();
 
@@ -104,9 +105,9 @@ namespace SCMM.Steam.API.Commands
                 {
                     try
                     {
+                        // Only import profiles that have a public inventory containing items from at least one of our tracked steam apps
                         foreach (var app in apps)
                         {
-                            // Only import profiles that have a public inventory containing items from at least one of our active apps
                             var inventory = await _steamCommunityClient.GetInventoryPaginatedAsync(new SteamInventoryPaginatedJsonRequest()
                             {
                                 AppId = app,

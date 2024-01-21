@@ -1,7 +1,7 @@
 ﻿namespace SCMM.Steam.Data.Models.Enums
 {
     [Flags]
-    public enum SteamProfileMarketItemFlags : byte
+    public enum SteamProfileMarketItemFlags : uint
     {
         None = 0x00,
         Watching = 0x01,

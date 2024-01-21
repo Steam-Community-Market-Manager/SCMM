@@ -1,7 +1,7 @@
 ﻿namespace SCMM.Steam.Data.Models.Enums
 {
     [Flags]
-    public enum PriceTypes : byte
+    public enum PriceFlags : byte
     {
         None = 0x00,
         Trade = 0x01,

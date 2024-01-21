@@ -26,36 +26,39 @@
                             <MudIconButton Size="Size.Small" Variant="Variant.Text" Icon="fas fa-fw fa-rotate" Color="Color.Secondary" Title="Refresh system status" Disabled="State.IsPrerendering"
                                            OnClick="@(async () => await RefreshSystemStatusAsync())"></MudIconButton>
                         </MudStack>
-                        <MudSimpleTable Elevation="0" Dense="true">
-                            <thead>
-                                <tr>
-                                    <th>Recent @SystemStatus.SteamApp.Name Item Definition Archives</th>
-                                    <th>Published</th>
-                                    <th class="text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var itemDefinitionArchive in SystemStatus.SteamApp.ItemDefinitionArchives)
-                                {
+                        @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemDefinitions) == true)
+                        {
+                            <MudSimpleTable Elevation="0" Dense="true">
+                                <thead>
                                     <tr>
-                                        <td>@itemDefinitionArchive.Digest <small class="mud-secondary-text">(@(itemDefinitionArchive.Size.ToQuantityString()) bytes)</small></td>
-                                        <td>@((DateTimeOffset.Now - itemDefinitionArchive.PublishedOn).ToDurationString(maxGranularity: 2, suffix: "ago"))</td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.inherit" Color="@(itemDefinitionArchive.IsImported ? Color.Success : Color.Warning)">
-                                                @if (itemDefinitionArchive.IsImported)
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-check mr-1"></i>Imported</span>
-                                                }
-                                                else
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Not processed</span>
-                                                }
-                                            </MudText>
-                                        </td>
+                                        <th>Recent @SystemStatus.SteamApp.Name Item Definition Archives</th>
+                                        <th>Published</th>
+                                        <th class="text-right">Status</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </MudSimpleTable>
+                                </thead>
+                                <tbody>
+                                    @foreach (var itemDefinitionArchive in SystemStatus.SteamApp.ItemDefinitionArchives)
+                                    {
+                                        <tr>
+                                            <td>@itemDefinitionArchive.Digest <small class="mud-secondary-text">(@(itemDefinitionArchive.Size.ToQuantityString()) bytes)</small></td>
+                                            <td>@((DateTimeOffset.Now - itemDefinitionArchive.PublishedOn).ToDurationString(maxGranularity: 2, suffix: "ago"))</td>
+                                            <td class="text-right">
+                                                <MudText Typo="Typo.inherit" Color="@(itemDefinitionArchive.IsImported ? Color.Success : Color.Warning)">
+                                                    @if (itemDefinitionArchive.IsImported)
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-check mr-1"></i>Imported</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Not processed</span>
+                                                    }
+                                                </MudText>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        }
                         <MudSimpleTable Elevation="0" Dense="true" Class="mt-4">
                             <thead>
                                 <tr>
@@ -67,7 +70,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest != null && SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest != null)
+                                @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionTracking) == true && SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest != null && SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest != null)
                                 {
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Item Asset Descriptions</td>
@@ -94,7 +97,7 @@
                                         </td>
                                     </tr>
                                 }
-                                @if (SystemStatus.SteamApp.MarketOrderUpdates.Newest != null && SystemStatus.SteamApp.MarketOrderUpdates.Oldest != null)
+                                @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true && SystemStatus.SteamApp.MarketOrderUpdates.Newest != null && SystemStatus.SteamApp.MarketOrderUpdates.Oldest != null)
                                 {
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Buy/Sell Orders</td>
@@ -121,7 +124,7 @@
                                         </td>
                                     </tr>
                                 }
-                                @if (SystemStatus.SteamApp.MarketSaleUpdates.Newest != null && SystemStatus.SteamApp.MarketSaleUpdates.Oldest != null)
+                                @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true && SystemStatus.SteamApp.MarketSaleUpdates.Newest != null && SystemStatus.SteamApp.MarketSaleUpdates.Oldest != null)
                                 {
                                     <tr>
                                         <td>@SystemStatus.SteamApp.Name Market Item Sales History</td>

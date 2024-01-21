@@ -6,6 +6,7 @@ using SCMM.Shared.API.Events;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 
@@ -58,7 +59,7 @@ public class UpdateCurrencyExchangeRates
         var mostExpensiveItem = _db.SteamMarketItems
             .Include(x => x.App)
             .Include(x => x.Description)
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.Description.IsCommodity)
             .Where(x => !String.IsNullOrEmpty(x.SteamId))

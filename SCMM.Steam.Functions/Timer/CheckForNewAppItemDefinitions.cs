@@ -6,6 +6,7 @@ using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Events;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Client;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Store;
@@ -35,7 +36,7 @@ public class CheckForNewAppItemDefinitions
         var logger = context.GetLogger("Check-New-App-Item-Definitions");
 
         var apps = await _steamDb.SteamApps
-            .Where(x => x.IsActive)
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemDefinitions))
             .ToArrayAsync();
 
         foreach (var app in apps)

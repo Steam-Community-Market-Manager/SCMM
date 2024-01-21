@@ -33,8 +33,7 @@ public class CheckForNewStoreVideos
         var logger = context.GetLogger("Check-New-Store-Videos");
 
         var steamApps = await _db.SteamApps
-            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
-            .Where(x => x.IsActive)
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreMediaTracking))
             .ToListAsync();
         if (!steamApps.Any())
         {
@@ -52,7 +51,7 @@ public class CheckForNewStoreVideos
             foreach (var itemStore in activeItemStores)
             {
                 var media = new Dictionary<IVideo, IVideoStreamingService>();
-                foreach (var channel in _configuration.Channels.Where(x => x.Type == CheckForNewStoreVideosConfiguration.ChannelType.YouTube))
+                foreach (var channel in _configuration.Channels.Where(x => x.AppId == app.SteamId && x.Type == CheckForNewStoreVideosConfiguration.ChannelType.YouTube))
                 {
                     foreach (var videoStreamingService in _videoStreamingServices)
                     {

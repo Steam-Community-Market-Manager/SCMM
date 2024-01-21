@@ -8,7 +8,7 @@ public class BuyFromAttribute : Attribute
 {
     public string Url { get; set; }
 
-    public PriceTypes AcceptedPaymentTypes { get; set; }
+    public PriceFlags AcceptedPayments { get; set; }
 
     public float DiscountMultiplier { get; set; }
 
