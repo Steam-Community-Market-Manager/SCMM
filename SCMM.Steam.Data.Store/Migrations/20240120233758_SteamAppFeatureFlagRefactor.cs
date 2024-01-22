@@ -50,6 +50,7 @@ namespace SCMM.Steam.Data.Store.Migrations
 
             var csgoFeatureFlags = (
                 SteamAppFeatureFlags.ItemStore |
+                SteamAppFeatureFlags.ItemStorePriceTracking |
                 SteamAppFeatureFlags.ItemMarket |
                 SteamAppFeatureFlags.ItemInventory
             );
@@ -61,7 +62,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                 SteamAppFeatureFlags.ItemWorkshopSubmissionTracking |
                 SteamAppFeatureFlags.ItemWorkshopAcceptedTracking |
                 SteamAppFeatureFlags.ItemStore |
-                SteamAppFeatureFlags.ItemStoreBrowser |
+                SteamAppFeatureFlags.ItemStoreWebBrowser |
+                //SteamAppFeatureFlags.ItemStorePriceTracking | // Rust gets this from item definition updates instead
                 SteamAppFeatureFlags.ItemStorePersistent |
                 SteamAppFeatureFlags.ItemStoreRotating |
                 SteamAppFeatureFlags.ItemMarket |
@@ -84,7 +86,8 @@ namespace SCMM.Steam.Data.Store.Migrations
 
             var unturnedFeatureFlags = (
                 SteamAppFeatureFlags.ItemStore |
-                SteamAppFeatureFlags.ItemStoreBrowser |
+                SteamAppFeatureFlags.ItemStoreWebBrowser |
+                SteamAppFeatureFlags.ItemStorePriceTracking |
                 SteamAppFeatureFlags.ItemMarket |
                 SteamAppFeatureFlags.ItemInventory
             );
