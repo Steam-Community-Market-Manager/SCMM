@@ -242,6 +242,11 @@ namespace SCMM.Steam.Data.Store
                 .ToDictionary(k => k.Key, v => v.Value)
             );
 
+            // What was the best buy price prior to this price update?
+            var lastBestBuyPrice = BuyPrices
+                .Where(x => x.Value.Price > 0 && x.Value.Supply != 0)
+                .Min(x => x.Value.Price);
+
             if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
             {
                 BuyPrices[type] = price.Value;
@@ -277,8 +282,8 @@ namespace SCMM.Steam.Data.Store
                     })
                     .MinBy(x => x.Price + x.Fee);
                 var buyNowDealHasImproved = (
-                    lowestBuyPrice.Price < BuyNowPrice &&
-                    lowestBuyPrice.Price.ToPercentage(BuyNowPrice) < 100
+                    lowestBuyPrice.Price < lastBestBuyPrice &&
+                    lowestBuyPrice.Price.ToPercentage(lastBestBuyPrice) < 100
                 );
                 BuyNowFrom = lowestBuyPrice.From;
                 BuyNowPrice = lowestBuyPrice.Price;
