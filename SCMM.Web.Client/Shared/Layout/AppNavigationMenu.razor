@@ -27,7 +27,7 @@
         <span class="no-wrap">Items</span>
     </MudNavLink>
 
-    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreBrowser) == true)
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStore) == true)
     {
         <MudNavLink Href="/store" Icon="fas fa-fw fa-shopping-cart" Disabled="@State.IsPrerendering">
             <span class="no-wrap">Item Stores</span>

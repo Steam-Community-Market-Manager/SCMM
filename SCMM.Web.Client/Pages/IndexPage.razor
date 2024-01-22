@@ -9,7 +9,7 @@
         base.OnAfterRender(firstRender);
         if (firstRender)
         {
-            if (State?.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreBrowser) == true)
+            if (State?.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStore) == true)
             {
                 NavigationManager.NavigateTo("/store");
             }

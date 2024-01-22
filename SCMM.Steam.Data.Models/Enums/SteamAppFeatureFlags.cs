@@ -12,7 +12,7 @@
         ItemWorkshopAcceptedTracking = 0x400,
 
         ItemStore = 0x10000,
-        ItemStoreBrowser = 0x20000,
+        ItemStoreWebBrowser = 0x20000,
         ItemStorePriceTracking = 0x40000,
         ItemStoreMediaTracking = 0x80000,
         ItemStorePersistent = 0x100000,
