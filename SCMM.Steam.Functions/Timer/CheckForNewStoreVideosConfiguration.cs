@@ -7,6 +7,8 @@ public class CheckForNewStoreVideosConfiguration
 
     public class ChannelExpression
     {
+        public string AppId { get; set; }
+
         public ChannelType Type { get; set; }
 
         public string ChannelId { get; set; }

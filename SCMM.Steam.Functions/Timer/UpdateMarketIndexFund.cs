@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Data.Models.Statistics;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
@@ -24,7 +25,7 @@ public class UpdateMarketIndexFund
         var logger = context.GetLogger("Update-Market-Index-Fund");
 
         var apps = await _db.SteamApps
-            .Where(x => x.IsActive)
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .ToArrayAsync();
 
         foreach (var app in apps)

@@ -138,7 +138,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset store tags
-                var dropsFromLootCrates = app?.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureLootCrates) == true;
+                var dropsFromLootCrates = app?.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureLootCrates) == true;
                 if (itemDefinition.StoreTags != null)
                 {
                     var existingNonStoreTags = assetDescription.Tags.Where(x => !x.Key.StartsWith(Constants.SteamAssetTagStore)).ToDictionary(x => x.Key, x => x.Value);
@@ -426,7 +426,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Parse asset icon image data
-            if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl) && app?.IsActive == true)
+            if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl) && app?.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionIconCaching) == true)
             {
                 try
                 {

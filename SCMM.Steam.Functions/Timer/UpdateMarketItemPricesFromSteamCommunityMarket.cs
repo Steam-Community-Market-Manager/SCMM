@@ -52,7 +52,7 @@ public class UpdateMarketItemPricesSteamCommunityMarket
         var appIds = SteamCommunityMarket.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
-            //.Where(x => x.IsActive)
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {

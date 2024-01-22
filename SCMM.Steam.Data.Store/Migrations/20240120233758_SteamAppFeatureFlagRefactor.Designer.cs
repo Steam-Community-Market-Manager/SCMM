@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
@@ -11,9 +12,11 @@ using SCMM.Steam.Data.Store;
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240120233758_SteamAppFeatureFlagRefactor")]
+    partial class SteamAppFeatureFlagRefactor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,8 +60,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("BackgroundColor")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("FeatureFlags")
-                        .HasColumnType("bigint");
+                    b.Property<decimal>("FeatureFlags")
+                        .HasColumnType("decimal(20,0)");
 
                     b.Property<string>("IconLargeUrl")
                         .HasColumnType("nvarchar(max)");
@@ -977,8 +980,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Flags")
-                        .HasColumnType("int");
+                    b.Property<long>("Flags")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("uniqueidentifier");
@@ -1052,8 +1055,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Flags")
-                        .HasColumnType("int");
+                    b.Property<long>("Flags")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("uniqueidentifier");

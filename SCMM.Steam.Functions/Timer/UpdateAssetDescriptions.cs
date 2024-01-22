@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
@@ -27,7 +28,7 @@ public class UpdateAssetDescriptions
         var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(23));
         var assetDescriptions = await _db.SteamAssetDescriptions
             .Where(x => x.ClassId != null)
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionTracking))
             .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
             .OrderBy(x => x.TimeRefreshed)
             .Select(x => new

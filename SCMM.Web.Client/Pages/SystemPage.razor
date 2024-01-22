@@ -26,130 +26,139 @@
                             <MudIconButton Size="Size.Small" Variant="Variant.Text" Icon="fas fa-fw fa-rotate" Color="Color.Secondary" Title="Refresh system status" Disabled="State.IsPrerendering"
                                            OnClick="@(async () => await RefreshSystemStatusAsync())"></MudIconButton>
                         </MudStack>
-                        <MudSimpleTable Elevation="0" Dense="true">
-                            <thead>
-                                <tr>
-                                    <th>Recent @SystemStatus.SteamApp.Name Item Definition Archives</th>
-                                    <th>Published</th>
-                                    <th class="text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var itemDefinitionArchive in SystemStatus.SteamApp.ItemDefinitionArchives)
-                                {
+                        @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemDefinitions) == true)
+                        {
+                            <MudSimpleTable Elevation="0" Dense="true">
+                                <thead>
                                     <tr>
-                                        <td>@itemDefinitionArchive.Digest <small class="mud-secondary-text">(@(itemDefinitionArchive.Size.ToQuantityString()) bytes)</small></td>
-                                        <td>@((DateTimeOffset.Now - itemDefinitionArchive.PublishedOn).ToDurationString(maxGranularity: 2, suffix: "ago"))</td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.inherit" Color="@(itemDefinitionArchive.IsImported ? Color.Success : Color.Warning)">
-                                                @if (itemDefinitionArchive.IsImported)
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-check mr-1"></i>Imported</span>
-                                                }
-                                                else
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Not processed</span>
-                                                }
-                                            </MudText>
-                                        </td>
+                                        <th>Recent @SystemStatus.SteamApp.Name Item Definition Archives</th>
+                                        <th>Published</th>
+                                        <th class="text-right">Status</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </MudSimpleTable>
-                        <MudSimpleTable Elevation="0" Dense="true" Class="mt-4">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Lasted Updated</th>
-                                    <th>Update Delta</th>
-                                    <th>Target Delta</th>
-                                    <th class="text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest != null && SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest != null)
-                                {
+                                </thead>
+                                <tbody>
+                                    @foreach (var itemDefinitionArchive in SystemStatus.SteamApp.ItemDefinitionArchives)
+                                    {
+                                        <tr>
+                                            <td>@itemDefinitionArchive.Digest <small class="mud-secondary-text">(@(itemDefinitionArchive.Size.ToQuantityString()) bytes)</small></td>
+                                            <td>@((DateTimeOffset.Now - itemDefinitionArchive.PublishedOn).ToDurationString(maxGranularity: 2, suffix: "ago"))</td>
+                                            <td class="text-right">
+                                                <MudText Typo="Typo.inherit" Color="@(itemDefinitionArchive.IsImported ? Color.Success : Color.Warning)">
+                                                    @if (itemDefinitionArchive.IsImported)
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-check mr-1"></i>Imported</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Not processed</span>
+                                                    }
+                                                </MudText>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        }
+                        @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionTracking) == true || State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true) {
+                            <MudSimpleTable Elevation="0" Dense="true" Class="mt-4">
+                                <thead>
                                     <tr>
-                                        <td>@SystemStatus.SteamApp.Name Item Asset Descriptions</td>
-                                        <td>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
-                                            <small class="mud-secondary-text"> (most recent item update) </small>
-                                            <br />
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
-                                            <small class="mud-secondary-text"> (oldest item update) </small>
-                                        </td>
-                                        <td>@SystemStatus.SteamApp.AssetDescriptionsUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
-                                        <td>Less than @SystemStatus.SteamApp.AssetDescriptionsUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.inherit" Color="@(SystemStatus.SteamApp.AssetDescriptionsUpdates.IsOnTarget ? Color.Success : Color.Warning)">
-                                                @if (SystemStatus.SteamApp.AssetDescriptionsUpdates.IsOnTarget)
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-check mr-1"></i>Running on schedule</span>
-                                                }
-                                                else
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Running behind schedule</span>
-                                                }
-                                            </MudText>
-                                        </td>
+                                        <th></th>
+                                        <th>Lasted Updated</th>
+                                        <th>Update Delta</th>
+                                        <th>Target Delta</th>
+                                        <th class="text-right">Status</th>
                                     </tr>
-                                }
-                                @if (SystemStatus.SteamApp.MarketOrderUpdates.Newest != null && SystemStatus.SteamApp.MarketOrderUpdates.Oldest != null)
-                                {
-                                    <tr>
-                                        <td>@SystemStatus.SteamApp.Name Market Item Buy/Sell Orders</td>
-                                        <td>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
-                                            <small class="mud-secondary-text"> (most recent item update) </small>
-                                            <br />
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
-                                            <small class="mud-secondary-text"> (oldest item update) </small>
-                                        </td>
-                                        <td>@SystemStatus.SteamApp.MarketOrderUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
-                                        <td>Less than @SystemStatus.SteamApp.MarketOrderUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.inherit" Color="@(SystemStatus.SteamApp.MarketOrderUpdates.IsOnTarget ? Color.Success : Color.Warning)">
-                                                @if (SystemStatus.SteamApp.MarketOrderUpdates.IsOnTarget)
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-check mr-1"></i>Running on schedule</span>
-                                                }
-                                                else
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Running behind schedule</span>
-                                                }
-                                            </MudText>
-                                        </td>
-                                    </tr>
-                                }
-                                @if (SystemStatus.SteamApp.MarketSaleUpdates.Newest != null && SystemStatus.SteamApp.MarketSaleUpdates.Oldest != null)
-                                {
-                                    <tr>
-                                        <td>@SystemStatus.SteamApp.Name Market Item Sales History</td>
-                                        <td>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
-                                            <small class="mud-secondary-text"> (most recent item update) </small>
-                                            <br/>
-                                            <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
-                                            <small class="mud-secondary-text"> (oldest item update) </small>
-                                        </td>
-                                        <td>@SystemStatus.SteamApp.MarketSaleUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
-                                        <td>Less than @SystemStatus.SteamApp.MarketSaleUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.inherit" Color="@(SystemStatus.SteamApp.MarketSaleUpdates.IsOnTarget ? Color.Success : Color.Warning)">
-                                                @if (SystemStatus.SteamApp.MarketSaleUpdates.IsOnTarget)
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-check mr-1"></i>Running on schedule</span>
-                                                }
-                                                else
-                                                {
-                                                    <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Running behind schedule</span>
-                                                }
-                                            </MudText>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </MudSimpleTable>
+                                </thead>
+                                <tbody>
+                                    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionTracking) == true && SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest != null && SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest != null)
+                                    {
+                                        <tr>
+                                            <td>@SystemStatus.SteamApp.Name Item Asset Descriptions</td>
+                                            <td>
+                                                <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                <small class="mud-secondary-text"> (most recent item update) </small>
+                                                <br />
+                                                <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.AssetDescriptionsUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                <small class="mud-secondary-text"> (oldest item update) </small>
+                                            </td>
+                                            <td>@SystemStatus.SteamApp.AssetDescriptionsUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
+                                            <td>Less than @SystemStatus.SteamApp.AssetDescriptionsUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
+                                            <td class="text-right">
+                                                <MudText Typo="Typo.inherit" Color="@(SystemStatus.SteamApp.AssetDescriptionsUpdates.IsOnTarget ? Color.Success : Color.Warning)">
+                                                    @if (SystemStatus.SteamApp.AssetDescriptionsUpdates.IsOnTarget)
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-check mr-1"></i>Running on schedule</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Running behind schedule</span>
+                                                    }
+                                                </MudText>
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true && SystemStatus.SteamApp.MarketOrderUpdates.Newest != null && SystemStatus.SteamApp.MarketOrderUpdates.Oldest != null)
+                                    {
+                                        <tr>
+                                            <td>@SystemStatus.SteamApp.Name Market Item Buy/Sell Orders</td>
+                                            <td>
+                                                <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                <small class="mud-secondary-text"> (most recent item update) </small>
+                                                <br />
+                                                <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketOrderUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                <small class="mud-secondary-text"> (oldest item update) </small>
+                                            </td>
+                                            <td>@SystemStatus.SteamApp.MarketOrderUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
+                                            <td>Less than @SystemStatus.SteamApp.MarketOrderUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
+                                            <td class="text-right">
+                                                <MudText Typo="Typo.inherit" Color="@(SystemStatus.SteamApp.MarketOrderUpdates.IsOnTarget ? Color.Success : Color.Warning)">
+                                                    @if (SystemStatus.SteamApp.MarketOrderUpdates.IsOnTarget)
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-check mr-1"></i>Running on schedule</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Running behind schedule</span>
+                                                    }
+                                                </MudText>
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true && SystemStatus.SteamApp.MarketSaleUpdates.Newest != null && SystemStatus.SteamApp.MarketSaleUpdates.Oldest != null)
+                                    {
+                                        <tr>
+                                            <td>@SystemStatus.SteamApp.Name Market Item Sales History</td>
+                                            <td>
+                                                <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Newest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                <small class="mud-secondary-text"> (most recent item update) </small>
+                                                <br/>
+                                                <span>@((DateTimeOffset.Now - SystemStatus.SteamApp.MarketSaleUpdates.Oldest.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</span>
+                                                <small class="mud-secondary-text"> (oldest item update) </small>
+                                            </td>
+                                            <td>@SystemStatus.SteamApp.MarketSaleUpdates.Delta.Value.ToDurationString(maxGranularity: 2)</td>
+                                            <td>Less than @SystemStatus.SteamApp.MarketSaleUpdates.TargetDelta.Value.ToDurationString(maxGranularity: 2)</td>
+                                            <td class="text-right">
+                                                <MudText Typo="Typo.inherit" Color="@(SystemStatus.SteamApp.MarketSaleUpdates.IsOnTarget ? Color.Success : Color.Warning)">
+                                                    @if (SystemStatus.SteamApp.MarketSaleUpdates.IsOnTarget)
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-check mr-1"></i>Running on schedule</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span><i class="fas fa-fw fa-circle-exclamation mr-1"></i>Running behind schedule</span>
+                                                    }
+                                                </MudText>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">No services are enabled.</MudText>
+                        }
                     </MudPaper>
                 </MudItem>
             }

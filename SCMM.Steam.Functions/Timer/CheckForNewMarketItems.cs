@@ -12,6 +12,7 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 
@@ -46,7 +47,7 @@ public class CheckForNewMarketItems
             .Where(x => !String.IsNullOrEmpty(x.NameHash))
             .Where(x => !x.IsPublisherDrop && !x.IsTwitchDrop)
             .Where(x => x.IsAccepted)
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .Include(x => x.App)
             .Include(x => x.CreatorProfile)
             .ToList();

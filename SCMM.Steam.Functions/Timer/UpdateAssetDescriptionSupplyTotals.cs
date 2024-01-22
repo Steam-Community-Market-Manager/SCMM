@@ -57,7 +57,7 @@ public class UpdateAssetDescriptionSupplyTotals
 	                LEFT OUTER JOIN MarketSupply mks ON mks.Id = a.Id
 	                LEFT OUTER JOIN InventorySupply ivs ON ivs.Id = a.Id
                 WHERE
-	                app.IsActive = 1
+	                (app.FeatureFlags & 0x2000000000000) = 0 -- AssetDescriptionSupplyTracking
             ");
 
             // Recalculate the overall supply total
