@@ -59,10 +59,10 @@ namespace SCMM.Shared.Data.Store
             return values?.Where(x => !string.IsNullOrEmpty(x))?.Distinct()?.ToArray() ?? new string[0];
         }
 
-        public KeyValuePair<T, IEnumerable<string>> List(string name)
+        public KeyValuePair<T, IEnumerable<string>> List(string name, ulong? appId = null)
         {
             var definition = AssertValidConfiguration(name);
-            var config = Configuration.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
+            var config = Configuration.FirstOrDefault(x => x.AppId == appId && String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
             var result = new List<string>();
             if (config?.List?.Any() == true)
             {
@@ -76,10 +76,10 @@ namespace SCMM.Shared.Data.Store
             return new KeyValuePair<T, IEnumerable<string>>(config, result);
         }
 
-        public KeyValuePair<T, string> Get(string name, string defaultValue = null)
+        public KeyValuePair<T, string> Get(string name, ulong? appId = null, string defaultValue = null)
         {
             var definition = AssertValidConfiguration(name);
-            var config = Configuration.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
+            var config = Configuration.FirstOrDefault(x => x.AppId == appId && String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
             var result = defaultValue;
             if (!string.IsNullOrEmpty(config?.Value))
             {
@@ -93,10 +93,10 @@ namespace SCMM.Shared.Data.Store
             return new KeyValuePair<T, string>(config, result);
         }
 
-        public T Set(string name, string value)
+        public T Set(string name, string value, ulong? appId = null)
         {
             var definition = AssertValidConfiguration(name);
-            var config = Configuration.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
+            var config = Configuration.FirstOrDefault(x => x.AppId == appId && String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
             var values = AssertValidConfigurationValue(name, value);
 
             if (config != null)
@@ -119,16 +119,17 @@ namespace SCMM.Shared.Data.Store
                 {
                     Name = name,
                     Value = (definition.AllowMultipleValues ? null : values.FirstOrDefault()),
-                    List = (definition.AllowMultipleValues ? values : null)
+                    List = (definition.AllowMultipleValues ? values : null),
+                    AppId = appId
                 });
             }
 
             return config;
         }
 
-        public bool IsSet(string name)
+        public bool IsSet(string name, ulong? appId = null)
         {
-            return !string.IsNullOrEmpty(Get(name).Value);
+            return !string.IsNullOrEmpty(Get(name, appId).Value);
         }
     }
 }

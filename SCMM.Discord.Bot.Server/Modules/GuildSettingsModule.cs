@@ -46,7 +46,8 @@ public class GuildSettingsModule : InteractionModuleBase<ShardedInteractionConte
     [SlashCommand("server", "Update the configuration for this server")]
     public async Task<RuntimeResult> SetGuildConfigurationAsync(
         [Summary("name", "The configuration name")][Autocomplete(typeof(GuildConfigurationNameAutocompleteHandler))] string name,
-        [Summary("value", "The configuration value")][Autocomplete(typeof(GuildConfigurationValueAutocompleteHandler))] string value
+        [Summary("value", "The configuration value")][Autocomplete(typeof(GuildConfigurationValueAutocompleteHandler))] string value,
+        [Summary("app", "Any supported Steam app")][Autocomplete(typeof(SteamAppAutocompleteHandler))] ulong? appId = null
     )
     {
         var guild = await GetOrCreateGuild();
@@ -57,17 +58,17 @@ public class GuildSettingsModule : InteractionModuleBase<ShardedInteractionConte
 
         try
         {
-            guild.Set(name, value);
+            guild.Set(name, value, appId);
             await _discordDb.SaveChangesAsync();
 
-            var config = guild.Get(name);
+            var config = guild.Get(name, appId);
             if (!string.IsNullOrEmpty(config.Value))
             {
-                return InteractionResult.Success($"👌 {config.Key?.Name ?? name} is now {GetValueDisplayText(config.Value)}.", ephemeral: true);
+                return InteractionResult.Success($"👌 {config.Key?.Name ?? name} is now {GetValueDisplayText(config.Value)} for {(appId > 0 ? appId.ToString() : "all apps")}.", ephemeral: true);
             }
             else
             {
-                return InteractionResult.Success($"👌 {config.Key?.Name ?? name} was reset to default.", ephemeral: true);
+                return InteractionResult.Success($"👌 {config.Key?.Name ?? name} was reset to default for {(appId > 0 ? appId.ToString() : "all apps")}.", ephemeral: true);
             }
         }
         catch (ArgumentException ex)
