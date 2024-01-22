@@ -52,10 +52,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(AppAcceptedWorkshopFilesUpdatedMessage appAcceptedWorkshopFiles, IMessageContext context)
         {
-            //if (appItemDefinition?.AppId != _discordConfiguration.AppId)
-            //    return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppAcceptedWorkshopFilesUpdated, (guildId, channelId) =>
+            await SendAlertToGuilds(appAcceptedWorkshopFiles?.AppId, DiscordGuild.GuildConfiguration.AlertChannelAppAcceptedWorkshopFilesUpdated, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.AppendLine($"{appAcceptedWorkshopFiles.AcceptedWorkshopFileIds?.Count() ?? 0} new item(s) have just been accepted in-game to {appAcceptedWorkshopFiles.AppName}.");
@@ -76,10 +73,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(AppItemDefinitionsUpdatedMessage appItemDefinition, IMessageContext context)
         {
-            //if (appItemDefinition?.AppId != _discordConfiguration.AppId)
-            //    return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guildId, channelId) =>
+            await SendAlertToGuilds(appItemDefinition?.AppId, DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.AppendLine($"In-game item definitions for {appItemDefinition.AppName} have been updated.");
@@ -100,10 +94,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(ItemDefinitionAddedMessage itemDefinition, IMessageContext context)
         {
-            //if (itemDefinition?.AppId != _discordConfiguration.AppId)
-            //    return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsItemAdded, (guildId, channelId) =>
+            await SendAlertToGuilds(itemDefinition?.AppId, DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsItemAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {itemDefinition.ItemType} has been added to the {itemDefinition.AppName} in-game item definitions.");
@@ -131,10 +122,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemAddedMessage marketItem, IMessageContext context)
         {
-            if (marketItem?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemAdded, (guildId, channelId) =>
+            await SendAlertToGuilds(marketItem?.AppId, DiscordGuild.GuildConfiguration.AlertChannelMarketItemAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {marketItem.ItemType} has been listed on the {marketItem.AppName} community market.");
@@ -167,16 +155,13 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemManipulationDetectedMessage marketItem, IMessageContext context)
         {
-            if (marketItem?.AppId != _discordConfiguration.AppId)
-                return;
-
             // Only send alerts for new/active manipulations
             if (!marketItem.IsBeingManipulated)
             {
                 return;
             }
 
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemManipulationDetected, (guildId, channelId) =>
+            await SendAlertToGuilds(marketItem?.AppId, DiscordGuild.GuildConfiguration.AlertChannelMarketItemManipulationDetected, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 var fields = (IDictionary<string, string>)null;
@@ -217,10 +202,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemPriceAllTimeHighReachedMessage marketItem, IMessageContext context)
         {
-            if (marketItem?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceAllTimeHighReached, (guildId, channelId) =>
+            await SendAlertToGuilds(marketItem?.AppId, DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceAllTimeHighReached, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"Reached a new **all-time-high** price of **{marketItem.AllTimeHighestValueDescription}** on the {marketItem.AppName} community market.");
@@ -245,10 +227,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(MarketItemPriceAllTimeLowReachedMessage marketItem, IMessageContext context)
         {
-            if (marketItem?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceAllTimeLowReached, (guildId, channelId) =>
+            await SendAlertToGuilds(marketItem?.AppId, DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceAllTimeLowReached, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"Reached a new **all-time-low** price of **{marketItem.AllTimeLowestValueDescription}** on the {marketItem.AppName} community market.");
@@ -281,15 +260,12 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 .Include(x => x.App)
                 .FirstOrDefaultAsync(x => x.Id == marketItem.DescriptionId);
 
-            if (app == null || UInt64.Parse(app.SteamId) != _discordConfiguration.AppId)
-                return;
-
             if (currency == null || assetDescription == null)
             {
                 return;
             }
 
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceProfitableBuyDealDetected, async (guildId, channelId) =>
+            await SendAlertToGuilds(app != null ? (ulong?)Int64.Parse(app.SteamId) : null, DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceProfitableBuyDealDetected, async (guildId, channelId) =>
             {
                 var marketName = marketItem.BuyNowFrom.GetDisplayName();
                 var marketColor = marketItem.BuyNowFrom.GetColor();
@@ -354,10 +330,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(StoreAddedMessage store, IMessageContext context)
         {
-            if (store?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreAdded, (guildId, channelId) =>
+            await SendAlertToGuilds(store?.AppId, DiscordGuild.GuildConfiguration.AlertChannelStoreAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"{store.Items?.Length ?? 0} new item(s) have been added to the {store.AppName} store.");
@@ -384,10 +357,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(StoreItemAddedMessage storeItem, IMessageContext context)
         {
-            if (storeItem?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guildId, channelId) =>
+            await SendAlertToGuilds(storeItem?.AppId, DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 var defaultPrice = storeItem.ItemPrices?.FirstOrDefault(x => x.Currency == Steam.Data.Models.Constants.SteamDefaultCurrency);
@@ -421,10 +391,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(StoreMediaAddedMessage storeMedia, IMessageContext context)
         {
-            if (storeMedia?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guildId, channelId) =>
+            await SendAlertToGuilds(storeMedia?.AppId, DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New video has been uploaded that discusses the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
@@ -447,10 +414,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(WorkshopFilePublishedMessage workshopFile, IMessageContext context)
         {
-            if (workshopFile?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFilePublished, (guildId, channelId) =>
+            await SendAlertToGuilds(workshopFile?.AppId, DiscordGuild.GuildConfiguration.AlertChannelWorkshopFilePublished, (guildId, channelId) =>
             {
                 var description = new StringBuilder();
                 description.Append($"New {workshopFile.ItemType} has been submitted to the {workshopFile.AppName} workshop.");
@@ -489,10 +453,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(WorkshopFileUpdatedMessage workshopFile, IMessageContext context)
         {
-            if (workshopFile?.AppId != _discordConfiguration.AppId)
-                return;
-
-            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guildId, channelId) =>
+            await SendAlertToGuilds(workshopFile?.AppId, DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guildId, channelId) =>
             {
                 var workshopFileChangeNotesPageUrl = new SteamWorkshopFileChangeNotesPageRequest()
                 {
@@ -541,20 +502,25 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
-        private async Task SendAlertToGuilds(string alertConfigurationName, Func<ulong, ulong, Task> alertCallback)
+        private async Task SendAlertToGuilds(ulong? appId, string alertConfigurationName, Func<ulong, ulong, Task> alertCallback)
         {
             var guildsWithAlertsEnabled = await _discordDb.DiscordGuilds.AsNoTracking()
                 .Where(x => (x.Flags & DiscordGuild.GuildFlags.Alerts) != 0)
                 .ToListAsync();
 
             var guildsToBeAlerted = guildsWithAlertsEnabled
-                .Where(x => x.Configuration.Any(x => x.Name == alertConfigurationName && !String.IsNullOrEmpty(x.Value)))
+                .Where(x => x.Configuration.Any(c => (c.AppId == null || c.AppId == appId) && (c.Name == alertConfigurationName) && !String.IsNullOrEmpty(c.Value)))
                 .ToList();
 
             var alertTasks = new List<Task>();
             foreach (var guildToBeAlerted in guildsToBeAlerted)
             {
-                var alertTarget = guildToBeAlerted.Configuration.FirstOrDefault(x => x.Name == alertConfigurationName).Value;
+                var alertTarget = guildToBeAlerted.Configuration
+                    .Where(x => (x.AppId == null || x.AppId == appId) && x.Name == alertConfigurationName)
+                    .OrderByDescending(x => (x.AppId == appId))
+                    .First()
+                    .Value;
+
                 var guild = _client.Guilds.FirstOrDefault(x => x.Id == guildToBeAlerted.Id);
                 var channel = guild?.Channels
                     .Where(x => x.Id.ToString() == alertTarget || string.Equals($"<#{x.Id}>", alertTarget, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, alertTarget))
