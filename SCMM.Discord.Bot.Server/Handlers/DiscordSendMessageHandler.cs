@@ -1,11 +1,9 @@
 ﻿using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
 using SCMM.Shared.Abstractions.Messaging;
-using SCMM.Shared.Abstractions.Messaging.Attributes;
 
 namespace SCMM.Discord.Bot.Server.Handlers
 {
-    [Concurrency(MaxConcurrentCalls = 10)]
     public class DiscordSendMessageHandler : IMessageHandler<SendDiscordMessage>
     {
         private readonly DiscordClient _client;
