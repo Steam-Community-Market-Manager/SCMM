@@ -265,7 +265,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 return;
             }
 
-            await SendAlertToGuilds(app != null ? (ulong?)Int64.Parse(app.SteamId) : null, DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceProfitableBuyDealDetected, (guildId, channelId) =>
+            await SendAlertToGuilds(app != null ? (ulong?)Int64.Parse(app.SteamId) : null, DiscordGuild.GuildConfiguration.AlertChannelMarketItemPriceProfitableBuyDealDetected, async (guildId, channelId) =>
             {
                 var marketName = marketItem.BuyNowFrom.GetDisplayName();
                 var marketColor = marketItem.BuyNowFrom.GetColor();
@@ -288,9 +288,27 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     { "Compare with Steam", new SteamMarketListingPageRequest() { AppId = assetDescription.App.SteamId, MarketHashName = assetDescription.NameHash } }
                 };
 
-                return _client.SendMessageAsync(
+                // Post message to the channel
+                await _client.SendMessageAsync(
                     guildId,
                     channelId,
+                    title: $"Get {discountPercentage}% off {assetDescription.Name}",
+                    authorName: marketName,
+                    authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
+                    url: marketUrl,
+                    thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
+                                  !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    linkButtons: linkButtons,
+                    crossPost: false // Messages with link buttons (interactions) cannot be cross-posted
+                );
+
+                // Post message to channels market thread
+                await _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    threadName: marketName,
                     title: $"Get {discountPercentage}% off {assetDescription.Name}",
                     authorName: marketName,
                     authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
