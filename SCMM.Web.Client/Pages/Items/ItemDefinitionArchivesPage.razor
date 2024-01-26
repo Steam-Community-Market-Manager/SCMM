@@ -1,4 +1,5 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Diff
 @using SCMM.Web.Data.Models.UI.Item
 @page "/item/definitionArchives"
 @page "/item/definitionArchive/{Digest}"
@@ -34,55 +35,96 @@
                 <MudExpansionPanels MultiExpansion="true" Dense="true" DisableGutters="true">
                     @foreach (var itemDefinitionArchive in ItemDefinitionArchivesList)
                     {
-                        <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive.Archive, x))">
+                        <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))" Disabled="itemDefinitionArchive.PreviousDigest == null">
                             <TitleContent>
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                                    <MudStack Spacing="1">
+                                    <MudStack Spacing="1" AlignItems="AlignItems.Start">
                                         <MudText Typo="MudBlazor.Typo.body1">
                                             <i class="fas fa-fw fa-archive mr-1"></i>
-                                            <span>@itemDefinitionArchive.Archive.Digest</span>
-                                            <span class="mud-secondary-text"> (@itemDefinitionArchive.Archive.Size.ToFileSizeString()) </span>
+                                            <span>@itemDefinitionArchive.Digest</span>
                                         </MudText>
                                         <MudStack Spacing="2" Row="true" AlignItems="AlignItems.Center">
-                                            <MudChip Color="Color.Secondary" Size="Size.Small">@itemDefinitionArchive.Archive.ItemCount item(s)</MudChip>
+                                            <MudButton OnClick="@(() => DownloadArchive(itemDefinitionArchive))" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                                <span><i class="fa fa-fw fa-download mr-1"></i> Download</span>
+                                            </MudButton>
+                                            <MudChip Color="Color.Secondary" Size="Size.Small">@(itemDefinitionArchive.Info.ItemCount.ToQuantityString()) item(s)</MudChip>
                                             <MudText Color="Color.Secondary" Typo="Typo.body2">
-                                                <span>This archive </span>
+                                                <span>This change </span>
                                                 @if (itemDefinitionArchive.DiffItemCount != 0)
                                                 {
-                                                    <span class="@(itemDefinitionArchive.DiffItemCount > 0 ? "mud-success-text" : "mud-error-text")">
-                                                        @(itemDefinitionArchive.DiffItemCount > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffItemCount).ToQuantityString()) item(s)
+                                                    <span>
+                                                        @(itemDefinitionArchive.DiffItemCount > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffItemCount).ToQuantityString()) @(itemDefinitionArchive.DiffItemCount > 0 ? "new" : "existing") item(s).
                                                     </span>
-                                                    <span> and </span>
-                                                }
-                                                @if (itemDefinitionArchive.DiffSize != 0)
-                                                {
-                                                    <span class="@(itemDefinitionArchive.DiffSize > 0 ? "mud-success-text" : "mud-error-text")">
-                                                        @(itemDefinitionArchive.DiffSize > 0 ? "added" : "removed") @(Math.Abs(itemDefinitionArchive.DiffSize).ToQuantityString()) character(s)
-                                                    </span>
-                                                    <span> to the game item definitions. </span>
                                                 }
                                                 else
                                                 {
-                                                    <span> didn't change anything noteworthy.</span>
+                                                    <span> modified existing items.</span>
                                                 }
                                             </MudText>
                                         </MudStack>
                                     </MudStack>
-                                    @if (itemDefinitionArchive.Archive.Timestamp != null)
+                                    @if (itemDefinitionArchive.Info.Timestamp != null)
                                     {
-                                        <MudText Typo="MudBlazor.Typo.body2" Color="Color.Secondary" Class="mx-4">@((DateTimeOffset.Now - itemDefinitionArchive.Archive.Timestamp.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</MudText>
+                                        <MudStack Spacing="1" AlignItems="AlignItems.End">
+                                            <MudText Typo="MudBlazor.Typo.body1" Class="mx-4">@(itemDefinitionArchive.Info.Timestamp.Value.ToString("yyyy MMMM dd, HH:mm:ss"))</MudText>
+                                            <MudText Typo="MudBlazor.Typo.body2" Color="Color.Secondary" Class="mx-4">@((DateTimeOffset.Now - itemDefinitionArchive.Info.Timestamp.Value).ToDurationString(maxGranularity: 2, suffix: "ago"))</MudText>
+                                        </MudStack>
                                     }
                                 </MudStack>
                             </TitleContent>
                             <ChildContent>
-                                @if (!ItemDefinitionArchives.ContainsKey(itemDefinitionArchive.Archive.Digest))
+                                @if (!ItemDefinitionArchiveDiffs.ContainsKey(itemDefinitionArchive.Digest))
                                 {
-                                    <Loading Message="Loading item definition archive..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+                                    <Loading Message="Loading changes text diff..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
                                 }
                                 else
                                 {
-                                    <div style="width:100%; height:75vh;">
-                                        <JsonEditor Json="@ItemDefinitionArchives[itemDefinitionArchive.Archive.Digest]" SelectionPath="@($@"[{itemDefinitionArchive.Archive.ItemCount - 1}, ""itemdefid""]")" ReadOnly="true" />
+                                    <div class="diffPane">
+                                        <table cellpadding="0" cellspacing="0" class="diffTable">
+                                            @{
+                                                var diffLines = ItemDefinitionArchiveDiffs[itemDefinitionArchive.Digest]?.Lines;
+                                            }
+                                            @if (diffLines != null)
+                                            {
+                                                @foreach (var diffLine in diffLines)
+                                                {
+
+                                                    <tr>
+                                                        <td class="lineNumber">
+                                                            @if (diffLine.Position.HasValue)
+                                                            {
+                                                                <span>@diffLine.Position.ToString()</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>&nbsp;</span>
+                                                            }
+                                                        </td>
+                                                        <td class="line @diffLine.Type.ToString()Line">
+                                                            <span class="lineText">
+                                                                @if (!string.IsNullOrEmpty(diffLine.Text))
+                                                                {
+                                                                    string spaceValue = "\u00B7";
+                                                                    string tabValue = "\u00B7\u00B7";
+                                                                    @if (diffLine.Type == TextDiffChangeType.Deleted.ToString() || diffLine.Type == TextDiffChangeType.Inserted.ToString() || diffLine.Type == TextDiffChangeType.Unchanged.ToString())
+                                                                    {
+                                                                        @diffLine.Text.Replace(" ", spaceValue).Replace("\t", tabValue)
+                                                                    }
+                                                                    else if (diffLine.Type == TextDiffChangeType.Modified.ToString())
+                                                                    {
+                                                                        @foreach (var character in diffLine.SubPieces)
+                                                                        {
+                                                                            @if (character.Type == TextDiffChangeType.Imaginary.ToString()) { continue; }
+                                                                            <span class="@character.Type.ToString()Character piece">@character.Text.Replace(" ", spaceValue.ToString())</span>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </table>
                                     </div>
                                 }
                             </ChildContent>
@@ -108,13 +150,13 @@
 
     private ItemDefinitionArchiveIdentifierWithDiff[] ItemDefinitionArchivesList;
 
-    private IDictionary<string, string> ItemDefinitionArchives;
+    private IDictionary<string, TextDiffDTO> ItemDefinitionArchiveDiffs;
 
     private Exception LoadException;
 
     protected override async Task OnLoadStateAsync()
     {
-        ItemDefinitionArchives = RestoreFromStateOrDefault(nameof(ItemDefinitionArchives), new Dictionary<string, string>());
+        ItemDefinitionArchiveDiffs = RestoreFromStateOrDefault(nameof(ItemDefinitionArchiveDiffs), new Dictionary<string, TextDiffDTO>());
         ItemDefinitionArchivesList = await RestoreFromStateOrLoad(nameof(ItemDefinitionArchivesList), async () =>
         {
             try
@@ -128,8 +170,9 @@
                         var lastArchive = archives.ElementAtOrDefault(archives.IndexOf(archive) + 1);
                         results.Add(new ItemDefinitionArchiveIdentifierWithDiff()
                         {
-                            Archive = archive,
-                            DiffSize = lastArchive != null ? (archive.Size - (lastArchive?.Size ?? 0)) : 0,
+                            Info = archive,
+                            Digest = archive.Digest,
+                            PreviousDigest = lastArchive?.Digest,
                             DiffItemCount = lastArchive != null ? (archive.ItemCount - (lastArchive?.ItemCount ?? 0)) : 0
                         });
                     }
@@ -149,12 +192,12 @@
 
     protected override Task OnPersistStateAsync()
     {
-        PersistToState(nameof(ItemDefinitionArchives), ItemDefinitionArchives);
+        PersistToState(nameof(ItemDefinitionArchiveDiffs), ItemDefinitionArchiveDiffs);
         PersistToState(nameof(ItemDefinitionArchivesList), ItemDefinitionArchivesList);
         return Task.CompletedTask;
     }
 
-    private void OnExpandedChanged(ItemDefinitionArchiveIdentifierDTO archive, bool isExpanded)
+    private void OnExpandedChanged(ItemDefinitionArchiveIdentifierWithDiff archive, bool isExpanded)
     {
         if (isExpanded)
         {
@@ -162,10 +205,10 @@
                 {
                     try
                     {
-                        if (!ItemDefinitionArchives.ContainsKey(archive.Digest))
+                        if (!ItemDefinitionArchiveDiffs.ContainsKey(archive.Digest) && !String.IsNullOrEmpty(archive.PreviousDigest))
                         {
-                            var digest = await Http.GetStringAsync($"api/item/definitionArchive/{archive.Digest}?raw=true");
-                            ItemDefinitionArchives[archive.Digest] = digest;
+                            var archiveDiff = await Http.GetFromJsonAsync<TextDiffDTO>($"api/item/definitionArchive/{archive.PreviousDigest}/compareTo/{archive.Digest}");
+                            ItemDefinitionArchiveDiffs[archive.Digest] = archiveDiff;
                         }
                     }
                     catch (Exception ex)
@@ -182,16 +225,23 @@
         {
             // Reset after a while to prevent sudden collapse
             Task.Delay(350)
-                .ContinueWith(t => ItemDefinitionArchives[archive.Digest] = null)
+                .ContinueWith(t => ItemDefinitionArchiveDiffs[archive.Digest] = null)
                 .AndForget();
         }
     }
 
+    private void DownloadArchive(ItemDefinitionArchiveIdentifierWithDiff archive)
+    {
+        ExternalNavigationManager.NavigateToNewTabAsync($"api/item/definitionArchive/{archive.Digest}?raw=true");
+    }
+
     public class ItemDefinitionArchiveIdentifierWithDiff
     {
-        public ItemDefinitionArchiveIdentifierDTO Archive { get; set; }
+        public ItemDefinitionArchiveIdentifierDTO Info { get; set; }
 
-        public int DiffSize { get; set; }
+        public string Digest { get; set; }
+
+        public string PreviousDigest { get; set; }
 
         public int DiffItemCount { get; set; }
     }

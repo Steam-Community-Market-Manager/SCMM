@@ -8,6 +8,7 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Collections.Concurrent;
@@ -45,7 +46,7 @@ public class UpdateMarketItemOrders
             throw new Exception($"Update of market item orders information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
 
-        logger.LogInformation($"Updating market item orders information (id: {jobId})");
+        logger.LogTrace($"Updating market item orders information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -54,7 +55,7 @@ public class UpdateMarketItemOrders
             .Where(x => !string.IsNullOrEmpty(x.SteamId))
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .OrderBy(x => x.LastCheckedOrdersOn)
             .Take(MarketItemBatchSize)
             .Select(x => new
@@ -98,7 +99,7 @@ public class UpdateMarketItemOrders
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogDebug(ex, $"No change in market item orders for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
+                logger.LogTrace(ex, $"No change in market item orders for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
         });
 
@@ -112,11 +113,11 @@ public class UpdateMarketItemOrders
             {
                 stopwatch.Restart();
                 await UpdateMarketItemOrderHistory(item.Key, item.Value);
-                logger.LogInformation($"Updated item orders for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
+                logger.LogTrace($"Updated item orders for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
             }
         }
 
-        logger.LogInformation($"Updated {itemResponseMappings.Count} market item orders information (id: {jobId})");
+        logger.LogTrace($"Updated {itemResponseMappings.Count} market item orders information (id: {jobId})");
     }
 
     private async Task UpdateMarketItemOrderHistory(Guid itemId, SteamMarketItemOrdersHistogramJsonResponse itemResponse)

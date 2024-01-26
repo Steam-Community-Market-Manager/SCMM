@@ -48,7 +48,7 @@
                         @if (Item.WorkshopFileId != null)
                         {
                             <div class="d-flex align-center justify-center full-width item-preview-controls">
-                                <MudButtonGroup Color="Color.Default" Size="Size.Medium" Variant="Variant.Filled" DisableElevation="true">
+                                <MudButtonGroup Color="Color.Default" Size="MudBlazor.Size.Medium" Variant="Variant.Filled" DisableElevation="true">
                                     <MudTooltip Text="View the workshop page">
                                         <MudButton OnClick="@ViewItemWorkshopPage" Disabled="Item.WorkshopFileId == null || State.IsPrerendering">
                                             <i class="fas fa-fw fa-tools mr-1"></i>
@@ -578,7 +578,7 @@
                             <MudTimeline>
                                 @foreach (var timelineEvent in GetTimelineEvents().OrderByDescending(x => x.Timestamp))
                                 {
-                                    <MudTimelineItem Color="@timelineEvent.Color" TimelineAlign="TimelineAlign.End" Size="Size.Medium" Elevation="25">
+                                    <MudTimelineItem Color="@timelineEvent.Color" TimelineAlign="TimelineAlign.End" Size="MudBlazor.Size.Medium" Elevation="25">
                                         <ItemOpposite>
                                             <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Timestamp.ToString("d")</MudText>
                                             <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - timelineEvent.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</MudText>
@@ -691,15 +691,15 @@
                                             }
 									    </MudText>
                                         <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                            @if (price.AcceptedPaymentTypes.HasFlag(PriceTypes.Trade))
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Trade))
                                             {
                                                 <i class="fa fa-fw fa-exchange-alt mr-1" title="Accepts item trade-in payments"></i>
                                             }
-                                            @if (price.AcceptedPaymentTypes.HasFlag(PriceTypes.Cash))
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Cash))
                                             {
                                                 <i class="fa fa-fw fa-credit-card mr-1" title="Accepts cash card payments"></i>
                                             }
-                                            @if (price.AcceptedPaymentTypes.HasFlag(PriceTypes.Crypto))
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Crypto))
                                             {
                                                 <i class="fab fa-fw fa-bitcoin mr-1" title="Accepts crypto currency payments"></i>
                                             }
@@ -990,7 +990,7 @@
                                                             @foreach (var item in itemGroup)
                                                             {
                                                                 <MudTooltip Text="@($"{item.Name} was accepted")">
-                                                                    <MudChip Size="Size.Small" Class="pa-1" Style="height:auto">
+                                                                    <MudChip Size="MudBlazor.Size.Small" Class="pa-1" Style="height:auto">
                                                                         <div class="hover-zoom hover-zoom-extra">
                                                                             <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" alt="@item.Name" style="width:3em; height:3em" />
                                                                         </div>

@@ -1,4 +1,5 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
 @page "/inventory/{SteamId}"
 @page "/steam/inventory/{SteamId}"
@@ -53,11 +54,11 @@
             }
             else
             {
-                <MudTabs Elevation="0" ActivePanelIndex="PanelIndex" ActivePanelIndexChanged="OnSelectedPanelChanged" Class="mud-tabs-transparent">
+                <MudTabs @bind-ActivePanelIndex="PanelIndex" Elevation="0" KeepPanelsAlive="false" Class="mud-tabs-transparent">
                     <ChildContent>
                         <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
-                                <InventoryItemsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
+                                <InventoryItemsPanel SteamId="@Profile?.SteamId" Filter="@Filter" SortBy="@SortBy" SortDirection="@SortDirection" />
                             </MudPaper>
                         </MudTabPanel>
                         <MudTabPanel Icon="fas fa-fw fa-tshirt mr-4" Text="Collections" Disabled="State.IsPrerendering">
@@ -65,11 +66,14 @@
                                 <InventoryCollectionsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Performance" Disabled="State.IsPrerendering">
-                            <MudPaper Outlined="true">
-                                <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
-                            </MudPaper>
-                        </MudTabPanel>
+                        @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true)
+                        {
+                            <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Performance" Disabled="State.IsPrerendering">
+                                <MudPaper Outlined="true">
+                                    <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                                </MudPaper>
+                            </MudTabPanel>
+                        }
                         @if (State.Is(Profile?.SteamId) || State.IsInRole(Roles.Administrator))
                         {
                             <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Performance" Disabled="State.IsPrerendering">
@@ -78,17 +82,35 @@
                                 </MudPaper>
                             </MudTabPanel>
                         }
-                        <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="State.IsPrerendering">
-                            <MudPaper Outlined="true">
-                                <InventoryStatisticsPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
-                            </MudPaper>
-                        </MudTabPanel>
 					</ChildContent>
 	                <Header>
                         <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
                             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
-                                          Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
-					    </MudHidden>
+                                            Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                            @if (PanelIndex == 0)
+                            {
+                                <MudMenu Icon="fas fa-fw fa-sort-alpha-down" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Quantity), Data.Models.SortDirection.Ascending))">Lowest Quantity</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Quantity), Data.Models.SortDirection.Descending))">Highest Quantity</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice), Data.Models.SortDirection.Ascending))">Lowest Unit Price</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice), Data.Models.SortDirection.Descending))">Highest Unit Price</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.TotalBuyNowPrice), Data.Models.SortDirection.Ascending))">Lowest Stacked Price</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.TotalBuyNowPrice), Data.Models.SortDirection.Descending))">Highest Stacked Price</MudMenuItem>
+                                    @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
+                                    {
+                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Subscriptions), Data.Models.SortDirection.Ascending))">Lowest Subscribers</MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.Subscriptions), Data.Models.SortDirection.Descending))">Highest Subscribers</MudMenuItem>
+                                    }
+                                    @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
+                                    {
+                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
+                                    }
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.DistanceToAllTimeHighestValue), Data.Models.SortDirection.Descending))">Closest to All Time High (ATH)</MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.DistanceToAllTimeLowestValue), Data.Models.SortDirection.Ascending))">Closest to All Time Low (ATL)</MudMenuItem>
+                                </MudMenu>
+                            }
+                        </MudHidden>
                         <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
                             <MudMenuItem OnTouch="@ViewProfileOnSteam" OnClick="@ViewProfileOnSteam">
                                 <i class="fab fa-fw fa-steam mr-1"></i>
@@ -121,6 +143,14 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortBy { get; set; } = nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice);
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortDirection { get; set; } = Data.Models.SortDirection.Descending.ToString();
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -173,13 +203,15 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        switch (Panel)
+        if (!String.IsNullOrEmpty(Panel))
         {
-            case "items": PanelIndex = 0; break;
-            case "collections": PanelIndex = 1; break;
-            case "market": PanelIndex = 2; break;
-            case "investment": PanelIndex = 3; break;
-            case "statistics": PanelIndex = 4; break;
+            switch (Panel)
+            {
+                case "items": PanelIndex = 0; break;
+                case "collections": PanelIndex = 1; break;
+                case "market": PanelIndex = 2; break;
+                case "investment": PanelIndex = 3; break;
+            }
         }
 
         // If we have navigated to a different profile, reload the new profile
@@ -197,22 +229,11 @@
         StateHasChanged();
     }
 
-    private void OnSelectedPanelChanged(int index)
+    private void SetSortOrder(string sortBy, Data.Models.SortDirection sortDirection)
     {
-        var filter = !String.IsNullOrEmpty(Filter) ? $"&filter={Uri.EscapeDataString(Filter)}" : String.Empty;
-
-        PanelIndex = index;
-        if (!State.IsPrerendering)
-        {
-            switch (index)
-            {
-                case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items{filter}"); break;
-                case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=collections{filter}"); break;
-                case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market{filter}"); break;
-                case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment{filter}"); break;
-                case 4: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics{filter}"); break;
-            }
-        }
+        SortBy = sortBy;
+        SortDirection = sortDirection.ToString();
+        StateHasChanged();
     }
 
     private void ViewProfileOnSteam()

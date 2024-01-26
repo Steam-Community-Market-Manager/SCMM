@@ -2,7 +2,7 @@
 @inject AppState State
 
 <div class="pa-6">
-    <MudContainer MaxWidth="MaxWidth.Large">
+    <MudContainer MaxWidth="MaxWidth.Large" Class="px-0">
         <MudGrid Spacing="2">
             <MudItem sm="12" md="6" Class="d-flex flex-column pr-4">
                 <div class="d-flex flex-row align-center">
@@ -10,20 +10,39 @@
                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>Steam Community Market Manager</MudText>
                 </div>
                 <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                    <span>&copy; 2020-2022, SCMM - All rights reserved.</span><br />
-                    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption" Disabled="State.IsPrerendering">SCMM is a fanmade project</MudLink> and not affilated with Valve Corporation or @(State.App?.PublisherName ?? "the games publisher").</span><br/>
-                    <br/>
-                    <span>Contact: support@scmm.app</span>
+                    <span>&copy; 2020-2024, SCMM - All rights reserved.</span><br />
+                    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption" Disabled="State.IsPrerendering">SCMM is a fanmade project</MudLink> and not affiliated with Valve Corporation or @(State.App?.PublisherName ?? "the games publisher").</span><br/>
                 </MudText>
+                <div class="d-flex justify-start align-center gap-4 my-4">
+                    <MudTooltip Text="Email us" Inline="false">
+                        <a href="mailto:support@scmm.app" target="_blank" class="hover-zoom">
+                            <i class="fas fa-fw fa-envelope" style="font-size:2em" />
+                        </a>
+                    </MudTooltip>
+                    <MudTooltip Text="Join the Discord" Inline="false">
+                        <a href="https://discord.gg/wcdrYww5AQ" target="_blank" class="hover-zoom">
+                            <img src="/images/discord-mark-white.svg" alt="Discord" style="width:2em" />
+                        </a>
+                    </MudTooltip>
+                    <MudTooltip Text="View us on GitHub" Inline="false">
+                        <a href="https://github.com/Steam-Community-Market-Manager/SCMM" target="_blank" class="hover-zoom">
+                            <img src="/images/github-mark-white.svg" alt="GitHub" style="width:2em" />
+                        </a>
+                    </MudTooltip>
+                    <MudTooltip Text="Review us on Trustpilot" Inline="false">
+                        <a href="https://trustpilot.com/review/scmm.app" target="_blank" class="hover-zoom mx-4">
+                            <img src="/images/trust-pilot-white.svg" alt="Trustpilot" style="height:2em" />
+                        </a>
+                    </MudTooltip>
+                </div>
             </MudItem>
             <MudItem sm="6" md="3">
                 <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">Information</MudText>
                 <MudList Clickable="true" Dense="true">
                     <MudListItem Icon="fas fa-fw fa-info-circle" Text="About SCMM" Href="/about" Disabled="State.IsPrerendering" />
-                    <MudListItem Icon="fas fa-fw fa-newspaper" Text="What's New" Href="https://discord.gg/wcdrYww5AQ" ForceLoad="true" Disabled="State.IsPrerendering" />
                     <MudListItem Icon="fas fa-fw fa-user-secret" Text="Privacy Policy" Href="/privacy" Disabled="State.IsPrerendering" />
                     <MudListItem Icon="fas fa-fw fa-handshake" Text="Terms of Service" Href="/tos" Disabled="State.IsPrerendering" />
-                    <MudListItem Icon="fas fa-fw fa-fw fa-donate" Text="Donate" OnClick="ShowDonationDialog" Disabled="State.IsPrerendering" />
+                    <MudListItem Icon="fas fa-fw fa-fw fa-donate" Text="Ways you can say thank you" OnClick="ShowDonationDialog" Disabled="State.IsPrerendering" />
                 </MudList>
             </MudItem>
             <MudItem sm="6" md="3">

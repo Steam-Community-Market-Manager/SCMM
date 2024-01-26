@@ -12,11 +12,11 @@
 @if (Notifications?.Any() == true)
 {
     <div @attributes="AdditionalAttributes">
-        <MudTooltip IsVisible="NotificationsAreNew" Placement="Placement.Bottom" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)">
+        <MudTooltip Placement="Placement.Bottom" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)">
             <TooltipContent>
                 @if(NotificationsAreNew)
                 {
-                    <span class="text-centered">New updates are here! Click the bell for info</span>
+                    <span class="text-centered">New updates are here! Click to view more info</span>
                 }
                 else
                 {
@@ -24,7 +24,7 @@
                 }
             </TooltipContent>
             <ChildContent>
-                <MudToggleIconButton Toggled="@IsOpen" ToggledChanged="OnToggleMenu" Icon="@(NotificationsAreNew ? "fas fa-fw fa-bell bell-ring" : "far fa-fw fa-bell")" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)" ToggledIcon="fas fa-fw fa-bell" ToggledColor="@Color.Secondary" />
+                <MudToggleIconButton Toggled="@IsOpen" ToggledChanged="OnToggleMenu" Icon="@(NotificationsAreNew ? "fas fa-fw fa-bell bell-ring" : "far fa-fw fa-bell")" Color="@(NotificationsAreNew ? Color.Secondary : Color.Secondary)" ToggledIcon="fas fa-fw fa-bell" ToggledColor="@Color.Secondary" />
             </ChildContent>
         </MudTooltip>
         <MudPopover Open="IsOpen" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Paper="false">
@@ -110,7 +110,7 @@
         if (IsOpen)
         {
             NotificationsLastViewedOn = DateTimeOffset.Now;
-            CookieManager.Set("notifications-last-viewed", NotificationsLastViewedOn.ToUnixTimeMilliseconds());
+            CookieManager.Set("notifications-last-viewed", NotificationsLastViewedOn.ToUnixTimeMilliseconds(), 365);
         }
     }
 

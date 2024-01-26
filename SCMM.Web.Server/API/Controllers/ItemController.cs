@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using CommandQuery;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -15,7 +17,9 @@ using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Extensions;
+using SCMM.Web.Data.Models.UI.Diff;
 using SCMM.Web.Data.Models.UI.Item;
+using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Server.Extensions;
 using System.Text.Json;
 
@@ -273,6 +277,16 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     query = query.OrderByDirection(x => (x.MarketItem.SellOrderLowestPrice - x.StoreItem.Price) ?? 0, sortDirection);
                 }
+                else if (String.Equals(sortBy, "DistanceToAllTimeLowestValue", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(x => x.MarketItem.SellOrderLowestPrice > 0 && x.MarketItem.AllTimeLowestValue > 0)
+                        .OrderByDirection(x => ((float)x.MarketItem.SellOrderLowestPrice / (float)x.MarketItem.AllTimeLowestValue), sortDirection);
+                }
+                else if (String.Equals(sortBy, "DistanceToAllTimeHighestValue", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(x => x.MarketItem.SellOrderLowestPrice > 0 && x.MarketItem.AllTimeHighestValue > 0)
+                        .OrderByDirection(x => ((float)x.MarketItem.SellOrderLowestPrice / (float)x.MarketItem.AllTimeHighestValue), sortDirection);
+                }
                 else
                 {
                     query = query.SortBy(sortBy, sortDirection);
@@ -283,11 +297,19 @@ namespace SCMM.Web.Server.API.Controllers
                 query = query.OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
             }
 
+            var profileId = User.Id();
+            var profile = (profileId == Guid.Empty ? null : await _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Language)
+                .Include(x => x.Currency)
+                .FirstOrDefaultAsync(x => x.Id == profileId)
+            );
+
             // Paginate
             count = Math.Max(0, Math.Min(5000, count));
             return Ok(!detailed
-                ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this))
-                : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this))
+                ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null)))
+                : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null)))
             );
         }
 
@@ -335,7 +357,15 @@ namespace SCMM.Web.Server.API.Controllers
                     (x.Name == id)
                 );
 
-            var itemDetails = _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this);
+            var profileId = User.Id();
+            var profile = (profileId == Guid.Empty ? null : await _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Language)
+                .Include(x => x.Currency)
+                .FirstOrDefaultAsync(x => x.Id == profileId)
+            );
+
+            var itemDetails = _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null));
             if (itemDetails == null)
             {
                 return NotFound($"Item was not found");
@@ -748,14 +778,22 @@ namespace SCMM.Web.Server.API.Controllers
                 .GroupBy(x => x.CreatorProfile)
                 .FirstOrDefault();
 
+            var profileId = User.Id();
+            var profile = (profileId == Guid.Empty ? null : await _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Language)
+                .Include(x => x.Currency)
+                .FirstOrDefaultAsync(x => x.Id == profileId)
+            );
+
             return Ok(new ItemCollectionDTO()
             {
                 Name = name,
                 CreatorName = creator?.Key.Name,
                 CreatorAvatarUrl = creator?.Key.AvatarUrl,
-                BuyNowPrice = acceptedAssetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency())?.Price ?? 0),
-                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this)?.ToArray(),
-                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this)?.ToArray()
+                BuyNowPrice = acceptedAssetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency(), profile?.MarketTypes)?.Price ?? 0),
+                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null))?.ToArray(),
+                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this, (profile != null ? _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) : null))?.ToArray()
             });
         }
 
@@ -788,6 +826,84 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToArrayAsync();
 
             return Ok(itemDefinitionArchives);
+        }
+
+        /// <summary>
+        /// Compare two item definition archive contents and return a text diff
+        /// </summary>
+        /// <param name="oldDigest">The first digest for comparison</param>
+        /// <param name="newDigest">The second digest for comparison</param>
+        /// <response code="200">The text diff between the two item definition archives.</response>
+        /// <response code="404">If either of the item definition archives don't exist.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("definitionArchive/{oldDigest}/compareTo/{newDigest}")]
+        [ProducesResponseType(typeof(TextDiffDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemDefinitionArchive([FromRoute] string oldDigest, [FromRoute] string newDigest)
+        {
+            var appId = this.App().Guid;
+
+            var itemDefinitionArchives = await _db.SteamItemDefinitionsArchive.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.Digest == oldDigest || x.Digest == newDigest)
+                .ToArrayAsync();
+            
+            var oldArchive = itemDefinitionArchives.FirstOrDefault(x => x.Digest == oldDigest);
+            var newArchive = itemDefinitionArchives.FirstOrDefault(x => x.Digest == newDigest);
+            if (oldArchive == null || newArchive == null)
+            {
+                return NotFound("One or more of the requested item definition archives could not be found");
+            }
+
+            var diff = InlineDiffBuilder.Diff(
+                oldArchive.ItemDefinitions.ToPrettyJson(), 
+                newArchive.ItemDefinitions.ToPrettyJson(),
+                ignoreWhiteSpace: true,
+                ignoreCase: true
+            );
+
+            const int numberOfLinesForContext = 5;
+            var unchangedLineBuffer = new List<DiffPiece>();
+            var firstLine = diff.Lines.First();
+            var lastLine = diff.Lines.Last();
+            var linesHaveBeenTrimmed = false;
+            foreach (var line in diff.Lines)
+            {
+                if (line.Type == ChangeType.Unchanged && line != lastLine)
+                {
+                    unchangedLineBuffer.Add(line);
+                }
+                else
+                {
+                    var skipLineCount = (linesHaveBeenTrimmed ? numberOfLinesForContext : 0);
+                    var takeLineCount = (line != lastLine ? Math.Max(numberOfLinesForContext, skipLineCount * 2) : 0);
+                    unchangedLineBuffer
+                        .Skip(skipLineCount)
+                        .Take(Math.Max(0, unchangedLineBuffer.Count - takeLineCount)).ToList()
+                        .ForEach(x => x.Type = ChangeType.Imaginary);
+                    unchangedLineBuffer.Clear();
+                    linesHaveBeenTrimmed = true;
+                }
+            }
+
+            return Ok(
+                new TextDiffDTO
+                {
+                    Lines = diff.Lines.Where(x => x.Type != ChangeType.Imaginary).Select(x => new TextDiffPieceDTO()
+                    {
+                        Type = x.Type.ToString(),
+                        Position = x.Position,
+                        Text = x.Text,
+                        SubPieces = x.SubPieces.Select(y => new TextDiffPieceDTO()
+                        {
+                            Type = y.Type.ToString(),
+                            Position = y.Position,
+                            Text = y.Text
+                        }).ToArray()
+                    }).ToArray()
+                }
+            );
         }
 
         /// <summary>

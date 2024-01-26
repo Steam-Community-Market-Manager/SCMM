@@ -16,9 +16,7 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromTradeitGG
 {
-#pragma warning disable CS0618 // Type or member is obsolete
     private const MarketType TradeitGG = MarketType.TradeitGG;
-#pragma warning restore CS0618 // Type or member is obsolete
 
     private readonly SteamDbContext _db;
     private readonly TradeitGGWebClient _tradeitGGWebClient;
@@ -44,7 +42,6 @@ public class UpdateMarketItemPricesFromTradeitGG
         var appIds = TradeitGG.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
-            //.Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {

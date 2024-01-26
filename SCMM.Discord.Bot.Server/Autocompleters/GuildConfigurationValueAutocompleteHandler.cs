@@ -31,6 +31,7 @@ public class GuildConfigurationValueAutocompleteHandler : AutocompleteHandler
         {
             var channels = await context.Guild.GetTextChannelsAsync();
             configValues = channels
+                .Where(x => x.Name.Contains(value))
                 .Select(x => new AutocompleteResult()
                 {
                     Name = x.Name,

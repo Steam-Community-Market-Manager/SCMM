@@ -21,7 +21,11 @@ using SCMM.Market.DMarket.Client;
 using SCMM.Market.DMarket.Client.Extensions;
 using SCMM.Market.iTradegg.Client;
 using SCMM.Market.LootFarm.Client;
+using SCMM.Market.ManncoStore.Client;
+using SCMM.Market.RapidSkins.Client;
 using SCMM.Market.RustTM.Client;
+using SCMM.Market.ShadowPay.Client;
+using SCMM.Market.ShadowPay.Client.Extensions;
 using SCMM.Market.SkinBaron.Client;
 using SCMM.Market.Skinport.Client;
 using SCMM.Market.SkinsMonkey.Client;
@@ -30,6 +34,7 @@ using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.SkinSwap.Client.Extensions;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
+using SCMM.Market.Waxpeer.Client;
 using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Media;
@@ -106,9 +111,16 @@ public static class HostExtensions
         return builder.ConfigureServices(services =>
         {
             // Logging
-            //services.AddApplicationInsightsTelemetry(); // Application Insights is added by Azure Functions automatically
-            services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+            /*services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.EnableRequestTrackingTelemetryModule = true;
+                options.EnableDependencyTrackingTelemetryModule = false;
+                options.EnableAppServicesHeartbeatTelemetryModule = false;
+                options.EnableHeartbeat = false;
+            });*/
             services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
+            services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+            services.AddApplicationInsightsTelemetryProcessor<IgnoreStaticWebFilesFilter>();
 
             // Database
             var steamDbConnectionString = Environment.GetEnvironmentVariable("SteamDbConnection");
@@ -194,7 +206,15 @@ public static class HostExtensions
             });
             services.AddSingleton<iTradeggWebClient>();
             services.AddSingleton<LootFarmWebClient>();
+            services.AddSingleton<ManncoStoreWebClient>();
+            services.AddSingleton<RapidSkinsWebClient>();
             services.AddSingleton<RustTMWebClient>();
+            services.AddSingleton<ShadowPayWebClient>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetShadowPayConfiguration();
+            });
             services.AddSingleton<SkinBaronWebClient>();
             services.AddSingleton((services) =>
             {
@@ -211,6 +231,7 @@ public static class HostExtensions
             });
             services.AddSingleton<SwapGGWebClient>();
             services.AddSingleton<TradeitGGWebClient>();
+            services.AddSingleton<WaxpeerWebClient>();
 
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamStoreWebClient>();

@@ -6,7 +6,7 @@
 @inject AppState State
 @inject ExternalNavigationManager ExternalNavigationManager
 
-@if (InventoryItems == null)
+@if (InventoryItemsFilteredAndSorted == null)
 {
     @if (LoadingError != null)
     {
@@ -17,7 +17,7 @@
         <Loading Message="Loading inventory items..." />
     }
 }
-else if (!InventoryItems.FilterBy(Filter).Any())
+else if (!InventoryItemsFilteredAndSorted.Any())
 {
     <div class="d-flex flex-column justify-center align-center full-height pa-4">
         <TumbleWeed Light="true" />
@@ -27,7 +27,7 @@ else if (!InventoryItems.FilterBy(Filter).Any())
 else 
 {
     <div class="d-flex flex-wrap flex-row align-start justify-center">
-        @foreach (var item in InventoryItems.FilterBy(Filter))
+        @foreach (var item in InventoryItemsFilteredAndSorted)
         {
             <div class="item">
                 @if (item.Quantity > 1)
@@ -43,7 +43,7 @@ else
                 @if(SelectedInventoryItems != null && State.Is(SteamId))
                 {
                     <div class="@($"item-multi-select {((SelectedInventoryItems.ContainsKey(item.Id) && SelectedInventoryItems[item.Id] == true) ? "item-selected" : "item-hover-to-select")}")">
-                        <MudCheckBox T="bool" @bind-Checked="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" Disabled="State.IsPrerendering" />
+                        <MudCheckBox T="bool" @bind-Value="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" Disabled="State.IsPrerendering" />
                     </div>
                 }
             </div>
@@ -76,7 +76,15 @@ else
     [Parameter]
     public string Filter { get; set; }
 
+    [Parameter]
+    public string SortBy { get; set; } = nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice);
+
+    [Parameter]
+    public string SortDirection { get; set; } = Data.Models.SortDirection.Descending.ToString();
+
     private IList<ProfileInventoryItemDescriptionDTO> InventoryItems;
+
+    private ProfileInventoryItemDescriptionDTO[] InventoryItemsFilteredAndSorted { get; set; }
 
     private IDictionary<ulong, bool> SelectedInventoryItems;
 
@@ -97,6 +105,15 @@ else
         PersistToState(nameof(InventoryItems), InventoryItems);
         PersistToState(nameof(SelectedInventoryItems), SelectedInventoryItems);
         return Task.CompletedTask;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (InventoryItems != null)
+        {
+            InventoryItemsFilteredAndSorted = GetFilteredAndSortedItems(InventoryItems).ToArray();
+        }
     }
 
     private async Task LoadInventoryItems()
@@ -120,6 +137,20 @@ else
         {
             StateHasChanged();
         }
+    }
+
+    private IEnumerable<ProfileInventoryItemDescriptionDTO> GetFilteredAndSortedItems(IEnumerable<ProfileInventoryItemDescriptionDTO> items)
+    {
+        if (!String.IsNullOrEmpty(Filter))
+        {
+            items = items.FilterBy(Filter);
+        }
+        if (!String.IsNullOrEmpty(SortBy))
+        {
+            items = items.AsQueryable().SortBy(SortBy, Enum.Parse<Data.Models.SortDirection>(SortDirection));
+        }
+
+        return items;
     }
 
     private Tuple<int, long> GetSelectedItemsTotals()

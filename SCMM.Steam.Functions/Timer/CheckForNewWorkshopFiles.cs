@@ -8,6 +8,7 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
 using SCMM.Steam.Data.Store;
@@ -43,7 +44,7 @@ public class CheckForNewWorkshopFiles
         var deepScan = false; // TODO: Make configurable?
 
         var apps = await _steamDb.SteamApps.AsNoTracking()
-            .Where(x => x.IsActive)
+            .Where(x => x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemWorkshopSubmissionTracking))
             .ToListAsync();
 
         var assetDescriptions = await _steamDb.SteamAssetDescriptions.AsNoTracking()

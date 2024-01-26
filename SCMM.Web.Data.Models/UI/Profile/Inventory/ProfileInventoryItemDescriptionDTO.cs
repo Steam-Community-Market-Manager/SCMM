@@ -9,5 +9,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
         public ProfileInventoryItemDescriptionStackDTO[] Stacks { get; set; }
 
         public long? AverageBuyPrice { get; set; }
+
+        public long? TotalBuyNowPrice => (BuyNowPrice * Quantity) ?? 0;
     }
 }

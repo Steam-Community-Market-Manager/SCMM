@@ -95,10 +95,10 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Load the apps
-            // Use either the requested apps, or all active apps (if requested apps is empty)
+            // Use either the requested apps, or all supported apps (if requested apps is empty)
             var apps = await _db.SteamApps
                 .Where(x =>
-                    ((request.AppIds == null || request.AppIds.Length == 0) && x.IsActive) ||
+                    ((request.AppIds == null || request.AppIds.Length == 0) && x.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemInventory)) ||
                     (request.AppIds != null && request.AppIds.Contains(x.SteamId))
                 )
                 .ToListAsync();
@@ -113,7 +113,7 @@ namespace SCMM.Steam.API.Commands
             // Fetch the profiles inventory for each of the apps we monitor
             foreach (var app in apps)
             {
-                _logger.LogInformation($"Importing inventory of '{resolvedId.CustomUrl}' from Steam (appId: {app.SteamId})");
+                _logger.LogTrace($"Importing inventory of '{resolvedId.CustomUrl}' from Steam (appId: {app.SteamId})");
 
                 var steamInventoryItems = await FetchInventoryRecursive(profile, app, useCache: !request.Force);
                 if (steamInventoryItems == null || profile.Privacy == SteamVisibilityType.Private)
@@ -172,7 +172,7 @@ namespace SCMM.Steam.API.Commands
                         DescriptionId = assetDescription.Id,
                         Quantity = (int)asset.Key.Amount,
                         TradableAndMarketable = (asset.Key.InstanceId == Constants.SteamAssetDefaultInstanceId)
-                        // TODO: TradableAndMarketablAfter = asset.Value.OwnerDescriptions.FirstOrDefault(x => x.Value == Constants.SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex)
+                        // TODO: TradableAndMarketableAfter = asset.Value.OwnerDescriptions.FirstOrDefault(x => x.Value == Constants.SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex)
                     };
 
                     // If this item is a special/twitch drop, automatically mark it as a drop
@@ -192,7 +192,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         existingAsset.Quantity = (int)asset.Key.Amount;
                         existingAsset.TradableAndMarketable = (asset.Key.InstanceId == Constants.SteamAssetDefaultInstanceId);
-                        // TODO: existingAsset.TradableAndMarketablAfter = asset.Value.OwnerDescriptions.FirstOrDefault(x => x.Value == Constants.SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex);
+                        // TODO: existingAsset.TradableAndMarketableAfter = asset.Value.OwnerDescriptions.FirstOrDefault(x => x.Value == Constants.SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex);
                     }
                 }
 

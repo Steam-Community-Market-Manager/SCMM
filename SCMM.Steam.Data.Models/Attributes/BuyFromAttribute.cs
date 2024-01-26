@@ -8,11 +8,7 @@ public class BuyFromAttribute : Attribute
 {
     public string Url { get; set; }
 
-    public string AffiliateCode { get; set; }
-
-    public bool HasAffiliateProgram => !String.IsNullOrEmpty(AffiliateCode);
-
-    public PriceTypes AcceptedPaymentTypes { get; set; }
+    public PriceFlags AcceptedPayments { get; set; }
 
     public float DiscountMultiplier { get; set; }
 

@@ -242,6 +242,12 @@ namespace SCMM.Steam.Data.Store
                 .ToDictionary(k => k.Key, v => v.Value)
             );
 
+            // What was the best buy price prior to this price update?
+            var lastBestBuyPrice = BuyPrices
+                .Where(x => x.Value.Price > 0 && x.Value.Supply != 0)
+                .DefaultIfEmpty()
+                .Min(x => x.Value.Price);
+
             if (price?.Price > 0 && (price?.Supply == null || price?.Supply > 0))
             {
                 BuyPrices[type] = price.Value;
@@ -277,13 +283,14 @@ namespace SCMM.Steam.Data.Store
                     })
                     .MinBy(x => x.Price + x.Fee);
                 var buyNowDealHasImproved = (
-                    lowestBuyPrice.Price < BuyNowPrice &&
-                    lowestBuyPrice.Price.ToPercentage(BuyNowPrice) < 100
+                    lowestBuyPrice.Price > 0 && lastBestBuyPrice > 0 &&
+                    lowestBuyPrice.Price < lastBestBuyPrice &&
+                    lowestBuyPrice.Price.ToPercentage(lastBestBuyPrice) < 100
                 );
                 BuyNowFrom = lowestBuyPrice.From;
                 BuyNowPrice = lowestBuyPrice.Price;
                 BuyNowFee = lowestBuyPrice.Fee;
-                if (buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: true))
+                if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: true))
                 {
                     RaiseEvent(new MarketItemPriceProfitableBuyDealDetectedMessage()
                     {
@@ -637,7 +644,7 @@ namespace SCMM.Steam.Data.Store
                     {
                         AllTimeLowestValue = allTimeLow.MedianPrice;
                         AllTimeLowestValueOn = allTimeLow.Timestamp;
-                        if (App?.IsActive == true && Description != null)
+                        if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && Description != null)
                         {
                             RaiseEvent(new MarketItemPriceAllTimeLowReachedMessage()
                             {
@@ -671,7 +678,7 @@ namespace SCMM.Steam.Data.Store
                     {
                         AllTimeHighestValue = allTimeHigh.MedianPrice;
                         AllTimeHighestValueOn = allTimeHigh.Timestamp;
-                        if (App?.IsActive == true && Description != null)
+                        if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && Description != null)
                         {
                             RaiseEvent(new MarketItemPriceAllTimeHighReachedMessage()
                             {
@@ -790,7 +797,7 @@ namespace SCMM.Steam.Data.Store
             }
 
             // If the state of manipulation has changed, raise an event
-            if (IsBeingManipulated != wasBeingManipulated && App?.IsActive == true && Description != null)
+            if (IsBeingManipulated != wasBeingManipulated && App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && Description != null)
             {
                 LastManipulationAlertOn = DateTimeOffset.Now;
                 RaiseEvent(new MarketItemManipulationDetectedMessage()

@@ -42,7 +42,6 @@ public class UpdateMarketItemPricesFromSkinSwap
         var appIds = SkinSwap.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
-            //.Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {
@@ -78,7 +77,6 @@ public class UpdateMarketItemPricesFromSkinSwap
                 skinSwapItems = await _skinSwapWebClient.GetItemsAsync();
             }
 
-            var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
             var dbItems = await _db.SteamMarketItems
                 .Where(x => x.AppId == app.Id)
                 .Select(x => new
@@ -89,6 +87,7 @@ public class UpdateMarketItemPricesFromSkinSwap
                 })
                 .ToListAsync();
 
+            var skinSwapItemGroups = skinSwapItems.GroupBy(x => x.MarketHashName);
             foreach (var skinSwapItemGroup in skinSwapItemGroups)
             {
                 var item = dbItems.FirstOrDefault(x => x.Name == skinSwapItemGroup.Key)?.Item;

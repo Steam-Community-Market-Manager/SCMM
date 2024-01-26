@@ -7,6 +7,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Collections.Concurrent;
@@ -47,7 +48,7 @@ public class UpdateMarketItemSales
             throw new Exception($"Update of market item sales information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
 
-        logger.LogInformation($"Updating market item sales information (id: {jobId})");
+        logger.LogTrace($"Updating market item sales information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -55,7 +56,7 @@ public class UpdateMarketItemSales
             .AsNoTracking()
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .OrderBy(x => x.LastCheckedSalesOn)
             .Take(MarketItemBatchSize)
             .Select(x => new
@@ -100,7 +101,7 @@ public class UpdateMarketItemSales
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogDebug(ex, $"No change in market item sales history for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
+                logger.LogTrace(ex, $"No change in market item sales history for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
         });
 
@@ -114,11 +115,11 @@ public class UpdateMarketItemSales
             {
                 stopwatch.Restart();
                 await UpdateMarketItemSalesHistory(item.Key, item.Value);
-                logger.LogInformation($"Updated item sales for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
+                logger.LogTrace($"Updated item sales for '{item.Key}' in {stopwatch.Elapsed.ToDurationString(zero: "less than a second")}");
             }
         }
 
-        logger.LogInformation($"Updated {itemResponseMappings.Count} market item sales information (id: {jobId})");
+        logger.LogTrace($"Updated {itemResponseMappings.Count} market item sales information (id: {jobId})");
     }
 
     private async Task UpdateMarketItemSalesHistory(Guid itemId, string itemResponse)

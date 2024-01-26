@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Store.Requests.Html;
 using SCMM.Steam.Data.Store.Types;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -232,17 +233,17 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency)
+        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency, MarketType[] marketTypes = null)
         {
             // TODO: Currently prioritises first part markets over third party markets, re-think this....
-            return GetBuyPrices(currency)
+            return GetBuyPrices(currency, marketTypes)
                 .Where(x => x.IsAvailable)
                 .OrderByDescending(x => x.IsFirstPartyMarket)
                 .ThenBy(x => x.Price + x.Fee)
                 .FirstOrDefault();
         }
 
-        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency)
+        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency, MarketType[] marketTypes = null)
         {
             // Store price
             if (StoreItem != null && StoreItem.Currency != null)
@@ -269,7 +270,7 @@ namespace SCMM.Steam.Data.Store
                 var buyUrl = (string)null;
                 if (!String.IsNullOrEmpty(StoreItem.SteamId) && app != null)
                 {
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                    if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreWebBrowser))
                     {
                         buyUrl = new SteamItemStoreDetailPageRequest()
                         {
@@ -299,7 +300,7 @@ namespace SCMM.Steam.Data.Store
                     yield return new MarketPrice
                     {
                         MarketType = steamStoreMarket,
-                        AcceptedPaymentTypes = buyFromOption.AcceptedPaymentTypes,
+                        AcceptedPayments = buyFromOption.AcceptedPayments,
                         Currency = currency,
                         Price = buyFromOption.CalculateBuyPrice(lowestPrice),
                         Fee = buyFromOption.CalculateBuyFees(lowestPrice),
@@ -316,7 +317,10 @@ namespace SCMM.Steam.Data.Store
             if (MarketItem != null && MarketItem.Currency != null)
             {
                 var app = (MarketItem.App ?? App);
-                foreach (var marketPrice in MarketItem.BuyPrices.Where(x => x.Key.IsEnabled() && (app == null || x.Key.IsAppSupported(UInt64.Parse(app.SteamId)))))
+                var marketPrices = MarketItem.BuyPrices
+                    .Where(x => x.Key.IsEnabled() && (app == null || x.Key.IsAppSupported(UInt64.Parse(app.SteamId))))
+                    .Where(x => x.Key == MarketType.SteamCommunityMarket || (marketTypes == null || marketTypes.Contains(x.Key)));
+                foreach (var marketPrice in marketPrices)
                 {
                     var lowestPrice = 0L;
                     if (currency != null)
@@ -333,7 +337,7 @@ namespace SCMM.Steam.Data.Store
                         yield return new MarketPrice
                         {
                             MarketType = marketPrice.Key,
-                            AcceptedPaymentTypes = buyFromOption.AcceptedPaymentTypes,
+                            AcceptedPayments = buyFromOption.AcceptedPayments,
                             Currency = currency,
                             Price = buyFromOption.CalculateBuyPrice(lowestPrice),
                             Fee = buyFromOption.CalculateBuyFees(lowestPrice),
@@ -394,7 +398,7 @@ namespace SCMM.Steam.Data.Store
                 var storeUrl = (string)null;
                 if (!String.IsNullOrEmpty(StoreItem.SteamId) && StoreItem.IsAvailable && app != null)
                 {
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                    if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreWebBrowser))
                     {
                         storeActionName = "View Store";
                         storeUrl = new SteamItemStoreDetailPageRequest()

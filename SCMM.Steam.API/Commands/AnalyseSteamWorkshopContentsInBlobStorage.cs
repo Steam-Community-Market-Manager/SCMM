@@ -11,6 +11,8 @@ using SCMM.Steam.API.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -58,7 +60,7 @@ namespace SCMM.Steam.API.Commands
             var blobMetadata = blobProperties.Value.Metadata;
 
             // Inspect the contents of the workshop file
-            _logger.LogInformation($"Analysing workshop file '{request.BlobName}' contents");
+            _logger.LogTrace($"Analysing workshop file '{request.BlobName}' contents");
             using var workshopFileDataStream = await blob.OpenReadAsync();
             using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
             {
@@ -300,14 +302,14 @@ namespace SCMM.Steam.API.Commands
                         assetDescription.Tags[tag.Key] = tag.Value;
                     }
                 }
-                _logger.LogInformation($"Asset description workshop metadata updated for '{assetDescription.Name}' ({assetDescription.ClassId})");
+                _logger.LogTrace($"Asset description workshop metadata updated for '{assetDescription.Name}' ({assetDescription.ClassId})");
             }
 
             await _steamDb.SaveChangesAsync();
 
             // Update workshop file metadata
             await blob.SetMetadataAsync(blobMetadata);
-            _logger.LogInformation($"Blob metadata updated");
+            _logger.LogTrace($"Blob metadata updated");
         }
     }
 }

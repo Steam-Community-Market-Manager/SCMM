@@ -84,7 +84,7 @@ namespace SCMM.Steam.API.Commands
                 try
                 {
                     // Download the workshop file from Steam
-                    _logger.LogInformation($"Downloading workshop file {request.PublishedFileId} from steam");
+                    _logger.LogTrace($"Downloading workshop file {request.PublishedFileId} from steam");
                     publishedFileData = await _steamConsoleClient.DownloadWorkshopFile(
                         appId: request.AppId.ToString(),
                         workshopFileId: request.PublishedFileId.ToString(),
@@ -92,7 +92,7 @@ namespace SCMM.Steam.API.Commands
                     );
                     if (publishedFileData?.Data != null)
                     {
-                        _logger.LogInformation($"Download of {request.PublishedFileId} complete, '{publishedFileData.Name}'");
+                        _logger.LogTrace($"Download of {request.PublishedFileId} complete, '{publishedFileData.Name}'");
                     }
                     else
                     {
@@ -137,7 +137,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Upload the workshop file to blob storage
-                _logger.LogInformation($"Uploading workshop file {request.PublishedFileId} to blob storage");
+                _logger.LogTrace($"Uploading workshop file {request.PublishedFileId} to blob storage");
                 await blob.UploadAsync(
                     new BinaryData(publishedFileData.Data)
                 );
@@ -148,7 +148,7 @@ namespace SCMM.Steam.API.Commands
                 });
 
                 blobContentsWasModified = true;
-                _logger.LogInformation($"Upload of {request.PublishedFileId} complete, '{blob.Name}'");
+                _logger.LogTrace($"Upload of {request.PublishedFileId} complete, '{blob.Name}'");
             }
             else
             {
@@ -195,7 +195,7 @@ namespace SCMM.Steam.API.Commands
 
             foreach (var assetDescription in assetDescriptions)
             {
-                _logger.LogInformation($"Asset description workshop data url updated for '{assetDescription.Name}' ({assetDescription.ClassId})");
+                _logger.LogTrace($"Asset description workshop data url updated for '{assetDescription.Name}' ({assetDescription.ClassId})");
                 assetDescription.WorkshopFileUrl = workshopFileUrl;
                 assetDescription.WorkshopFileIsUnavailable = false;
             }
@@ -212,7 +212,7 @@ namespace SCMM.Steam.API.Commands
 
             foreach (var assetDescription in assetDescriptions)
             {
-                _logger.LogInformation($"Asset description workshop data is permanently unavailable for '{assetDescription.Name}' ({assetDescription.ClassId})");
+                _logger.LogTrace($"Asset description workshop data is permanently unavailable for '{assetDescription.Name}' ({assetDescription.ClassId})");
                 assetDescription.WorkshopFileIsUnavailable = true;
             }
 

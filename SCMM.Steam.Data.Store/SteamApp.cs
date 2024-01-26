@@ -56,7 +56,7 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? TimeUpdated { get; set; }
 
-        public SteamAppFeatureTypes Features { get; set; }
+        public SteamAppFeatureFlags FeatureFlags { get; set; }
 
         public ICollection<SteamAssetFilter> AssetFilters { get; set; }
 
@@ -73,7 +73,5 @@ namespace SCMM.Steam.Data.Store
         public PersistableStringCollection DiscordCommunities { get; set; }
 
         public PersistableStringCollection EconomyMedia { get; set; }
-
-        public bool IsActive { get; set; }
     }
 }

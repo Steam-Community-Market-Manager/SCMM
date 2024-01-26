@@ -60,6 +60,8 @@ namespace SCMM.Discord.Data.Store
                 set => this.List = new PersistableStringCollection(value);
             }
 
+            public ulong? AppId { get; set; }
+
             public static IEnumerable<ConfigurationDefinition> Definitions => new ConfigurationDefinition[]
             {
                 new ConfigurationDefinition()

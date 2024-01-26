@@ -17,7 +17,7 @@ namespace SCMM.Steam.Data.Store.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("ProductVersion", "7.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -57,7 +57,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("BackgroundColor")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("Features")
+                    b.Property<long>("FeatureFlags")
                         .HasColumnType("bigint");
 
                     b.Property<string>("IconLargeUrl")
@@ -65,9 +65,6 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<string>("IconUrl")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<string>("ItemDefinitionsDigest")
                         .HasColumnType("nvarchar(max)");
@@ -574,6 +571,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("InvestmentReliability")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsBeingManipulated")
@@ -979,8 +977,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<byte>("Flags")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("Flags")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("uniqueidentifier");
@@ -991,11 +989,11 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTimeOffset?>("TradableAndMarketablAfter")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<bool>("TradableAndMarketable")
                         .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("TradableAndMarketableAfter")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
@@ -1054,8 +1052,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<byte>("Flags")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("Flags")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("uniqueidentifier");

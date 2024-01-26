@@ -16,6 +16,8 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public StoreTopSellerRankingType StoreTopSellers { get; set; }
 
+        public MarketType[] MarketTypes { get; set; }
+
         public MarketValueType MarketValue { get; set; }
 
         public ItemInfoType[] ItemInfo { get; set; }

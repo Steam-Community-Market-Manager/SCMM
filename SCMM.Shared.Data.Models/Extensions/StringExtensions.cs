@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Shared.Data.Models.Extensions
 {
@@ -49,6 +50,20 @@ namespace SCMM.Shared.Data.Models.Extensions
             value = Regex.Replace(value, @"\[[^\]]*\]", string.Empty).Trim();
 
             return value;
+        }
+
+        public static string ToPrettyJson(this string json)
+        {
+            using (var jsonDocument = JsonDocument.Parse(json))
+            {
+                return JsonSerializer.Serialize(
+                    jsonDocument,
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    }
+                );
+            }
         }
 
         public static string RemoveEmptyMarkup(this string value)
