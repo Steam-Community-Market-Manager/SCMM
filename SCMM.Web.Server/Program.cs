@@ -329,7 +329,9 @@ public static class WebApplicationExtensions
 
     public static WebApplicationBuilder ConfigureClientServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddUIServices();
+        builder.Services.AddUIServices(
+            syncfusionLicenseKey: builder.Configuration.GetSection("Syncfusion").GetValue<string>("LicenseKey")
+        );
 
         builder.Services.AddScoped<ICookieManager, HttpContextCookieManager>();
         builder.Services.AddScoped<ISystemService, CommandQuerySystemService>();
