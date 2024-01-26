@@ -194,8 +194,10 @@ namespace SCMM.Azure.ServiceBus.Middleware
 
                     var processor = _serviceBusClient.CreateProcessor(messageType, new ServiceBusProcessorOptions()
                     {
+                        AutoCompleteMessages = false,
                         PrefetchCount = handlerType.GetCustomAttribute<PrefetchAttribute>()?.PrefetchCount ?? 0,
-                        MaxConcurrentCalls = handlerType.GetCustomAttribute<ConcurrencyAttribute>()?.MaxConcurrentCalls ?? 1
+                        MaxConcurrentCalls = handlerType.GetCustomAttribute<ConcurrencyAttribute>()?.MaxConcurrentCalls ?? 1,
+                        ReceiveMode = ServiceBusReceiveMode.PeekLock
                     });
 
                     processor.ProcessMessageAsync += ProcessMessageAsync;
@@ -225,44 +227,64 @@ namespace SCMM.Azure.ServiceBus.Middleware
 
         private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
         {
-            var context = new AzureMessageContext(_serviceBusClient)
+            try
             {
-                MessageId = args.Message.MessageId,
-                MessageType = Type.GetType((string)args.Message.ApplicationProperties.GetValueOrDefault(ServiceBusConstants.ApplicationPropertyType, typeof(IMessage).AssemblyQualifiedName)),
-                ReplyTo = args.Message.ReplyTo
-            };
-
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var message = JsonSerializer.Deserialize(args.Message.Body.ToArray(), context.MessageType);
-                var handlerType = typeof(IMessageHandler<>).MakeGenericType(context.MessageType);
-                if (handlerType == null)
+                _logger.LogInformation($"New message was received (id: {args.Message.MessageId}, namespace: {args.FullyQualifiedNamespace}, entityPath: {args.EntityPath})");
+                var context = new AzureMessageContext(_serviceBusClient)
                 {
-                    throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler type not found ");
-                }
+                    MessageId = args.Message.MessageId,
+                    MessageType = Type.GetType((string)args.Message.ApplicationProperties.GetValueOrDefault(ServiceBusConstants.ApplicationPropertyType, typeof(IMessage).AssemblyQualifiedName)),
+                    ReplyTo = args.Message.ReplyTo
+                };
 
-                var handlerInstance = scope.ServiceProvider.GetService(handlerType);
-                if (handlerInstance == null)
+                using (var scope = _scopeFactory.CreateScope())
                 {
-                    throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler cannot be instantiated");
-                }
-
-                var handlerMethod = handlerInstance.GetType().GetMethod("HandleAsync", new[] { context.MessageType, typeof(AzureMessageContext) });
-                if (handlerMethod == null)
-                {
-                    throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler method not found");
-                }
-
-                var task = (Task)handlerMethod.Invoke(
-                    handlerInstance,
-                    new object[]
+                    var message = JsonSerializer.Deserialize(args.Message.Body.ToArray(), context.MessageType);
+                    var handlerType = typeof(IMessageHandler<>).MakeGenericType(context.MessageType);
+                    if (handlerType == null)
                     {
-                    message,
-                    context
+                        throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler type not found ");
                     }
-                );
 
-                await task;
+                    var handlerInstance = scope.ServiceProvider.GetService(handlerType);
+                    if (handlerInstance == null)
+                    {
+                        throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler cannot be instantiated");
+                    }
+
+                    var handlerMethod = handlerInstance.GetType().GetMethod("HandleAsync", new[] { context.MessageType, typeof(AzureMessageContext) });
+                    if (handlerMethod == null)
+                    {
+                        throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler method not found");
+                    }
+
+                    var task = (Task)handlerMethod.Invoke(
+                        handlerInstance,
+                        new object[]
+                        {
+                        message,
+                        context
+                        }
+                    );
+
+                    await task;
+                    await args.CompleteMessageAsync(args.Message);
+
+                    _logger.LogInformation($"Message was processed successfully (id: {args.Message.MessageId}, namespace: {args.FullyQualifiedNamespace}, entityPath: {args.EntityPath})");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Message could not be processed due to error, moving to to dead letter queue (id: {args.Message.MessageId}, namespace: {args.FullyQualifiedNamespace}, entityPath: {args.EntityPath}). Error was: {ex.Message}");
+                await args.DeadLetterMessageAsync(args.Message);
+                throw;
+            }
+            finally
+            {
+                if (!String.IsNullOrEmpty(args.Message.LockToken))
+                {
+                    await args.AbandonMessageAsync(args.Message);
+                }
             }
         }
 

@@ -288,6 +288,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     { "Compare with Steam", new SteamMarketListingPageRequest() { AppId = assetDescription.App.SteamId, MarketHashName = assetDescription.NameHash } }
                 };
 
+                // Post message to the channel
                 await _client.SendMessageAsync(
                     guildId,
                     channelId,
@@ -299,32 +300,26 @@ namespace SCMM.Discord.Bot.Server.Handlers
                                   !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
                     description: description.ToString(),
                     color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    // TODO: Enable this if/when Discord allows us to add components to cross-posted messages
-                    //linkButtons: linkButtons, 
-                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
+                    linkButtons: linkButtons,
+                    crossPost: false // Messages with link buttons (interactions) cannot be cross-posted
                 );
 
-                try
-                {
-                    await _client.SendMessageAsync(
-                        guildId,
-                        channelId,
-                        threadName: marketName,
-                        title: $"Get {discountPercentage}% off {assetDescription.Name}",
-                        authorName: marketName,
-                        authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
-                        url: marketUrl,
-                        thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
-                                      !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
-                        description: description.ToString(),
-                        color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
-                        linkButtons: linkButtons
-                    );
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to post 'market item price profitable buy deal detected' (id: {marketItem.Id} ) to channel thread");
-                }
+                // Post message to channels market thread
+                await _client.SendMessageAsync(
+                    guildId,
+                    channelId,
+                    threadName: marketName,
+                    title: $"Get {discountPercentage}% off {assetDescription.Name}",
+                    authorName: marketName,
+                    authorIconUrl: $"{_configuration.GetDataStoreUrl()}/images/app/{assetDescription.App.SteamId}/markets/{marketItem.BuyNowFrom.ToString().ToLower()}.png",
+                    url: marketUrl,
+                    thumbnailUrl: !String.IsNullOrEmpty(assetDescription.IconUrl) ? assetDescription.IconUrl :
+                                  !String.IsNullOrEmpty(assetDescription.ItemShortName) ? $"{_configuration.GetDataStoreUrl()}/images/app/{marketItem.AppId}/items/{assetDescription.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    linkButtons: linkButtons,
+                    crossPost: false // Messages with link buttons (interactions) cannot be cross-posted
+                );
             });
         }
 
@@ -531,7 +526,10 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 );
             }
 
-            await Task.WhenAll(alertTasks);
+            if (!Task.WaitAll(alertTasks.ToArray(), TimeSpan.FromSeconds(10)))
+            {
+                _logger.LogWarning($"Timed out waiting for alerts to be sent to guild(s). We're moving on anyway...");
+            }
         }
     }
 }
