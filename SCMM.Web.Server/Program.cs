@@ -411,15 +411,17 @@ public static class WebApplicationExtensions
 
         app.UseHttpsRedirection();
 
-        var allowLoopbackConnectHack = app.Environment.IsDevelopment() ? "localhost:* wss://localhost:*" : null;
+        var hstsDuration = app.Environment.IsDevelopment() ? null : (ulong?) 2592000; /* 30 days */
+        var allowConnectLocalhost = app.Environment.IsDevelopment() ? "localhost:* http://localhost:* https://localhost:* ws://localhost:* wss://localhost:*" : null;
         app.UseOWASPSecurityHeaders(
             cspScriptSources: "'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.skypack.dev www.googletagmanager.com www.google-analytics.com",
             cspStyleSources: "'self' 'unsafe-inline' cdnjs.cloudflare.com fonts.googleapis.com www.google-analytics.com",
             cspFontSources: "'self' data: cdnjs.cloudflare.com fonts.gstatic.com",
             cspImageSources: "'self' data: blob: *.scmm.app *.akamaihd.net *.steamstatic.com cdnjs.cloudflare.com cdn.discordapp.com cdn.smartlydressedgames.com files.facepunch.com www.google-analytics.com",
             cspFrameSources: "'self' www.youtube.com e.widgetbot.io",
-            cspConnectSources: $"'self' *.scmm.app steamcommunity.com discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowLoopbackConnectHack}",
-            cspAllowCrossOriginEmbedding: true
+            cspConnectSources: $"'self' *.scmm.app steamcommunity.com discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowConnectLocalhost}",
+            cspAllowCrossOriginEmbedding: true,
+            hstsDurationInSeconds: hstsDuration
         );
 
         app.UseBlazorFrameworkFiles(); // Wasm
