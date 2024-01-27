@@ -1,9 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>true</ImplicitUsings>
-	<PublishTrimmed>true</PublishTrimmed>
+	<PublishTrimmed>false</PublishTrimmed>
+	<CompressionEnabled>true</CompressionEnabled>
+	<RunAOTCompilation>false</RunAOTCompilation>
+	<WasmEnableThreads>false</WasmEnableThreads>
+	<WasmEnableSIMD>true</WasmEnableSIMD>
+	<WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
+	<WasmStripILAfterAOT>false</WasmStripILAfterAOT>
   </PropertyGroup>
 
   <ItemGroup>
