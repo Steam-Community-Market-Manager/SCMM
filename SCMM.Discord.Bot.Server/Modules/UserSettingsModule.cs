@@ -37,7 +37,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         if (user == null)
         {
             _discordDb.DiscordUsers.Add(
-                user = new Discord.Data.Store.DiscordUser()
+                user = new DiscordUser()
                 {
                     Id = Context.User.Id,
                     Username = Context.User.Username,

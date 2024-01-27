@@ -1,5 +1,6 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SCMM.Shared.Data.Store
 {
@@ -16,6 +17,7 @@ namespace SCMM.Shared.Data.Store
 
         public ICollection<T> Configuration { get; set; }
 
+        [NotMapped]
         protected abstract IEnumerable<ConfigurationDefinition> ConfigurationDefinitions { get; }
 
         private ConfigurationDefinition AssertValidConfiguration(string name)

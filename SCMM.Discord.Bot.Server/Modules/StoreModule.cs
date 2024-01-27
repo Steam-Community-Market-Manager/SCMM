@@ -64,7 +64,7 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
                 .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
             if (guild != null)
             {
-                currencyId = guild.Get(Discord.Data.Store.DiscordGuild.GuildConfiguration.Currency).Value;
+                currencyId = guild.Get(DiscordGuild.ConfigurationOption.Currency).Value;
             }
         }
 
