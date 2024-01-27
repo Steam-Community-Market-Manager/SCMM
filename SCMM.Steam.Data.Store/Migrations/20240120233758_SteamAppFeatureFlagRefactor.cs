@@ -64,6 +64,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                 SteamAppFeatureFlags.ItemStore |
                 SteamAppFeatureFlags.ItemStoreWebBrowser |
                 //SteamAppFeatureFlags.ItemStorePriceTracking | // Rust gets this from item definition updates instead
+                SteamAppFeatureFlags.ItemStoreMediaTracking |
                 SteamAppFeatureFlags.ItemStorePersistent |
                 SteamAppFeatureFlags.ItemStoreRotating |
                 SteamAppFeatureFlags.ItemMarket |
