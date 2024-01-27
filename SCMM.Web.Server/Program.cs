@@ -423,7 +423,7 @@ public static class WebApplicationExtensions
             cspImageSources: "'self' data: blob: *.scmm.app *.akamaihd.net *.steamstatic.com cdnjs.cloudflare.com cdn.discordapp.com cdn.smartlydressedgames.com files.facepunch.com www.google-analytics.com",
             cspFrameSources: "'self' www.youtube.com e.widgetbot.io",
             cspConnectSources: $"'self' *.scmm.app steamcommunity.com discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowConnectLocalhost}",
-            cspAllowCrossOriginEmbedding: true,
+            cspAllowCrossOriginEmbedding: true, // Required to embed images from Steam CDN in the UI
             hstsDurationInSeconds: hstsDuration
         );
 
