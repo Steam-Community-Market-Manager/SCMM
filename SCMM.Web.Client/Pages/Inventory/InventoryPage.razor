@@ -140,19 +140,15 @@
     [Parameter]
     public string SteamId { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string SortBy { get; set; } = nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice);
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string SortDirection { get; set; } = Data.Models.SortDirection.Descending.ToString();
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Panel { get; set; }
 
