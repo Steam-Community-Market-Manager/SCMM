@@ -38,7 +38,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 
-JsonSerializerOptionsExtensions.SetDefaultOptions();
+JsonSerializerOptionsExtensions.SetGlobalDefaultOptions();
 
 await WebApplication.CreateBuilder(args)
     .ConfigureLogging()

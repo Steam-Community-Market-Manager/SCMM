@@ -12,7 +12,7 @@ using SCMM.Web.Data.Models.Services;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 
-JsonSerializerOptionsExtensions.SetDefaultOptions();
+JsonSerializerOptionsExtensions.SetGlobalDefaultOptions();
 
 await WebAssemblyHostBuilder.CreateDefault(args)
     .ConfigureServices()

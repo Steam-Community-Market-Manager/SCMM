@@ -34,7 +34,7 @@ Console.WriteLine(" | SCMM WORKER | ");
 Console.WriteLine(" =============== ");
 Console.WriteLine();
 
-JsonSerializerOptionsExtensions.SetDefaultOptions();
+JsonSerializerOptionsExtensions.SetGlobalDefaultOptions();
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var hostBuilder = new HostBuilder()

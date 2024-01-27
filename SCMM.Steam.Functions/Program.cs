@@ -54,7 +54,7 @@ using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
 
-JsonSerializerOptionsExtensions.SetDefaultOptions();
+JsonSerializerOptionsExtensions.SetGlobalDefaultOptions();
 
 await new HostBuilder()
     .ConfigureLogging()
