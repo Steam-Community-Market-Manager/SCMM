@@ -24,7 +24,7 @@ public static class WebAssemblyHostExtensions
     public static WebAssemblyHostBuilder ConfigureServices(this WebAssemblyHostBuilder builder)
     {
         builder.Services.AddUIServices(
-            syncfusionLicenseKey: Environment.GetEnvironmentVariable("SYNCFUSION_LICENSE_KEY")
+            syncfusionLicenseKey: builder.Configuration.GetSection("Syncfusion").GetValue<string>("LicenseKey")
         );
 
         builder.Services.AddScoped<ICookieManager, JavascriptCookieManager>();
@@ -89,9 +89,9 @@ public static class WebAssemblyHostExtensions
             config.SnackbarConfiguration.ClearAfterNavigation = false;
         });
 
+        services.AddSyncfusionBlazor();
         if (!String.IsNullOrEmpty(syncfusionLicenseKey))
         {
-            services.AddSyncfusionBlazor();
             SyncfusionLicenseProvider.RegisterLicense(syncfusionLicenseKey);
         }
     }
