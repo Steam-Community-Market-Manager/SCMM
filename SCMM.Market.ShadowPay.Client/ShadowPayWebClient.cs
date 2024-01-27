@@ -19,7 +19,7 @@ namespace SCMM.Market.ShadowPay.Client
         {
             using (var client = BuildShadowPayClient())
             {
-                var url = $"{ApiBaseUri}api/v2/merchant/items/prices?project={appName}";
+                var url = $"{ApiBaseUri}api/v2/merchant/items/prices?project={appName?.ToLower()}";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
