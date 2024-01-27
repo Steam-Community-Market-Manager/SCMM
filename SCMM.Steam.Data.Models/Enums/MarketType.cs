@@ -140,7 +140,7 @@ namespace SCMM.Steam.Data.Models.Enums
         Waxpeer = 31,
 
         [Display(Name = "ShadowPay")]
-        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#005BBB", AffiliateUrl = "https://shadowpay.com?utm_campaign=e6PlQUT3mUC06NL")]
+        [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#30bd91", AffiliateUrl = "https://shadowpay.com?utm_campaign=e6PlQUT3mUC06NL")]
         [BuyFrom(Url = "https://shadowpay.com/en/{1}-items?utm_campaign=e6PlQUT3mUC06NL&price_from=0&price_to=0&currency=USD&search={3}&sort_column=price&sort_dir=asc", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)] // Unconfirmed
         ShadowPay = 32,
 
