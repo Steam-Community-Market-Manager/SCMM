@@ -15,8 +15,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	<PackageReference Include="Syncfusion.Blazor.Themes" Version="24.1.47" />
 	<PackageReference Include="Syncfusion.Blazor.Charts" Version="24.1.47" />
-    <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="24.1.47" />
-	<PackageReference Include="Syncfusion.Blazor.RangeNavigator" Version="24.1.47" />
   </ItemGroup>
 
   <ItemGroup>
