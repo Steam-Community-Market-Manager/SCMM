@@ -171,6 +171,7 @@ namespace SCMM.Web.Server.API.Controllers
             var profileId = User.Id();
             var profile = await _db.SteamProfiles
                 .Include(x => x.InventoryItems)
+                .Include(x => x.InventoryValues)
                 .Include(x => x.MarketItems)
                 .Include(x => x.AssetDescriptions)
                 .AsNoTracking()

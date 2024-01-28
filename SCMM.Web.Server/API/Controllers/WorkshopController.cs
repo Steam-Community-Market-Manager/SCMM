@@ -67,6 +67,10 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 count = int.MaxValue;
             }
+            
+            // TODO: There appears to be a regression in EF that requires us to use EF.Functions.Collate() here.
+            //       See: https://github.com/dotnet/efcore/issues/32147
+            var collation = "SQL_Latin1_General_CP1_CI_AS";
 
             // Filter app
             var appId = this.App().Guid;
@@ -79,14 +83,14 @@ namespace SCMM.Web.Server.API.Controllers
             foreach (var filterWord in filterWords)
             {
                 query = query.Where(x =>
-                    id.Contains(x.SteamId) ||
+                    id.Contains(EF.Functions.Collate(x.SteamId, collation)) ||
                     x.Id.ToString() == filterWord ||
-                    x.SteamId == filterWord ||
-                    x.Name.Contains(filterWord) ||
-                    x.Description.Contains(filterWord) ||
-                    (x.CreatorProfile != null && x.CreatorProfile.Name.Contains(filterWord)) ||
-                    x.ItemType.Contains(filterWord) ||
-                    x.ItemCollection.Contains(filterWord) ||
+                    EF.Functions.Collate(x.SteamId, collation) == filterWord ||
+                    EF.Functions.Collate(x.Name, collation).Contains(filterWord) ||
+                    EF.Functions.Collate(x.Description, collation).Contains(filterWord) ||
+                    (x.CreatorProfile != null && EF.Functions.Collate(x.CreatorProfile.Name, collation).Contains(filterWord)) ||
+                    EF.Functions.Collate(x.ItemType, collation).Contains(filterWord) ||
+                    EF.Functions.Collate(x.ItemCollection, collation).Contains(filterWord) ||
                     x.Tags.Serialised.Contains(filterWord)
                 );
             }
@@ -94,11 +98,11 @@ namespace SCMM.Web.Server.API.Controllers
             // Filter toggles
             if (!string.IsNullOrEmpty(type))
             {
-                query = query.Where(x => id.Contains(x.SteamId) || x.ItemType == type);
+                query = query.Where(x => id.Contains(EF.Functions.Collate(x.SteamId, collation)) || EF.Functions.Collate(x.ItemType, collation) == type);
             }
             if (!string.IsNullOrEmpty(collection))
             {
-                query = query.Where(x => id.Contains(x.SteamId) || x.ItemCollection == collection);
+                query = query.Where(x => id.Contains(EF.Functions.Collate(x.SteamId, collation)) || EF.Functions.Collate(x.ItemCollection, collation) == collection);
             }
             if (creatorId != null)
             {

@@ -472,14 +472,12 @@
         { 2, "crafting" }
     };
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
 
     [Parameter]
     public MarketType? MarketType { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool? SellNow { get; set; }
 

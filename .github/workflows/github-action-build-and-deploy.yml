@@ -2,7 +2,7 @@
 name: Build and deploy solution to Azure
 
 env:
-  DOTNET_VERSION: '7.0.x'
+  DOTNET_VERSION: '8.0.x'
 
 on:
   push:
@@ -42,6 +42,13 @@ jobs:
 
       - name: Publish Web.Server app service with dotnet
         run: dotnet publish SCMM.Web.Server/SCMM.Web.Server.csproj -c Release -o ${{ github.workspace }}/pub/web-apps/SCMM.Web.Server
+        
+      - name: Substitute production variables in appsettings.json
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: '${{ github.workspace }}/pub/web-apps/SCMM.Web.Server/wwwroot/appsettings.json'
+        env:
+          Syncfusion.LicenseKey: ${{ secrets.SYNCFUSION_LICENSE_KEY }}
 
       - name: Upload artifacts for deployment job
         uses: actions/upload-artifact@v3

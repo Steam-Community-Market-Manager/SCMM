@@ -2,7 +2,7 @@
 name: Build and test solution
 
 env:
-  DOTNET_VERSION: '7.0.x'
+  DOTNET_VERSION: '8.0.x'
 
 on:
   pull_request:

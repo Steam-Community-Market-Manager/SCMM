@@ -14,7 +14,7 @@ public class GuildConfigurationNameAutocompleteHandler : AutocompleteHandler
             var discordDb = scope.ServiceProvider.GetRequiredService<DiscordDbContext>();
             var guild = await discordDb.DiscordGuilds.FirstOrDefaultAsync(x => x.Id == context.Guild.Id);
             var name = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
-            var configNames = DiscordGuild.GuildConfiguration.Definitions
+            var configNames = DiscordGuild.AllConfigurationDefinitions
                 .Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
                 .Where(x => x.RequiredFlags == 0 || (guild != null && (((int)guild.Flags) & x.RequiredFlags) > 0))
                 .Select(x => new AutocompleteResult()

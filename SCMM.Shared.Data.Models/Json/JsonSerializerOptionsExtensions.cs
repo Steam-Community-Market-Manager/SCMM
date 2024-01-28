@@ -9,10 +9,13 @@ namespace SCMM.Shared.Data.Models.Json;
 public static class JsonSerializerOptionsExtensions
 {
     /// <summary>
+    /// There is no way to override the default serialiser options in Blazor, so this is what we have to do.
+    /// This ensures that the entire application uses the same options, and that we don't have to specify them everywhere.
+    /// https://github.com/dotnet/aspnetcore/issues/38144
     /// System.Text.Json doesn't expose the default options, so we have to do it via reflection (yuk!)
     /// https://github.com/dotnet/runtime/issues/31094
     /// </summary>
-    public static void SetDefaultOptions()
+    public static void SetGlobalDefaultOptions()
     {
         var defaultOptions = UseDefaults(new JsonSerializerOptions()
         {
@@ -35,16 +38,16 @@ public static class JsonSerializerOptionsExtensions
         options.Converters.Add(new JsonNumberBooleanConverter());
         options.Converters.Add(new JsonNumberStringConverter());
         options.AllowTrailingCommas = true;
-        options.IgnoreReadOnlyProperties = false; // explicitly use [JsonIgnore] instead
         options.IgnoreReadOnlyFields = true; // use properties only
+        options.IgnoreReadOnlyProperties = false; // explicitly use [JsonIgnore] instead
         options.IncludeFields = false; // use properties only
         options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
         options.PropertyNameCaseInsensitive = true; // because javascript
+        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.ReadCommentHandling = JsonCommentHandling.Skip;
         options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 #if DEBUG
-        // TODO: This causes a JSON parsing error in Swagger UI, reenable after they fix it
-        //options.WriteIndented = true;
+        options.WriteIndented = true;
 #endif
         return options;
     }
