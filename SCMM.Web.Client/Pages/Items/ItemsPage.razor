@@ -293,10 +293,6 @@
         {
             SortDirection = Data.Models.SortDirection.Descending.ToString();
         }
-    }
-
-    protected override void OnParametersSet()
-    {
         if (!String.IsNullOrEmpty(SortBy) && !String.IsNullOrEmpty(SortDirection))
         {
             Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Enum.Parse<Data.Models.SortDirection>(SortDirection, true));

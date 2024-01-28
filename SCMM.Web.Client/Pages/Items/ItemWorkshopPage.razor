@@ -135,9 +135,18 @@
 
     protected override void OnInitialized()
     {
-        SortBy = nameof(WorkshopFileDTO.TimeCreated);
-        SortDirection = Data.Models.SortDirection.Descending.ToString();
-        Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Data.Models.SortDirection.Descending);
+        if (String.IsNullOrEmpty(SortBy))
+        {
+            SortBy = nameof(WorkshopFileDTO.TimeCreated);
+        }
+        if (String.IsNullOrEmpty(SortDirection))
+        {
+            SortDirection = Data.Models.SortDirection.Descending.ToString();
+        }
+        if (!String.IsNullOrEmpty(SortBy) && !String.IsNullOrEmpty(SortDirection))
+        {
+            Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Data.Models.SortDirection.Descending);
+        }
     }
 
     protected override async Task OnLoadStateAsync()
