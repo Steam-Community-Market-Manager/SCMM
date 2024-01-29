@@ -13,7 +13,8 @@
 <PageContainer Title="@($"{State?.App?.Name} Market Activity")">
     
     <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning" Variant="MudBlazor.Variant.Text" Class="mud-alert-outlined-warning mb-5">
-        <span>This is <strong>not</strong> a complete history of all Steam community market activity. The Steam APIs only reveal a small subset of all market activity to the public. We attempt to track as much activity as is reasonably possible within the limitations of the APIs.</span>
+        <strong>This is NOT a full or complete list of all Steam community market activity!</strong><br/>
+        <span>Only a small subset of all Steam community market activity is shown here. Steam APIs don't show all actions performed on the market and have aggressive caching and rate limiting which restricts how much information can be detected by SCMM (or any other user/website for that matter). Some highly active items that have hundreds of sales per day may only show a handful of sales here, this is a limitation of the Steam APIs. SCMM attempts to track as much market activity as is possible to do so within the limitations of the current Steam APIs.</span>
     </MudAlert>
 
     <MudGrid Spacing="2">
