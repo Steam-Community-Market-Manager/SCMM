@@ -29,8 +29,7 @@ public class UpdateMarketItemPricesFromShadowPay
         _statisticsService = statisticsService;
     }
 
-    // TODO: Enable once ShadowPay auth issue is resolved
-    //[Function("Update-Market-Item-Prices-From-Shadow-Pay")]
+    [Function("Update-Market-Item-Prices-From-Shadow-Pay")]
     public async Task Run([TimerTrigger("0 29/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!ShadowPay.IsEnabled())
@@ -43,7 +42,6 @@ public class UpdateMarketItemPricesFromShadowPay
         var appIds = ShadowPay.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
-            //.Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {
@@ -89,9 +87,10 @@ public class UpdateMarketItemPricesFromShadowPay
                 if (item != null)
                 {
                     var available = shadowPayItem.Volume;
+                    var price = (!String.IsNullOrEmpty(shadowPayItem.Price) ? decimal.Parse(shadowPayItem.Price) : 0) * 100;
                     item.UpdateBuyPrices(ShadowPay, new PriceWithSupply
                     {
-                        Price = available > 0 ? item.Currency.CalculateExchange(shadowPayItem.Price, usdCurrency) : 0,
+                        Price = available > 0 && price > 0 ? item.Currency.CalculateExchange(price / usdCurrency.ExchangeRateMultiplier) : 0,
                         Supply = available
                     });
                 }

@@ -98,34 +98,34 @@
                         </TitleContent>
                         <ChildContent>
                             <div Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGlowing))
+                                @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureGlowing))
                                 {
                                     <MudSwitch T="bool" Value="@Glow" ValueChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                     <MudSwitch T="bool" Value="@Glowsight" ValueChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCutout))
+                                @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureCutout))
                                 {
                                     <MudSwitch T="bool" Value="@Cutout" ValueChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCrafting))
+                                @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureCrafting))
                                 {
                                     <MudSwitch T="bool" Value="@Craftable" ValueChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeaturePublisherDrops))
+                                @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeaturePublisherDrops))
                                 {
                                     <MudSwitch T="bool" Value="@PublisherDrop" ValueChanged="@((x) => { PublisherDrop = x; _ = RefreshItems(); })" Label="@($"{State.App?.PublisherName ?? "Publisher"} Drop")" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
+                                @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureTwitchDrops))
                                 {
                                     <MudSwitch T="bool" Value="@TwitchDrop" ValueChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureLootCrates))
+                                @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureLootCrates))
                                 {
                                     <MudSwitch T="bool" Value="@LootCrateDrop" ValueChanged="@((x) => { LootCrateDrop = x; _ = RefreshItems(); })" Label="Loot Crate Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
                                 <MudSwitch T="bool" Value="@Tradable" ValueChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 <MudSwitch T="bool" Value="@Marketable" ValueChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                                @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreRotating))
                                 {
                                     <MudSwitch T="bool" Value="@Returning" ValueChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
@@ -138,35 +138,35 @@
             </MudHidden>
             <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
                 <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGlowing))
+                    @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureGlowing))
                     {
                         <MudSwitch T="bool" Value="@Glow" ValueChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                         <MudSwitch T="bool" Value="@Glowsight" ValueChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCutout))
+                    @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureCutout))
                     {
                         <MudSwitch T="bool" Value="@Cutout" ValueChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCrafting))
+                    @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureCrafting))
                     {
                         <MudSwitch T="bool" Value="@Craftable" ValueChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeaturePublisherDrops))
+                    @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeaturePublisherDrops))
                     {
                         <MudSwitch T="bool" Value="@PublisherDrop" ValueChanged="@((x) => { PublisherDrop = x; _ = RefreshItems(); })" Label="@($"{State.App?.PublisherName ?? "Publisher"} Drop")" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
+                    @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureTwitchDrops))
                     {
                         <MudSwitch T="bool" Value="@TwitchDrop" ValueChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureLootCrates))
+                    @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.AssetDescriptionFeatureLootCrates))
                     {
                         <MudSwitch T="bool" Value="@LootCrateDrop" ValueChanged="@((x) => { LootCrateDrop = x; _ = RefreshItems(); })" Label="Loot Crate Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
                     <MudSwitch T="bool" Value="@Commodity" ValueChanged="@((x) => { Commodity = x; _ = RefreshItems(); })" Label="Commodity " Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Value="@Tradable" ValueChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Value="@Marketable" ValueChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                    @if (State.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreRotating))
                     {
                         <MudSwitch T="bool" Value="@Returning" ValueChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
@@ -215,83 +215,63 @@
 
 @code {
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Type { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string BreaksIntoComponent { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Glow { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Glowsight { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Cutout { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Craftable { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool PublisherDrop { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool TwitchDrop { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool LootCrateDrop { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Commodity { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Tradable { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Marketable { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Returning { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Banned { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public bool Manipulated { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public Nullable<int> Start { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public Nullable<int> Count { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string SortBy { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string SortDirection { get; set; }
 
@@ -313,10 +293,6 @@
         {
             SortDirection = Data.Models.SortDirection.Descending.ToString();
         }
-    }
-
-    protected override void OnParametersSet()
-    {
         if (!String.IsNullOrEmpty(SortBy) && !String.IsNullOrEmpty(SortDirection))
         {
             Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Enum.Parse<Data.Models.SortDirection>(SortDirection, true));

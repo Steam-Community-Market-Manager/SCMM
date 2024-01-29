@@ -7,33 +7,39 @@
     {
         <MudNavLink Href="@($"/inventory/{State.Profile.SteamId}")" Match="NavLinkMatch.All" Disabled="@State.IsPrerendering">
             <div class="d-flex align-center ml-n4">
-                <MudAvatar Image="@State.Profile.AvatarUrl" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" />
+                <MudAvatar Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;">
+                    <MudImage Src="@State.Profile.AvatarUrl"></MudImage>
+                </MudAvatar>
                 <span class="px-3 no-wrap">My Inventory</span>
             </div>
         </MudNavLink>
     }
-    <MudNavLink Href="/inventory" Icon="fas fa-fw fa-trophy" Match="NavLinkMatch.All" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Inventory Leaderboard</span>
-    </MudNavLink>
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemInventory) == true)
+    {
+        <MudNavLink Href="/inventory" Icon="fas fa-fw fa-trophy" Match="NavLinkMatch.All" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Inventory Leaderboard</span>
+        </MudNavLink>
+    }
     
     <MudDivider />
 
     <MudNavLink Href="/items" Icon="fas fa-fw fa-tshirt" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Items</span>
     </MudNavLink>
-    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) == true || State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating) == true)
+
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStore) == true)
     {
         <MudNavLink Href="/store" Icon="fas fa-fw fa-shopping-cart" Disabled="@State.IsPrerendering">
             <span class="no-wrap">Item Stores</span>
         </MudNavLink>
     }
-    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemWorkshop) == true)
     {
         <MudNavLink Href="/item/workshop" Icon="fas fa-fw fa-compass-drafting" Disabled="@State.IsPrerendering">
             <span class="no-wrap">Item Workshop</span>
         </MudNavLink>
     }
-    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemDefinitionArchives) == true)
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemDefinitions) == true)
     {
         <MudNavLink Href="/item/definitionArchives" Icon="fas fa-fw fa-dolly" Disabled="@State.IsPrerendering">
                 <span class="no-wrap">Item Definition Archives</span>
@@ -41,18 +47,31 @@
     }
 
     <MudDivider />
+    
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarket) == true)
+    {
+        <MudNavLink Href="/market/deals" Icon="fas fa-fw fa-search-dollar" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Market Deals</span>
+        </MudNavLink>
+    }
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarket) == true)
+    {
+        <MudNavLink Href="/market/tracker" Icon="fas fa-fw fa-magnifying-glass-chart" Disabled="true" title="Coming soon...">
+            <span class="no-wrap">Market Item Tracker</span>
+        </MudNavLink>
+    }
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketActivityTracking) == true)
+    {
+        <MudNavLink Href="/market/activity" Icon="fas fa-fw fa-exchange-alt" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Market Item Activity</span>
+        </MudNavLink>
+    }
 
-    <MudNavLink Href="/market/deals" Icon="fas fa-fw fa-search-dollar" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Market Deals</span>
-    </MudNavLink>
-    <MudNavLink Href="/market/tracker" Icon="fas fa-fw fa-magnifying-glass-chart" Disabled="true" title="Coming soon...">
-        <span class="no-wrap">Market Item Tracker</span>
-    </MudNavLink>
-    <MudNavLink Href="/market/activity" Icon="fas fa-fw fa-exchange-alt">
-        <span class="no-wrap">Market Item Activity</span>
-    </MudNavLink>
-
-    <MudDivider />
+    @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true ||
+         State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketActivityTracking) == true)
+    {
+        <MudDivider />
+    }
 
     <MudNavLink Href="/stats" Icon="fas fa-fw fa-chart-pie" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Statistics</span>

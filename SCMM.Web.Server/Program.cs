@@ -13,17 +13,20 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Discord.API.Commands;
 using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Web.Client;
 using SCMM.Shared.Web.Server.Formatters;
 using SCMM.Shared.Web.Server.Middleware;
 using SCMM.Steam.Abstractions;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -38,7 +41,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 
-JsonSerializerOptionsExtensions.SetDefaultOptions();
+JsonSerializerOptionsExtensions.SetGlobalDefaultOptions();
 
 await WebApplication.CreateBuilder(args)
     .ConfigureLogging()
@@ -93,6 +96,7 @@ public static class WebApplicationExtensions
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
         builder.Services.AddApplicationInsightsTelemetry(options =>
         {
+            options.EnableRequestTrackingTelemetryModule = true;
             options.EnableDependencyTrackingTelemetryModule = false;
             options.EnableAppServicesHeartbeatTelemetryModule = false;
             options.EnableHeartbeat = false;
@@ -205,16 +209,16 @@ public static class WebApplicationExtensions
         builder.Services.AddAutoMapper(Assembly.GetEntryAssembly());
 
         // Command/query/message handlers
-        var contactAssemblies = new[]
+        var handlerAssemblies = new[]
         {
-            Assembly.GetEntryAssembly(),
-            Assembly.Load("SCMM.Steam.API"),
-            Assembly.Load("SCMM.Discord.API"),
-            Assembly.Load("SCMM.Shared.API")
+            Assembly.GetEntryAssembly(), // Include all handlers in SCMM.Web.Server
+            Assembly.GetAssembly(typeof(SendMessage)), // Include all handlers in SCMM.Discord.API
+            Assembly.GetAssembly(typeof(ImportSteamProfile)), // Include all handlers in SCMM.Steam.API
+            Assembly.GetAssembly(typeof(ImportProfileMessage)), // Include all handlers in SCMM.Shared.API
         };
-        builder.Services.AddCommands(contactAssemblies);
-        builder.Services.AddQueries(contactAssemblies);
-        builder.Services.AddMessages(contactAssemblies);
+        builder.Services.AddCommands(handlerAssemblies);
+        builder.Services.AddQueries(handlerAssemblies);
+        builder.Services.AddMessages(handlerAssemblies);
 
         // Services
         builder.Services.AddScoped<LanguageCache>();
@@ -328,7 +332,9 @@ public static class WebApplicationExtensions
 
     public static WebApplicationBuilder ConfigureClientServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddUIServices();
+        builder.Services.AddUIServices(
+            syncfusionLicenseKey: builder.Configuration.GetSection("Syncfusion").GetValue<string>("LicenseKey")
+        );
 
         builder.Services.AddScoped<ICookieManager, HttpContextCookieManager>();
         builder.Services.AddScoped<ISystemService, CommandQuerySystemService>();
@@ -408,15 +414,17 @@ public static class WebApplicationExtensions
 
         app.UseHttpsRedirection();
 
-        var allowLoopbackConnectHack = app.Environment.IsDevelopment() ? "localhost:* wss://localhost:*" : null;
+        var hstsDuration = app.Environment.IsDevelopment() ? null : (ulong?) 2592000; /* 30 days */
+        var allowConnectLocalhost = app.Environment.IsDevelopment() ? "localhost:* http://localhost:* https://localhost:* ws://localhost:* wss://localhost:*" : null;
         app.UseOWASPSecurityHeaders(
             cspScriptSources: "'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.skypack.dev www.googletagmanager.com www.google-analytics.com",
             cspStyleSources: "'self' 'unsafe-inline' cdnjs.cloudflare.com fonts.googleapis.com www.google-analytics.com",
             cspFontSources: "'self' data: cdnjs.cloudflare.com fonts.gstatic.com",
             cspImageSources: "'self' data: blob: *.scmm.app *.akamaihd.net *.steamstatic.com cdnjs.cloudflare.com cdn.discordapp.com cdn.smartlydressedgames.com files.facepunch.com www.google-analytics.com",
             cspFrameSources: "'self' www.youtube.com e.widgetbot.io",
-            cspConnectSources: $"'self' *.scmm.app steamcommunity.com discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowLoopbackConnectHack}",
-            cspAllowCrossOriginEmbedding: true
+            cspConnectSources: $"'self' *.scmm.app steamcommunity.com discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowConnectLocalhost}",
+            cspAllowCrossOriginEmbedding: true, // Required to embed images from Steam CDN in the UI
+            hstsDurationInSeconds: hstsDuration
         );
 
         app.UseBlazorFrameworkFiles(); // Wasm

@@ -6,6 +6,7 @@ using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
 namespace SCMM.Steam.API.Commands
@@ -93,7 +94,7 @@ namespace SCMM.Steam.API.Commands
                 if (assetDescription.WorkshopFileId > 0 && string.IsNullOrEmpty(assetDescription.WorkshopFileUrl) && !assetDescription.WorkshopFileIsUnavailable)
                 {
                     var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString());
-                    if (app?.IsActive == true)
+                    if (app?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemWorkshop) == true)
                     {
                         await _serviceBus.SendMessageAsync(new ImportWorkshopFileContentsMessage()
                         {

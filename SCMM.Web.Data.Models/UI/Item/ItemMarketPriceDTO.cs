@@ -7,7 +7,7 @@ namespace SCMM.Web.Data.Models.UI.Item
     {
         public MarketType MarketType { get; set; }
 
-        public PriceTypes AcceptedPaymentTypes { get; set; }
+        public PriceFlags AcceptedPayments { get; set; }
 
         public long Price { get; set; }
 

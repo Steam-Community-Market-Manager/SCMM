@@ -691,15 +691,15 @@
                                             }
 									    </MudText>
                                         <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                            @if (price.AcceptedPaymentTypes.HasFlag(PriceTypes.Trade))
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Trade))
                                             {
                                                 <i class="fa fa-fw fa-exchange-alt mr-1" title="Accepts item trade-in payments"></i>
                                             }
-                                            @if (price.AcceptedPaymentTypes.HasFlag(PriceTypes.Cash))
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Cash))
                                             {
                                                 <i class="fa fa-fw fa-credit-card mr-1" title="Accepts cash card payments"></i>
                                             }
-                                            @if (price.AcceptedPaymentTypes.HasFlag(PriceTypes.Crypto))
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Crypto))
                                             {
                                                 <i class="fab fa-fw fa-bitcoin mr-1" title="Accepts crypto currency payments"></i>
                                             }

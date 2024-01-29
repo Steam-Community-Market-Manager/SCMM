@@ -10,7 +10,7 @@ public enum ItemAnalyticsParticipationType
     [Display(Name = "Participate anonymously")]
     Anonymous = 0,
 
-    [Display(Name = "Participate publically")]
+    [Display(Name = "Participate publicly")]
     Public = 1
 }
 

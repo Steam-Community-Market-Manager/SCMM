@@ -27,6 +27,10 @@ namespace SCMM.Discord.Data.Store
             builder.Entity<DiscordGuild>()
                 .HasIndex(x => x.Id)
                 .IsUnique(true);
+            builder.Entity<DiscordGuild>()
+                .OwnsMany(x => x.Configuration, guildConfigurationBuilder => {
+                    guildConfigurationBuilder.OwnsOne(y => y.List);
+                });
 
             builder.Entity<DiscordUser>()
                 .ToContainer(nameof(DiscordUser))

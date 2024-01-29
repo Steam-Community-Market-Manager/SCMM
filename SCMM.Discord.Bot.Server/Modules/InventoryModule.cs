@@ -38,7 +38,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
     [SlashCommand("value", "Calculate the market value of a Steam inventory (it must be public)")]
     public async Task<RuntimeResult> GetUserInventoryValueAsync(
         [Summary("steam-id", "Any SteamID or Steam URL")] string steamId = null,
-        [Summary("app", "Any support Steam app")][Autocomplete(typeof(SteamAppAutocompleteHandler))] ulong appId = 0,
+        [Summary("app", "Any supported Steam app")][Autocomplete(typeof(SteamAppAutocompleteHandler))] ulong appId = 0,
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
     )
     {
@@ -107,7 +107,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
                 .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
             if (guild != null)
             {
-                currencyId = guild.Get(Discord.Data.Store.DiscordGuild.GuildConfiguration.Currency).Value;
+                currencyId = guild.Get(DiscordGuild.ConfigurationOption.Currency).Value;
             }
         }
 

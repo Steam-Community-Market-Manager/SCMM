@@ -148,7 +148,7 @@
                                     <MudSelect T="MarketType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering"
                                                @bind-SelectedValues="@SelectedMarketTypes" ToStringFunc="@((x) => x.GetDisplayName())" OnClose="@((x) => UpdateProfile())"
                                                MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "Do not show third-party markets"))">
-                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()).OrderBy(x => x.ToString()))
+                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => x != MarketType.Unknown && x.IsEnabled() && !x.IsFirstParty()).OrderBy(x => x.ToString()))
                                         {
                                             <MudSelectItem Value="@marketType">
                                                 <div class="d-flex justify-start align-center">
@@ -269,7 +269,6 @@
 
 @code {
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Panel { get; set; }
 
@@ -293,7 +292,7 @@
         }
         else 
         {
-            SelectedMarketTypes = State.Profile.MarketTypes.Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()).OrderBy(x => x.ToString());
+            SelectedMarketTypes = State.Profile.MarketTypes.Where(x => x != MarketType.Unknown && x.IsEnabled() && !x.IsFirstParty()).OrderBy(x => x.ToString());
             SelectedItemInfoTypes = State.Profile.ItemInfo;
             Update = new UpdateProfileCommand()
             {

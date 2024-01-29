@@ -1,14 +1,9 @@
-﻿using CommandQuery;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using SCMM.Discord.Client;
 using SCMM.Discord.Data.Models;
-using SCMM.Discord.Data.Store;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Web.Client.Extensions;
-using SCMM.Steam.API.Queries;
 using System.Text.RegularExpressions;
-using DiscordConfiguration = SCMM.Discord.Client.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Middleware
 {
@@ -16,26 +11,16 @@ namespace SCMM.Discord.Bot.Server.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<DiscordClientMiddleware> _logger;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IDbContextFactory<DiscordDbContext> _discordDbFactory;
         private readonly DiscordClient _client;
-        private readonly DiscordConfiguration _configuration;
         private readonly IDistributedCache _cache;
-        private readonly Timer _statusUpdateTimer;
-        private DateTimeOffset _statusNextStoreUpdate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
 
-        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<DiscordDbContext> discordDbFactory, DiscordConfiguration discordConfiguration, DiscordClient discordClient, IDistributedCache cache)
+        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, DiscordClient discordClient, IDistributedCache cache)
         {
             _next = next;
             _logger = logger;
-            _serviceScopeFactory = serviceScopeFactory;
-            _discordDbFactory = discordDbFactory;
-            _statusUpdateTimer = new Timer(OnStatusUpdate);
-            _configuration = discordConfiguration;
             _cache = cache;
             _client = discordClient;
             _client.Connected += OnConnected;
-            _client.Disconnected += OnDisconnected;
             _ = _client.ConnectAsync().ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
@@ -53,54 +38,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
 
         private void OnConnected()
         {
-            // Start the status update timer
-            _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
-
             _ = RepopulateSystemLatestChangeMessagesCache();
-        }
-
-        private void OnDisconnected()
-        {
-            // Stop the status update timer
-            _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.Zero);
-        }
-
-        private async void OnStatusUpdate(object state)
-        {
-            // If the next store update time is in the past by more than 6 hours, requery it to get a new timestamp
-            if ((_statusNextStoreUpdate - DateTimeOffset.Now).Add(TimeSpan.FromHours(6)) <= TimeSpan.Zero)
-            {
-                using var scope = _serviceScopeFactory.CreateScope();
-                try
-                {
-                    var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
-                    {
-                        AppId = _configuration.AppId
-                    });
-                    if (storeNextUpdateTime == null)
-                    {
-                        return; // No stores to report on...
-                    }
-                    _statusNextStoreUpdate = storeNextUpdateTime.Timestamp;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to get the store next update time for client watching status");
-                }
-            }
-
-            // Display a countdown until the next store update using the last cached timestamp
-            var nextStoreIsOverdue = (_statusNextStoreUpdate <= DateTimeOffset.Now);
-            var nextStoreTimeRemaining = (_statusNextStoreUpdate - DateTimeOffset.Now);
-            var nextStoreTimeDescription = nextStoreTimeRemaining.Duration().ToDurationString(
-                prefix: (nextStoreIsOverdue ? "overdue by" : "due in"), zero: "due now", showSeconds: false, maxGranularity: 2
-            );
-
-            if (_client.IsConnected)
-            {
-                await _client.SetWatchingStatusAsync($"the store, {nextStoreTimeDescription}");
-            }
         }
 
         // TODO: Move this somewhere else and hook in to channel message events so this happens automatically when new messages are sent

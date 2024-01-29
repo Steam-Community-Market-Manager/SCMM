@@ -25,6 +25,8 @@ namespace SCMM.Shared.Data.Store
             get => this.List;
             set => this.List = new PersistableStringCollection(value);
         }
+
+        public ulong? AppId { get; set; }
     }
 
     public interface IConfigurationOption
@@ -34,5 +36,7 @@ namespace SCMM.Shared.Data.Store
         public string Value { get; set; }
 
         public ICollection<string> List { get; set; }
+
+        public ulong? AppId { get; set; }
     }
 }

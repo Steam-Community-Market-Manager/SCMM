@@ -169,7 +169,7 @@ namespace SCMM.Steam.API.Commands
                     try
                     {
                         // Parse store item changes in the archive
-                        if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                        if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStore))
                         {
                             _logger.LogTrace($"Parsing item definitions for store item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
                             RemoveStoreItemsFromArchive(app, itemDefinitions, assetDescriptions, currencies);
@@ -189,8 +189,11 @@ namespace SCMM.Steam.API.Commands
                     try
                     {
                         // Parse market item changes in the archive
-                        _logger.LogTrace($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
-                        await AddOrUpdateMarketItemsFromArchiveAsync(app, itemDefinitions, assetDescriptions, currencies);
+                        if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarket))
+                        {
+                            _logger.LogTrace($"Parsing item definitions for market item changes (appId: {app.SteamId}, digest: '{request.ItemDefinitionsDigest}')");
+                            await AddOrUpdateMarketItemsFromArchiveAsync(app, itemDefinitions, assetDescriptions, currencies);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -267,27 +270,24 @@ namespace SCMM.Steam.API.Commands
                     if (newAssetDescription != null)
                     {
                         assetDescriptions.Add(newAssetDescription);
-                        if (app.IsActive)
+                        await _serviceBus.SendMessageAsync(new ItemDefinitionAddedMessage()
                         {
-                            await _serviceBus.SendMessageAsync(new ItemDefinitionAddedMessage()
-                            {
-                                AppId = UInt64.Parse(app.SteamId),
-                                AppName = app.Name,
-                                AppIconUrl = app.IconUrl,
-                                AppColour = app.PrimaryColor,
-                                CreatorId = newAssetDescription.CreatorId,
-                                CreatorName = newAssetDescription.CreatorProfile?.Name,
-                                CreatorAvatarUrl = newAssetDescription.CreatorProfile?.AvatarUrl,
-                                ItemId = newAssetDescription.ItemDefinitionId ?? 0,
-                                ItemType = newAssetDescription.ItemType,
-                                ItemShortName = newAssetDescription.ItemShortName,
-                                ItemName = newAssetDescription.Name,
-                                ItemDescription = newAssetDescription.Description,
-                                ItemCollection = newAssetDescription.ItemCollection,
-                                ItemIconUrl = newAssetDescription.IconUrl ?? newAssetDescription.IconLargeUrl,
-                                ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
-                            });
-                        }
+                            AppId = UInt64.Parse(app.SteamId),
+                            AppName = app.Name,
+                            AppIconUrl = app.IconUrl,
+                            AppColour = app.PrimaryColor,
+                            CreatorId = newAssetDescription.CreatorId,
+                            CreatorName = newAssetDescription.CreatorProfile?.Name,
+                            CreatorAvatarUrl = newAssetDescription.CreatorProfile?.AvatarUrl,
+                            ItemId = newAssetDescription.ItemDefinitionId ?? 0,
+                            ItemType = newAssetDescription.ItemType,
+                            ItemShortName = newAssetDescription.ItemShortName,
+                            ItemName = newAssetDescription.Name,
+                            ItemDescription = newAssetDescription.Description,
+                            ItemCollection = newAssetDescription.ItemCollection,
+                            ItemIconUrl = newAssetDescription.IconUrl ?? newAssetDescription.IconLargeUrl,
+                            ItemImageUrl = newAssetDescription.PreviewUrl ?? newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
+                        });
 
                         if (newAssetDescription.WorkshopFileId > 0)
                         {
@@ -404,7 +404,7 @@ namespace SCMM.Steam.API.Commands
                 var limitedItemStore = (SteamItemStore)null;
 
                 // If the app uses a permanent or limited item store, check that they are still available (or create new ones)
-                if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStorePersistent) || app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreRotating))
                 {
                     // Load all of our [active] stores
                     var activeItemStores = await _steamDb.SteamItemStores
@@ -427,7 +427,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Ensure that an active "permanent" item store exists
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent))
+                    if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStorePersistent))
                     {
                         permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
                         if (permanentItemStore == null)
@@ -443,7 +443,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Ensure that an active "limited" item store exists
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                    if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreRotating))
                     {
                         // If any items in the limited store are no longer available, rotate it (i.e. create a new limited store)
                         limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);
@@ -530,35 +530,32 @@ namespace SCMM.Steam.API.Commands
                             });
                         }
 
-                        if (app.IsActive)
+                        await _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
                         {
-                            await _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
+                            AppId = UInt64.Parse(app.SteamId),
+                            AppName = app.Name,
+                            AppIconUrl = app.IconUrl,
+                            AppColour = app.PrimaryColor,
+                            StoreId = store?.StoreId(),
+                            StoreName = store?.StoreName(),
+                            CreatorId = storeItem.Description?.CreatorId,
+                            CreatorName = storeItem.Description?.CreatorProfile?.Name,
+                            CreatorAvatarUrl = storeItem.Description?.CreatorProfile?.AvatarUrl,
+                            ItemId = UInt64.Parse(storeItem.SteamId),
+                            ItemType = storeItem.Description?.ItemType,
+                            ItemShortName = storeItem.Description?.ItemShortName,
+                            ItemName = storeItem.Description?.Name,
+                            ItemDescription = storeItem.Description?.Description,
+                            ItemCollection = storeItem.Description?.ItemCollection,
+                            ItemIconUrl = storeItem.Description?.IconUrl ?? storeItem.Description?.IconLargeUrl,
+                            ItemImageUrl = storeItem.Description?.PreviewUrl ?? storeItem.Description?.IconLargeUrl ?? storeItem.Description?.IconUrl,
+                            ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
                             {
-                                AppId = UInt64.Parse(app.SteamId),
-                                AppName = app.Name,
-                                AppIconUrl = app.IconUrl,
-                                AppColour = app.PrimaryColor,
-                                StoreId = store?.StoreId(),
-                                StoreName = store?.StoreName(),
-                                CreatorId = storeItem.Description?.CreatorId,
-                                CreatorName = storeItem.Description?.CreatorProfile?.Name,
-                                CreatorAvatarUrl = storeItem.Description?.CreatorProfile?.AvatarUrl,
-                                ItemId = UInt64.Parse(storeItem.SteamId),
-                                ItemType = storeItem.Description?.ItemType,
-                                ItemShortName = storeItem.Description?.ItemShortName,
-                                ItemName = storeItem.Description?.Name,
-                                ItemDescription = storeItem.Description?.Description,
-                                ItemCollection = storeItem.Description?.ItemCollection,
-                                ItemIconUrl = storeItem.Description?.IconUrl ?? storeItem.Description?.IconLargeUrl,
-                                ItemImageUrl = storeItem.Description?.PreviewUrl ?? storeItem.Description?.IconLargeUrl ?? storeItem.Description?.IconUrl,
-                                ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
-                                {
-                                    Currency = x.Key,
-                                    Value = x.Value,
-                                    Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value)
-                                }).ToArray()
-                            });
-                        }
+                                Currency = x.Key,
+                                Value = x.Value,
+                                Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value)
+                            }).ToArray()
+                        });
 
                         newStoreItems.Add(storeItem);
                     }
@@ -719,7 +716,7 @@ namespace SCMM.Steam.API.Commands
                         marketItem.UpdateSteamBuyPrice(marketPriceOverviewResponse.LowestPrice.SteamPriceAsInt(), marketPriceOverviewResponse.Volume.SteamQuantityValueAsInt());
                     }
 
-                    if (newMarketableItem.HasBecomeMarketable && app.IsActive)
+                    if (newMarketableItem.HasBecomeMarketable)
                     {
                         await _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
                         {
@@ -794,7 +791,7 @@ namespace SCMM.Steam.API.Commands
                 _logger.LogError(ex, $"Failed to generate store item thumbnail image (appId: {app.SteamId}, storeId: {store.StoreId()})");
             }
 
-            if (newItems.Any() && app.IsActive)
+            if (newItems.Any())
             {
                 await _serviceBus.SendMessageAsync(new StoreAddedMessage()
                 {

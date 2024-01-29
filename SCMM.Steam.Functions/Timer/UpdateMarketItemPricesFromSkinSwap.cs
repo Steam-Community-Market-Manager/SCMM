@@ -42,7 +42,6 @@ public class UpdateMarketItemPricesFromSkinSwap
         var appIds = SkinSwap.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
-            //.Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {
@@ -95,9 +94,10 @@ public class UpdateMarketItemPricesFromSkinSwap
                 if (item != null)
                 {
                     var supply = skinSwapItemGroup.Sum(x => x.Amount);
+                    var price = skinSwapItemGroup.Min(x => x.Price);
                     item.UpdateBuyPrices(SkinSwap, new PriceWithSupply
                     {
-                        Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => (decimal)x.Price / usdCurrency.ExchangeRateMultiplier)) : 0,
+                        Price = supply > 0 && price > 0 ? item.Currency.CalculateExchange(price / usdCurrency.ExchangeRateMultiplier) : 0,
                         Supply = supply
                     });
                 }

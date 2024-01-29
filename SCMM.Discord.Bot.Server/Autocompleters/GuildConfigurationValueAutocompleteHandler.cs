@@ -12,7 +12,7 @@ public class GuildConfigurationValueAutocompleteHandler : AutocompleteHandler
         // Auto-complete from known values
         var names = autocompleteInteraction.Data.Options.Where(x => x.Name != parameter.Name).Select(x => x.Value?.ToString()).Where(x => !String.IsNullOrEmpty(x)).ToArray();
         var value = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
-        var configValues = DiscordGuild.GuildConfiguration.Definitions
+        var configValues = DiscordGuild.AllConfigurationDefinitions
             .Where(x => names.Contains(x.Name))
             .Where(x => x.AllowedValues != null)
             .SelectMany(x => x.AllowedValues)
@@ -31,6 +31,7 @@ public class GuildConfigurationValueAutocompleteHandler : AutocompleteHandler
         {
             var channels = await context.Guild.GetTextChannelsAsync();
             configValues = channels
+                .Where(x => x.Name.Contains(value))
                 .Select(x => new AutocompleteResult()
                 {
                     Name = x.Name,

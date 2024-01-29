@@ -66,11 +66,14 @@
                                 <InventoryCollectionsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Performance" Disabled="State.IsPrerendering">
-                            <MudPaper Outlined="true">
-                                <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
-                            </MudPaper>
-                        </MudTabPanel>
+                        @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true)
+                        {
+                            <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Performance" Disabled="State.IsPrerendering">
+                                <MudPaper Outlined="true">
+                                    <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                                </MudPaper>
+                            </MudTabPanel>
+                        }
                         @if (State.Is(Profile?.SteamId) || State.IsInRole(Roles.Administrator))
                         {
                             <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Performance" Disabled="State.IsPrerendering">
@@ -137,19 +140,15 @@
     [Parameter]
     public string SteamId { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string SortBy { get; set; } = nameof(ProfileInventoryItemDescriptionDTO.BuyNowPrice);
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string SortDirection { get; set; } = Data.Models.SortDirection.Descending.ToString();
 
-    [Parameter]
     [SupplyParameterFromQuery]
     public string Panel { get; set; }
 

@@ -270,7 +270,7 @@ namespace SCMM.Steam.Data.Store
                 var buyUrl = (string)null;
                 if (!String.IsNullOrEmpty(StoreItem.SteamId) && app != null)
                 {
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                    if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreWebBrowser))
                     {
                         buyUrl = new SteamItemStoreDetailPageRequest()
                         {
@@ -300,7 +300,7 @@ namespace SCMM.Steam.Data.Store
                     yield return new MarketPrice
                     {
                         MarketType = steamStoreMarket,
-                        AcceptedPaymentTypes = buyFromOption.AcceptedPaymentTypes,
+                        AcceptedPayments = buyFromOption.AcceptedPayments,
                         Currency = currency,
                         Price = buyFromOption.CalculateBuyPrice(lowestPrice),
                         Fee = buyFromOption.CalculateBuyFees(lowestPrice),
@@ -337,7 +337,7 @@ namespace SCMM.Steam.Data.Store
                         yield return new MarketPrice
                         {
                             MarketType = marketPrice.Key,
-                            AcceptedPaymentTypes = buyFromOption.AcceptedPaymentTypes,
+                            AcceptedPayments = buyFromOption.AcceptedPayments,
                             Currency = currency,
                             Price = buyFromOption.CalculateBuyPrice(lowestPrice),
                             Fee = buyFromOption.CalculateBuyFees(lowestPrice),
@@ -398,7 +398,7 @@ namespace SCMM.Steam.Data.Store
                 var storeUrl = (string)null;
                 if (!String.IsNullOrEmpty(StoreItem.SteamId) && StoreItem.IsAvailable && app != null)
                 {
-                    if (app.Features.HasFlag(SteamAppFeatureTypes.ItemStorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.ItemStoreRotating))
+                    if (app.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemStoreWebBrowser))
                     {
                         storeActionName = "View Store";
                         storeUrl = new SteamItemStoreDetailPageRequest()

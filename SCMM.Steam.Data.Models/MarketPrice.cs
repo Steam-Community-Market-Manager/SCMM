@@ -8,7 +8,7 @@ namespace SCMM.Steam.Data.Models
     {
         public MarketType MarketType { get; set; }
 
-        public PriceTypes AcceptedPaymentTypes { get; set; }
+        public PriceFlags AcceptedPayments { get; set; }
 
         public IExchangeableCurrency Currency { get; set; }
 

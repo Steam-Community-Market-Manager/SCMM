@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 
@@ -20,7 +21,7 @@ public class UpdateMarketItem24hrSnapshots
         var logger = context.GetLogger("Update-24hr-Value-Snapshots");
 
         var marketItems = await _db.SteamMarketItems
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking))
             .ToListAsync();
 
         if (!marketItems.Any())

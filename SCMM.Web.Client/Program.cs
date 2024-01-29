@@ -12,7 +12,7 @@ using SCMM.Web.Data.Models.Services;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 
-JsonSerializerOptionsExtensions.SetDefaultOptions();
+JsonSerializerOptionsExtensions.SetGlobalDefaultOptions();
 
 await WebAssemblyHostBuilder.CreateDefault(args)
     .ConfigureServices()
@@ -23,7 +23,9 @@ public static class WebAssemblyHostExtensions
 {
     public static WebAssemblyHostBuilder ConfigureServices(this WebAssemblyHostBuilder builder)
     {
-        builder.Services.AddUIServices();
+        builder.Services.AddUIServices(
+            syncfusionLicenseKey: builder.Configuration.GetSection("Syncfusion").GetValue<string>("LicenseKey")
+        );
 
         builder.Services.AddScoped<ICookieManager, JavascriptCookieManager>();
         builder.Services.AddScoped<ISystemService, HttpSystemService>();
@@ -67,7 +69,7 @@ public static class WebAssemblyHostExtensions
         return builder;
     }
 
-    public static void AddUIServices(this IServiceCollection services)
+    public static void AddUIServices(this IServiceCollection services, string syncfusionLicenseKey = null)
     {
         services.AddScoped<AppState>();
 
@@ -88,10 +90,9 @@ public static class WebAssemblyHostExtensions
         });
 
         services.AddSyncfusionBlazor();
-        SyncfusionLicenseProvider.RegisterLicense(
-            // FYI: This is a [free] community license key, it isn't a secret.
-            //      Sign up for account at https://www.syncfusion.com/account/downloads, request a community license
-            "Mjk3ODk1MEAzMjMzMmUzMDJlMzBtSExDclZQSlBmVFpPeHJBYTFqeUFIb0ZLb2tMLys0d3FDb1oweVZiaDFVPQ=="
-        );
+        if (!String.IsNullOrEmpty(syncfusionLicenseKey))
+        {
+            SyncfusionLicenseProvider.RegisterLicense(syncfusionLicenseKey);
+        }
     }
 }

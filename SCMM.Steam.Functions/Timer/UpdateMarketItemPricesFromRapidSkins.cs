@@ -42,7 +42,6 @@ public class UpdateMarketItemPricesFromRapidSkins
         var appIds = RapidSkins.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
-            //.Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {

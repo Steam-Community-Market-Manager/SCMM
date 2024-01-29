@@ -13,6 +13,7 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Discord.API.Commands;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
@@ -25,11 +26,13 @@ using SCMM.Shared.Abstractions.Finance;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Client;
 using SCMM.Shared.Web.Server.Middleware;
 using SCMM.Steam.Abstractions;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -38,7 +41,7 @@ using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
 
-JsonSerializerOptionsExtensions.SetDefaultOptions();
+JsonSerializerOptionsExtensions.SetGlobalDefaultOptions();
 
 await WebApplication.CreateBuilder(args)
     .ConfigureLogging()
@@ -93,6 +96,7 @@ public static class WebApplicationExtensions
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
         builder.Services.AddApplicationInsightsTelemetry(options =>
         {
+            options.EnableRequestTrackingTelemetryModule = true;
             options.EnableDependencyTrackingTelemetryModule = false;
             options.EnableAppServicesHeartbeatTelemetryModule = false;
             options.EnableHeartbeat = false;
@@ -202,16 +206,16 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Command/query/message handlers
-        var contactAssemblies = new[]
+        var handlerAssemblies = new[]
         {
-            Assembly.GetEntryAssembly(),
-            Assembly.Load("SCMM.Steam.API"),
-            Assembly.Load("SCMM.Discord.API"),
-            Assembly.Load("SCMM.Shared.API")
+            Assembly.GetEntryAssembly(), // Include all handlers in SCMM.Discord.Bot.Server
+            Assembly.GetAssembly(typeof(SendMessage)), // Include all handlers in SCMM.Discord.API
+            Assembly.GetAssembly(typeof(ImportSteamProfile)), // Include all handlers in SCMM.Steam.API
+            Assembly.GetAssembly(typeof(ImportProfileMessage)), // Include all handlers in SCMM.Shared.API
         };
-        builder.Services.AddCommands(contactAssemblies);
-        builder.Services.AddQueries(contactAssemblies);
-        builder.Services.AddMessages(contactAssemblies);
+        builder.Services.AddCommands(handlerAssemblies);
+        builder.Services.AddQueries(handlerAssemblies);
+        builder.Services.AddMessages(handlerAssemblies);
 
         // Controllers
         builder.Services
