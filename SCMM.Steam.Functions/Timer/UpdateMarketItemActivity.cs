@@ -54,7 +54,7 @@ public class UpdateMarketItemActivity
             .Where(x => x.Description.NameId != null)
             .Where(x => x.Description.IsMarketable)
             .Where(x => x.LastCheckedActivityOn == null || x.LastCheckedActivityOn <= cutoff)
-            .Where(x => x.App.IsActive)
+            .Where(x => x.App.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketActivityTracking))
             .OrderBy(x => x.LastCheckedActivityOn)
             .Take(MarketItemBatchSize)
             .Select(x => new
