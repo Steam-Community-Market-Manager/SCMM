@@ -22,8 +22,8 @@ public class UpdateMarketItemActivity
     private readonly IWebProxyManager _webProxyManager;
 
     // TODO: Make these configurable
-    private const int MarketItemBatchSize = 100;
-    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromMinutes(10);
+    private const int MarketItemBatchSize = 300;
+    private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromMinutes(7);
 
     public UpdateMarketItemActivity(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
@@ -33,7 +33,7 @@ public class UpdateMarketItemActivity
     }
 
     [Function("Update-Market-Item-Activity")]
-    public async Task Run([TimerTrigger("0 * * * * *")] /* every 1 minute */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0/30 * * * * *")] /* every 30 seconds */ TimerInfo timerInfo, FunctionContext context)
     {
         var jobId = Guid.NewGuid();
         var logger = context.GetLogger("Update-Market-Item-Activity");
