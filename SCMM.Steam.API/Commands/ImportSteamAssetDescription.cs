@@ -16,7 +16,9 @@ using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamEconomy;
 using SCMM.Steam.Data.Models.WebApi.Requests.ISteamRemoteStorage;
+using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
 using SCMM.Steam.Data.Store;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -27,6 +29,11 @@ namespace SCMM.Steam.API.Commands
         public ulong AppId { get; set; }
 
         public ulong AssetClassId { get; set; }
+
+        /// <summary>
+        /// If true, the assets item definition will be loaded from the latest app item definition archive
+        /// </summary>
+        public bool LoadAssetItemDefinition { get; set; } = false;
     }
 
     public class ImportSteamAssetDescriptionResponse
@@ -100,7 +107,23 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            // Get published file details from Steam (if workshopfileid is available)
+            // Get item definition from the latest archive if it is available
+            var assetItemDefinition = (ItemDefinition)null;
+            if (assetDescription.ItemDefinitionId != null && request.LoadAssetItemDefinition)
+            {
+                var itemDefinitionsArchive = await _db.SteamApps
+                    .Where(x => x.SteamId == request.AppId.ToString())
+                    .Where(x => !String.IsNullOrEmpty(x.ItemDefinitionsDigest))
+                    .Select(x => x.ItemDefinitionArchives.FirstOrDefault(y => y.Digest == x.ItemDefinitionsDigest).ItemDefinitions)
+                    .FirstOrDefaultAsync();
+                if (!String.IsNullOrEmpty(itemDefinitionsArchive))
+                {
+                    var itemDefinitionsArchiveItems = JsonSerializer.Deserialize<GetItemDefArchiveJsonResponse>(itemDefinitionsArchive);
+                    assetItemDefinition = itemDefinitionsArchiveItems?.FirstOrDefault(x => x.ItemDefId == assetDescription.ItemDefinitionId);
+                }
+            }
+
+            // Get published file details from Steam if is available
             var publishedFile = (PublishedFileDetails)null;
             var publishedFileVotes = (PublishedFileVoteData)null;
             var publishedFilePreviews = (IEnumerable<PublishedFilePreview>)null;
@@ -236,6 +259,7 @@ namespace SCMM.Steam.API.Commands
             var updateAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
             {
                 AssetDescription = assetDescription,
+                AssetItemDefinition = assetItemDefinition,
                 AssetClass = assetClass,
                 PublishedFile = publishedFile,
                 PublishedFileVoteData = publishedFileVotes,
