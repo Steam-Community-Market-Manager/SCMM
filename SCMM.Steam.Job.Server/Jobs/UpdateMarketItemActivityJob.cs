@@ -1,6 +1,4 @@
-﻿using Microsoft.Azure.Functions.Worker;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Web.Client;
 using SCMM.Steam.Client;
@@ -11,12 +9,15 @@ using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Job.Server.Attributes;
 using System.Collections.Concurrent;
 
-namespace SCMM.Steam.Functions.Timer;
+namespace SCMM.Steam.Job.Server.Jobs;
 
-public class UpdateMarketItemActivity
+[Job("Update-Market-Item-Activity", 30)]
+public class UpdateMarketItemActivityJob : InvocableJob
 {
+    private readonly ILogger<UpdateMarketItemActivityJob> _logger;
     private readonly SteamDbContext _db;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly IWebProxyManager _webProxyManager;
@@ -25,18 +26,17 @@ public class UpdateMarketItemActivity
     private const int MarketItemBatchSize = 300;
     private readonly TimeSpan MarketItemMinimumAgeSinceLastUpdate = TimeSpan.FromMinutes(7);
 
-    public UpdateMarketItemActivity(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
+    public UpdateMarketItemActivityJob(ILogger<UpdateMarketItemActivityJob> logger, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, IWebProxyManager webProxyManager)
     {
+        _logger = logger;
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
         _webProxyManager = webProxyManager;
     }
 
-    [Function("Update-Market-Item-Activity")]
-    public async Task Run([TimerTrigger("0/30 * * * * *")] /* every 30 seconds */ TimerInfo timerInfo, FunctionContext context)
+    public override async Task Run(CancellationToken cancellationToken)
     {
         var jobId = Guid.NewGuid();
-        var logger = context.GetLogger("Update-Market-Item-Activity");
 
         // Check that there are enough web proxies available to handle this batch of SCM requests, otherwise we cannot run
         var availableProxies = _webProxyManager.GetAvailableProxyCount(new Uri(Constants.SteamCommunityUrl));
@@ -45,7 +45,7 @@ public class UpdateMarketItemActivity
             throw new Exception($"Update of market item activity information cannot run as there are not enough available web proxies to handle the requests (proxies: {availableProxies}/{MarketItemBatchSize})");
         }
 
-        logger.LogTrace($"Updating market item activity information (id: {jobId})");
+        _logger.LogTrace($"Updating market item activity information (id: {jobId})");
 
         // Find the next batch of items to be updated
         var cutoff = DateTimeOffset.Now.Subtract(MarketItemMinimumAgeSinceLastUpdate);
@@ -59,10 +59,10 @@ public class UpdateMarketItemActivity
             .Take(MarketItemBatchSize)
             .Select(x => new
             {
-                Id = x.Id,
+                x.Id,
                 ItemNameId = x.SteamId,
                 ItemDescriptionId = x.DescriptionId,
-                CurrencyId = x.CurrencyId,
+                x.CurrencyId,
                 CurrencySteamId = x.Currency.SteamId,
                 AppId = x.App.SteamId,
                 MarketHashName = x.Description.NameHash
@@ -96,11 +96,11 @@ public class UpdateMarketItemActivity
             }
             catch (SteamRequestException ex)
             {
-                logger.LogError(ex, $"Failed to update market item activity for '{item.MarketHashName}' ({item.Id}). {ex.Message}");
+                _logger.LogError(ex, $"Failed to update market item activity for '{item.MarketHashName}' ({item.Id}). {ex.Message}");
             }
             catch (SteamNotModifiedException ex)
             {
-                logger.LogTrace(ex, $"No change in market item activity for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
+                _logger.LogTrace(ex, $"No change in market item activity for '{item.MarketHashName}' ({item.Id}) since last request. {ex.Message}");
             }
         });
 
@@ -166,12 +166,12 @@ public class UpdateMarketItemActivity
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"Failed to process and save market item activity for '{item.MarketHashName}' ({item.Id}). {ex.Message}");
+                    _logger.LogError(ex, $"Failed to process and save market item activity for '{item.MarketHashName}' ({item.Id}). {ex.Message}");
                     continue;
                 }
             }
         }
 
-        logger.LogTrace($"Updated {itemResponseMappings.Count} market item activity information (id: {jobId})");
+        _logger.LogTrace($"Updated {itemResponseMappings.Count} market item activity information (id: {jobId})");
     }
 }

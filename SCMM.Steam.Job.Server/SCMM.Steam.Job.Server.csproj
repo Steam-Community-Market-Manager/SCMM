@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
+    <PackageReference Include="Coravel" Version="5.0.2" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.16.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
+	<ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
+    <ProjectReference Include="..\SCMM.Azure.ApplicationInsights\SCMM.Azure.ApplicationInsights.csproj" />
+    <ProjectReference Include="..\SCMM.Redis.Client\SCMM.Redis.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.Web.Server\SCMM.Shared.Web.Server.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
+    <ProjectReference Include="..\SCMM.SteamCMD\SCMM.SteamCMD.csproj" />
+  </ItemGroup>
+
+</Project>

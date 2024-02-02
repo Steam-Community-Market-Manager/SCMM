@@ -20,7 +20,7 @@ namespace SCMM.Azure.ServiceBus.Extensions
         public static IServiceCollection AddMessages(this IServiceCollection services, params Assembly[] assemblies)
         {
             services.AddSingleton(x => new MessageHandlerTypeCollection(assemblies));
-            foreach (var handlerType in assemblies.GetTypesAssignableTo(typeof(IMessageHandler<>)))
+            foreach (var handlerType in assemblies.GetConcreteTypesAssignableTo(typeof(IMessageHandler<>)).ToArray())
             {
                 foreach (var handlerInterface in handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>)))
                 {

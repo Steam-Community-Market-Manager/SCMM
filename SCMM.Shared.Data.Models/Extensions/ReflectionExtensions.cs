@@ -4,14 +4,19 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class ReflectionExtensions
     {
-        public static IEnumerable<Type> GetTypesAssignableTo(this Assembly[] assemblies, Type baseType)
+        public static IEnumerable<Type> GetConcreteTypesAssignableTo(this Assembly[] assemblies, Type baseType)
         {
-            return assemblies.SelectMany(x => x.GetTypesAssignableTo(baseType)).ToList();
+            return assemblies.SelectMany(x => x.GetConcreteTypesAssignableTo(baseType)).ToList();
         }
 
-        public static IEnumerable<Type> GetTypesAssignableTo(this Assembly assembly, Type baseType)
+        public static IEnumerable<Type> GetConcreteTypesAssignableTo(this Assembly assembly, Type baseType)
         {
-            return assembly.ExportedTypes.Where(type => IsAssignableTo(type, baseType)).ToList();
+            return assembly.ExportedTypes.Where(type => 
+                type.IsClass && 
+                !type.IsAbstract && 
+                !type.IsInterface && 
+                IsAssignableTo(type, baseType)
+            );
         }
 
         public static bool IsAssignableTo(this Type type, Type baseType)
