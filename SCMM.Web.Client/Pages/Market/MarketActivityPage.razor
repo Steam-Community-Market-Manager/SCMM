@@ -7,6 +7,7 @@
 @inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject VirtualisedItemsMemoryCache MarketActivityCache
 @inject HttpClient Http
 @inject AppState State
 
@@ -38,6 +39,10 @@
                           FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         <MudItem xs="12" Class="pa-0">
+            @if (!MarketActivityHasLoaded)
+            {
+                <Loading />
+            }
             <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item" OverscanCount="30">
                 <EmptyContent>
                     <div class="d-flex flex-column justify-center align-center full-height pa-4">
@@ -101,6 +106,8 @@
 
     private Virtualize<ItemActivityStatisticDTO> MarketActivityTable { get; set; }
 
+    private bool MarketActivityHasLoaded { get; set; }
+
     private void ShowItemDetailsDialog(ItemDescriptionDTO item)
     {
         Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
@@ -114,48 +121,64 @@
     {
         ExternalNavigationManager.NavigateToItemAsync(item);
     }
-    
+
     private async void OnFilterType(SteamMarketItemActivityType? type)
     {
         if (FilterType != type)
         {
             FilterType = type;
+            MarketActivityCache.Clear();
+            MarketActivityHasLoaded = false;
             await MarketActivityTable.RefreshDataAsync();
             StateHasChanged();
         };
     }
-    
+
     private async void OnFilterUser(string user)
     {
         if (FilterUser != user)
         {
             FilterUser = user;
+            MarketActivityCache.Clear();
+            MarketActivityHasLoaded = false;
             await MarketActivityTable.RefreshDataAsync();
             StateHasChanged();
         };
     }
-    
+
     private async void OnFilterItem(string item)
     {
         if (FilterItem != item)
         {
             FilterItem = item;
+            MarketActivityCache.Clear();
+            MarketActivityHasLoaded = false;
             await MarketActivityTable.RefreshDataAsync();
             StateHasChanged();
         };
     }
-    
+
     protected async ValueTask<ItemsProviderResult<ItemActivityStatisticDTO>> LoadMarketActivity(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?type={FilterType?.ToString() ?? String.Empty}&user={Uri.EscapeDataString(FilterUser ?? String.Empty)}&item={Uri.EscapeDataString(FilterItem?.Name ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemActivityStatisticDTO>(response.Items, response.Total);
+            var data = await MarketActivityCache.Get(
+                request.StartIndex,
+                request.Count,
+                () => Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?type={FilterType?.ToString() ?? String.Empty}&user={Uri.EscapeDataString(FilterUser ?? String.Empty)}&item={Uri.EscapeDataString(FilterItem ?? String.Empty)}&start={request.StartIndex}&count={request.Count}")
+            );
+
+            return new ItemsProviderResult<ItemActivityStatisticDTO>(data.Items, data.Total);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'activity' market statistics");
             throw;
+        }
+        finally
+        {
+            MarketActivityHasLoaded = true;
+            StateHasChanged();
         }
     }
     
