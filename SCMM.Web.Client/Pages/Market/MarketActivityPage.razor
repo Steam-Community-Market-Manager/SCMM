@@ -20,7 +20,7 @@
 
     <MudGrid Spacing="2">
 
-        <MudItem xs="2">
+        <MudItem xs="12" sm="4" lg="2">
             <MudSelect T="SteamMarketItemActivityType?" Value="FilterType" ValueChanged="@OnFilterType" Label="Activity Type" Placeholder="Filter by activity type..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
                        FullWidth="true" Class="mud-input-transparent ma-0" Clearable="true" Disabled="State.IsPrerendering">
                 <MudSelectItem T="SteamMarketItemActivityType?" Value="@null">Any</MudSelectItem>
@@ -30,11 +30,11 @@
                 }
             </MudSelect>
         </MudItem>
-        <MudItem xs="5">
+        <MudItem xs="12" sm="4" lg="5">
             <MudTextField T="string" Value="@FilterUser" ValueChanged="@OnFilterUser" DebounceInterval="500" Label="User" Placeholder="Filter by user name..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
                           FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
-        <MudItem xs="5">
+        <MudItem xs="12" sm="4" lg="5">
             <MudTextField T="string" Value="@FilterItem" ValueChanged="@OnFilterItem" DebounceInterval="500" Label="Item" Placeholder="Filter by item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
                           FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
