@@ -74,7 +74,13 @@
                         }
                         <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
                             <tbody>
-                                <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile" SpacerElement="tr">
+                                <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile" SpacerElement="tr" OverscanCount="10">
+                                    <EmptyContent>
+                                        <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                            <TumbleWeed Light="true" />
+                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                        </div>
+                                    </EmptyContent>
                                     <ItemContent>
                                         <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)" style="min-height:55px; max-height:55px; height:55px;">
                                             <td>
@@ -146,7 +152,13 @@
                 <StatisticsPanel Icon="fas fa-fw fa-clock" Title="Recently Valued Inventories" Dense="true">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile" SpacerElement="tr">
+                            <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile" SpacerElement="tr" OverscanCount="10">
+                                <EmptyContent>
+                                    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                        <TumbleWeed Light="true" />
+                                        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                    </div>
+                                </EmptyContent>
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)" style="min-height:55px; max-height:55px; height:55px;">
                                         <td>

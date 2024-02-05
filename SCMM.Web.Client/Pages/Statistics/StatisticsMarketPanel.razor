@@ -163,7 +163,13 @@
         <StatisticsPanel Icon="fas fa-fw fa-fire mr-1" Title="Hot Right Now" Subtitle="Which items have been bought/sold the most in the past 24hrs?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
-                    <Virtualize ItemsProvider="LoadItemsMostDemanded" Context="item" SpacerElement="tr">
+                    <Virtualize ItemsProvider="LoadItemsMostDemanded" Context="item" SpacerElement="tr" OverscanCount="5">
+                        <EmptyContent>
+                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                <TumbleWeed Light="true" />
+                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                            </div>
+                        </EmptyContent>
                         <ItemContent>
                             <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                 <td>
@@ -198,7 +204,13 @@
         <StatisticsPanel Icon="fas fa-fw fa-arrow-up mr-1" Title="Stonking" Subtitle="Which items recently reached their all-time highest value?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
-                    <Virtualize ItemsProvider="LoadItemsAllTimeHigh" Context="item" SpacerElement="tr">
+                    <Virtualize ItemsProvider="LoadItemsAllTimeHigh" Context="item" SpacerElement="tr" OverscanCount="5">
+                        <EmptyContent>
+                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                <TumbleWeed Light="true" />
+                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                            </div>
+                        </EmptyContent>
                         <ItemContent>
                             <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                 <td>
@@ -233,7 +245,13 @@
         <StatisticsPanel Icon="fas fa-fw fa-arrow-down mr-1" Title="Crashing" Subtitle="Which items recently reached their all-time lowest value?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
-                    <Virtualize ItemsProvider="LoadItemsAllTimeLow" Context="item" SpacerElement="tr">
+                    <Virtualize ItemsProvider="LoadItemsAllTimeLow" Context="item" SpacerElement="tr" OverscanCount="5">
+                        <EmptyContent>
+                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                <TumbleWeed Light="true" />
+                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                            </div>
+                        </EmptyContent>
                         <ItemContent>
                             <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                 <td>
@@ -268,7 +286,13 @@
         <StatisticsPanel Icon="fas fa-fw fa-dollar-sign mr-1" Title="Most Expensive" Subtitle="Which are the most expensive items on the market?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
-                    <Virtualize ItemsProvider="LoadItemMostExpensive" Context="item" SpacerElement="tr">
+                    <Virtualize ItemsProvider="LoadItemMostExpensive" Context="item" SpacerElement="tr" OverscanCount="5">
+                        <EmptyContent>
+                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                <TumbleWeed Light="true" />
+                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                            </div>
+                        </EmptyContent>
                         <ItemContent>
                             <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                 <td>

@@ -46,7 +46,13 @@
         </MudItem>
         
         <MudItem xs="12" Class="pa-0">
-            <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item">
+            <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item" OverscanCount="30">
+                <EmptyContent>
+                    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                        <TumbleWeed Light="true" />
+                        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search more</MudText>
+                    </div>
+                </EmptyContent>
                 <ItemContent>
                     <div class="@($"{(item.IsSale ? "mud-theme-dark" : null)} hover-darken pa-1")">
                         <div class="d-flex flex-row flex-wrap justify-start align-center">
