@@ -16,10 +16,12 @@ using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Discord.API.Commands;
 using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
+using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Web.Client;
 using SCMM.Shared.Web.Server.Formatters;
@@ -209,16 +211,21 @@ public static class WebApplicationExtensions
         builder.Services.AddAutoMapper(Assembly.GetEntryAssembly());
 
         // Command/query/message handlers
-        var handlerAssemblies = new[]
-        {
-            Assembly.GetEntryAssembly(), // Include all handlers in SCMM.Web.Server
-            Assembly.GetAssembly(typeof(SendMessage)), // Include all handlers in SCMM.Discord.API
-            Assembly.GetAssembly(typeof(ImportSteamProfile)), // Include all handlers in SCMM.Steam.API
-            Assembly.GetAssembly(typeof(ImportProfileMessage)), // Include all handlers in SCMM.Shared.API
-        };
-        builder.Services.AddCommands(handlerAssemblies);
-        builder.Services.AddQueries(handlerAssemblies);
-        builder.Services.AddMessages(handlerAssemblies);
+        builder.Services.AddCommands(
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.GetConcreteTypesAssignableTo(typeof(ICommandHandler<>)).Any() || x.GetConcreteTypesAssignableTo(typeof(ICommandHandler<,>)).Any())
+                .ToArray()
+        );
+        builder.Services.AddQueries(
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.GetConcreteTypesAssignableTo(typeof(IQueryHandler<,>)).Any())
+                .ToArray()
+        );
+        builder.Services.AddMessages(
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.GetConcreteTypesAssignableTo(typeof(IMessageHandler<>)).Any())
+                .ToArray()
+        );
 
         // Services
         builder.Services.AddScoped<LanguageCache>();
