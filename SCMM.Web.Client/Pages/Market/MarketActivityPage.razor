@@ -34,17 +34,9 @@
                           FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         <MudItem xs="5">
-            <MudAutocomplete T="ItemDescriptionDTO" ValueChanged="@OnFilterItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Label="Item" Placeholder="Filter by item..."  Margin="MudBlazor.Margin.None" Variant="Variant.Outlined"  
-                             FullWidth="true" Class="mud-input-transparent ma-0" Clearable="true" Disabled="State.IsPrerendering">
-                <ItemTemplate Context="item">
-                    <div class="d-flex flex-row justify-start align-center">
-                        <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" class="mr-1" style="width:32px; height:32px;" />
-                        <MudText Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
-                    </div>
-                </ItemTemplate>
-            </MudAutocomplete>
+            <MudTextField T="string" Value="@FilterItem" ValueChanged="@OnFilterItem" DebounceInterval="500" Label="Item" Placeholder="Filter by item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+                          FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
-        
         <MudItem xs="12" Class="pa-0">
             <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item" OverscanCount="30">
                 <EmptyContent>
@@ -105,27 +97,10 @@
 
     private string FilterUser { get; set; }
 
-    private ItemDescriptionDTO FilterItem { get; set; }
+    private string FilterItem { get; set; }
 
     private Virtualize<ItemActivityStatisticDTO> MarketActivityTable { get; set; }
 
-    private async Task<IEnumerable<ItemDescriptionDTO>> SearchItem(string value)
-    {
-        try
-        {
-            var search = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(value ?? String.Empty)}&count=30"
-            );
-
-            return search.Items;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing items");
-            return null;
-        }
-    }
-    
     private void ShowItemDetailsDialog(ItemDescriptionDTO item)
     {
         Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
@@ -160,7 +135,7 @@
         };
     }
     
-    private async void OnFilterItem(ItemDescriptionDTO item)
+    private async void OnFilterItem(string item)
     {
         if (FilterItem != item)
         {
