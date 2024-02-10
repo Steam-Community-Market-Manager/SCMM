@@ -168,14 +168,18 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var inventoryThumbnailImageUrl = (string)null;
         try
         {
-            inventoryThumbnailImageUrl = (
-                await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
-                {
-                    ProfileId = profile.SteamId,
-                    AppId = appId.ToString(),
-                    ExpiresOn = DateTimeOffset.Now.AddDays(7)
-                })
-            )?.ImageUrl;
+            var generateProfileInventoryThumbnailTask = _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+            {
+                ProfileId = profile.SteamId,
+                AppId = appId.ToString(),
+                ExpiresOn = DateTimeOffset.Now.AddDays(7)
+            });
+
+            // Wait up to 10 seconds for the thumbnail to generate, otherwise continue without it
+            if (Task.WaitAll(new[] { generateProfileInventoryThumbnailTask }, TimeSpan.FromSeconds(10)))
+            {
+                inventoryThumbnailImageUrl = generateProfileInventoryThumbnailTask.Result?.ImageUrl;
+            }
         }
         catch (Exception ex)
         {
