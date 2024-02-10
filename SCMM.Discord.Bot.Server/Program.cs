@@ -1,5 +1,4 @@
 using Azure.Identity;
-using CommandQuery;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -24,12 +23,10 @@ using SCMM.Fixer.Client.Extensions;
 using SCMM.Redis.Client.Statistics;
 using SCMM.Shared.Abstractions.Analytics;
 using SCMM.Shared.Abstractions.Finance;
-using SCMM.Shared.Abstractions.Messaging;
 using SCMM.Shared.Abstractions.Statistics;
 using SCMM.Shared.Abstractions.WebProxies;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
-using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Client;
@@ -209,21 +206,16 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<ISteamConsoleClient, SteamCmdProcessWrapper>();
 
         // Command/query/message handlers
-        builder.Services.AddCommands(
-            AppDomain.CurrentDomain.GetAssemblies()
-                .Where(x => x.GetConcreteTypesAssignableTo(typeof(ICommandHandler<>)).Any() || x.GetConcreteTypesAssignableTo(typeof(ICommandHandler<,>)).Any())
-                .ToArray()
-        );
-        builder.Services.AddQueries(
-            AppDomain.CurrentDomain.GetAssemblies()
-                .Where(x => x.GetConcreteTypesAssignableTo(typeof(IQueryHandler<,>)).Any())
-                .ToArray()
-        );
-        builder.Services.AddMessages(
-            AppDomain.CurrentDomain.GetAssemblies()
-                .Where(x => x.GetConcreteTypesAssignableTo(typeof(IMessageHandler<>)).Any())
-                .ToArray()
-        );
+        var handlerAssemblies = new[]
+        {
+            Assembly.GetEntryAssembly(), // Include all handlers in SCMM.Discord.Bot.Server
+            Assembly.GetAssembly(typeof(SendMessage)), // Include all handlers in SCMM.Discord.API
+            Assembly.GetAssembly(typeof(ImportSteamProfile)), // Include all handlers in SCMM.Steam.API
+            Assembly.GetAssembly(typeof(ImportProfileMessage)), // Include all handlers in SCMM.Shared.API
+        };
+        builder.Services.AddCommands(handlerAssemblies);
+        builder.Services.AddQueries(handlerAssemblies);
+        builder.Services.AddMessages(handlerAssemblies);
 
         // Controllers
         builder.Services
