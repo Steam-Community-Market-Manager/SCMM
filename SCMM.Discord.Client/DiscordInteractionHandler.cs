@@ -201,21 +201,36 @@ namespace SCMM.Discord.Client
                 return Task.CompletedTask;
             }
 
-            // Defer the response to show a "is thinking..." placeholder
-            // NOTE: Interactions need to be acknowledged before this callback ends
-            Task.WaitAll(
-                interaction.DeferAsync()
-            );
+            try
+            {
+                // Defer the response to show a "is thinking..." placeholder
+                // NOTE: Interactions need to be acknowledged before this callback ends
+                Task.WaitAll(
+                    interaction.DeferAsync()
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to defer interaction");
+            }
 
-            // Execute the interaction...
-            // NOTE: Interaction service will execute async by default (unless the interaction is configured otherwise)
-            var context = new ShardedInteractionContext(_client, interaction);
-            Task.WaitAll(
-                _interactions.ExecuteCommandAsync(
-                    context: context,
-                    services: _services
-                )
-            );
+            try
+            {
+                // Execute the interaction...
+                // NOTE: Interaction service will execute async by default (unless the interaction is configured otherwise)
+                var context = new ShardedInteractionContext(_client, interaction);
+                Task.WaitAll(
+                    _interactions.ExecuteCommandAsync(
+                        context: context,
+                        services: _services
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to handle interaction");
+                throw;
+            }
 
             return Task.CompletedTask;
         }
