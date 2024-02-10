@@ -98,13 +98,35 @@ namespace SCMM.Discord.Client
 
         private Task OnLogAsync(LogMessage message)
         {
-            if (message.Exception != null)
+            switch (message.Severity)
             {
-                // TODO: More details?
-                _logger.LogError(
-                    message.Exception,
-                    $"Interaction triggered an exception"
-                );
+                case LogSeverity.Critical:
+                case LogSeverity.Error:
+                    _logger.LogError(
+                        message.Exception,
+                        message.Message
+                    );
+                    break;
+
+                case LogSeverity.Warning:
+                    _logger.LogWarning(
+                        message.Exception,
+                        message.Message
+                    );
+                    break;
+
+                case LogSeverity.Info:
+                    _logger.LogInformation(
+                        message.Message
+                    );
+                    break;
+
+                case LogSeverity.Verbose:
+                case LogSeverity.Debug:
+                    _logger.LogDebug(
+                        message.Message
+                    );
+                    break;
             }
 
             return Task.CompletedTask;
