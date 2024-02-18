@@ -35,7 +35,7 @@ public class UpdateStoreStatistics
         var logger = context.GetLogger("Update-Store-Statistics");
 
         var appItemStores = await _steamDb.SteamItemStores
-            .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
+            .Where(x => x.Start != null && x.End == null)
             .Include(x => x.App)
             .Include(x => x.Items).ThenInclude(x => x.Item)
             .Include(x => x.Items).ThenInclude(x => x.Item.Description)
