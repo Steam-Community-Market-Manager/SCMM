@@ -164,44 +164,57 @@ namespace SCMM.Discord.Bot.Server.Modules
                     paginationStart += steamSearchResults.Results?.Count ?? 0;
                     totalCount = steamSearchResults.TotalCount;
 
-                    // Parse the items we just fetched
-                    var importedAssetDescriptions = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionsRequest()
-                    {
-                        AppId = appId,
-                        AssetClassIds = steamSearchResults.Results
-                            .Select(x => x?.AssetDescription?.ClassId ?? 0)
-                            .Where(x => x > 0)
-                            .ToArray(),
-                    });
+                    var assetClassIds = steamSearchResults.Results
+                        .Select(x => x?.AssetDescription?.ClassId ?? 0)
+                        .Where(x => x > 0)
+                        .ToArray();
 
-                    var assetDescriptionIds = importedAssetDescriptions.AssetDescriptions.Select(x => x.Id).ToArray();
-                    var dbItems = await _steamDb.SteamMarketItems
-                        .Where(x => x.DescriptionId != null && assetDescriptionIds.Contains(x.DescriptionId.Value))
-                        .ToListAsync();
+                    var existingAssetClassIds = await _steamDb.SteamAssetDescriptions
+                        .Where(x => x.ClassId != null && assetClassIds.Contains(x.ClassId.Value))
+                        .Where(x => x.MarketItem != null)
+                        .ToArrayAsync();
+                    var missingAssetClassIds = assetClassIds
+                        .Except(existingAssetClassIds.Select(x => x.ClassId.Value))
+                        .ToArray();
 
-                    foreach (var assetDescription in importedAssetDescriptions.AssetDescriptions)
+                    if (missingAssetClassIds.Any())
                     {
-                        var dbItem = (assetDescription.MarketItem ?? dbItems?.FirstOrDefault(x => x.DescriptionId == assetDescription.Id));
-                        if (dbItem == null)
+                        // Parse the items we just fetched
+                        var importedAssetDescriptions = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionsRequest()
                         {
-                            dbItem = assetDescription.MarketItem = new SteamMarketItem()
+                            AppId = appId,
+                            AssetClassIds = missingAssetClassIds,
+                        });
+
+                        var assetDescriptionIds = importedAssetDescriptions.AssetDescriptions.Select(x => x.Id).ToArray();
+                        var dbItems = await _steamDb.SteamMarketItems
+                            .Where(x => x.DescriptionId != null && assetDescriptionIds.Contains(x.DescriptionId.Value))
+                            .ToListAsync();
+
+                        foreach (var assetDescription in importedAssetDescriptions.AssetDescriptions)
+                        {
+                            var dbItem = (assetDescription.MarketItem ?? dbItems?.FirstOrDefault(x => x.DescriptionId == assetDescription.Id));
+                            if (dbItem == null)
                             {
-                                SteamId = assetDescription.NameId?.ToString(),
-                                AppId = app.Id,
-                                App = app,
-                                Description = assetDescription,
-                                Currency = usdCurrency,
-                            };
+                                dbItem = assetDescription.MarketItem = new SteamMarketItem()
+                                {
+                                    SteamId = assetDescription.NameId?.ToString(),
+                                    AppId = app.Id,
+                                    App = app,
+                                    Description = assetDescription,
+                                    Currency = usdCurrency,
+                                };
+                            }
+
+                            var steamItem = steamSearchResults.Results.FirstOrDefault(x => x.AssetDescription.ClassId == assetDescription.ClassId);
+                            if (steamItem?.SellPrice > 0)
+                            {
+                                dbItem.UpdateSteamBuyPrice(steamItem.SellPrice, steamItem.SellListings);
+                            }
                         }
 
-                        var steamItem = steamSearchResults.Results.FirstOrDefault(x => x.AssetDescription.ClassId == assetDescription.ClassId);
-                        if (steamItem?.SellPrice > 0)
-                        {
-                            dbItem.UpdateSteamBuyPrice(steamItem.SellPrice, steamItem.SellListings);
-                        }
+                        await _steamDb.SaveChangesAsync();
                     }
-
-                    await _steamDb.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {

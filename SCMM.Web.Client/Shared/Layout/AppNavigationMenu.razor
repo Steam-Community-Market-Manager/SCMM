@@ -62,7 +62,7 @@
     }
     @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketActivityTracking) == true)
     {
-        <MudNavLink Href="/market/activity" Icon="fas fa-fw fa-exchange-alt" Disabled="true" title="Coming soon...">
+        <MudNavLink Href="/market/activity" Icon="fas fa-fw fa-exchange-alt" Disabled="@State.IsPrerendering">
             <span class="no-wrap">Market Item Activity</span>
         </MudNavLink>
     }

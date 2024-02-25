@@ -136,7 +136,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Waxpeer")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FFFFFF", AffiliateUrl = "https://waxpeer.com/r/scmm")]
-        [BuyFrom(Url = "https://waxpeer.com/{1}?r=scmm&game={1}&sort=ASC&order=price&all=0&exact=0&search={3}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)] // Unconfirmed
+        [BuyFrom(Url = "https://waxpeer.com/r/scmm?game={1}&sort=ASC&order=price&all=0&exact=0&search={3}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)] // Unconfirmed
         Waxpeer = 31,
 
         [Display(Name = "ShadowPay")]

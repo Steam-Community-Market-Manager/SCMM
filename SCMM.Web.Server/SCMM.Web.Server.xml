@@ -557,12 +557,13 @@
             <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketActivity(System.String,System.String,System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketActivity(System.Nullable{SCMM.Steam.Data.Models.Enums.SteamMarketItemActivityType},System.String,System.String,System.Int32,System.Int32)">
             
             <summary>
             Get marketplace listing activity from the last 24hrs
             </summary>
-            <param name="filter">Optional filter, matches against the buyer name, seller name, or item name</param>
+            <param name="type">Optional filter, matches against the activity event type</param>
+            <param name="user">Optional filter, matches against the buyer name or seller name</param>
             <param name="item">Optional filter, matches against the item name</param>
             <param name="start">Return activity starting at this specific index (pagination)</param>
             <param name="count">Number activity to be returned (can be less if not enough data). Max 100.</param>

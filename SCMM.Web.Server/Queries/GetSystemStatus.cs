@@ -89,6 +89,11 @@ namespace SCMM.Web.Server.Queries
                     {
                         Oldest = x.MarketItems.Where(x => x.Description.IsMarketable).Min(y => y.LastCheckedSalesOn),
                         Newest = x.MarketItems.Where(x => x.Description.IsMarketable).Max(y => y.LastCheckedSalesOn)
+                    },
+                    MarketActivityUpdates = new TimeRangeWithTargetDTO()
+                    {
+                        Oldest = x.MarketItems.Where(x => x.Description.IsMarketable).Min(y => y.LastCheckedActivityOn),
+                        Newest = x.MarketItems.Where(x => x.Description.IsMarketable).Max(y => y.LastCheckedActivityOn)
                     }
                 })
                 .FirstOrDefaultAsync();
@@ -99,6 +104,7 @@ namespace SCMM.Web.Server.Queries
                 steamApp.AssetDescriptionsUpdates.TargetDelta = TimeSpan.FromDays(1);
                 steamApp.MarketOrderUpdates.TargetDelta = TimeSpan.FromHours(3);
                 steamApp.MarketSaleUpdates.TargetDelta = TimeSpan.FromHours(3);
+                steamApp.MarketActivityUpdates.TargetDelta = TimeSpan.FromMinutes(10);
                 if (request.IncludeAppMarkets)
                 {
                     // TODO: Add target "ast updated" time for markets

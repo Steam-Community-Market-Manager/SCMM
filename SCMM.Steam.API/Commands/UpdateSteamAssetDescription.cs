@@ -242,7 +242,10 @@ namespace SCMM.Steam.API.Commands
                     var itemDescription = ParseItemDescriptionText(assetClass.Descriptions.Select(x => x.Value));
                     if (!string.IsNullOrEmpty(itemDescription))
                     {
-                        assetDescription.Description = itemDescription;
+                        if (!Regex.IsMatch(itemDescription, @"^\d+T\d+Z$", RegexOptions.IgnoreCase))
+                        {
+                            assetDescription.Description = itemDescription;
+                        }
                     }
                 }
 

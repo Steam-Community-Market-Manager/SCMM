@@ -7,6 +7,8 @@
 @inject AppState State
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject VirtualisedItemsMemoryCache HighestValueInventoryCache
+@inject VirtualisedItemsMemoryCache MostRecentInventoryCache
 
 <PageContainer Title="@($"{State?.App?.Name} Inventory Leaderboard")">
     <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
@@ -74,7 +76,19 @@
                         }
                         <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
                             <tbody>
-                                <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile" SpacerElement="tr">
+                                @if (HighestValueInventoryCache?.Total == 0)
+                                {
+                                    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                        <Loading />
+                                    </div>
+                                }
+                                <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile" SpacerElement="tr" OverscanCount="10">
+                                    <EmptyContent>
+                                        <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                            <TumbleWeed Light="true" />
+                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                        </div>
+                                    </EmptyContent>
                                     <ItemContent>
                                         <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)" style="min-height:55px; max-height:55px; height:55px;">
                                             <td>
@@ -146,7 +160,19 @@
                 <StatisticsPanel Icon="fas fa-fw fa-clock" Title="Recently Valued Inventories" Dense="true">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile" SpacerElement="tr">
+                            @if (MostRecentInventoryCache?.Total == 0)
+                            {
+                                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                    <Loading />
+                                </div>
+                            }
+                            <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile" SpacerElement="tr" OverscanCount="10">
+                                <EmptyContent>
+                                    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                        <TumbleWeed Light="true" />
+                                        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                    </div>
+                                </EmptyContent>
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="@(!String.IsNullOrEmpty(profile.SteamId) ? "clickable" : null)" style="min-height:55px; max-height:55px; height:55px;">
                                         <td>
@@ -277,19 +303,27 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/inventories/highestValue?start={request.StartIndex}&count={request.Count}");
-            if (response != null && MyInventoryRank != null)
+            var data = await HighestValueInventoryCache.Get(
+                request.StartIndex,
+                request.Count,
+                () => Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/inventories/highestValue?start={request.StartIndex}&count={request.Count}")
+            );
+            if (data != null && MyInventoryRank != null)
             {
-                MyInventoryRankIsBelowTheLine = (response.Start + (response.Count * 0.5)) <= MyInventoryRank.Rank;
+                MyInventoryRankIsBelowTheLine = (data.Start + (data.Count * 0.5)) <= MyInventoryRank.Rank;
                 StateHasChanged();
             }
 
-            return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(response.Items, response.Total);
+            return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(data.Items, data.Total);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'profile highest value inventory' item statistics");
             throw;
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
@@ -297,13 +331,22 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/inventories/recentlyValued?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(response.Items, response.Total);
+            var data = await MostRecentInventoryCache.Get(
+                request.StartIndex,
+                request.Count,
+                () => Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/inventories/recentlyValued?start={request.StartIndex}&count={request.Count}")
+            );
+
+            return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(data.Items, data.Total);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'profile most recent inventory' item statistics");
             throw;
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
     

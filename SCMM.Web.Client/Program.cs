@@ -8,6 +8,7 @@ using SCMM.Web.Client;
 using SCMM.Web.Client.Services;
 using SCMM.Web.Client.Shared;
 using SCMM.Web.Client.Shared.Navigation;
+using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Services;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
@@ -75,6 +76,8 @@ public static class WebAssemblyHostExtensions
 
         services.AddScoped<ExternalNavigationManager>();
         services.AddScoped<DocumentManager>();
+
+        services.AddTransient<VirtualisedItemsMemoryCache>();
 
         services.AddIntersectionObserver();
 

@@ -16,7 +16,7 @@ namespace SCMM.Shared.Data.Store.Extensions
             return new PaginatedResult<T>()
             {
                 Start = start,
-                Count = count,
+                Count = data?.Length ?? 0,
                 Total = total,
                 Items = data
             };
@@ -31,7 +31,7 @@ namespace SCMM.Shared.Data.Store.Extensions
             return new PaginatedResult<T>()
             {
                 Start = start,
-                Count = count,
+                Count = data?.Length ?? 0,
                 Total = total,
                 Items = data
             };
@@ -46,7 +46,7 @@ namespace SCMM.Shared.Data.Store.Extensions
             return new PaginatedResult<T2>()
             {
                 Start = start,
-                Count = count,
+                Count = data?.Length ?? 0,
                 Total = total,
                 Items = data?.Select(x => mapper(x))?.ToArray()
             };
@@ -60,7 +60,7 @@ namespace SCMM.Shared.Data.Store.Extensions
             return new PaginatedResult<T2>()
             {
                 Start = start,
-                Count = count,
+                Count = data?.Length ?? 0,
                 Total = total,
                 Items = data?.Select(x => mapper(x))?.ToArray()
             };

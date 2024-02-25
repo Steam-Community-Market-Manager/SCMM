@@ -71,7 +71,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = appId,
-                    AssetClassId = classId
+                    AssetClassId = classId,
+                    LoadAssetItemDefinition = true
                 });
 
                 await _steamDb.SaveChangesAsync();

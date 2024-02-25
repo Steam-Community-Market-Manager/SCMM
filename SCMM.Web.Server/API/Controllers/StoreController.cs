@@ -560,8 +560,11 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Asset description not found in store");
             }
 
-            // Update the store items "latest price"
             var storeItem = storeItemLink.Item;
+            _db.SteamStoreItemItemStore.Remove(storeItemLink);
+            await _db.SaveChangesAsync();
+
+            // Update the store items "latest price"
             storeItem.Stores.Remove(storeItemLink);
             storeItem.UpdateLatestPrice();
 

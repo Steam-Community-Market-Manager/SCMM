@@ -802,7 +802,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <Virtualize ItemsProvider="LoadItemSellOrders" Context="item" SpacerElement="tr">
+                                    <Virtualize ItemsProvider="LoadItemSellOrders" Context="item" SpacerElement="tr" OverscanCount="5">
+                                        <EmptyContent>
+                                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                                <TumbleWeed Light="true" />
+                                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                            </div>
+                                        </EmptyContent>
                                         <ItemContent>
                                             <tr class="hover-darken">
                                                 <td class="text-centered">
@@ -893,7 +899,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <Virtualize ItemsProvider="LoadItemBuyOrders" Context="item" SpacerElement="tr">
+                                <Virtualize ItemsProvider="LoadItemBuyOrders" Context="item" SpacerElement="tr" OverscanCount="5">
+                                    <EmptyContent>
+                                        <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                            <TumbleWeed Light="true" />
+                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                        </div>
+                                    </EmptyContent>
                                     <ItemContent>
                                         <tr class="hover-darken">
                                             <td class="text-centered">
@@ -1014,12 +1026,17 @@
                 </MudItem>
             }
             
-            @*
             @if(Item.IsAvailableOnMarket && Item.MarketLastSaleOn != null && (DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 7)
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
-            <Virtualize ItemsProvider="LoadItemActivity" Context="item" SpacerElement="tr">
+                        <Virtualize ItemsProvider="LoadItemActivity" Context="item" SpacerElement="tr" OverscanCount="10">
+                            <EmptyContent>
+                                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                    <TumbleWeed Light="true" />
+                                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                </div>
+                            </EmptyContent>
                             <ItemContent>
                                 <div class="@($"{(item.IsSale ? "mud-theme-dark" : null)} hover-darken pa-1")">
                                     <div class="d-flex flex-row flex-wrap justify-start align-center">
@@ -1040,7 +1057,7 @@
                                         <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                                         @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
                                         {
-                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">from</MudText>
+                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap"> from a listing by </MudText>
                                             <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                                         }
@@ -1062,7 +1079,6 @@
 				    </MudPaper>
                 </MudItem>
             }
-            *@
 
             @if (!String.IsNullOrEmpty(Item.ItemCollection))
             {

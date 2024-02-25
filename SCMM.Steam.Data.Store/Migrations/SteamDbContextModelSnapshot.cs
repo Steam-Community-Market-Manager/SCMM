@@ -17,7 +17,7 @@ namespace SCMM.Steam.Data.Store.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.14")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -625,6 +625,9 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<long>("Last96hrValue")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTimeOffset?>("LastCheckedActivityOn")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset?>("LastCheckedOrdersOn")
                         .HasColumnType("datetimeoffset");
 
@@ -936,24 +939,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasFilter("[SteamId] IS NOT NULL");
 
                     b.ToTable("SteamProfiles");
-                });
-
-            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfileConfiguration", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SteamProfileConfiguration");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfileInventoryItem", b =>
@@ -1829,29 +1814,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .IsRequired();
 
                     b.Navigation("Roles")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfileConfiguration", b =>
-                {
-                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "List", b1 =>
-                        {
-                            b1.Property<Guid>("SteamProfileConfigurationId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Serialised")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SteamProfileConfigurationId");
-
-                            b1.ToTable("SteamProfileConfiguration");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamProfileConfigurationId");
-                        });
-
-                    b.Navigation("List")
                         .IsRequired();
                 });
 

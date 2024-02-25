@@ -24,7 +24,8 @@ public class SystemStatusDTO
                 SteamApp?.Markets?.Any(x => x.Status >= SystemStatusSeverity.Degraded) == true ||
                 SteamApp?.AssetDescriptionsUpdates?.IsOnTarget == false ||
                 SteamApp?.MarketOrderUpdates?.IsOnTarget == false ||
-                SteamApp?.MarketSaleUpdates?.IsOnTarget == false
+                SteamApp?.MarketSaleUpdates?.IsOnTarget == false ||
+                SteamApp?.MarketActivityUpdates?.IsOnTarget == false
             )
             {
                 return SystemStatusSeverity.Degraded;

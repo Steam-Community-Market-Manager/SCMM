@@ -98,13 +98,35 @@ namespace SCMM.Discord.Client
 
         private Task OnLogAsync(LogMessage message)
         {
-            if (message.Exception != null)
+            switch (message.Severity)
             {
-                // TODO: More details?
-                _logger.LogError(
-                    message.Exception,
-                    $"Interaction triggered an exception"
-                );
+                case LogSeverity.Critical:
+                case LogSeverity.Error:
+                    _logger.LogError(
+                        message.Exception,
+                        message.Message
+                    );
+                    break;
+
+                case LogSeverity.Warning:
+                    _logger.LogWarning(
+                        message.Exception,
+                        message.Message
+                    );
+                    break;
+
+                case LogSeverity.Info:
+                    _logger.LogInformation(
+                        message.Message
+                    );
+                    break;
+
+                case LogSeverity.Verbose:
+                case LogSeverity.Debug:
+                    _logger.LogDebug(
+                        message.Message
+                    );
+                    break;
             }
 
             return Task.CompletedTask;
@@ -179,21 +201,36 @@ namespace SCMM.Discord.Client
                 return Task.CompletedTask;
             }
 
-            // Defer the response to show a "is thinking..." placeholder
-            // NOTE: Interactions need to be acknowledged before this callback ends
-            Task.WaitAll(
-                interaction.DeferAsync()
-            );
+            try
+            {
+                // Defer the response to show a "is thinking..." placeholder
+                // NOTE: Interactions need to be acknowledged before this callback ends
+                Task.WaitAll(
+                    interaction.DeferAsync()
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to defer interaction");
+            }
 
-            // Execute the interaction...
-            // NOTE: Interaction service will execute async by default (unless the interaction is configured otherwise)
-            var context = new ShardedInteractionContext(_client, interaction);
-            Task.WaitAll(
-                _interactions.ExecuteCommandAsync(
-                    context: context,
-                    services: _services
-                )
-            );
+            try
+            {
+                // Execute the interaction...
+                // NOTE: Interaction service will execute async by default (unless the interaction is configured otherwise)
+                var context = new ShardedInteractionContext(_client, interaction);
+                Task.WaitAll(
+                    _interactions.ExecuteCommandAsync(
+                        context: context,
+                        services: _services
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to handle interaction");
+                throw;
+            }
 
             return Task.CompletedTask;
         }

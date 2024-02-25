@@ -261,9 +261,6 @@ namespace SCMM.Steam.Data.Store
                 .WithOne(x => x.CreatorProfile)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.Entity<SteamProfileConfiguration>()
-                .OwnsOne(x => x.List);
-
             builder.Entity<SteamProfileInventoryItem>()
                 .HasIndex(x => new { x.SteamId, x.DescriptionId, x.ProfileId })
                 .IsUnique(true);

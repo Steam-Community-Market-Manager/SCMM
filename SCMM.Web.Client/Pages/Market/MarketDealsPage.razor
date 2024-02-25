@@ -63,7 +63,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <Virtualize @ref="VirtualiseMarketCheapestListings" ItemsProvider="LoadMarketCheapestListings" Context="item" SpacerElement="tr">
+                                <Virtualize @ref="VirtualiseMarketCheapestListings" ItemsProvider="LoadMarketCheapestListings" Context="item" SpacerElement="tr" OverscanCount="10">
+                                    <EmptyContent>
+                                        <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                            <TumbleWeed Light="true" />
+                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search more</MudText>
+                                        </div>
+                                    </EmptyContent>
                                     <ItemContent>
                                         <tr>
                                             <td>
@@ -204,7 +210,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <Virtualize @ref="VirtualiseMarketFlips" ItemsProvider="LoadMarketFlips" Context="item" SpacerElement="tr">
+                                    <Virtualize @ref="VirtualiseMarketFlips" ItemsProvider="LoadMarketFlips" Context="item" SpacerElement="tr" OverscanCount="10">
+                                        <EmptyContent>
+                                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                                <TumbleWeed Light="true" />
+                                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search more</MudText>
+                                            </div>
+                                        </EmptyContent>
                                         <ItemContent>
                                             <tr>
                                                 <td>
@@ -308,7 +320,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftableContainerCosts" Context="item" SpacerElement="tr">
+                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftableContainerCosts" Context="item" SpacerElement="tr" OverscanCount="5">
+                                            <EmptyContent>
+                                                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                                    <TumbleWeed Light="true" />
+                                                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                                </div>
+                                            </EmptyContent>
                                             <ItemContent>
                                                 <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
                                                     <td class="align-top">
@@ -396,7 +414,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftingResourceCosts" Context="item" SpacerElement="tr">
+                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftingResourceCosts" Context="item" SpacerElement="tr" OverscanCount="5">
+                                            <EmptyContent>
+                                                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                                    <TumbleWeed Light="true" />
+                                                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">No data</MudText>
+                                                </div>
+                                            </EmptyContent>
                                             <ItemContent>
                                                 <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
                                                     <td class="align-top">

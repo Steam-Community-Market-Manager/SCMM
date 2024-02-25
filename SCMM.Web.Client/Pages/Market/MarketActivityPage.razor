@@ -1,24 +1,55 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Statistic
+@using SCMM.Web.Client.Shared.Dialogs.Items
 @page "/market/activity"
 @inject ILogger<MarketActivityPage> Logger
+@inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject VirtualisedItemsMemoryCache MarketActivityCache
 @inject HttpClient Http
 @inject AppState State
 
 <PageContainer Title="@($"{State?.App?.Name} Market Activity")">
+    
+    <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning" Variant="MudBlazor.Variant.Text" Class="mud-alert-outlined-warning mb-5">
+        <strong>This is NOT a full or complete list of all Steam community market activity!</strong><br/>
+        <span>Only a small subset of all Steam community market activity is shown here. Steam APIs don't show all actions performed on the market and have aggressive caching and rate limiting which restricts how much information can be detected by SCMM (or any other user/website for that matter). Some highly active items that have hundreds of sales per day may only show a handful of sales here, this is a limitation of the Steam APIs. SCMM attempts to track as much market activity as is possible to do so within the limitations of the current Steam APIs.</span>
+    </MudAlert>
 
     <MudGrid Spacing="2">
 
-        <MudItem xs="12">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search market activity..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+        <MudItem xs="12" sm="4" lg="2">
+            <MudSelect T="SteamMarketItemActivityType?" Value="FilterType" ValueChanged="@OnFilterType" Label="Activity Type" Placeholder="Filter by activity type..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+                       FullWidth="true" Class="mud-input-transparent ma-0" Clearable="true" Disabled="State.IsPrerendering">
+                <MudSelectItem T="SteamMarketItemActivityType?" Value="@null">Any</MudSelectItem>
+                @foreach (var value in Enum.GetValues<SteamMarketItemActivityType>())
+                {
+                    <MudSelectItem Value="@((SteamMarketItemActivityType?)value)">@value.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="4" lg="5">
+            <MudTextField T="string" Value="@FilterUser" ValueChanged="@OnFilterUser" DebounceInterval="500" Label="User" Placeholder="Filter by user name..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
                           FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
-        
+        <MudItem xs="12" sm="4" lg="5">
+            <MudTextField T="string" Value="@FilterItem" ValueChanged="@OnFilterItem" DebounceInterval="500" Label="Item" Placeholder="Filter by item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+                          FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
+        </MudItem>
         <MudItem xs="12" Class="pa-0">
-            <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item">
+            @if (!MarketActivityHasLoaded)
+            {
+                <Loading />
+            }
+            <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item" OverscanCount="30">
+                <EmptyContent>
+                    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                        <TumbleWeed Light="true" />
+                        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search more</MudText>
+                    </div>
+                </EmptyContent>
                 <ItemContent>
                     <div class="@($"{(item.IsSale ? "mud-theme-dark" : null)} hover-darken pa-1")">
                         <div class="d-flex flex-row flex-wrap justify-start align-center">
@@ -35,12 +66,12 @@
                             <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">@GetActivityDescription(item)</MudText>
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.Quantity.ToQuantityString()x</MudText>
                             <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" class="mx-1 clickable" style="width:32px; height:32px;" @onclick="@(() => ViewItem(item))" />
-                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {item.ForegroundColour}")" @onclick="@(() => ViewItem(item))">@item.Name</MudText>
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {item.ForegroundColour}")" @onclick="@(() => ShowItemDetailsDialog(item))">@item.Name</MudText>
                             <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">for</MudText>
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                             @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
                             {
-                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">from</MudText>
+                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap"> from a listing by </MudText>
                                 <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                 <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                             }
@@ -67,52 +98,87 @@
 
 @code {
 
+    private SteamMarketItemActivityType? FilterType { get; set; }
+
+    private string FilterUser { get; set; }
+
+    private string FilterItem { get; set; }
+
     private Virtualize<ItemActivityStatisticDTO> MarketActivityTable { get; set; }
-    
-    [SupplyParameterFromQuery]
-    public string Filter { get; set; }
+
+    private bool MarketActivityHasLoaded { get; set; }
+
+    private void ShowItemDetailsDialog(ItemDescriptionDTO item)
+    {
+        Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemName"] = item.Name,
+            ["ItemUrl"] = $"/api/item/{item.Id}"
+        });
+    }
 
     private void ViewItem(ItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToItemAsync(item);
     }
-    
-    private async void OnSearch(string text)
+
+    private async void OnFilterType(SteamMarketItemActivityType? type)
     {
-        if (Filter != text)
+        if (FilterType != type)
         {
-            Filter = text;
+            FilterType = type;
+            MarketActivityCache.Clear();
+            MarketActivityHasLoaded = false;
             await MarketActivityTable.RefreshDataAsync();
             StateHasChanged();
         };
     }
-    
-    private async void ToggleItemFilter(ItemDescriptionDTO item)
-    {
-        if (Filter != item.Name)
-        {
-            Filter = item.Name;
-        }
-        else
-        {
-            Filter = null;
-        }
 
-        await MarketActivityTable.RefreshDataAsync();
-        StateHasChanged();
+    private async void OnFilterUser(string user)
+    {
+        if (FilterUser != user)
+        {
+            FilterUser = user;
+            MarketActivityCache.Clear();
+            MarketActivityHasLoaded = false;
+            await MarketActivityTable.RefreshDataAsync();
+            StateHasChanged();
+        };
     }
-    
+
+    private async void OnFilterItem(string item)
+    {
+        if (FilterItem != item)
+        {
+            FilterItem = item;
+            MarketActivityCache.Clear();
+            MarketActivityHasLoaded = false;
+            await MarketActivityTable.RefreshDataAsync();
+            StateHasChanged();
+        };
+    }
+
     protected async ValueTask<ItemsProviderResult<ItemActivityStatisticDTO>> LoadMarketActivity(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemActivityStatisticDTO>(response.Items, response.Total);
+            var data = await MarketActivityCache.Get(
+                request.StartIndex,
+                request.Count,
+                () => Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?type={FilterType?.ToString() ?? String.Empty}&user={Uri.EscapeDataString(FilterUser ?? String.Empty)}&item={Uri.EscapeDataString(FilterItem ?? String.Empty)}&start={request.StartIndex}&count={request.Count}")
+            );
+
+            return new ItemsProviderResult<ItemActivityStatisticDTO>(data.Items, data.Total);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'activity' market statistics");
             throw;
+        }
+        finally
+        {
+            MarketActivityHasLoaded = true;
+            StateHasChanged();
         }
     }
     

@@ -71,8 +71,8 @@ namespace SCMM.Azure.ServiceBus.Middleware
             // Build a dictionary of handler interfaces and their associated concrete implementation type
             var handlerMappings = new Dictionary<Type, Type>();
             var handlerAssemblies = _messageHandlerTypeCollection.Assemblies.ToArray();
-            var handlerTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>));
-            var messageTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessage)).Where(x => !x.IsAbstract);
+            var handlerTypes = handlerAssemblies.GetConcreteTypesAssignableTo(typeof(IMessageHandler<>)).ToArray();
+            var messageTypes = handlerAssemblies.GetConcreteTypesAssignableTo(typeof(IMessage)).Where(x => !x.IsAbstract).ToArray();
             foreach (var handlerType in handlerTypes)
             {
                 var handlerInterfaces = handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>));
