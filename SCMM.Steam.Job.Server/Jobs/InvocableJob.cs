@@ -10,7 +10,7 @@ public abstract class InvocableJob : IInvocable, IJob
         {
             await Run(CancellationToken.None);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             throw;
         }
