@@ -10,10 +10,10 @@
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.10.4" />
 	<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
-	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.2" />
+	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-	<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.1.0" />
   </ItemGroup>
 
   <ItemGroup>
