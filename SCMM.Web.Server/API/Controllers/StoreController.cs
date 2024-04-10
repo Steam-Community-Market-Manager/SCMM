@@ -2,6 +2,7 @@
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -120,6 +121,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetStore([FromRoute] string id)
         {
             var app = this.App();
@@ -241,6 +244,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid id)
         {
             var app = this.App();
@@ -313,6 +318,8 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{id}/stats/itemRevenue")]
         [ProducesResponseType(typeof(IEnumerable<StoreChartItemRevenueDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid id)
         {
             var app = this.App();
