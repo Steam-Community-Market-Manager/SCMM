@@ -330,6 +330,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (15 * 60 /* 15mins */))]
         public async Task<IActionResult> GetItem([FromRoute] string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -736,6 +738,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (15 * 60 /* 15mins */))]
         public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] ulong? creatorId = null)
         {
             var appId = this.App().Guid;
@@ -807,6 +811,8 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("definitionArchives")]
         [ProducesResponseType(typeof(IEnumerable<ItemDefinitionArchiveIdentifierDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (15 * 60 /* 15mins */))]
         public async Task<IActionResult> GetItemDefinitionArchives()
         {
             var appId = this.App().Guid;
@@ -840,6 +846,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("definitionArchive/{oldDigest}/compareTo/{newDigest}")]
         [ProducesResponseType(typeof(TextDiffDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(Duration = (24 * 60 * 60 /* 24hrs */))]
         public async Task<IActionResult> GetItemDefinitionArchive([FromRoute] string oldDigest, [FromRoute] string newDigest)
         {
             var appId = this.App().Guid;
@@ -920,6 +927,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ItemDefinition[]), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (24 * 60 * 60 /* 24hrs */))]
         public async Task<IActionResult> GetItemDefinitionArchive([FromRoute] string digest, [FromQuery] bool raw = false)
         {
             var appId = this.App().Guid;
@@ -1017,6 +1026,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<ItemBestMarketPriceDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<ItemMarketPricesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
         public async Task<IActionResult> GetItemPrices([FromQuery] MarketType[] markets = null)
         {
             var appId = this.App().Guid;
