@@ -41,6 +41,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List all known item store instances
         /// </summary>
         /// <returns>List of stores</returns>
+        /// <remarks>Response is cached for 7 days.</remarks>
         /// <response code="200">List of known item stores. Use <see cref="GetStore(string)"/> <code>/store/{dateTime}</code> to get the details of a specific store.</response>
         /// <response code="400">If the current app does not support stores.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -49,6 +50,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<StoreIdentifierDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire7d, Tags = [CacheTag.Store])]
         public async Task<IActionResult> GetStores()
         {
             var app = this.App();
@@ -85,6 +87,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>
         /// There may be multiple active item stores, only the most recent is returned.
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 10 minutes.
         /// </remarks>
         /// <returns>The most recent item store</returns>
         /// <response code="200">The most recent item store.</response>
@@ -97,6 +100,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire10m, Tags = [CacheTag.Store])]
         public async Task<IActionResult> GetCurrentStore()
         {
             return await GetStore(DateTime.UtcNow.ToString(Constants.SCMMStoreIdDateFormat));
@@ -110,6 +114,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>
         /// If there are multiple active stores at the specified date time, only the most recent will be returned.
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 1 hour.
         /// </remarks>
         /// <response code="200">The store details.</response>
         /// <response code="400">If the store date is invalid or cannot be parsed as a date time or the current app does not support stores.</response>
@@ -121,8 +126,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        [OutputCache(Duration = (60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Store])]
         public async Task<IActionResult> GetStore([FromRoute] string id)
         {
             var app = this.App();
@@ -232,7 +236,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get store item sales chart data
         /// </summary>
         /// <param name="id">Store GUID to load item sales for.</param>
-        /// <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
+        /// <remarks>
+        /// Item sales data is only available for items that have an associated workshop item.
+        /// Response is cached for 1 hour.
+        /// </remarks>
         /// <returns>The item sales chart data</returns>
         /// <response code="200">The item sales chart data.</response>
         /// <response code="400">If the store id is invalid or the current app does not support stores.</response>
@@ -244,8 +251,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        [OutputCache(Duration = (60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Store])]
         public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid id)
         {
             var app = this.App();
@@ -308,6 +314,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>
         /// Item revenue data is only available for items that have an associated workshop item.
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 1 hour.
         /// </remarks>
         /// <returns>The item revenue chart data</returns>
         /// <response code="200">The item revenue chart data.</response>
@@ -318,8 +325,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{id}/stats/itemRevenue")]
         [ProducesResponseType(typeof(IEnumerable<StoreChartItemRevenueDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        [OutputCache(Duration = (60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Store])]
         public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid id)
         {
             var app = this.App();

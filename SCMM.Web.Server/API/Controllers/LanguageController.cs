@@ -40,7 +40,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<LanguageListDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<LanguageDetailedDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (24 * 60 * 60 /* 24hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1d, Tags = [CacheTag.Language])]
         public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
             var languages = await _db.SteamLanguages

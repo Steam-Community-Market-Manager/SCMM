@@ -316,14 +316,32 @@ public static class WebApplicationExtensions
 
         builder.Services.AddOutputCache(options =>
         {
-            options.SizeLimit = 256 * 1024 * 1024; // 256MB
+            options.SizeLimit = 512 * 1024 * 1024; // 512MB
             options.MaximumBodySize = 8 * 1024 * 1024; // 8MB
             options.UseCaseSensitivePaths = false;
             options.AddBasePolicy(builder => builder
                 .NoCache() // do not cache by default
                 .SetVaryByQuery(AppState.LanguageNameKey, AppState.CurrencyNameKey, AppState.AppIdKey)
                 .SetVaryByHeader(AppState.LanguageNameKey, AppState.CurrencyNameKey, AppState.AppIdKey)
-                .Tag("all")
+                .Tag(CacheTag.All)
+            );
+            options.AddPolicy(CachePolicy.Expire3m, builder =>
+                builder.Cache().Expire(TimeSpan.FromMinutes(3))
+            );
+            options.AddPolicy(CachePolicy.Expire10m, builder =>
+                builder.Cache().Expire(TimeSpan.FromMinutes(10))
+            );
+            options.AddPolicy(CachePolicy.Expire30m, builder =>
+                builder.Cache().Expire(TimeSpan.FromMinutes(30))
+            );
+            options.AddPolicy(CachePolicy.Expire1h, builder =>
+                builder.Cache().Expire(TimeSpan.FromHours(1))
+            );
+            options.AddPolicy(CachePolicy.Expire1d, builder =>
+                builder.Cache().Expire(TimeSpan.FromDays(1))
+            );
+            options.AddPolicy(CachePolicy.Expire7d, builder =>
+                builder.Cache().Expire(TimeSpan.FromDays(7))
             );
         });
 

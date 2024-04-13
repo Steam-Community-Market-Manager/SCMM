@@ -42,7 +42,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(SystemStatusDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (1 * 60 /* 3min */))]
+        [OutputCache(PolicyName = CachePolicy.Expire3m, Tags = [CacheTag.System])]
         public async Task<IActionResult> GetSystemStatus([FromQuery] ulong? appId = null, [FromQuery] bool includeAppMarkets = false, [FromQuery] bool includeWebProxiesStatus = false)
         {
             var systemStatus = await _queryProcessor.ProcessAsync(new GetSystemStatusRequest()
@@ -72,7 +72,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<SystemUpdateMessageDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.System])]
         public async Task<IActionResult> GetLatestSystemUpdateMessages()
         {
             var latestSystemUpdates = await _queryProcessor.ProcessAsync(new ListLatestSystemUpdateMessagesRequest());
