@@ -54,7 +54,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/totals")]
         [ProducesResponseType(typeof(MarketTotalsStatisticDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Statistics])]
         public async Task<IActionResult> GetMarketTotals()
         {
             var appGuid = this.App().Guid;
@@ -1056,7 +1056,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("profiles/inventories/total")]
         [ProducesResponseType(typeof(ProfileInventoryTotalsStatisticDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Statistics])]
         public async Task<IActionResult> GetProfileInventoriesTotal()
         {
             var appId = this.App().Guid;
@@ -1223,7 +1223,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("donators")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Statistics])]
         public async Task<IActionResult> GetProfilesDonators()
         {
             var donators = await _db.SteamProfiles
@@ -1247,7 +1247,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("contributors")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Statistics])]
         public async Task<IActionResult> GetProfilesContributors()
         {
             var donators = await _db.SteamProfiles

@@ -31,7 +31,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List all supported currencies
         /// </summary>
-        /// <remarks>Response is cached for 1hr</remarks>
+        /// <remarks>Response is cached for 24hr</remarks>
         /// <returns>List of supported currencies</returns>
         /// <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="CurrencyDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="CurrencyListDTO"/>.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -40,7 +40,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<CurrencyListDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<CurrencyDetailedDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (1 * 60 * 60 /* 1hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1d, Tags = [CacheTag.Currency])]
         public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
             var currencies = await _db.SteamCurrencies

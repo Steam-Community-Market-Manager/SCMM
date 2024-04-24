@@ -318,6 +318,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 1 hour.
         /// </remarks>
         /// <param name="id">Item GUID, ID64, or name</param>
         /// <response code="200">The item details.</response>
@@ -330,6 +331,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Item])]
         public async Task<IActionResult> GetItem([FromRoute] string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -593,6 +595,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="id">Item GUID, ID64, or name</param>
         /// <param name="max">The maximum number of users to return.</param>
+        /// <remarks>Response is cached for 1 hour.</remarks>
         /// <response code="200">List of top user holding the item.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If the request item cannot be found.</response>
@@ -603,6 +606,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Item])]
         public async Task<IActionResult> GetItemTopHolders([FromRoute] string id, int max = 30)
         {
             if (string.IsNullOrEmpty(id))
@@ -665,8 +669,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="type">The item type</param>=
         /// <returns>The demand statistics for the item type</returns>
         /// <remarks>
-        /// Response is cached for 12hrs.
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 24hrs.
         /// </remarks>
         /// <response code="200">The demand statistics for the item type.</response>
         /// <response code="400">If the item type is missing.</response>
@@ -678,7 +682,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (12 * 60 * 60 /* 12hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire1d, Tags = [CacheTag.Item])]
         public async Task<IActionResult> GetItemDemandByItemType([FromRoute] string type)
         {
             var appId = this.App().Guid;
@@ -725,6 +729,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <returns>The items belonging to the collection</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 24hrs.
         /// </remarks>
         /// <response code="200">The item collection details.</response>
         /// <response code="400">If the collection name is missing.</response>
@@ -736,6 +741,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire1d, Tags = [CacheTag.Item])]
         public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] ulong? creatorId = null)
         {
             var appId = this.App().Guid;
@@ -801,12 +807,14 @@ namespace SCMM.Web.Server.API.Controllers
         /// List all known item definition archives
         /// </summary>
         /// <returns>List of item definition archives</returns>
+        /// <remarks>Response is cached for 7 days.</remarks>
         /// <response code="200">List of known item definition archives.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("definitionArchives")]
         [ProducesResponseType(typeof(IEnumerable<ItemDefinitionArchiveIdentifierDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire7d, Tags = [CacheTag.ItemDefinition])]
         public async Task<IActionResult> GetItemDefinitionArchives()
         {
             var appId = this.App().Guid;
@@ -831,6 +839,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Compare two item definition archive contents and return a text diff
         /// </summary>
+        /// <remarks>Response is cached for 24hrs.</remarks>
         /// <param name="oldDigest">The first digest for comparison</param>
         /// <param name="newDigest">The second digest for comparison</param>
         /// <response code="200">The text diff between the two item definition archives.</response>
@@ -840,6 +849,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("definitionArchive/{oldDigest}/compareTo/{newDigest}")]
         [ProducesResponseType(typeof(TextDiffDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire1d, Tags = [CacheTag.ItemDefinition])]
         public async Task<IActionResult> GetItemDefinitionArchive([FromRoute] string oldDigest, [FromRoute] string newDigest)
         {
             var appId = this.App().Guid;
@@ -912,6 +922,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="digest">The digest of the item definition archive to get</param>
         /// <param name="raw">If true, the raw archive content is returned as a string. If false, the archive is returned as a list of  <see cref="ItemDefinition"/> </param>
         /// <returns>The item definition archive contents</returns>
+        /// <remarks>Response is cached for 24hrs.</remarks>
         /// <response code="200">The item definition archive contents.</response>
         /// <response code="404">If the item definition archive doesn't exist.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -920,6 +931,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ItemDefinition[]), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire1d, Tags = [CacheTag.ItemDefinition])]
         public async Task<IActionResult> GetItemDefinitionArchive([FromRoute] string digest, [FromQuery] bool raw = false)
         {
             var appId = this.App().Guid;
@@ -943,14 +955,14 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List all known item filters
         /// </summary>
-        /// <remarks>Response is cached for 24hrs</remarks>
+        /// <remarks>Response is cached for 7 days</remarks>
         /// <response code="200">List of unique item filters</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("filters")]
         [ProducesResponseType(typeof(IEnumerable<ItemFilterDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (24 * 60 * 60 /* 24hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire7d, Tags = [CacheTag.App])]
         public async Task<IActionResult> GetItemFilters()
         {
             var appId = this.App().Guid;
@@ -967,14 +979,14 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List all known item types
         /// </summary>
-        /// <remarks>Response is cached for 24hrs</remarks>
+        /// <remarks>Response is cached for 7 dayss</remarks>
         /// <response code="200">List of unique item types</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("types")]
         [ProducesResponseType(typeof(IEnumerable<ItemTypeGroupDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(Duration = (24 * 60 * 60 /* 24hr */))]
+        [OutputCache(PolicyName = CachePolicy.Expire7d, Tags = [CacheTag.App, CacheTag.Item])]
         public async Task<IActionResult> GetItemTypes()
         {
             var appId = this.App().Guid;
@@ -1008,6 +1020,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Response is cached for 1hr.
         /// </remarks>
         /// <param name="markets">If specified, only item prices from these markets will be returned.</param>
         /// <response code="200">If <paramref name="markets"/> is <code>non-null</code>, the response will be a list of <see cref="ItemMarketPricesDTO"/>. If <code>null</code>, the response will be a list of <see cref="ItemBestMarketPriceDTO"/></response>
@@ -1017,6 +1030,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<ItemBestMarketPriceDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<ItemMarketPricesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Item])]
         public async Task<IActionResult> GetItemPrices([FromQuery] MarketType[] markets = null)
         {
             var appId = this.App().Guid;
