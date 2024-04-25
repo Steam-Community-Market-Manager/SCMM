@@ -129,6 +129,11 @@
             return b == 0 ? Math.Abs(a) : GCD(b, a % b);
         }
 
+        public static long RoundDownToNearest(this long value, long roundTo)
+        {
+            return (long)(Math.Floor((double)value / roundTo) * roundTo);
+        }
+
         public static IEnumerable<decimal> CumulativeMovingAverage(this IEnumerable<decimal> source)
         {
             ulong count = 0;
