@@ -145,7 +145,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Unknown subscribers to this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
+                Name = $"Untracked workshop subscribers of this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
                 Value = (double) outstandingEstimatedUniqueOwnerSupply
             });
         }
@@ -153,7 +153,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"User currently hold this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
+                Name = $"Tracked subscribers currently holding this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
                 Value = (double) Item.SupplyTotalOwnersKnown.Value
             });
         }
@@ -163,7 +163,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Possible duplicate inventory stock held of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
+                Name = $"Untracked estimated duplicate inventory stock held of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
                 Value = (double) outstandingEstimatedInvestorsSupply
             });
         }
@@ -171,7 +171,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Duplicate inventory stock held of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
+                Name = $"Tracked duplicate inventory stock held of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
                 Value = (double) Item.SupplyTotalInvestorsKnown.Value
             });
         }

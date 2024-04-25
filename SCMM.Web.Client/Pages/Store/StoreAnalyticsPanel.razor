@@ -133,19 +133,19 @@
                                     <ChartSeries XName="name" YName="supplyTotalMarketsKnown" Name="Currently listed on the market" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#171a21" Width="2" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalOwnersKnown" Name="User currently hold this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1565c0" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalOwnersKnown" Name="Tracked subscribers currently holding this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1565c0" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalOwnersEstimated" Name="Unknown subscribers to this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1e88e5" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalOwnersEstimated" Name="Untracked workshop subscribers of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1e88e5" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalInvestorsKnown" Name="Duplicate inventory stock held of this item " StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#6a1b9a" Width="2" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalInvestorsKnown" Name="Tracked duplicate inventory stock held of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#6a1b9a" Width="2" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalInvestorsEstimated" Name="Possible duplicate inventory stock held of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#8e24aa" Width="2" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalInvestorsEstimated" Name="Untracked estimated duplicate inventory stock held of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#8e24aa" Width="2" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalEstimated" Name="Total estimated sales" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartSeries XName="name" YName="supplyTotalEstimated" Name="Total minimum sales" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
                                         <ChartMarker>
                                             <ChartDataLabel Visible="true" Name="totalText" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
                                                 <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
@@ -200,7 +200,7 @@
                                     <ChartSeries XName="name" YName="publisherRevenue" Name="@($"{State.App.PublisherName} revenue")" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="@State.App?.PrimaryColor" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="total" Name="Total estimated revenue" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartSeries XName="name" YName="total" Name="Total minimum revenue" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
                                         <ChartMarker>
                                             <ChartDataLabel Visible="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
                                                 <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
