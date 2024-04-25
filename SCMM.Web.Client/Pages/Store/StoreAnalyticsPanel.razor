@@ -29,11 +29,11 @@
                 {
                     <small class="px-2">
                         <i class="fa fa-fw fa-shopping-cart mr-1" />
-                        <span>@Store.Items.Sum(x => x.SupplyTotalEstimated ?? 0).ToQuantityString()+ <span class="mud-secondary-text">minimum sales</span></span>
+                        <span>@Store.Items.Sum(x => x.SupplyTotalEstimated ?? 0).ToQuantityString() <span class="mud-secondary-text">minimum sales</span></span>
                     </small>
                     <small class="px-2">
                         <i class="fa fa-fw fa-hand-holding-usd mr-1" />
-                        <span>@State.Currency.ToPriceString(State.Currency.CalculateExchange(Store.Items.Sum(x => (x.SupplyTotalEstimated ?? 0) * (x.StorePriceUsd ?? 0))))+ <span class="mud-secondary-text">minimum revenue</span></span>
+                        <span>@State.Currency.ToPriceString(State.Currency.CalculateExchange(Store.Items.Sum(x => (x.SupplyTotalEstimated ?? 0) * (x.StorePriceUsd ?? 0)))) <span class="mud-secondary-text">minimum revenue</span></span>
                     </small>
                 }
             </MudText>
@@ -181,7 +181,7 @@
                                 </ChartArea>
                                 <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
                                 </ChartPrimaryXAxis>
-                                <ChartPrimaryYAxis LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}+")" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                <ChartPrimaryYAxis LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText} (minimum)")" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
                                     <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
                                     <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
                                     <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
