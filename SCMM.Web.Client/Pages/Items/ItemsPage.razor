@@ -79,8 +79,8 @@
                 }
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
                 {
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudSelectItem>
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Ascending))">Lowest Minimum Total Supply</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Descending))">Highest Minimum Total Supply</MudSelectItem>
                 }
                 <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("DistanceToAllTimeHighestValue", Data.Models.SortDirection.Descending))">Closest to All Time High (ATH)</MudSelectItem>
                 <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("DistanceToAllTimeLowestValue", Data.Models.SortDirection.Ascending))">Closest to All Time Low (ATL)</MudSelectItem>
