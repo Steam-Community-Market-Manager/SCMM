@@ -103,8 +103,8 @@
                                     }
                                     @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
                                     {
-                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudMenuItem>
-                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Minimum Total Supply</MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Minimum Total Supply</MudMenuItem>
                                     }
                                     <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.DistanceToAllTimeHighestValue), Data.Models.SortDirection.Descending))">Closest to All Time High (ATH)</MudMenuItem>
                                     <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ProfileInventoryItemDescriptionDTO.DistanceToAllTimeLowestValue), Data.Models.SortDirection.Ascending))">Closest to All Time Low (ATL)</MudMenuItem>

@@ -29,11 +29,11 @@
                 {
                     <small class="px-2">
                         <i class="fa fa-fw fa-shopping-cart mr-1" />
-                        <span>@Store.Items.Sum(x => x.SupplyTotalEstimated ?? 0).ToQuantityString()+ <span class="mud-secondary-text">estimated sales</span></span>
+                        <span>@Store.Items.Sum(x => x.SupplyTotalEstimated ?? 0).RoundDownToNearest(1000).ToQuantityString() <span class="mud-secondary-text">minimum sales</span></span>
                     </small>
                     <small class="px-2">
                         <i class="fa fa-fw fa-hand-holding-usd mr-1" />
-                        <span>@State.Currency.ToPriceString(State.Currency.CalculateExchange(Store.Items.Sum(x => (x.SupplyTotalEstimated ?? 0) * (x.StorePriceUsd ?? 0))))+ <span class="mud-secondary-text">estimated revenue</span></span>
+                        <span>@State.Currency.ToPriceString(State.Currency.CalculateExchange(Store.Items.Sum(x => (x.SupplyTotalEstimated ?? 0) * (x.StorePriceUsd ?? 0))).RoundDownToNearest(100000)) <span class="mud-secondary-text">minimum revenue</span></span>
                     </small>
                 }
             </MudText>
@@ -102,7 +102,7 @@
                             }
                         </MudTabPanel>
                     }
-                    <MudTabPanel Icon="fas fa-fw fa-shopping-cart mr-2" Text="Estimated Sales" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
+                    <MudTabPanel Icon="fas fa-fw fa-shopping-cart mr-2" Text="Minimum Sales" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
                         @if ((Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true))
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
@@ -133,19 +133,19 @@
                                     <ChartSeries XName="name" YName="supplyTotalMarketsKnown" Name="Currently listed on the market" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#171a21" Width="2" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalOwnersKnown" Name="User currently hold this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1565c0" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalOwnersKnown" Name="Tracked subscribers currently holding this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1565c0" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalOwnersEstimated" Name="Unknown subscribers to this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1e88e5" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalOwnersEstimated" Name="Untracked workshop subscribers of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#1e88e5" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalInvestorsKnown" Name="Duplicate inventory stock held of this item " StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#6a1b9a" Width="2" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalInvestorsKnown" Name="Tracked duplicate inventory stock held of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#6a1b9a" Width="2" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalInvestorsEstimated" Name="Possible duplicate inventory stock held of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#8e24aa" Width="2" Type="ChartSeriesType.StackingBar">
+                                    <ChartSeries XName="name" YName="supplyTotalInvestorsEstimated" Name="Untracked estimated duplicate inventory stock held of this item" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#8e24aa" Width="2" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="supplyTotalEstimated" Name="Total estimated sales" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartSeries XName="name" YName="supplyTotalEstimated" Name="Total minimum sales" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
                                         <ChartMarker>
                                             <ChartDataLabel Visible="true" Name="totalText" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
                                                 <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
@@ -158,7 +158,7 @@
                             </SfChart>
                         }
                     </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-2" Text="Estimated Revenue" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
+                    <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-2" Text="Minimum Revenue" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
                         @if ((Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true))
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
@@ -181,7 +181,7 @@
                                 </ChartArea>
                                 <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
                                 </ChartPrimaryXAxis>
-                                <ChartPrimaryYAxis LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}+")" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                <ChartPrimaryYAxis LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText} (minimum)")" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
                                     <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
                                     <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
                                     <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
@@ -200,7 +200,7 @@
                                     <ChartSeries XName="name" YName="publisherRevenue" Name="@($"{State.App.PublisherName} revenue")" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="@State.App?.PrimaryColor" Type="ChartSeriesType.StackingBar">
                                         <ChartEmptyPointSettings Mode="EmptyPointMode.Drop" />
                                     </ChartSeries>
-                                    <ChartSeries XName="name" YName="total" Name="Total estimated revenue" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartSeries XName="name" YName="total" Name="Total minimum revenue" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
                                         <ChartMarker>
                                             <ChartDataLabel Visible="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
                                                 <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>

@@ -241,7 +241,7 @@
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-cubes-stacked mud-secondary-text"></i>
                                 <span>
-                                    <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ <span class="mud-secondary-text">estimated total</span> supply</span>
+                                    <span>@Item.SupplyTotalEstimated.Value.ToQuantityString() <span class="mud-secondary-text">minimum</span> supply</span>
                                 </span>
                             </MudText>
                         }
@@ -744,16 +744,16 @@
                 <MudItem xs="12" xl="@((Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null || Item.MarketSellOrderCount > 0 || Item.MarketBuyOrderCount > 0) ? 6 : 12)">
                     <MudPaper Outlined="true" Class="text-centered full-height" Style="min-height:20vh">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 text-centered">
-                            <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ estimated total supply</span>
+                            <span>@Item.SupplyTotalEstimated.Value.ToQuantityString() minimum supply</span>
                         </MudText>
                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="px-4 text-centered">
                             @if (((Item.SupplyTotalOwnersEstimated ?? 0) + (Item.SupplyTotalInvestorsEstimated ?? 0)) > ((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)))
                             {
-                                <span>We estimate there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, of which <strong>@(((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)).ToQuantityString())</strong> are currently known and tracked by SCMM.</span>
+                                <span>We estimate there are no less than <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, of which <strong>@(((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)).ToQuantityString())</strong> are currently known and tracked by SCMM.</span>
                             }
                             else
                             {
-                                <span>We known that there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, through supply channels known and tracked by SCMM.</span>
+                                <span>We've detected at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, through inventories known and tracked by SCMM.</span>
                             }
                             <span> Our database is not comprehensive and there are always more copies that we don't know about. </span>
                         </MudText>
@@ -1281,7 +1281,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Unknown subscribers to this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
+                Name = $"Untracked workshop subscribers of this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
                 Value = (double) outstandingEstimatedUniqueOwnerSupply
             });
         }
@@ -1289,7 +1289,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"User currently hold this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
+                Name = $"Tracked subscribers currently holding this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
                 Value = (double) Item.SupplyTotalOwnersKnown.Value
             });
         }
@@ -1299,7 +1299,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Possible duplicate inventory stock held of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
+                Name = $"Untracked estimated duplicate inventory stock held of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
                 Value = (double) outstandingEstimatedInvestorsSupply
             });
         }
@@ -1307,7 +1307,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Duplicate inventory stock held of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
+                Name = $"Tracked duplicate inventory stock held of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
                 Value = (double) Item.SupplyTotalInvestorsKnown.Value
             });
         }
