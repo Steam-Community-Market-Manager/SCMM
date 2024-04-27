@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Ljbc1994.Blazor.IntersectionObserver;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -75,11 +76,14 @@ public static class WebAssemblyHostExtensions
         services.AddScoped<AppState>();
 
         services.AddScoped<ExternalNavigationManager>();
+        services.AddScoped<PinnedActionManager>();
         services.AddScoped<DocumentManager>();
 
         services.AddTransient<VirtualisedItemsMemoryCache>();
 
         services.AddIntersectionObserver();
+
+        services.AddBlazoredLocalStorage();
 
         services.AddMudServices(config =>
         {
