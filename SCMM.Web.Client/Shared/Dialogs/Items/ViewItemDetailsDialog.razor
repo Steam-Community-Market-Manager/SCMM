@@ -3,12 +3,24 @@
 @inherits ResponsiveDialog
 @inject ILogger<ViewItemDetailsDialog> Logger
 @inject ISnackbar Snackbar
+@inject PinnedActionManager PinnedActionManager
 @inject HttpClient Http
 @inject AppState State
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="MudBlazor.Typo.h6">@ItemName Details</MudText>
+        <div class="d-flex align-start mr-4">
+            <MudText Typo="MudBlazor.Typo.h6">@ItemName Details</MudText>
+            <MudSpacer />
+            @if (Item != null && PinnedAction != null)
+            {
+                <MudToggleIconButton Toggled="IsActionPinned" ToggledChanged="TogglePinnedAction"
+                                     Title="Bookmark this item" ToggledTitle="Remove this bookmark"
+                                     Icon="far fa-bookmark" ToggledIcon="fas fa-bookmark"
+                                     Size="MudBlazor.Size.Small" ToggledSize="MudBlazor.Size.Small"
+                                     Class="ma-1 mx-4" DisableRipple="true" Disabled="@State.IsPrerendering" />
+            }
+        </div>
     </TitleContent>
     <DialogContent>
         @if (Item == null)
@@ -33,7 +45,11 @@
     public string ItemUrl { get; set; }
 
     private ItemDetailedDTO Item { get; set; }
-    
+
+    private PinnedActionManager.Action PinnedAction { get; set; }
+
+    private bool IsActionPinned { get; set; }
+
     protected override void OnConfigure(ResponsiveDialogOptions options)
     {
         options.FullscreenBreakpoint = MudBlazor.Breakpoint.Md;
@@ -49,12 +65,35 @@
         try
         {
             Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>(ItemUrl);
+            PinnedAction = new PinnedActionManager.Action()
+            {
+                Type = "Item",
+                Url = ItemUrl,
+                IconUrl = Item?.IconUrl,
+                Description = ItemName,
+            };
+
+            IsActionPinned = await PinnedActionManager.IsPinned(PinnedAction);
+
             Dialog.StateHasChanged();
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error loading the item details");
             Snackbar.Add($"Unable to load item details. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task TogglePinnedAction(bool pinned)
+    {
+        IsActionPinned = !pinned;
+        if (pinned)
+        {
+            await PinnedActionManager.PinAction(PinnedAction);
+        }
+        else
+        {
+            await PinnedActionManager.UnpinAction(PinnedAction);
         }
     }
 

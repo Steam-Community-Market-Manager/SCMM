@@ -3,6 +3,7 @@
 @inherits ResponsiveDialog
 @inject ILogger<ViewItemCollectionDialog> Logger
 @inject ISnackbar Snackbar
+@inject PinnedActionManager PinnedActionManager
 @inject HttpClient Http
 @inject AppState State
 
@@ -14,7 +15,7 @@
         } 
         else
         {
-            <div class="d-flex mr-4">
+            <div class="d-flex align-start mr-4">
                 @if (!String.IsNullOrEmpty(Collection.CreatorAvatarUrl))
                 {
                     <MudTooltip Text="@Collection.CreatorName">
@@ -36,6 +37,14 @@
                     }
                 </div>
                 <MudSpacer />
+                @if (Collection != null && PinnedAction != null)
+                {
+                    <MudToggleIconButton Toggled="IsActionPinned" ToggledChanged="TogglePinnedAction"
+                                         Title="Bookmark this item collection" ToggledTitle="Remove this bookmark"
+                                         Icon="far fa-bookmark" ToggledIcon="fas fa-bookmark"
+                                         Size="MudBlazor.Size.Small" ToggledSize="MudBlazor.Size.Small"
+                                         Class="ma-1 ml-4 mr-0" DisableRipple="true" Disabled="@State.IsPrerendering" />
+                }
                 <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" 
                          Dense="true" Class="hover-darken align-self-start mx-4 " title="Change sort order">
                     <ActivatorContent>
@@ -126,6 +135,10 @@
 
     private ItemCollectionDTO Collection { get; set; }
     
+    private PinnedActionManager.Action PinnedAction { get; set; }
+
+    private bool IsActionPinned { get; set; }
+
     protected override void OnConfigure(ResponsiveDialogOptions options)
     {
         options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
@@ -141,6 +154,16 @@
         try
         {
             Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>(CollectionUrl);
+            PinnedAction = new PinnedActionManager.Action()
+            {
+                Type = "Collection",
+                Url = CollectionUrl,
+                IconUrl = Collection.AcceptedItems.FirstOrDefault()?.IconUrl ?? Collection.CreatorAvatarUrl,
+                Description = Collection.Name,
+            };
+
+            IsActionPinned = await PinnedActionManager.IsPinned(PinnedAction);
+
             Dialog.StateHasChanged();
         }
         catch (Exception ex)
@@ -165,5 +188,18 @@
         }
 
         return items;
+    }
+
+    private async Task TogglePinnedAction(bool pinned)
+    {
+        IsActionPinned = !pinned;
+        if (pinned)
+        {
+            await PinnedActionManager.PinAction(PinnedAction);
+        }
+        else
+        {
+            await PinnedActionManager.UnpinAction(PinnedAction);
+        }
     }
 }
