@@ -15,8 +15,8 @@
                 {
                     <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
                         <div class="d-flex flex-column">
-                            <MudText Typo="@MudBlazor.Typo.caption" Color="@MudBlazor.Color.Secondary" Class="mr-2"><small>Inventory Value</small></MudText>
-                            <MudText Typo="@MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Default" Class="mr-2 mt-n1">
+                            <MudText Typo="@MudBlazor.Typo.caption" Color="@MudBlazor.Color.Secondary" Class="no-wrap mr-2"><small>Inventory Value</small></MudText>
+                            <MudText Typo="@MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Default" Class="no-wrap mr-2 mt-n1">
                                 <span title="Current market value of your inventory">@State.Currency?.ToPriceString(InventoryTotals.MarketValue)</span>
                             </MudText>
                         </div>
