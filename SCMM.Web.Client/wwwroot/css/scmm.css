@@ -27,6 +27,10 @@
     overflow-y: scroll;
 }
 
+.scrollbar-hidden {
+    scrollbar-width: none;
+}
+
 .full-width {
     width: 100% !important;
 }

@@ -1,35 +1,75 @@
-﻿@using SCMM.Web.Client.Shared.Dialogs.Items
+﻿@inherits PersistentComponent
+@using SCMM.Web.Client.Shared.Dialogs.Items
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Search
 @inject ILogger<SearchBar> Logger
 @inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject PinnedActionManager PinnedActionManager
 @inject AppState State
 @inject HttpClient Http
 
-<MudAutocomplete T="SearchResultDTO" Value="@Search" SearchFunc="@SearchAsync" ValueChanged="@OnResultSelected" ToStringFunc="@(x => x?.Description)" ResetValueOnEmptyText="true" 
-                 Placeholder="Search for an item, type, or collection..." DebounceInterval="500" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
-                 Variant="MudBlazor.Variant.Text" AdornmentIcon="fas fa-fw fa-search ml-2" IconSize="MudBlazor.Size.Small" Class="mud-input-no-frills ma-0 px-4" Style="max-width: 350px">
-    <ItemTemplate Context="item">
-        <div class="d-flex algin-center">
-            <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
-            <MudText Class="my-1">@item.Description</MudText>
-            <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="ml-2">@item.Type</MudChip>
-        </div>
-    </ItemTemplate>
-    <ItemSelectedTemplate Context="item">
-        <div class="d-flex algin-center">
-            <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
-            <MudText Class="my-1">@item.Description</MudText>
-            <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="ml-2">@item.Type</MudChip>
-        </div>
-    </ItemSelectedTemplate>
-</MudAutocomplete>
+<div class="px-4" style="min-width: 350px; max-width: 250px">
+    <MudAutocomplete T="SearchResultDTO" Value="@Search" SearchFunc="@SearchAsync" ValueChanged="@((x) => OnActionSelected(x.Type, x.Url, x.Description))" ToStringFunc="@(x => x?.Description)" ResetValueOnEmptyText="true"
+                     Placeholder="Search the website for..." DebounceInterval="500" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
+                     Variant="MudBlazor.Variant.Text" AdornmentIcon="fas fa-fw fa-search ml-2" IconSize="MudBlazor.Size.Small" Class="mud-input-no-frills ma-0">
+        <ItemTemplate Context="item">
+            <div class="d-flex algin-center">
+                <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
+                <MudText Class="no-wrap my-1">@item.Description</MudText>
+                <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="no-wrap ml-2">@item.Type</MudChip>
+            </div>
+        </ItemTemplate>
+        <ItemSelectedTemplate Context="item">
+            <div class="d-flex algin-center">
+                <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
+                <MudText Class="no-wrap my-1">@item.Description</MudText>
+                <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="no-wrap ml-2">@item.Type</MudChip>
+            </div>
+        </ItemSelectedTemplate>
+    </MudAutocomplete>
+</div>
+@if (PinnedActions?.Any() == true)
+{
+    <MudContainer Class="d-flex align-center justify-start scroll-x scrollbar-hidden pa-0">
+        @foreach (var pinnedActions in PinnedActions)
+        {
+            <div class="d-flex algin-center hover-darken pa-2" onclick="@(() => OnActionSelected(pinnedActions.Type, pinnedActions.Url, pinnedActions.Description))">
+                <img src="@pinnedActions.IconUrl" class="mr-2" style="width:2em; height:2em" />
+                <MudText Class="no-wrap my-1">@pinnedActions.Description</MudText>
+            </div>
+        }
+    </MudContainer>
+}
 
 @code {
 
     private SearchResultDTO Search;
+
+    private IEnumerable<PinnedActionManager.Action> PinnedActions { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        PinnedActionManager.PinnedActionsChanged += (actions) => {
+            PinnedActions = actions;
+            StateHasChanged();
+        };
+    }
+
+    protected override async Task OnLoadStateAsync()
+    {
+        PinnedActions = await RestoreFromStateOrLoad(nameof(PinnedActions), 
+            () => PinnedActionManager.ListPinnedActions()
+        );
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(PinnedActions), PinnedActions);
+        return Task.CompletedTask;
+    }
 
     private async Task<IEnumerable<SearchResultDTO>> SearchAsync(string value)
     {
@@ -51,17 +91,27 @@
         }
     }
 
-    private void OnResultSelected(SearchResultDTO result)
+    private async Task OnActionSelected(string type, string url, string description)
     {
         Search = null;
-        switch (result.Type)
+        switch (type)
         {
+            case "List":
+                Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
+                {
+                    ["ListName"] = description,
+                    ["ListUrl"] = url,
+                    ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+                    ["SortDirection"] = MudBlazor.SortDirection.Descending
+                });
+                break;
+
             case "Type":
                 Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
                 {
-                    ["ListName"] = $"All {result.Description.Pluralise()}",
-                    ["ListUrl"] = result.Url,
-                    ["DemandUrl"] = $"api/item/type/{result.Description}/demand",
+                    ["ListName"] = $"All {description.Pluralise()}",
+                    ["ListUrl"] = url,
+                    ["DemandUrl"] = $"api/item/type/{description}/demand",
                     ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
                     ["SortDirection"] = MudBlazor.SortDirection.Descending
                 });
@@ -70,17 +120,21 @@
             case "Collection":
                 Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
                 {
-                    ["CollectionName"] = $"{result.Description} Collection",
-                    ["CollectionUrl"] = result.Url
+                    ["CollectionName"] = $"{description} Collection",
+                    ["CollectionUrl"] = url
                 });
                 break;
 
             case "Item":
                 Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
                 {
-                    ["ItemName"] = result.Description,
-                    ["ItemUrl"] = result.Url
+                    ["ItemName"] = description,
+                    ["ItemUrl"] = url
                 });
+                break;
+
+            case "Store":
+                NavigationManager.NavigateTo(url);
                 break;
         }
     }

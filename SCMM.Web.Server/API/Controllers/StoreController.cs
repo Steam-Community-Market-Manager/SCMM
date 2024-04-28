@@ -420,10 +420,6 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 return BadRequest("Store GUID is invalid");
             }
-            if (command == null)
-            {
-                return BadRequest("Command is invalid");
-            }
 
             var store = await _db.SteamItemStores
                 .Include(x => x.Items)
@@ -437,13 +433,14 @@ namespace SCMM.Web.Server.API.Controllers
                 return Unauthorized("Store is not a draft and cannot be modified");
             }
 
+            var assetDescriptionId = command?.AssetDescriptionId ?? 0;
             var assetDescription = await _db.SteamAssetDescriptions
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
-                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.ClassId == command.AssetDescriptionId);
+                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.ClassId == assetDescriptionId);
             if (assetDescription == null)
             {
                 return NotFound("Asset description not found");
@@ -477,14 +474,15 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Set the store item link price
-            if (command.StorePrice > 0 && store.Start != null)
+            var storePrice = command?.StorePrice ?? 0;
+            if (storePrice > 0 && store.Start != null)
             {
                 // Use the user supplied store price info
                 // NOTE: This assumes the input price is supplied in USD
                 var currencies = await _db.SteamCurrencies.ToListAsync();
                 var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
                 storeItemLink.Currency = usdCurrency;
-                storeItemLink.Price = command.StorePrice;
+                storeItemLink.Price = storePrice;
                 foreach (var currency in currencies)
                 {
                     var exchangeRate = await _db.SteamCurrencyExchangeRates
@@ -496,7 +494,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .FirstOrDefaultAsync();
 
                     storeItemLink.Prices[currency.Name] = EconomyExtensions.SteamPriceRounded(
-                        exchangeRate.CalculateExchange(command.StorePrice)
+                        exchangeRate.CalculateExchange(storePrice)
                     );
                 }
 
@@ -549,10 +547,6 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 return BadRequest("Store GUID is invalid");
             }
-            if (command == null)
-            {
-                return BadRequest("Command is invalid");
-            }
 
             var store = await _db.SteamItemStores
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
@@ -567,7 +561,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return Unauthorized("Store is not a draft and cannot be modified");
             }
 
-            var storeItemLink = store.Items.FirstOrDefault(x => x.Item.Description.ClassId == command.AssetDescriptionId);
+            var assetDescriptionId = command?.AssetDescriptionId ?? 0;
+            var storeItemLink = store.Items.FirstOrDefault(x => x.Item.Description.ClassId == assetDescriptionId);
             if (storeItemLink == null)
             {
                 return NotFound("Asset description not found in store");

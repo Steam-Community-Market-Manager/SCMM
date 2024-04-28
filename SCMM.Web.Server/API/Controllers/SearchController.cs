@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Search;
@@ -90,6 +91,17 @@ namespace SCMM.Web.Server.API.Controllers
                 })
                 .ToListAsync();
 
+            var storeResults = await _db.SteamItemStores
+                .Where(x => x.AppId == app.Guid)
+                .Select(x => new
+                {
+                    Id = x.Id,
+                    Start = x.Start,
+                    Name = x.Name,
+                    IconUrl = x.ItemsThumbnailUrl
+                })
+                .ToListAsync();
+
             results.AddRange(
                 itemTypeResults.Select(x => new SearchResultDTO()
                 {
@@ -120,9 +132,20 @@ namespace SCMM.Web.Server.API.Controllers
                 })
             );
 
+            results.AddRange(
+                storeResults.Select(x => new SearchResultDTO()
+                {
+                    Type = "Store",
+                    IconUrl = x.IconUrl,
+                    Description = String.IsNullOrEmpty(x.Name) ? x.Start?.ToString("yyyy MMMM d") : x.Name,
+                    Url = $"/store/{x.Id}"
+                })
+            );
+
             return Ok(results
                 .Where(x => words.Any(y => x.Description.Contains(y, StringComparison.InvariantCultureIgnoreCase)))
-                .OrderBy(x => x.Description.LevenshteinDistanceFrom(query))
+                .OrderByDescending(x => words.Any(y => y.Equals(x.Type, StringComparison.InvariantCultureIgnoreCase)))
+                .ThenBy(x => x.Description.LevenshteinDistanceFrom(query))
                 .Take(10)
                 .ToArray()
             );
