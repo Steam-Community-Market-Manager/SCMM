@@ -3,6 +3,7 @@
 @inherits ResponsiveDialog
 @inject ILogger<ViewItemListDialog> Logger
 @inject ISnackbar Snackbar
+@inject PinnedActionManager PinnedActionManager
 @inject HttpClient Http
 @inject DocumentManager Document
 @inject AppState State
@@ -18,9 +19,17 @@
                         <span> (@List.Items.Length) </span>
                     }
                 </MudText>
+                <MudSpacer />
+                @if (List != null && PinnedAction != null)
+                {
+                    <MudToggleIconButton Toggled="IsActionPinned" ToggledChanged="TogglePinnedAction"
+                                         Title="Bookmark this list" ToggledTitle="Remove this bookmark"
+                                         Icon="far fa-bookmark" ToggledIcon="fas fa-bookmark"
+                                         Size="MudBlazor.Size.Small" ToggledSize="MudBlazor.Size.Small"
+                                         Class="ma-1 ml-4 mr-0" DisableRipple="true" Disabled="@State.IsPrerendering" />
+                }
                 @if (List?.Items?.Any() == true)
                 {
-                    <MudSpacer />
                     <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
                              Dense="true" Class="@($"hover-darken mx-4 {(IsMediaSize(Breakpoint.SmAndDown) ? "mr-8" : null)}")" title="Change sort order">
                         <ActivatorContent>
@@ -217,6 +226,10 @@
     private ItemGroupDemandDTO Demand { get; set; }
 
     private string Filter { get; set; }
+    
+    private PinnedActionManager.Action PinnedAction { get; set; }
+
+    private bool IsActionPinned { get; set; }
 
     protected override void OnConfigure(ResponsiveDialogOptions options)
     {
@@ -234,6 +247,16 @@
         {
             List = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(ListUrl);
             ListFilteredAndSorted = GetFilteredAndSortedItems(List.Items).ToArray();
+            PinnedAction = new PinnedActionManager.Action()
+            {
+                Type = "List",
+                Url = ListUrl,
+                IconUrl = List?.Items?.FirstOrDefault()?.IconUrl,
+                Description = ListName,
+            };
+
+            IsActionPinned = await PinnedActionManager.IsPinned(PinnedAction);
+
             Dialog.StateHasChanged();
             StateHasChanged();
 
@@ -296,4 +319,18 @@
 
         return items;
     }
+    
+    private async Task TogglePinnedAction(bool pinned)
+    {
+        IsActionPinned = !pinned;
+        if (pinned)
+        {
+            await PinnedActionManager.PinAction(PinnedAction);
+        }
+        else
+        {
+            await PinnedActionManager.UnpinAction(PinnedAction);
+        }
+    }
+
 }

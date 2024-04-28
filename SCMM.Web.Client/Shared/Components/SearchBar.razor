@@ -96,6 +96,16 @@
         Search = null;
         switch (type)
         {
+            case "List":
+                Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
+                {
+                    ["ListName"] = description,
+                    ["ListUrl"] = url,
+                    ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+                    ["SortDirection"] = MudBlazor.SortDirection.Descending
+                });
+                break;
+
             case "Type":
                 Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
                 {
