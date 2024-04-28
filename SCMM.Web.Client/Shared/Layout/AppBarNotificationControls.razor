@@ -1,9 +1,10 @@
 ﻿@using SCMM.Web.Data.Models.UI.System
+@using Blazored.LocalStorage
 @using Markdig
 @inherits PersistentComponent
 @inject ILogger<AppBarAppControls> Logger
 @inject ISnackbar Snackbar
-@inject ICookieManager CookieManager
+@inject ILocalStorageService LocalStorage
 @inject ISystemService SystemService
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
@@ -34,7 +35,7 @@
                     {
                         <MudStack>
                             <MudText Typo="Typo.h6" Color="Color.Default">
-                                <span class="no-wrap">@((DateTimeOffset.Now - message.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</span>
+                                <span class="no-wrap"><i class="fa fa-fw fa-rss mr-2"></i> @((DateTimeOffset.Now - message.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</span>
                             </MudText>
                             <MudText Typo="Typo.body1" Color="Color.Secondary">
                                 <span class="notification-content">
@@ -81,7 +82,8 @@
     {
         NotificationsLastViewedOn = await RestoreFromStateOrLoad(nameof(NotificationsLastViewedOn), async () =>
         {
-            return DateTimeOffset.FromUnixTimeMilliseconds(await CookieManager.GetAsync<long>("notifications-last-viewed", DateTimeOffset.MinValue.ToUnixTimeMilliseconds()));
+            var lastViewed = await LocalStorage.GetItemAsync<long>("NotificationsLastViewed");
+            return DateTimeOffset.FromUnixTimeMilliseconds(lastViewed > 0 ? lastViewed : DateTimeOffset.MinValue.ToUnixTimeMilliseconds());
         });
         Notifications = await RestoreFromStateOrLoad(nameof(Notifications), async () =>
         {
@@ -104,13 +106,13 @@
         return Task.CompletedTask;
     }
 
-    private void OnToggleMenu(bool toggle)
+    private async Task OnToggleMenu(bool toggle)
     {
         IsOpen = toggle;
         if (IsOpen)
         {
             NotificationsLastViewedOn = DateTimeOffset.Now;
-            CookieManager.Set("notifications-last-viewed", NotificationsLastViewedOn.ToUnixTimeMilliseconds(), 365);
+            await LocalStorage.SetItemAsync("NotificationsLastViewed", NotificationsLastViewedOn.ToUnixTimeMilliseconds());
         }
     }
 
