@@ -144,7 +144,8 @@ namespace SCMM.Web.Server.API.Controllers
 
             return Ok(results
                 .Where(x => words.Any(y => x.Description.Contains(y, StringComparison.InvariantCultureIgnoreCase)))
-                .OrderBy(x => x.Description.LevenshteinDistanceFrom(query))
+                .OrderByDescending(x => words.Any(y => y.Equals(x.Type, StringComparison.InvariantCultureIgnoreCase)))
+                .ThenBy(x => x.Description.LevenshteinDistanceFrom(query))
                 .Take(10)
                 .ToArray()
             );
