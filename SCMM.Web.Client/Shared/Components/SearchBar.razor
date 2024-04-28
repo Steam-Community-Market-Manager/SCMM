@@ -12,7 +12,7 @@
 
 <div class="px-4" style="min-width: 350px; max-width: 250px">
     <MudAutocomplete T="SearchResultDTO" Value="@Search" SearchFunc="@SearchAsync" ValueChanged="@((x) => OnActionSelected(x.Type, x.Url, x.Description))" ToStringFunc="@(x => x?.Description)" ResetValueOnEmptyText="true"
-                     Placeholder="Search for an item, type, or collection..." DebounceInterval="500" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
+                     Placeholder="Search the website for..." DebounceInterval="500" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
                      Variant="MudBlazor.Variant.Text" AdornmentIcon="fas fa-fw fa-search ml-2" IconSize="MudBlazor.Size.Small" Class="mud-input-no-frills ma-0">
         <ItemTemplate Context="item">
             <div class="d-flex algin-center">
@@ -121,6 +121,10 @@
                     ["ItemName"] = description,
                     ["ItemUrl"] = url
                 });
+                break;
+
+            case "Store":
+                NavigationManager.NavigateTo(url);
                 break;
         }
     }
