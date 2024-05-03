@@ -7,8 +7,8 @@ namespace SCMM.Market.ManncoStore.Client
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonPropertyName("price")]
-        public decimal Price { get; set; }
+        [JsonPropertyName("pp")]
+        public long Price { get; set; }
 
         [JsonPropertyName("nbb")]
         public int Count { get; set; }
