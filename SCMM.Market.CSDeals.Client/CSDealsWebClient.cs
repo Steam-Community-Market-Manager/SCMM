@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace SCMM.Market.CSDeals.Client
 {
@@ -25,8 +27,8 @@ namespace SCMM.Market.CSDeals.Client
                     return default;
                 }
 
-                var responseJson = JsonSerializer.Deserialize<CSDealsResponse<CSDealsPricingGetLowestPricesResult>>(textJson);
-                return responseJson?.Response?.Items;
+                var responseJson = JsonSerializer.Deserialize<CSDealsResponse>(textJson);
+                return responseJson?.Response?.Deserialize<CSDealsPricingGetLowestPricesResult>()?.Items;
             }
         }
 
@@ -49,8 +51,8 @@ namespace SCMM.Market.CSDeals.Client
                     return default;
                 }
 
-                var responseJson = JsonSerializer.Deserialize<CSDealsResponse<CSDealsMarketplaceSearchResults<CSDealsItemListings>>>(textJson);
-                return responseJson?.Response;
+                var responseJson = JsonSerializer.Deserialize<CSDealsResponse>(textJson);
+                return responseJson?.Response?.Deserialize<CSDealsMarketplaceSearchResults<CSDealsItemListings>>();
             }
         }
 
@@ -72,8 +74,13 @@ namespace SCMM.Market.CSDeals.Client
                     return default;
                 }
 
-                var responseJson = JsonSerializer.Deserialize<CSDealsResponse<CSDealsBotsInventoryResult>>(textJson);
-                return responseJson?.Response;
+                var responseJson = JsonSerializer.Deserialize<CSDealsResponse>(textJson);
+                return (responseJson?.Response is JsonObject)
+                    ? responseJson?.Response?.Deserialize<CSDealsBotsInventoryResult>()
+                    : new CSDealsBotsInventoryResult()
+                    {
+                        Items = new CSDealsItemListings()
+                    };
             }
         }
     }

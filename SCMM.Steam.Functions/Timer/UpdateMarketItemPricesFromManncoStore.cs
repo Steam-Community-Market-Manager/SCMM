@@ -103,7 +103,7 @@ public class UpdateMarketItemPricesFromManncoStore
                     var price = manncoStoreItem.Price;
                     item.UpdateBuyPrices(ManncoStore, new PriceWithSupply
                     {
-                        Price = available > 0 && price > 0 ? item.Currency.CalculateExchange(price / usdCurrency.ExchangeRateMultiplier) : 0,
+                        Price = available > 0 && price > 0 ? item.Currency.CalculateExchange(price, usdCurrency) : 0,
                         Supply = available
                     });
                 }
