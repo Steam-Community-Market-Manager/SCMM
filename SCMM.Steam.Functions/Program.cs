@@ -25,6 +25,7 @@ using SCMM.Market.LootFarm.Client;
 using SCMM.Market.ManncoStore.Client;
 using SCMM.Market.RapidSkins.Client;
 using SCMM.Market.RustTM.Client;
+using SCMM.Market.Rustyloot.Client;
 using SCMM.Market.ShadowPay.Client;
 using SCMM.Market.ShadowPay.Client.Extensions;
 using SCMM.Market.SkinBaron.Client;
@@ -213,6 +214,7 @@ public static class HostExtensions
             services.AddSingleton<ManncoStoreWebClient>();
             services.AddSingleton<RapidSkinsWebClient>();
             services.AddSingleton<RustTMWebClient>();
+            services.AddSingleton<RustylootWebClient>();
             services.AddSingleton<ShadowPayWebClient>();
             services.AddSingleton((services) =>
             {

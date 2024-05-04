@@ -37,6 +37,7 @@
 		<ProjectReference Include="..\SCMM.Market.ManncoStore.Client\SCMM.Market.ManncoStore.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.RapidSkins.Client\SCMM.Market.RapidSkins.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.RustTM.Client\SCMM.Market.RustTM.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.Rustyloot.Client\SCMM.Market.Rustyloot.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.ShadowPay.Client\SCMM.Market.ShadowPay.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SkinBaron.Client\SCMM.Market.SkinBaron.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.Skinport.Client\SCMM.Market.Skinport.Client.csproj" />

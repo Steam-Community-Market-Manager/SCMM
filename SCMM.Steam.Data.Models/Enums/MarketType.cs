@@ -156,9 +156,14 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Skin Serpent")]
         [Market(Constants.RustAppId, Color = "#29d14a")]
-        [BuyFrom(Url = "https://skinserpent.com/?sortBy=P_DESC&search={3}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)] // Unconfirmed
+        [BuyFrom(Url = "https://skinserpent.com/?sortBy=P_DESC&search={3}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
         SkinSerpent = 35,
-         
+
+        [Display(Name = "Rustyloot.gg")]
+        [Market(Constants.RustAppId, Color = "#ffb135", AffiliateUrl = "https://rustyloot.gg/r/SCMM")]
+        [BuyFrom(Url = "https://rustyloot.gg/r/SCMM?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
+        Rustyloot = 36,
+
         /*
          
          MARKETS TO BE INVESTIGATED
