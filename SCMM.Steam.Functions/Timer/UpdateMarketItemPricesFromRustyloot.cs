@@ -88,10 +88,12 @@ public class UpdateMarketItemPricesFromRustyloot
                 var item = dbItems.FirstOrDefault(x => x.Name == rustylootItemGroup.Key)?.Item;
                 if (item != null)
                 {
+                    var minPrice = rustylootItemGroup.Min(x => x.Price);
+                    var normalisedPrice = minPrice > 0 ? (long)(Math.Round((decimal)minPrice / 1000, 2) * 100) : 0;
                     var supply = rustylootItemGroup.Sum(x => x.Amount);
                     item.UpdateBuyPrices(Rustyloot, new PriceWithSupply
                     {
-                        Price = supply > 0 ? item.Currency.CalculateExchange(rustylootItemGroup.Min(x => x.Price), usdCurrency) : 0,
+                        Price = supply > 0 ? item.Currency.CalculateExchange(normalisedPrice, usdCurrency) : 0,
                         Supply = supply
                     });
                 }
