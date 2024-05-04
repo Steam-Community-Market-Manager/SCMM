@@ -29,6 +29,7 @@ using SCMM.Market.ShadowPay.Client;
 using SCMM.Market.ShadowPay.Client.Extensions;
 using SCMM.Market.SkinBaron.Client;
 using SCMM.Market.Skinport.Client;
+using SCMM.Market.SkinSerpent.Client;
 using SCMM.Market.SkinsMonkey.Client;
 using SCMM.Market.SkinsMonkey.Client.Extensions;
 using SCMM.Market.SkinSwap.Client;
@@ -225,6 +226,7 @@ public static class HostExtensions
                 return configuration.GetSkinSwapConfiguration();
             });
             services.AddSingleton<SkinSwapWebClient>();
+            services.AddSingleton<SkinSerpentWebClient>();
             services.AddSingleton<SkinportWebClient>();
             services.AddSingleton<SkinsMonkeyWebClient>();
             services.AddSingleton((services) =>

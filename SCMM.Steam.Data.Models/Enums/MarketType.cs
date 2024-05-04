@@ -154,6 +154,11 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)] // Unconfirmed
         RapidSkins = 34,
 
+        [Display(Name = "Skin Serpent")]
+        [Market(Constants.RustAppId, Color = "#29d14a")]
+        [BuyFrom(Url = "https://skinserpent.com/?sortBy=P_DESC&search={3}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)] // Unconfirmed
+        SkinSerpent = 35,
+         
         /*
          
          MARKETS TO BE INVESTIGATED
