@@ -11,10 +11,10 @@ public class RustylootSteamMarketInventoryItem
     public string AssetId { get; set; }
 
     [JsonPropertyName("flagged")]
-    public int Flagged { get; set; }
+    public int? Flagged { get; set; }
 
     [JsonPropertyName("locked")]
-    public int Locked { get; set; }
+    public int? Locked { get; set; }
 
     [JsonPropertyName("name")]
     public string Name { get; set; }

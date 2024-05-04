@@ -82,7 +82,7 @@ public class UpdateMarketItemPricesFromRustyloot
                 })
                 .ToListAsync();
 
-            var rustylootItemGroups = rustylootItems.Where(x => x.Flagged == 0 && x.Locked == 0).GroupBy(x => x.Name);
+            var rustylootItemGroups = rustylootItems.Where(x => !(x.Flagged > 0) && !(x.Locked > 0)).GroupBy(x => x.Name);
             foreach (var rustylootItemGroup in rustylootItemGroups)
             {
                 var item = dbItems.FirstOrDefault(x => x.Name == rustylootItemGroup.Key)?.Item;
