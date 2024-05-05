@@ -7,33 +7,30 @@ namespace SCMM.Web.Client.Shared.Components;
 public abstract class ResponsiveComponent : ComponentBase, IAsyncDisposable
 {
     [Inject]
-    protected IBreakpointService BreakpointListener { get; set; }
+    protected IBrowserViewportService BrowserViewportService { get; set; }
 
     protected Breakpoint Breakpoint { get; set; }
 
-    private Guid _breakpointSubscriptionId;
+    private Guid _breakpointSubscriptionId = Guid.NewGuid();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var subscriptionResult = await BreakpointListener.SubscribeAsync(
-                (breakpoint) =>
+            await BrowserViewportService.SubscribeAsync(
+                _breakpointSubscriptionId,
+                (e) =>
                 {
-                    Breakpoint = breakpoint;
-                    OnBreakpointChanged(breakpoint);
+                    Breakpoint = e.Breakpoint;
+                    OnBreakpointChanged(e.Breakpoint);
                 },
                 new ResizeOptions
                 {
                     ReportRate = 250,
                     NotifyOnBreakpointOnly = true,
-                }
+                },
+                fireImmediately: true
             );
-
-            _breakpointSubscriptionId = subscriptionResult.SubscriptionId;
-
-            Breakpoint = subscriptionResult.Breakpoint;
-            OnBreakpointChanged(subscriptionResult.Breakpoint);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -43,7 +40,7 @@ public abstract class ResponsiveComponent : ComponentBase, IAsyncDisposable
     {
         if (_breakpointSubscriptionId != Guid.Empty)
         {
-            await BreakpointListener.UnsubscribeAsync(_breakpointSubscriptionId);
+            await BrowserViewportService.UnsubscribeAsync(_breakpointSubscriptionId);
             _breakpointSubscriptionId = Guid.Empty;
         }
     }
@@ -55,6 +52,27 @@ public abstract class ResponsiveComponent : ComponentBase, IAsyncDisposable
 
     protected bool IsMediaSize(Breakpoint breakpoint)
     {
-        return BreakpointListener.IsMediaSize(breakpoint, Breakpoint);
+        return breakpoint switch
+        {
+            Breakpoint.None => false,
+            Breakpoint.Always => true,
+            Breakpoint.Xs => breakpoint == Breakpoint.Xs,
+            Breakpoint.Sm => breakpoint == Breakpoint.Sm,
+            Breakpoint.Md => breakpoint == Breakpoint.Md,
+            Breakpoint.Lg => breakpoint == Breakpoint.Lg,
+            Breakpoint.Xl => breakpoint == Breakpoint.Xl,
+            Breakpoint.Xxl => breakpoint == Breakpoint.Xxl,
+            // * and down
+            Breakpoint.SmAndDown => breakpoint <= Breakpoint.Sm,
+            Breakpoint.MdAndDown => breakpoint <= Breakpoint.Md,
+            Breakpoint.LgAndDown => breakpoint <= Breakpoint.Lg,
+            Breakpoint.XlAndDown => breakpoint <= Breakpoint.Xl,
+            // * and up
+            Breakpoint.SmAndUp => breakpoint >= Breakpoint.Sm,
+            Breakpoint.MdAndUp => breakpoint >= Breakpoint.Md,
+            Breakpoint.LgAndUp => breakpoint >= Breakpoint.Lg,
+            Breakpoint.XlAndUp => breakpoint >= Breakpoint.Xl,
+            _ => false
+        };
     }
 }

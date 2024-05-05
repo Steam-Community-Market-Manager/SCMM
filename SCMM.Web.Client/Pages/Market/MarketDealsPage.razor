@@ -78,7 +78,7 @@
                                                     <MudText Typo="Typo.body2">@item.Name</MudText>
                                                     @if (item.IsBeingManipulated)
                                                     {
-                                                        <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-exclamation-triangle" Text="Price Manipulation" title="@($"It is suspected that this items price is being manipulated on the market because {item.ManipulationReason.FirstCharToLower()}")" Class="ml-2" />
+                                                        <MudChip T="string" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-exclamation-triangle" Text="Price Manipulation" title="@($"It is suspected that this items price is being manipulated on the market because {item.ManipulationReason.FirstCharToLower()}")" Class="ml-2" />
                                                     }
                                                 </div>
                                             </td>
@@ -110,7 +110,7 @@
                                                             <span>Save @State.Currency.ToPriceString(item.DiscountAmount)</span>
                                                         </TooltipContent>
                                                         <ChildContent>
-                                                            <MudChip Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : ((item.DiscountAmount > 0) ? Color.Success : Color.Secondary))" Size="@Size.Small" Text="@($"-{item.DiscountAmount.ToPercentageString(item.ReferemcePrice) ?? "0%"}")" />
+                                                            <MudChip T="string" Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : ((item.DiscountAmount > 0) ? Color.Success : Color.Secondary))" Size="@Size.Small" Text="@($"-{item.DiscountAmount.ToPercentageString(item.ReferemcePrice) ?? "0%"}")" />
                                                         </ChildContent>
                                                     </MudTooltip>
                                                     @if (GetTimeSinceLastMarketPriceUpdate(item.BuyFrom) != null)
@@ -225,7 +225,7 @@
                                                         <MudText Typo="Typo.body2">@item.Name</MudText>
                                                         @if (item.IsBeingManipulated)
                                                         {
-                                                            <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-exclamation-triangle" Text="Price Manipulation" title="@($"It is suspected that this items price is being manipulated on the market because {item.ManipulationReason.FirstCharToLower()}")" Class="ml-2" />
+                                                            <MudChip T="string" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-exclamation-triangle" Text="Price Manipulation" title="@($"It is suspected that this items price is being manipulated on the market because {item.ManipulationReason.FirstCharToLower()}")" Class="ml-2" />
                                                         }
                                                     </div>
                                                 </td>
@@ -273,7 +273,7 @@
                                                             }
                                                             <span class="mud-secondary-text"> for a</span> <span class="@(item.IsBeingManipulated ? "mud-warning-text" : "mud-success-text")">@State.Currency.ToPriceString(item.SellProfit)</span>
                                                         </span>
-                                                        <MudChip Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="@Size.Small" Text="@($"{item.SellProfit.ToPercentageString(item.BuyTotal) ?? "0%"}")" />
+                                                        <MudChip T="string" Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : Color.Success)" Size="@Size.Small" Text="@($"{item.SellProfit.ToPercentageString(item.BuyTotal) ?? "0%"}")" />
                                                         <span><span class="mud-secondary-text">profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span></span>
                                                     </MudText>
                                                 </td>

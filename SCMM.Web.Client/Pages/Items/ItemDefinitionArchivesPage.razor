@@ -35,7 +35,7 @@
                 <MudExpansionPanels MultiExpansion="true" Dense="true" DisableGutters="true">
                     @foreach (var itemDefinitionArchive in ItemDefinitionArchivesList)
                     {
-                        <MudExpansionPanel IsExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))" Disabled="itemDefinitionArchive.PreviousDigest == null">
+                        <MudExpansionPanel ExpandedChanged="@((x) => OnExpandedChanged(itemDefinitionArchive, x))" Disabled="itemDefinitionArchive.PreviousDigest == null">
                             <TitleContent>
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
                                     <MudStack Spacing="1" AlignItems="AlignItems.Start">
@@ -47,7 +47,7 @@
                                             <MudButton OnClick="@(() => DownloadArchive(itemDefinitionArchive))" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
                                                 <span><i class="fa fa-fw fa-download mr-1"></i> Download</span>
                                             </MudButton>
-                                            <MudChip Color="Color.Secondary" Size="Size.Small">@(itemDefinitionArchive.Info.ItemCount.ToQuantityString()) item(s)</MudChip>
+                                            <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@(itemDefinitionArchive.Info.ItemCount.ToQuantityString()) item(s)</MudChip>
                                             <MudText Color="Color.Secondary" Typo="Typo.body2">
                                                 <span>This change </span>
                                                 @if (itemDefinitionArchive.DiffItemCount != 0)

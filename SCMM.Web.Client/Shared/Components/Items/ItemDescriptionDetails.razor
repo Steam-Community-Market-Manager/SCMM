@@ -331,18 +331,18 @@
                         @if (Item.IsBeingManipulated == true)
                         {
                             <MudTooltip Text="@($"It is suspected that this items price is being manipulated on the market because {Item.ManipulationReason.FirstCharToLower()}")">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Price Manipulation" Icon="fas fa-fw fa-exclamation-triangle mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Class="mud-chip-outlined" />
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Price Manipulation" Icon="fas fa-fw fa-exclamation-triangle mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.IsBanned == true)
                         {
                             <MudTooltip Text="@($"This item has been trade and market banned due to {Item.BanReason.FirstCharToLower()}")">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Error" Class="mud-chip-outlined" />
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Error" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         <MudTooltip>
                             <ChildContent>
-                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsMarketable ? "Marketable" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "Marketable Next Rotation" : "Not Marketable"))" Class="mud-chip-outlined"
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="@(Item.IsMarketable ? "Marketable" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "Marketable Next Rotation" : "Not Marketable"))" Class="mud-chip-outlined"
                                          Icon="@(Item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-balance-scale-left mr-3" : "fas fa-fw fa-times"))"
                                          IconColor="@(Item.IsMarketable ? MudBlazor.Color.Default : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? MudBlazor.Color.Warning : MudBlazor.Color.Error))" 
                                          Color="@(Item.IsMarketable ? MudBlazor.Color.Default : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? MudBlazor.Color.Warning : MudBlazor.Color.Error))"
@@ -376,7 +376,7 @@
                         </MudTooltip>
                         <MudTooltip>
                             <ChildContent>
-                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsTradable ? "Tradable" : "Not Tradable")" Class="mud-chip-outlined"
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="@(Item.IsTradable ? "Tradable" : "Not Tradable")" Class="mud-chip-outlined"
                                          Icon="@(Item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")"
                                          IconColor="@(Item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Error)"
                                          Color="@(Item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Error)"
@@ -403,14 +403,14 @@
                         @if (Item.IsPermanent == true)
                         {
                             <MudTooltip Text="@($"This item will be permanently bound to your Steam account after purchase and it cannot be traded or sold")">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Permanent" Icon="fas fa-fw fa-thumbtack mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Permanent" Icon="fas fa-fw fa-thumbtack mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.HasGlow == true)
                         {
                             <MudTooltip>
                                 <ChildContent>
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@($"Glow {(Item.GlowRatio > 0.01m ? "(" + Math.Round((Item.GlowRatio ?? 0) * 100, 0) + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-moon mr-2" 
+                                    <MudChip T="string" Size="MudBlazor.Size.Small" Text="@($"Glow {(Item.GlowRatio > 0.01m ? "(" + Math.Round((Item.GlowRatio ?? 0) * 100, 0) + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-moon mr-2" 
                                              Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                                 </ChildContent>
                                 <TooltipContent>
@@ -428,7 +428,7 @@
                         @if (Item.HasGlowSights == true)
                         {
                             <MudTooltip Text="The iron sights of this weapon glow in the dark, making it much easier to aim at night">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-2" 
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-2" 
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
@@ -436,7 +436,7 @@
                         {
                             <MudTooltip>
                                 <ChildContent>
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@($"Cutout {(Item.CutoutRatio > 0.01m ? "(" + Math.Round((Item.CutoutRatio ?? 0) * 100, 0) + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-cut mr-2" 
+                                    <MudChip T="string" Size="MudBlazor.Size.Small" Text="@($"Cutout {(Item.CutoutRatio > 0.01m ? "(" + Math.Round((Item.CutoutRatio ?? 0) * 100, 0) + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-cut mr-2" 
                                              Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                                 </ChildContent>
                                 <TooltipContent>
@@ -454,56 +454,56 @@
                         @if (Item.IsCraftingComponent == true)
                         {
                             <MudTooltip Text="This item can be used to craft other skin related items from the in-game 'workshop' menu">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Resource" Icon="fas fa-fw fa-puzzle-piece mr-2" 
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Resource" Icon="fas fa-fw fa-puzzle-piece mr-2" 
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.IsCraftable == true)
                         {
                             <MudTooltip Text="This item can be crafted from resources using the in-game 'workshop' menu">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Skin Container" Icon="fas fa-fw fa-box mr-2" 
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Skin Container" Icon="fas fa-fw fa-box mr-2" 
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.IsPublisherDrop == true)
                         {
                             <MudTooltip Text="This item is a limited-time publisher drop, generally done as part of special event (e.g. charity or promotion)">
-                                <MudChip Size="MudBlazor.Size.Small" Text="@($"{State.App?.PublisherName ?? "Publisher"} Drop")" Icon="fas fa-fw fa-crown mr-2"
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="@($"{State.App?.PublisherName ?? "Publisher"} Drop")" Icon="fas fa-fw fa-crown mr-2"
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.IsTwitchDrop == true)
                         {
                             <MudTooltip Text="This item is a limited-time drop, obtaining from watching streamers on Twitch.tv">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Twitch Drop" Icon="fab fa-fw fa-twitch mr-2" 
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Twitch Drop" Icon="fab fa-fw fa-twitch mr-2" 
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.IsLootCrateDrop == true)
                         {
                             <MudTooltip Text="There is a chance to obtain this item when opening a loot crate. The odds of obtaining this item from a loot crate are not known.">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Loot Crate Drop" Icon="fas fa-fw fa-parachute-box mr-2"
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Loot Crate Drop" Icon="fas fa-fw fa-parachute-box mr-2"
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.HasReturnedToStoreBefore == true)
                         {
                             <MudTooltip Text="This item has returned from a previous store release">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Returning Item" Icon="fas fa-fw fa-redo mr-2" 
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Returning Item" Icon="fas fa-fw fa-redo mr-2" 
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         @if (Item.IsCommodity == true)
                         {
                             <MudTooltip Text="This item is a commodity, where all the individual items are effectively identical.">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Commodity" Icon="fas fa-fw fa-coins mr-2" 
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Commodity" Icon="fas fa-fw fa-coins mr-2" 
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         else
                         {
                             <MudTooltip Text="The appearance of items in the individual listings may vary slightly from the one above. For example, items could have custom names, descriptions, or colors.">
-                                <MudChip Size="MudBlazor.Size.Small" Text="Unique" Icon="fas fa-fw fa-fingerprint mr-2"
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="Unique" Icon="fas fa-fw fa-fingerprint mr-2"
                                          Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
@@ -515,19 +515,19 @@
                             @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiColour)))
                             {
                                 <MudTooltip Text="@($"This item contains the colour '{@tag.Value.ToLower()}''")">
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Icon="fas fa-fw fa-tint" Variant="MudBlazor.Variant.Text" Class="mud-chip-outlined" 
+                                    <MudChip T="string" Size="MudBlazor.Size.Small" Text="@tag.Value" Icon="fas fa-fw fa-tint" Variant="MudBlazor.Variant.Text" Class="mud-chip-outlined" 
                                              Style="@($"background-color: #{Regex.Match(tag.Key, SCMM.Steam.Data.Models.Constants.AssetTagAiColourHexRegex, RegexOptions.IgnoreCase).Groups.OfType<Capture>().LastOrDefault()?.Value}; color: white")" />
                                 </MudTooltip>
                             }
                             @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
                             {
                                 <MudTooltip Text="@($"This item reminds me of '{@tag.Value.ToLower()}'")">
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Icon="fas fa-fw fa-robot" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                    <MudChip T="string" Size="MudBlazor.Size.Small" Text="@tag.Value" Icon="fas fa-fw fa-robot" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                                 </MudTooltip>
                             }
                             @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
                             {
-                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value?.ToLower()" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined"
+                                <MudChip T="string" Size="MudBlazor.Size.Small" Text="@tag.Value?.ToLower()" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined"
                                          title="@($"{tag.Key.ToLower()} = {tag.Value?.ToLower()}")" />
                             }
 				        </div>
@@ -686,7 +686,7 @@
                                             {
                                                 @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) == Item.BuyPrices.Where(x => x.IsAvailable).Min(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
                                                 {
-                                                    <MudChip Size="MudBlazor.Size.Small" Text="Best Deal" Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="ma-0 ml-2" />
+                                                    <MudChip T="string" Size="MudBlazor.Size.Small" Text="Best Deal" Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="ma-0 ml-2" />
                                                 }
                                             }
 									    </MudText>
@@ -1002,7 +1002,7 @@
                                                             @foreach (var item in itemGroup)
                                                             {
                                                                 <MudTooltip Text="@($"{item.Name} was accepted")">
-                                                                    <MudChip Size="MudBlazor.Size.Small" Class="pa-1" Style="height:auto">
+                                                                    <MudChip T="string" Size="MudBlazor.Size.Small" Class="pa-1" Style="height:auto">
                                                                         <div class="hover-zoom hover-zoom-extra">
                                                                             <img src="@item.IconUrl" onerror="@($"this.onerror=null; this.src='/images/app/{State.AppId}/items/{item.ItemType.RustItemTypeToShortName()}.png'")" alt="@item.Name" style="width:3em; height:3em" />
                                                                         </div>

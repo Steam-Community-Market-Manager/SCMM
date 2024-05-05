@@ -112,17 +112,17 @@
                             }
                         </MudHidden>
                         <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" Disabled="State.IsPrerendering">
-                            <MudMenuItem OnTouch="@ViewProfileOnSteam" OnClick="@ViewProfileOnSteam">
+                            <MudMenuItem OnClick="@ViewProfileOnSteam">
                                 <i class="fab fa-fw fa-steam mr-1"></i>
                                 <span>View on Steam</span>
                             </MudMenuItem>
-                            <MudMenuItem OnTouch="@SynchroniseProfileWithSteam" OnClick="@SynchroniseProfileWithSteam">
+                            <MudMenuItem OnClick="@SynchroniseProfileWithSteam">
                                 <i class="fa fa-fw fa-sync mr-1"></i>
                                 <span>Synchronise with Steam</span>
                             </MudMenuItem>
                             @if (State.Is(Profile?.SteamId))
                             {
-                                <MudMenuItem OnTouch="@ShowInventoryStackCombinerDialog" OnClick="@ShowInventoryStackCombinerDialog">
+                                <MudMenuItem OnClick="@ShowInventoryStackCombinerDialog">
                                     <i class="fa fa-fw fa-object-group mr-1"></i>
                                     <span>Stack all inventory items</span>
                                 </MudMenuItem>

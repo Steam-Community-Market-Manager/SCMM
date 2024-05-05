@@ -8,7 +8,7 @@ public class ResponsiveDialogOptions : DialogOptions
     {
         Position = options.Position;
         MaxWidth = options.MaxWidth;
-        DisableBackdropClick = options.DisableBackdropClick;
+        BackdropClick = options.BackdropClick;
         NoHeader = options.NoHeader;
         CloseButton = options.CloseButton;
         FullScreen = options.FullScreen;

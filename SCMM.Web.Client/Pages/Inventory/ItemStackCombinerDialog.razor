@@ -52,7 +52,7 @@
                         @if (!stack.TradableAndMarketable)
                         {
                             <MudTooltip Text="This item is currently untradeable and unmarketable. If you add this item to the stack, the stack will also become trade locked">
-                                <MudChip Variant="MudBlazor.Variant.Text" Color="@(SelectedStacks.Contains(stack) ? MudBlazor.Color.Warning : MudBlazor.Color.Default)" 
+                                <MudChip T="string" Variant="MudBlazor.Variant.Text" Color="@(SelectedStacks.Contains(stack) ? MudBlazor.Color.Warning : MudBlazor.Color.Default)" 
                                             Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-ban" Text="Trade Locked" Class="ml-2" Disabled="@(!SelectedStacks.Contains(stack))" />
                             </MudTooltip>
                         }
@@ -87,7 +87,7 @@
                         @if (SelectedStacks.Any(x => !x.TradableAndMarketable))
                         {
                             <MudTooltip Text="At least one selected item is untradeable and unmarketable in your inventory. The trade lock will be caried over to this combined item stack">
-                                <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-ban" Text="Trade Locked" Class="ml-2" />
+                                <MudChip T="string" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-ban" Text="Trade Locked" Class="ml-2" />
                             </MudTooltip>
                         }
                     </MudPaper>

@@ -18,14 +18,14 @@
             <div class="d-flex algin-center">
                 <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
                 <MudText Class="no-wrap my-1">@item.Description</MudText>
-                <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="no-wrap ml-2">@item.Type</MudChip>
+                <MudChip T="string" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="no-wrap ml-2">@item.Type</MudChip>
             </div>
         </ItemTemplate>
         <ItemSelectedTemplate Context="item">
             <div class="d-flex algin-center">
                 <img src="@item.IconUrl" class="mr-2" style="width:2em; height:2em" />
                 <MudText Class="no-wrap my-1">@item.Description</MudText>
-                <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="no-wrap ml-2">@item.Type</MudChip>
+                <MudChip T="string" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Secondary" Size="MudBlazor.Size.Small" Class="no-wrap ml-2">@item.Type</MudChip>
             </div>
         </ItemSelectedTemplate>
     </MudAutocomplete>
@@ -71,7 +71,7 @@
         return Task.CompletedTask;
     }
 
-    private async Task<IEnumerable<SearchResultDTO>> SearchAsync(string value)
+    private async Task<IEnumerable<SearchResultDTO>> SearchAsync(string value, CancellationToken cancellationToken)
     {
         try
         {
@@ -91,7 +91,7 @@
         }
     }
 
-    private async Task OnActionSelected(string type, string url, string description)
+    private void OnActionSelected(string type, string url, string description)
     {
         Search = null;
         switch (type)

@@ -13,7 +13,7 @@
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
             <span>If you found it useful and would like to do something to say thanks, any of the below really helps out.</span>
         </MudText>
-        <MudList Clickable="true" DisablePadding="true" DisableGutters="true" Class="my-2 mx-n6">
+        <MudList T="string" Clickable="true" DisablePadding="true" DisableGutters="true" Class="my-2 mx-n6">
             <MudListItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync("https://trustpilot.com/review/scmm.app"))">
                 <div class="d-flex flex-column align-start justify-start mx-6">
                     <img src="/images/trust-pilot-white.svg" alt="Write a review on Trustpilot" style="height:2em" />

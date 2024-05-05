@@ -1,7 +1,7 @@
 ﻿@using MudBlazor.Services
 @inherits LayoutComponentBase
 @implements IAsyncDisposable
-@inject IBreakpointService BreakpointService
+@inject IBrowserViewportService BrowserViewportService
 @inject NavigationManager NavigationManager
 @inject AppState State
 
@@ -54,28 +54,25 @@
 
     private DrawerVariant DrawerVariant { get; set; } = DrawerVariant.Responsive;
 
-    private Guid _breakpointSubscriptionId;
+    private Guid _breakpointSubscriptionId = Guid.NewGuid();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var subscriptionResult = await BreakpointService.SubscribeAsync(
-                (breakpoint) =>
+            await BrowserViewportService.SubscribeAsync(
+                _breakpointSubscriptionId,
+                (e) =>
                 {
-                    OnBreakpointChanged(breakpoint);
-                }, 
+                    OnBreakpointChanged(e.Breakpoint);
+                },
                 new ResizeOptions
                 {
                     ReportRate = 250,
                     NotifyOnBreakpointOnly = true,
-                }
+                },
+                fireImmediately: true
             );
-
-            _breakpointSubscriptionId = subscriptionResult.SubscriptionId;
-
-            OnBreakpointChanged(subscriptionResult.Breakpoint);
-            StateHasChanged();
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -85,14 +82,14 @@
     {
         if (_breakpointSubscriptionId != Guid.Empty)
         {
-            await BreakpointService.UnsubscribeAsync(_breakpointSubscriptionId);
+            await BrowserViewportService.UnsubscribeAsync(_breakpointSubscriptionId);
             _breakpointSubscriptionId = Guid.Empty;
         }
     }
 
     protected virtual void OnBreakpointChanged(Breakpoint breakpoint)
     {
-        if (BreakpointService.IsMediaSize(Breakpoint.MdAndUp, breakpoint))
+        if (breakpoint >= Breakpoint.Md)
         {
             DrawerVariant = DrawerVariant.Mini;
             DrawerIsOpen = false;

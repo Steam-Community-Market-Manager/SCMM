@@ -55,7 +55,7 @@
                             {
                                 <MudGrid Spacing="2">
                                     <MudItem xs="12" md="4" lg="3" xl="2" xxl="2" Class="d-flex align-start justify-center">
-                                        <MudList Clickable="false" Dense="true">
+                                        <MudList T="string" Clickable="false" Dense="true">
                                             @foreach(var topSeller in TopSellers.Where(x => x.Position > 0))
                                             {
                                                 <MudListItem>

@@ -105,7 +105,7 @@
                                 <span>@Item.TimeCreated.Value.Date.ToShortDateString()</span>
                             </MudText>
                         </MudTooltip>
-                        <MudChip Variant="Variant.Filled" Color="MudBlazor.Color.Secondary" Size="Size.Small">
+                        <MudChip T="string" Variant="Variant.Filled" Color="MudBlazor.Color.Secondary" Size="Size.Small">
                             <span>Not Accepted</span>
                         </MudChip>
                     }
@@ -118,7 +118,7 @@
         {
             @foreach (var action in Actions)
             {
-                <MudMenuItem OnTouch="@(() => ExternalNavigationManager.NavigateToNewTabAsync(action.Url))" OnClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync(action.Url))">
+                <MudMenuItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTabAsync(action.Url))">
                     <i class="@($"fa fa-fw {action.Icon} mr-1")"></i>
                     <span>@action.Name</span>
                 </MudMenuItem>
