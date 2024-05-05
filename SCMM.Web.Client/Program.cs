@@ -101,5 +101,9 @@ public static class WebAssemblyHostExtensions
         {
             SyncfusionLicenseProvider.RegisterLicense(syncfusionLicenseKey);
         }
+
+        // TODO: Remove this once all MudBlazor components have been updated to use the new syntax.
+        //       https://github.com/MudBlazor/MudBlazor/issues/8447
+        MudGlobal.EnableIllegalRazorParameterDetection = false;
     }
 }
