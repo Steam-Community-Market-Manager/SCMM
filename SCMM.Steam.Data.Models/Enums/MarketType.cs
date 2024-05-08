@@ -46,7 +46,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F", AffiliateUrl = "https://tradeit.gg/?aff=scmm")]
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.25f /* 25% */)]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.35f /* 35% */)]
         TradeitGG = 14,
 
         [Display(Name = "CS.Deals - Trade")]
