@@ -659,17 +659,29 @@
                                             @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) > 0)
                                             {
                                                 <span class="pl-2">@State.Currency.ToPriceString((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)))</span>
-                                                @if (State.Profile.ItemIncludeMarketFees && price.Fee != 0)
+                                                @if ((price.HousePrice != null) || (price.Fee != 0 && State.Profile.ItemIncludeMarketFees)) 
                                                 {
                                                     <MudTooltip>
                                                         <TooltipContent>
-                                                            @if (price.Fee > 0)
+                                                            @if (price.HousePrice != null)
                                                             {
-                                                                <span>Price includes @State.Currency.ToPriceString(price.Fee) in estimated fees charged by @price.MarketType.GetDisplayName() payment providers</span>
+                                                                <p>
+                                                                    <span>This price has been converted from the @price.MarketType.GetDisplayName() in-house currency, <strong>"@price.HousePriceName?.ToLower()"</strong>. </span>
+                                                                    <span>The original price was <strong>@State.Currency.ToPriceString(price.HousePrice.Value, dense: true) @price.HousePriceName?.ToLower()?.Pluralise(price.HousePrice.Value)</strong>. The conversion rate is <strong>1 @price.HousePriceName?.ToLower() = ~@Math.Round((decimal)price.Price / (decimal)price.HousePrice.Value, 2) @State.Currency.Name</strong></span>
+                                                                </p>
                                                             }
-                                                            else
+                                                            @if (price.Fee != 0 && State.Profile.ItemIncludeMarketFees)
                                                             {
-                                                                <span>Price includes @State.Currency.ToPriceString(price.Fee) in estimate discounts gained by purchasing @price.MarketType.GetDisplayName() balance</span>
+                                                                <p>
+                                                                    @if (price.Fee > 0)
+                                                                    {
+                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated fees charged by @price.MarketType.GetDisplayName() payment providers</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimate discounts gained by purchasing @price.MarketType.GetDisplayName() balance</span>
+                                                                    }
+                                                                </p>
                                                             }
                                                         </TooltipContent>
                                                         <ChildContent>

@@ -12,6 +12,11 @@ namespace SCMM.Steam.Data.Models
 
         public IExchangeableCurrency Currency { get; set; }
 
+        /// <summary>
+        /// If non-null, this represents the markets in-house currency (e.g. "coins") from which the price is derived
+        /// </summary>
+        public IExchangeableCurrency HouseCurrency { get; set; }
+
         public long Price { get; set; }
 
         public long Fee { get; set; }
