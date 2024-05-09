@@ -675,17 +675,29 @@
                                                                 <p>
                                                                     @if (price.Fee > 0)
                                                                     {
-                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated fees charged by @price.MarketType.GetDisplayName() payment providers</span>
+                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated fees charged by @price.MarketType.GetDisplayName() or their payment providers</span>
                                                                     }
                                                                     else
                                                                     {
-                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimate discounts gained by purchasing @price.MarketType.GetDisplayName() balance</span>
+                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated bonus balance from purchasing @price.MarketType.GetDisplayName() balance</span>
                                                                     }
                                                                 </p>
                                                             }
                                                         </TooltipContent>
                                                         <ChildContent>
                                                             <i class="fa fa-fw fa-comment-dollar ml-1"></i>
+                                                        </ChildContent>
+                                                    </MudTooltip>
+                                                }
+                                                @if (price.MarketType.IsCasino())
+                                                {
+                                                    <MudTooltip>
+                                                        <TooltipContent>
+                                                            <p>@price.MarketType.GetDisplayName() is a gambling website. There <i>might</i> be restrictions on deposits and withdraws, such as minimum wagers.</p>
+                                                            <p>Make sure you read the @price.MarketType.GetDisplayName() terms of service, ensure you are legally allowed to gamble and that you fully understand the risks of gambling.</p>
+                                                        </TooltipContent>
+                                                        <ChildContent>
+                                                            <i class="fa fa-fw fa-dice ml-1"></i>
                                                         </ChildContent>
                                                     </MudTooltip>
                                                 }
