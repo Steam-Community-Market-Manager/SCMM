@@ -169,8 +169,6 @@ namespace SCMM.Steam.Data.Models.Enums
          
          MARKETS TO BE INVESTIGATED
          BUY:  https://skin.land/market/rust/
-         BUY:  https://rustysaloon.com/withdraw (gambling site)
-         BUY:  https://bandit.camp/ (gambling site)
          BUY:  https://buff.market/ (western sister-site for https://buff.163.com/, no rust)
          BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc (has low stock)
          BUY:  https://lis-skins.ru/market/rust/ (has overly aggressive CloudFlare WAF policies, need to scrap HTML code)
@@ -179,10 +177,15 @@ namespace SCMM.Steam.Data.Models.Enums
          SELL: https://skincashier.com/
          SELL: https://skins.cash/
 
-         SUS LOOKING MARKETS
-         BUY:  https://trade.skin/
-         BUY:  https://rustplus.com/
-         BUY:  https://www.rustreaper.com/marketplace/RUST (bad reviews)
+         GAMBLING SITES
+         https://rustysaloon.com
+         https://rustmagic.com (https://api.rustmagic.com/api/withdraw/rust/inventory?query=&min=0&max=Infinity&page=0&sort=high-to-low)
+         https://rustbet.com (https://api.rustbet.com/api/v1/user-items/steam-withdraw?page%5Bnumber%5D=1&page%5Bsize%5D=20&sort=-price)
+         https://bandit.camp (web socket, "user.inventory.buy.listings")
+         https://howl.gg (web socket, "marketInventory")
+         https://rustchance.com (web socket, model is very minimised)
+         https://rustclash.com (https://rustclash.com/api/steam/shop)
+         https://rustreaper.com (bad reviews?)
 
          MARKET AGGRAGATORS
          https://pricempire.com/api
