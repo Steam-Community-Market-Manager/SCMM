@@ -21,6 +21,11 @@ namespace SCMM.Steam.Data.Models.Extensions
             return GetCustomAttribute<MarketAttribute>(marketType)?.IsFirstParty ?? false;
         }
 
+        public static bool IsCasino(this MarketType marketType)
+        {
+            return GetCustomAttribute<MarketAttribute>(marketType)?.IsCasino ?? false;
+        }
+
         public static bool IsAppSupported(this MarketType marketType, ulong appId)
         {
             return GetSupportedAppIds(marketType)?.Contains(appId) == true;

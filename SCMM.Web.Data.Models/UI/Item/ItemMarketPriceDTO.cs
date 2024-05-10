@@ -9,6 +9,10 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public PriceFlags AcceptedPayments { get; set; }
 
+        public long? HousePrice { get; set; }
+
+        public string HousePriceName { get; set; }
+
         public long Price { get; set; }
 
         public long Fee { get; set; }
