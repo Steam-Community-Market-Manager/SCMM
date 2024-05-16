@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SocketIOClient" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\SCMM.Shared.Web.Client\SCMM.Shared.Web.Client.csproj" />
+	<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
+  </ItemGroup>
+
+</Project>
