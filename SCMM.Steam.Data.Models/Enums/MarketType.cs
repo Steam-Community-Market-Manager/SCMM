@@ -165,6 +165,12 @@ namespace SCMM.Steam.Data.Models.Enums
                  HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]
         Rustyloot = 36,
 
+        [Display(Name = "bandit.camp")]
+        [Market(Constants.RustAppId, Color = "#c13a25", IsCasino = true, AffiliateUrl = "https://bandit.camp/r/scmm")]
+        [BuyFrom(Url = "https://bandit.camp/r/scmm", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
+                 HouseCurrencyName = "Scrap", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.71428576052230330527342631110668)]
+        BanditCamp = 37,
+
         /*
          
          MARKETS TO BE INVESTIGATED
@@ -181,7 +187,6 @@ namespace SCMM.Steam.Data.Models.Enums
          https://rustysaloon.com
          https://rustmagic.com (https://api.rustmagic.com/api/withdraw/rust/inventory?query=&min=0&max=Infinity&page=0&sort=high-to-low)
          https://rustbet.com (https://api.rustbet.com/api/v1/user-items/steam-withdraw?page%5Bnumber%5D=1&page%5Bsize%5D=20&sort=-price)
-         https://bandit.camp (web socket, "user.inventory.buy.listings")
          https://howl.gg (web socket, "marketInventory")
          https://rustchance.com (web socket, model is very minimised)
          https://rustclash.com (https://rustclash.com/api/steam/shop)
