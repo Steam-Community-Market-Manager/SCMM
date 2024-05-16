@@ -642,6 +642,7 @@ namespace SCMM.Web.Server.API.Controllers
             var topHoldingProfiles = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.DescriptionId == item.Id)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
                 .GroupBy(x => x.ProfileId)
                 .Select(x => new
                 {
