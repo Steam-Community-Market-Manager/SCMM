@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Item;
@@ -99,10 +100,14 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.Prices, o => o.MapFromAssetBuyPrices(p => p));
 
             CreateMap<MarketPrice, ItemBasicMarketPriceDTO>()
-                .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Currency));
+                .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Currency))
+                .ForMember(x => x.HousePrice, o => o.MapFrom(p => (p.Price > 0 && p.HouseCurrency != null ? (long?)p.HouseCurrency.CalculateExchange(p.Price / p.Currency.ExchangeRateMultiplier) : null)))
+                .ForMember(x => x.HousePriceName, o => o.MapFrom(p => (p.HouseCurrency != null ? p.HouseCurrency.Name : null)));
 
             CreateMap<MarketPrice, ItemMarketPriceDTO>()
-                .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Currency));
+                .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Currency))
+                .ForMember(x => x.HousePrice, o => o.MapFrom(p => (p.Price > 0 && p.HouseCurrency != null ? (long?)p.HouseCurrency.CalculateExchange(p.Price / p.Currency.ExchangeRateMultiplier) : null)))
+                .ForMember(x => x.HousePriceName, o => o.MapFrom(p => (p.HouseCurrency != null ? p.HouseCurrency.Name : null)));
 
             CreateMap<ItemInteraction, ItemInteractionDTO>();
         }

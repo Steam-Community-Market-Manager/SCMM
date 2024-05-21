@@ -398,7 +398,7 @@ namespace SCMM.Steam.Data.Store
                     {
                         From = x.Type,
                         Price = (x.Price + 1),
-                        Fee = (x.BuyFrom.FeeRate != 0 ? (x.Price + 1).MarketSaleFeeComponentAsInt(x.BuyFrom.FeeRate) : 0) + x.BuyFrom.FeeSurcharge
+                        Fee = (x.BuyFrom.SurchargeMultiplier != 0 ? (x.Price + 1).MarketSaleFeeComponentAsInt(x.BuyFrom.SurchargeMultiplier) : 0) + x.BuyFrom.SurchargeFixedAmount
                     })
                     .MinBy(x => x.Price);
                 BuyLaterFrom = lowestBuyPrice.From;

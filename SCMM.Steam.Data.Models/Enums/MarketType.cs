@@ -45,8 +45,8 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F", AffiliateUrl = "https://tradeit.gg/?aff=scmm")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.25f /* 25% */)]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Trade)]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.35f /* 35% */)]
         TradeitGG = 14,
 
         [Display(Name = "CS.Deals - Trade")]
@@ -160,8 +160,9 @@ namespace SCMM.Steam.Data.Models.Enums
         SkinSerpent = 35,
 
         [Display(Name = "Rustyloot.gg")]
-        [Market(Constants.RustAppId, Color = "#ffb135", AffiliateUrl = "https://rustyloot.gg/r/SCMM")]
-        [BuyFrom(Url = "https://rustyloot.gg/r/SCMM?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
+        [Market(Constants.RustAppId, Color = "#ffb135", IsCasino = true, AffiliateUrl = "https://rustyloot.gg/r/SCMM")]
+        [BuyFrom(Url = "https://rustyloot.gg/r/SCMM?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
+                 HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]
         Rustyloot = 36,
 
         /*

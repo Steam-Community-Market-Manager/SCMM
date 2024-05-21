@@ -45,6 +45,7 @@
         public const string SteamAssetClassDescriptionTypeBBCode = "bbcode";
 
         public const int SteamCurrencyIdUSD = 1;
+        public const decimal SteamCurrencyExchangeRateUSD = 1.0m;
         public const string SteamCurrencyVLV = "VLV";
         public const string SteamCurrencyUSD = "USD";
         public const string SteamCurrencyEUR = "EUR";
@@ -52,6 +53,7 @@
 
         public const int SteamDefaultCurrencyId = SteamCurrencyIdUSD;
         public const string SteamDefaultCurrency = SteamCurrencyUSD;
+        public const decimal SteamDefaultCurrencyExchangeRate = SteamCurrencyExchangeRateUSD;
 
         public const string SteamLanguageEnglish = "english";
         public const string SteamDefaultLanguage = SteamLanguageEnglish;
