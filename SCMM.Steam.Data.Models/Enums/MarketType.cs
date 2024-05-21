@@ -162,37 +162,54 @@ namespace SCMM.Steam.Data.Models.Enums
         [Display(Name = "Rustyloot.gg")]
         [Market(Constants.RustAppId, Color = "#ffb135", IsCasino = true, AffiliateUrl = "https://rustyloot.gg/r/SCMM")]
         [BuyFrom(Url = "https://rustyloot.gg/r/SCMM?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
-                 HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]
+                 HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065 /* 1 Coin == 1.55 USD */)]
         Rustyloot = 36,
 
+        [Obsolete("Not implemented yet")]
         [Display(Name = "bandit.camp")]
         [Market(Constants.RustAppId, Color = "#c13a25", IsCasino = true, AffiliateUrl = "https://bandit.camp/r/scmm")]
         [BuyFrom(Url = "https://bandit.camp/r/scmm", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
-                 HouseCurrencyName = "Scrap", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.71428576052230330527342631110668)]
+                 HouseCurrencyName = "Scrap", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.71428576052230330527342631110668 /* 1 Scrap == 1.40 USD */)]
         BanditCamp = 37,
+
+        [Obsolete("Not implemented yet")]
+        [Display(Name = "Rust Clash")]
+        [Market(Constants.RustAppId, Color = "#8d46d1", IsCasino = true, AffiliateUrl = "https://rustclash.com/r/SCMM")]
+        [BuyFrom(Url = "https://rustclash.com/r/SCMM", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
+                 HouseCurrencyName = "Gems", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.60240963855421686746987951807229 /* 1 Gem == 1.66 USD */)]
+        RustClash = 38,
+
+        [Obsolete("Not implemented yet")]
+        [Display(Name = "RustMagic")]
+        [Market(Constants.RustAppId, Color = "#d40f4d", IsCasino = true, AffiliateUrl = "https://rustmagic.com/r/scmm")]
+        [BuyFrom(Url = "https://rustmagic.com/r/scmm", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
+                 HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.68027210884353741496598639455782 /* 1 Coin == 1.47 USD */)]
+        RustMagic = 39,
+
+        [Obsolete("Not implemented yet")]
+        [Display(Name = "Howl.gg")]
+        [Market(Constants.RustAppId, Color = "#ea2e32", IsCasino = true, AffiliateUrl = "https://howl.gg/r/scmm")]
+        [BuyFrom(Url = "https://howl.gg/r/scmm", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
+                 HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 1 /* 1 Coin == 1 USD */)]
+        Howlgg = 40,
 
         /*
          
-         MARKETS TO BE INVESTIGATED
-         BUY:  https://skin.land/market/rust/
-         BUY:  https://buff.market/ (western sister-site for https://buff.163.com/, no rust)
-         BUY:  https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc (has low stock)
-         BUY:  https://lis-skins.ru/market/rust/ (has overly aggressive CloudFlare WAF policies, need to scrap HTML code)
-         BUY:  https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
-         SELL: https://rustysell.com/
-         SELL: https://skincashier.com/
-         SELL: https://skins.cash/
-
-         GAMBLING SITES
-         https://rustysaloon.com
-         https://rustmagic.com (https://api.rustmagic.com/api/withdraw/rust/inventory?query=&min=0&max=Infinity&page=0&sort=high-to-low)
-         https://rustbet.com (https://api.rustbet.com/api/v1/user-items/steam-withdraw?page%5Bnumber%5D=1&page%5Bsize%5D=20&sort=-price)
-         https://howl.gg (web socket, "marketInventory")
-         https://rustchance.com (web socket, model is very minimised)
-         https://rustclash.com (https://rustclash.com/api/steam/shop)
-         https://rustreaper.com (bad reviews?)
-
-         MARKET AGGRAGATORS
+         MARKETS TO BE INVESTIGATED:
+         BUY:    https://skin.land/market/rust/
+         BUY:    https://buff.market/ (western sister-site for https://buff.163.com/, no rust)
+         BUY:    https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc (has low stock)
+         BUY:    https://lis-skins.ru/market/rust/ (has overly aggressive CloudFlare WAF policies, need to scrap HTML code)
+         BUY:    https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
+         SELL:   https://rustysell.com/
+         SELL:   https://skincashier.com/
+         SELL:   https://skins.cash/
+         GAMBLE: https://rustbet.com (no inventory stock)
+         GAMBLE: https://rustchance.com/ (low inventory stock)
+         GAMBLE: https://rustreaper.com (bad reviews?)
+         GAMBLE: https://rustysaloon.com (dead?)
+         
+         MARKET AGGRAGATORS:
          https://pricempire.com/api
 
         */
