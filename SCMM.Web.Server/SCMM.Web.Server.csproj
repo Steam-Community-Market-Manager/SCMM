@@ -19,6 +19,10 @@
     <PackageReference Include="Azure.Identity" Version="1.11.3" />
     <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
     <PackageReference Include="DiffPlex" Version="1.7.2" />
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.152">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.4" />
