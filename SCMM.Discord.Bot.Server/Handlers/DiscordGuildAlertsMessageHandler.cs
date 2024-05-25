@@ -301,7 +301,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
                     linkButtons: linkButtons,
-                    crossPost: false // Messages with link buttons (interactions) cannot be cross-posted
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
 
                 // Post message to channels market thread
@@ -318,7 +318,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     color: !String.IsNullOrEmpty(marketColor) ? (uint?)UInt32.Parse(marketColor.Replace("#", ""), NumberStyles.HexNumber) : null,
                     linkButtons: linkButtons,
-                    crossPost: false // Messages with link buttons (interactions) cannot be cross-posted
+                    crossPost: AppDomain.CurrentDomain.IsReleaseBuild()
                 );
             });
         }
