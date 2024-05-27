@@ -43,6 +43,8 @@ public class UpdateAssetDescriptionSupplyTotals
 		                COUNT(DISTINCT(i.ProfileId)),
 		                SUM(i.Quantity)
 	                FROM [SteamProfileInventoryItems] i
+                    INNER JOIN [SteamProfiles] p on p.Id = i.ProfileId
+                    WHERE p.ItemAnalyticsParticipation >= 0
 	                GROUP BY i.DescriptionId
                 )
                 UPDATE a
