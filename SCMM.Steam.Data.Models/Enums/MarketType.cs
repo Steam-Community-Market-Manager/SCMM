@@ -201,6 +201,7 @@ namespace SCMM.Steam.Data.Models.Enums
          BUY:    https://gameflip.com/shop/in-game-items/rust?status=onsale&limit=100&platform=252490&sort=price%3Aasc (has low stock)
          BUY:    https://lis-skins.ru/market/rust/ (has overly aggressive CloudFlare WAF policies, need to scrap HTML code)
          BUY:    https://gamerall.com/rust (has overly aggressive CloudFlare WAF policies)
+         BUY:    https://traderust.com/
          SELL:   https://rustysell.com/
          SELL:   https://skincashier.com/
          SELL:   https://skins.cash/
