@@ -5,7 +5,30 @@
 
 version: 2
 updates:
-  - package-ecosystem: "nuget" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "nuget"
+    target-branch: "dev"
+    directory: "/"
     schedule:
       interval: "weekly"
+      day: "saturday"
+      time: "06:00"
+      timezone: "Pacific/Auckland"
+    assignees:
+       - "rhyskoedijk"
+    labels:
+      - "dependencies"
+    groups:
+      azure:
+        patterns: ['Azure.*']
+      microsoft:
+        patterns: ["Microsoft.*"]
+      sixlabors:
+        patterns: ["SixLabors.*"]
+      swashbuckle:
+        patterns: ["Swashbuckle.*"]
+      system:
+        patterns: ["System.*"]
+      xunit:
+        patterns: ["xunit.*"]
+    ignore:
+      - dependency-name: "Syncfusion.*" # Must be updated manually as it requires a license
