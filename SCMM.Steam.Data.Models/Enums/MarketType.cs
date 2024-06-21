@@ -95,6 +95,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
         CSTRADE = 22,
 
+        [Obsolete("Website is under construction, APIs have changed")]
         [Display(Name = "iTrade.gg")]
         [Market(Constants.RustAppId, Color = "#EA473B", AffiliateUrl = "https://itrade.gg/r/scmm")]
         [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AcceptedPayments = PriceFlags.Trade)]

@@ -10,6 +10,8 @@ namespace SCMM.Market.iTradegg.Client
 
         public iTradeggWebClient(ILogger<iTradeggWebClient> logger) : base(logger) { }
 
+        // TODO: Implement new API, https://api.itrade.gg/inventory/bot/rust-data
+        [Obsolete("This no longer works, API has been removed")]
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebBaseUri)))
