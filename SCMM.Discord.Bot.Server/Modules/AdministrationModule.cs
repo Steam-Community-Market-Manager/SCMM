@@ -30,11 +30,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly IQueryProcessor _queryProcessor;
         private readonly IServiceBus _serviceBus;
         private readonly ICurrencyExchangeService _currencyExchangeService;
-        private readonly ITimeSeriesAnalysisService _timeSeriesAnalysisService;
         private readonly IStatisticsService _statisticsService;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(DiscordDbContext discordDb, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, SteamCommunityWebClient steamCommunityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, ITimeSeriesAnalysisService timeSeriesAnalysisService, IStatisticsService statisticsService, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamConfiguration steamConfiguration, SteamDbContext steamDb, SteamWebApiClient steamWebApiClient, SteamCommunityWebClient steamCommunityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IServiceBus serviceBus, ICurrencyExchangeService currencyExchangeService, IStatisticsService statisticsService, CommandService commandService)
         {
             _discordDb = discordDb;
             _steamConfiguration = steamConfiguration;
@@ -45,7 +44,6 @@ namespace SCMM.Discord.Bot.Server.Modules
             _queryProcessor = queryProcessor;
             _serviceBus = serviceBus;
             _currencyExchangeService = currencyExchangeService;
-            _timeSeriesAnalysisService = timeSeriesAnalysisService;
             _statisticsService = statisticsService;
             _commandService = commandService;
         }

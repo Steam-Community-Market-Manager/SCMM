@@ -89,34 +89,6 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("find-sales-history-anomalies")]
-        public async Task<RuntimeResult> FindSalesHistoryAnomaliesAsync([Remainder] string itemName)
-        {
-            var cutoff = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30));
-            var item = await _steamDb.SteamMarketItems.FirstOrDefaultAsync(x => x.Description.Name == itemName);
-            var priceData = await _steamDb.SteamMarketItemSale.Where(x => x.ItemId == item.Id && x.Timestamp >= cutoff).OrderByDescending(x => x.Timestamp).Take(168).ToListAsync();
-
-            var priceAnomalies = await _timeSeriesAnalysisService.DetectTimeSeriesAnomaliesAsync(
-                priceData.ToDictionary(x => x.Timestamp, x => (float)x.MedianPrice),
-                granularity: TimeGranularity.Hourly,
-                sensitivity: 90
-            );
-            var quantityAnomalies = await _timeSeriesAnalysisService.DetectTimeSeriesAnomaliesAsync(
-                priceData.ToDictionary(x => x.Timestamp, x => (float)x.Quantity),
-                granularity: TimeGranularity.Hourly,
-                sensitivity: 90
-            );
-
-            var anomalies = priceAnomalies.Union(quantityAnomalies);
-            foreach (var anomaly in priceAnomalies.Where(x => x.IsPositive).OrderBy(x => x.Timestamp))
-            {
-                var type = (priceAnomalies.Contains(anomaly)) ? "PRICE" : "QUANTITY";
-                await Context.Channel.SendMessageAsync($"{type} ANOMALY @ {anomaly.Timestamp} (actual {anomaly.ActualValue}, expected {anomaly.ExpectedValue}, upper: {anomaly.UpperMargin}, lower: {anomaly.LowerMargin}, positive: {anomaly.IsPositive}, negative: {anomaly.IsNegative}, severity: {anomaly.Severity})");
-            }
-
-            return CommandResult.Success();
-        }
-
         [Command("import-market-items")]
         public async Task<RuntimeResult> ImportMarketItems(ulong appId)
         {

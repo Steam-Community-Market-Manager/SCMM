@@ -2,8 +2,6 @@
 {
     public class AzureAiConfiguration
     {
-        public AzureAiServiceConfiguration AnomalyDetector { get; set; }
-
         public AzureAiServiceConfiguration ComputerVision { get; set; }
 
         public AzureAiServiceConfiguration TextAnalytics { get; set; }
