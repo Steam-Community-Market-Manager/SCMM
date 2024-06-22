@@ -49,7 +49,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.35f /* 35% */)]
         TradeitGG = 14,
 
-        [Obsolete("Website was upgraded, trades are no longer supported")]
+        [Obsolete("P2P trades are no longer supported")]
         [Display(Name = "CS.Deals (Trade)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/trade-skins?appid={0}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
@@ -61,8 +61,8 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
         CSDealsMarketplace = 16,
 
-        // TODO: Our web client needs updating, the current APIs no longer work (they've changed them)
-        [Obsolete("SkinBaron web client code needs updating, current APIs no longer work (they've changed them)")]
+        // TODO: Update web client to support new APIs
+        [Obsolete("APIs have changed, web client needs updating")]
         [Display(Name = "Skin Baron")]
         [Market(Constants.CSGOAppId, Color = "#2A2745")]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", AcceptedPayments = PriceFlags.Cash)]
@@ -96,7 +96,8 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
         CSTRADE = 22,
 
-        [Obsolete("Website is under construction, APIs have changed")]
+        // TODO: Update web client to support new APIs
+        [Obsolete("Website is under construction, APIs have changed, web client needs updating")]
         [Display(Name = "iTrade.gg")]
         [Market(Constants.RustAppId, Color = "#EA473B", AffiliateUrl = "https://itrade.gg/r/scmm")]
         [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}", AcceptedPayments = PriceFlags.Trade)]
@@ -125,7 +126,8 @@ namespace SCMM.Steam.Data.Models.Enums
         DMarket = 28,
 
         // TODO: Restricted to 100 items per query, too slow for CSGO items
-        [Display(Name = "DMarket - Face2Face")]
+        [Obsolete("P2P trades are no longer supported")]
+        [Display(Name = "DMarket (F2F)")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=f2fOffers&title={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
         DMarketF2F = 29,

@@ -18,7 +18,6 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemPricesFromDMarketJob
 {
     private const MarketType DMarket = MarketType.DMarket;
-    private const MarketType DMarketF2F = MarketType.DMarketF2F;
 
     private readonly SteamDbContext _db;
     private readonly DMarketWebClient _dMarketWebClient;
@@ -60,7 +59,6 @@ public class UpdateMarketItemPricesFromDMarketJob
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from DMarket (appId: {app.SteamId})");
-            await UpdateDMarketF2FPricesForApp(logger, app, usdCurrency);
             await UpdateDMarketPricesForApp(logger, app, usdCurrency);
         }
     }
@@ -131,76 +129,6 @@ public class UpdateMarketItemPricesFromDMarketJob
             catch (Exception)
             {
                 logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}, exchange). {ex.Message}");
-            }
-        }
-    }
-
-    private async Task UpdateDMarketF2FPricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
-    {
-        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
-        var stopwatch = new Stopwatch();
-        try
-        {
-            stopwatch.Start();
-
-            var dMarketItems = await GetDMarketItemsAsync(logger, app, usdCurrency, DMarketWebClient.MarketTypeF2F);
-            var dbItems = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
-            var dMarketItemGroups = dMarketItems.Where(x => x.Extra == null || (x.Extra.Tradable && !x.Extra.SaleRestricted)).GroupBy(x => x.Title);
-            foreach (var dMarketInventoryItemGroup in dMarketItemGroups)
-            {
-                var item = dbItems.FirstOrDefault(x => x.Name == dMarketInventoryItemGroup.Key)?.Item;
-                if (item != null)
-                {
-                    var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
-                    item.UpdateBuyPrices(DMarketF2F, new PriceWithSupply
-                    {
-                        Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
-                        Supply = supply
-                    });
-                }
-            }
-
-            var missingItems = dbItems.Where(x => !dMarketItems.Any(y => x.Name == y.Title) && x.Item.BuyPrices.ContainsKey(DMarketF2F));
-            foreach (var missingItem in missingItems)
-            {
-                missingItem.Item.UpdateBuyPrices(DMarketF2F, null);
-            }
-
-            await _db.SaveChangesAsync();
-
-            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
-            {
-                x.TotalItems = dMarketItemGroups.Count();
-                x.TotalListings = dMarketItemGroups.Sum(x => x.Sum(y => y.Amount));
-                x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                x.LastUpdateErrorOn = null;
-                x.LastUpdateError = null;
-            });
-        }
-        catch (Exception ex)
-        {
-            try
-            {
-                logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
-                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, DMarketF2F, x =>
-                {
-                    x.LastUpdateErrorOn = DateTimeOffset.Now;
-                    x.LastUpdateError = ex.Message;
-                });
-            }
-            catch (Exception)
-            {
-                logger.LogError(ex, $"Failed to update market item price statistics for DMarket (appId: {app.SteamId}, source: F2F). {ex.Message}");
             }
         }
     }
