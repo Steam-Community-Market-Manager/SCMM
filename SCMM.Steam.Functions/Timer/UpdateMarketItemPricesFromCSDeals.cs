@@ -17,7 +17,6 @@ namespace SCMM.Steam.Functions.Timer;
 public class UpdateMarketItemPricesFromCSDeals
 {
     private const MarketType CSDealsMarketplace = MarketType.CSDealsMarketplace;
-    private const MarketType CSDealsTrade = MarketType.CSDealsTrade;
 
     private readonly SteamDbContext _db;
     private readonly CSDealsWebClient _csDealsWebClient;
@@ -33,14 +32,14 @@ public class UpdateMarketItemPricesFromCSDeals
     [Function("Update-Market-Item-Prices-From-CSDeals")]
     public async Task Run([TimerTrigger("0 8/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        if (!CSDealsTrade.IsEnabled())
+        if (!CSDealsMarketplace.IsEnabled())
         {
             return;
         }
 
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
 
-        var appIds = CSDealsTrade.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
+        var appIds = CSDealsMarketplace.GetSupportedAppIds().Select(x => x.ToString()).ToArray();
         var supportedSteamApps = await _db.SteamApps
             .Where(x => appIds.Contains(x.SteamId))
             .ToListAsync();
@@ -59,78 +58,7 @@ public class UpdateMarketItemPricesFromCSDeals
         foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from CS.Deals (appId: {app.SteamId})");
-            await UpdateCSDealsTradePricesForApp(logger, app, usdCurrency);
             await UpdateCsDealsMarketplacePricesForApp(logger, app, usdCurrency);
-        }
-    }
-
-    private async Task UpdateCSDealsTradePricesForApp(ILogger logger, SteamApp app, SteamCurrency usdCurrency)
-    {
-        var statisticsKey = String.Format(StatisticKeys.MarketStatusByAppId, app.SteamId);
-        var stopwatch = new Stopwatch();
-        try
-        {
-            stopwatch.Start();
-
-            var csDealsInventoryItems = (await _csDealsWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value ?? new CSDealsItemListing[0];
-            var dbItems = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
-            var csDealsInventoryItemGroups = csDealsInventoryItems.GroupBy(x => x.MarketName);
-            foreach (var csDealsInventoryItemGroup in csDealsInventoryItemGroups)
-            {
-                var item = dbItems.FirstOrDefault(x => x.Name == csDealsInventoryItemGroup.Key)?.Item;
-                if (item != null)
-                {
-                    var supply = csDealsInventoryItemGroup.Sum(x => x.ItemIds?.Length ?? 0);
-                    item.UpdateBuyPrices(CSDealsTrade, new PriceWithSupply
-                    {
-                        Price = supply > 0 ? item.Currency.CalculateExchange((csDealsInventoryItemGroup.Min(x => x.ListingPrice)).ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                        Supply = supply
-                    });
-                }
-            }
-
-            var missingItems = dbItems.Where(x => !csDealsInventoryItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(CSDealsTrade));
-            foreach (var missingItem in missingItems)
-            {
-                missingItem.Item.UpdateBuyPrices(CSDealsTrade, null);
-            }
-
-            await _db.SaveChangesAsync();
-
-            await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
-            {
-                x.TotalItems = csDealsInventoryItemGroups.Count();
-                x.TotalListings = csDealsInventoryItemGroups.Sum(x => x.Sum(y => y.ItemIds?.Length ?? 0));
-                x.LastUpdatedItemsOn = DateTimeOffset.Now;
-                x.LastUpdatedItemsDuration = stopwatch.Elapsed;
-                x.LastUpdateErrorOn = null;
-                x.LastUpdateError = null;
-            });
-        }
-        catch (Exception ex)
-        {
-            try
-            {
-                logger.LogError(ex, $"Failed to update trade item price information from CS.Deals (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
-                await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, CSDealsTrade, x =>
-                {
-                    x.LastUpdateErrorOn = DateTimeOffset.Now;
-                    x.LastUpdateError = ex.Message;
-                });
-            }
-            catch (Exception)
-            {
-                logger.LogError(ex, $"Failed to update trade item price statistics for CS.Deals (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
-            }
         }
     }
 

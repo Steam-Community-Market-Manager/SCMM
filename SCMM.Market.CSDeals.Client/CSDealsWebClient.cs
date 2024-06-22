@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Net;
-using System.Runtime.Serialization;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace SCMM.Market.CSDeals.Client
 {
@@ -53,34 +50,6 @@ namespace SCMM.Market.CSDeals.Client
 
                 var responseJson = JsonSerializer.Deserialize<CSDealsResponse>(textJson);
                 return responseJson?.Response?.Deserialize<CSDealsMarketplaceSearchResults<CSDealsItemListings>>();
-            }
-        }
-
-        public async Task<CSDealsBotsInventoryResult> PostBotsInventoryAsync(string appId)
-        {
-            using (var client = BuildWebBrowserHttpClient(referrer: new Uri($"{WebsiteBaseUri}/trade-skins")))
-            {
-                var url = $"{WebsiteBaseUri}ajax/botsinventory";
-                var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
-                    { "appid", appId }
-                });
-
-                var response = await RetryPolicy.ExecuteAsync(() => client.PostAsync(url, payload));
-                response.EnsureSuccessStatusCode();
-
-                var textJson = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(textJson))
-                {
-                    return default;
-                }
-
-                var responseJson = JsonSerializer.Deserialize<CSDealsResponse>(textJson);
-                return (responseJson?.Response is JsonObject)
-                    ? responseJson?.Response?.Deserialize<CSDealsBotsInventoryResult>()
-                    : new CSDealsBotsInventoryResult()
-                    {
-                        Items = new CSDealsItemListings()
-                    };
             }
         }
     }

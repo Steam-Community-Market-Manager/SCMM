@@ -38,7 +38,7 @@ namespace SCMM.Steam.Data.Models.Enums
         SwapGGTrade = 12,
 
         // TODO: [Obsolete("Website discontinued from 29th February 2024")]
-        [Display(Name = "Swap.gg - Market")]
+        [Display(Name = "Swap.gg (Market)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF")]
         [BuyFrom(Url = "https://market.swap.gg/{1}?search={3}", AcceptedPayments = PriceFlags.Cash)]
         SwapGGMarket = 13,
@@ -49,13 +49,14 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.35f /* 35% */)]
         TradeitGG = 14,
 
-        [Display(Name = "CS.Deals - Trade")]
+        [Obsolete("Website was upgraded, trades are no longer supported")]
+        [Display(Name = "CS.Deals (Trade)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/trade-skins?appid={0}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
         CSDealsTrade = 15,
 
         // TODO: Items quantities are not currently supported
-        [Display(Name = "CS.Deals - Marketplace")]
+        [Display(Name = "CS.Deals")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
         CSDealsMarketplace = 16,
