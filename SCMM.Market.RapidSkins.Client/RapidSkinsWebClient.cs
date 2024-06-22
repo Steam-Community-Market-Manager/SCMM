@@ -10,6 +10,8 @@ namespace SCMM.Market.RapidSkins.Client
 
         public RapidSkinsWebClient(ILogger<RapidSkinsWebClient> logger) : base(logger) { }
 
+        // TODO: Implement new API, https://api.rapidskins.com/graphql
+        [Obsolete("This no longer works, API has been removed")]
         public async Task<RapidSkinsInventoryResponse> GetInventoryAsync()
         {
             using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebBaseUri)))
