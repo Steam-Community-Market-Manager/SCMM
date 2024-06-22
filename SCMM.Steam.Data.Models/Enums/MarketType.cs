@@ -132,7 +132,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         // TODO: Restricted to 80 items per query, too slow for CSGO items
         [Display(Name = "BUFF")]
-        [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#FFFFFF")]
+        [Market(/*Constants.CSGOAppId,*/ Color = "#FFFFFF")]
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}", AcceptedPayments = PriceFlags.Cash)]
         Buff = 30,
 
