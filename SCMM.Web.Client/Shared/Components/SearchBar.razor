@@ -33,12 +33,15 @@
 @if (PinnedActions?.Any() == true)
 {
     <MudContainer Class="d-flex align-center justify-start scroll-x scrollbar-hidden pa-0">
-        @foreach (var pinnedActions in PinnedActions)
+        @foreach (var pinnedAction in PinnedActions)
         {
-            <div class="d-flex algin-center hover-darken pa-2" onclick="@(() => OnActionSelected(pinnedActions.Type, pinnedActions.Url, pinnedActions.Description))">
-                <img src="@pinnedActions.IconUrl" class="mr-2" style="width:2em; height:2em" />
-                <MudText Class="no-wrap my-1">@pinnedActions.Description</MudText>
-            </div>
+            <MudTooltip Text="@($"{pinnedAction.Description} ({pinnedAction.Type})")">
+                <div class="d-flex algin-center hover-darken hover-zoom pa-2" onclick="@(() => OnActionSelected(pinnedAction.Type, pinnedAction.Url, pinnedAction.Description))">
+                    <MudBadge Icon="@GetActionIconClass(pinnedAction.Type)" Color="@Color.Transparent" Origin="@Origin.BottomRight" Overlap="true" Bordered="false" BadgeClass="ma-n2">
+                        <img src="@pinnedAction.IconUrl" class="mr-2" style="width:2em; height:2em" />
+                    </MudBadge>
+                </div>
+            </MudTooltip>
         }
     </MudContainer>
 }
@@ -136,6 +139,19 @@
             case "Store":
                 NavigationManager.NavigateTo(url);
                 break;
+        }
+    }
+
+    private string GetActionIconClass(string type)
+    {
+        switch (type)
+        {
+            case "List": return "fa fa-xs fa-grip";
+            case "Type": return "fa fa-xs fa-grip";
+            case "Collection": return "fa fa-xs fa-grip";
+            case "Item": return "";
+            case "Store": return "fa fa-xs fa-shopping-cart";
+            default: return "";
         }
     }
 
