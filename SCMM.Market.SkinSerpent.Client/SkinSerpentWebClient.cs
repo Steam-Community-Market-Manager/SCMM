@@ -5,7 +5,7 @@ namespace SCMM.Market.SkinSerpent.Client
 {
     public class SkinSerpentWebClient : Shared.Web.Client.WebClientBase
     {
-        private const string ApiBaseUri = "https://api.skinserpent.com";
+        private const string WebsiteBaseUri = "https://skinserpent.com";
 
         public SkinSerpentWebClient(ILogger<SkinSerpentWebClient> logger) : base(logger)
         {
@@ -13,9 +13,9 @@ namespace SCMM.Market.SkinSerpent.Client
 
         public async Task<SkinSerpentListingsResponse> GetListingsAsync(string appId, int page = 0)
         {
-            using (var client = BuildWebApiHttpClient(host: new Uri(ApiBaseUri)))
+            using (var client = BuildWebApiHttpClient(host: new Uri(WebsiteBaseUri)))
             {
-                var url = $"{ApiBaseUri}/listings/{appId}/?&category=&priceMin=0&priceMax=1000000&sortBy=P_DESC&search=&items=&colors=&page={page}";
+                var url = $"{WebsiteBaseUri}/api/listings/{appId}/?&category=&priceMin=0&priceMax=1000000&sortBy=P_DESC&search=&items=&colors=&page={page}";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
