@@ -1,7 +1,9 @@
 ﻿@using SCMM.Web.Data.Models.UI.Item
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject PinnedActionManager PinnedActionManager
 @inject AppState State
+
 <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="full-height d-flex flex-column" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="true" Dense="true" Disabled="State.IsPrerendering">
     <ActivatorContent>
         <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
@@ -114,6 +116,13 @@
         </div>
     </ActivatorContent>
     <ChildContent>
+        @if (Item != null)
+        {
+            <MudMenuItem OnClick="@(() => PinItemAction())">
+                <i class="@($"fa fa-fw fa-bookmark mr-1")"></i>
+                <span>Bookmark Item</span>
+            </MudMenuItem>
+        }
         @if (Actions != null)
         {
             @foreach (var action in Actions)
@@ -175,7 +184,7 @@
         {
             if (!String.IsNullOrEmpty(Item.IconAccentColour))
             {
-                 classes.Add("glow-transparent");
+                classes.Add("glow-transparent");
             }
             else
             {
@@ -199,7 +208,7 @@
 
         return String.Join("; ", styles);
     }
-    
+
     private void OnItemClicked()
     {
         if (OnClick != null)
@@ -209,6 +218,22 @@
         else
         {
             ExternalNavigationManager.NavigateToItemAsync(Item);
+        }
+    }
+
+    private async Task PinItemAction()
+    {
+        var action = new PinnedActionManager.Action()
+        {
+            Type = "Item",
+            Url = $"/api/item/{Item?.Id}",
+            IconUrl = Item?.IconUrl,
+            Description = Item?.Name,
+        };
+
+        if (!(await PinnedActionManager.IsPinned(action)))
+        {
+            await PinnedActionManager.PinAction(action);
         }
     }
 

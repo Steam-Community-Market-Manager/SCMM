@@ -1,6 +1,7 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject PinnedActionManager PinnedActionManager
 @inject AppState State
 @inject IDialogService Dialogs
 
@@ -32,6 +33,13 @@
                     </div>
                 </ActivatorContent>
                 <ChildContent>
+                    @if (Item != null)
+                    {
+                        <MudMenuItem OnClick="@(() => PinItemAction())">
+                            <i class="@($"fa fa-fw fa-bookmark mr-1")"></i>
+                            <span>Bookmark Item</span>
+                        </MudMenuItem>
+                    }
                     @if (State.Is(SteamId))
                     {
                         @if (Item.Stacks.Length > 1)
@@ -128,4 +136,21 @@
             ["Item"] = Item
         });
     }
+
+    private async Task PinItemAction()
+    {
+        var action = new PinnedActionManager.Action()
+        {
+            Type = "Item",
+            Url = $"/api/item/{Item?.Id}",
+            IconUrl = Item?.IconUrl,
+            Description = Item?.Name,
+        };
+
+        if (!(await PinnedActionManager.IsPinned(action)))
+        {
+            await PinnedActionManager.PinAction(action);
+        }
+    }
+
 }
