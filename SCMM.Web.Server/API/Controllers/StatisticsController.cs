@@ -134,6 +134,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="minimumPrice">Optional minimum price range filter. If specified, only items priced equal to or higher than this value will be returned</param>
+        /// <param name="maximumPrice">Optional maximum price range filter. If specified, only items priced equal to or lower than this value will be returned</param>
         /// <param name="minimumInvestmentReliability"></param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
@@ -142,7 +144,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/cheapestListings")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemListingAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumPrice = null, [FromQuery] decimal? maximumPrice = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
@@ -184,6 +186,8 @@ namespace SCMM.Web.Server.API.Controllers
                         .FirstOrDefault()
                 })
                 .Where(x => x.LowestPrice != null)
+                .Where(x => (minimumPrice == null || minimumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) >= minimumPrice))
+                .Where(x => (maximumPrice == null || maximumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) <= maximumPrice))
                 .Select(x => new MarketItemListingAnalyticDTO()
                 {
                     Id = x.Item.Id ?? 0,
@@ -220,6 +224,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="minimumPrice">Optional minimum price range filter. If specified, only items priced equal to or higher than this value will be returned</param>
+        /// <param name="maximumPrice">Optional maximum price range filter. If specified, only items priced equal to or lower than this value will be returned</param>
         /// <param name="minimumInvestmentReliability"></param>
         /// <param name="sellNow">If true, sell prices are based on highest buy order. If false, sell prices are based on lowest sell order. Default is true.</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -229,7 +235,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/flips")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumPrice = null, [FromQuery] decimal? maximumPrice = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
@@ -272,6 +278,8 @@ namespace SCMM.Web.Server.API.Controllers
                         .FirstOrDefault()
                 })
                 .Where(x => x.LowestPrice != null)
+                .Where(x => (minimumPrice == null || minimumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) >= minimumPrice))
+                .Where(x => (maximumPrice == null || maximumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) <= maximumPrice))
                 .Select(x => new MarketItemFlipAnalyticDTO()
                 {
                     Id = x.Item.Id ?? 0,

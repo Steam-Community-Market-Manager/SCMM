@@ -32,33 +32,47 @@
                         <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                             <thead>
                                 <tr>
-                                    <th class="py-0 my-0">
+                                    <th class="py-0 my-0" style="vertical-align:bottom">
                                         <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" 
-                                                      Placeholder="Search items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                                                      Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                     </th>
-                                    <th>
-                                        <MudSelect T="MarketType?" Value="@MarketType" ValueChanged="async (x) => { MarketType = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" 
-                                                   ToStringFunc="@(x => $"Cheapest {(x != null ? $"{x.GetDisplayName()} offer" : "offer from all markets")}")"
-                                                   Margin="MudBlazor.Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
+                                    <th class="py-0 my-0" style="vertical-align:bottom">
+                                        <MudGrid Spacing="1">
+                                            <MudItem xs="12">
+                                                <MudSelect T="MarketType?" Value="@MarketType" ValueChanged="async (x) => { MarketType = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" 
+                                                           ToStringFunc="@(x => $"Cheapest {(x != null ? $"{x.GetDisplayName()} offer" : "offer from all markets")}")"
+                                                           Margin="MudBlazor.Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
                                         
-                                            <MudSelectItem Value="@((MarketType?)null)">
-                                                <span>Cheapest offer from <strong>all markets</strong></span>
-                                            </MudSelectItem>
-                                            @foreach (var marketType in State.Profile.MarketTypes.Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId) && !x.IsFirstParty()))
-                                            {
-                                                <MudSelectItem Value="@((MarketType?)marketType)">
-                                                    <div class="d-flex justify-start align-center">
-                                                        <span>Cheapest </span>
-                                                        <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" class="mx-2" style="width:1.5em; height:1.5em" />
-                                                        <span><strong>@marketType.GetDisplayName()</strong> offer</span>
-                                                    </div>
-                                                </MudSelectItem>
-                                            }
-                                        </MudSelect>
+                                                    <MudSelectItem Value="@((MarketType?)null)">
+                                                        <span>Cheapest offer from <strong>all markets</strong></span>
+                                                    </MudSelectItem>
+                                                    @foreach (var marketType in State.Profile.MarketTypes.Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId) && !x.IsFirstParty()))
+                                                    {
+                                                        <MudSelectItem Value="@((MarketType?)marketType)">
+                                                            <div class="d-flex justify-start align-center">
+                                                                <span>Cheapest </span>
+                                                                <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" class="mx-2" style="width:1.5em; height:1.5em" />
+                                                                <span><strong>@marketType.GetDisplayName()</strong> offer</span>
+                                                            </div>
+                                                        </MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            <MudItem xs="12" Class="d-flex align-end gap-2">
+                                                <MudText Typo="Typo.body1" Class="py-1">Priced between </MudText>
+                                                <MudNumericField T="double?" Value="@MinimumPrice" DebounceInterval="500" OnDebounceIntervalElapsed="@((x) => OnPriceRangeChanged(x, MaximumPrice?.ToString()))" 
+                                                                 Placeholder="minimum price" Variant="Variant.Text" Class="mud-input-no-frills ma-0" />
+                                                <MudText Typo="Typo.body1" Class="py-1"> and </MudText>
+                                                <MudNumericField T="double?" Value="@MaximumPrice" DebounceInterval="500" OnDebounceIntervalElapsed="@((x) => OnPriceRangeChanged(MinimumPrice?.ToString(), x))" 
+                                                                 Placeholder="maximum price" Variant="Variant.Text" Class="mud-input-no-frills ma-0" />
+                                            </MudItem>
+                                        </MudGrid>
                                     </th>
                                     @if (State.App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketPriceTracking) == true)
                                     {
-                                        <th>Steam Community Market</th>
+                                        <th style="vertical-align:bottom">
+                                            <MudText Typo="Typo.body1">Steam Community Market</MudText>
+                                        </th>
                                     }
                                 </tr>
                             </thead>
@@ -170,34 +184,46 @@
                             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                                 <thead>
                                     <tr>
-                                        <th class="py-0 my-0">
+                                        <th class="py-0 my-0" style="vertical-align:bottom">
                                             <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" 
-                                                          Placeholder="Search items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                                                          Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                         </th>
-                                        <th>
-                                            <MudSelect T="MarketType?" Value="@MarketType" ValueChanged="async (x) => { MarketType = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" 
-                                                       ToStringFunc="@(x => $"Buy it {(x != null ? $"from {x.GetDisplayName()}" : "from the cheapest market")}")"
-                                                       Margin="MudBlazor.Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
+                                        <th class="py-0 my-0" style="vertical-align:bottom">
+                                            <MudGrid Spacing="1">
+                                                <MudItem xs="12">
+                                                    <MudSelect T="MarketType?" Value="@MarketType" ValueChanged="async (x) => { MarketType = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" 
+                                                               ToStringFunc="@(x => $"Buy it {(x != null ? $"from {x.GetDisplayName()}" : "from the cheapest market")}")"
+                                                               Margin="MudBlazor.Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
                                         
-                                                <MudSelectItem Value="@((MarketType?)null)">
-                                                    <span>Buy it from the <strong>cheapest market</strong></span>
-                                                </MudSelectItem>
-                                                @foreach (var marketType in State.Profile.MarketTypes.Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()))
-                                                {
-                                                    <MudSelectItem Value="@((MarketType?)marketType)">
-                                                        <div class="d-flex justify-start align-center">
-                                                        <span>Buy it from </span>
-                                                            <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" class="mx-2" style="width:1.5em; height:1.5em" />
-                                                        <span><strong>@marketType.GetDisplayName()</strong></span>
-                                                        </div>
-                                                    </MudSelectItem>
-                                                }
-                                            </MudSelect>
+                                                        <MudSelectItem Value="@((MarketType?)null)">
+                                                            <span>Buy it from the <strong>cheapest market</strong></span>
+                                                        </MudSelectItem>
+                                                        @foreach (var marketType in State.Profile.MarketTypes.Where(x => x.IsEnabled() && x.IsAppSupported(State.AppId)&& !x.IsFirstParty()))
+                                                        {
+                                                            <MudSelectItem Value="@((MarketType?)marketType)">
+                                                                <div class="d-flex justify-start align-center">
+                                                                <span>Buy it from </span>
+                                                                    <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" class="mx-2" style="width:1.5em; height:1.5em" />
+                                                                <span><strong>@marketType.GetDisplayName()</strong></span>
+                                                                </div>
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </MudItem>
+                                                <MudItem xs="12" Class="d-flex align-end gap-2">
+                                                    <MudText Typo="Typo.body1" Class="py-1">Priced between </MudText>
+                                                    <MudNumericField T="double?" Value="@MinimumPrice" DebounceInterval="500" OnDebounceIntervalElapsed="@((x) => OnPriceRangeChanged(x, MaximumPrice?.ToString()))" 
+                                                                     Placeholder="minimum price" Variant="Variant.Text" Class="mud-input-no-frills ma-0" />
+                                                    <MudText Typo="Typo.body1" Class="py-1"> and </MudText>
+                                                    <MudNumericField T="double?" Value="@MaximumPrice" DebounceInterval="500" OnDebounceIntervalElapsed="@((x) => OnPriceRangeChanged(MinimumPrice?.ToString(), x))" 
+                                                                     Placeholder="maximum price" Variant="Variant.Text" Class="mud-input-no-frills ma-0" />
+                                                </MudItem>
+                                            </MudGrid>
                                         </th>
-                                        <th class="pa-0">
+                                        <th class="py-0 my-0" style="vertical-align:bottom">
                                             <i class="fa fa-fw fa-arrow-right"></i>
                                         </th>
-                                        <th>
+                                        <th class="py-0 my-0" style="vertical-align:bottom">
                                             <MudSelect T="bool?" Value="@SellNow" ValueChanged="OnSellNowChanged" Margin="Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
                                                 <MudSelectItem Value="@((bool?)true)">
                                                     <span><strong>Sell it now</strong> for quick profit</span>
@@ -503,6 +529,12 @@
     public MarketType? MarketType { get; set; }
 
     [SupplyParameterFromQuery]
+    public double? MinimumPrice { get; set; }
+
+    [SupplyParameterFromQuery]
+    public double? MaximumPrice { get; set; }
+
+    [SupplyParameterFromQuery]
     public bool? SellNow { get; set; }
 
     private Virtualize<MarketItemListingAnalyticDTO> VirtualiseMarketCheapestListings;
@@ -558,6 +590,34 @@
         }
     }
 
+    private void OnPriceRangeChanged(string minimumPrice, string maximumPrice)
+    {
+        if (Double.TryParse(minimumPrice, out var minimumPriceDecimal))
+        {
+            MinimumPrice = minimumPriceDecimal;
+        }
+        if (Double.TryParse(maximumPrice, out var maximumPriceDecimal))
+        {
+            MaximumPrice = maximumPriceDecimal;
+        }
+        switch (TabIndex)
+        {
+            case 0:
+                _ = VirtualiseMarketCheapestListings.RefreshDataAsync().ContinueWith(x =>
+                {
+                    InvokeAsync(StateHasChanged);
+                });
+                break;
+
+            case 1:
+                _ = VirtualiseMarketFlips.RefreshDataAsync().ContinueWith(x =>
+                {
+                    InvokeAsync(StateHasChanged);
+                });
+                break;
+        }
+    }
+
     private void OnSellNowChanged(bool? sellNow)
     {
         SellNow = sellNow;
@@ -598,7 +658,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/stats/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/stats/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&minimumPrice={MinimumPrice}&maximumPrice={MaximumPrice}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemFlipAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -612,7 +672,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/stats/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/stats/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&minimumPrice={MinimumPrice}&maximumPrice={MaximumPrice}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemListingAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
