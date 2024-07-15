@@ -166,8 +166,8 @@ namespace SCMM.Steam.Data.Models.Enums
         SkinSerpent = 35,
 
         [Display(Name = "Rustyloot.gg")]
-        [Market(Constants.RustAppId, Color = "#ffb135", IsCasino = true, AffiliateUrl = "https://rustyloot.gg/r/SCMM")]
-        [BuyFrom(Url = "https://rustyloot.gg/r/SCMM?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
+        [Market(Constants.RustAppId, Color = "#ffb135", IsCasino = true /*, AffiliateUrl = "https://rustyloot.gg/r/SCMM" */)]
+        [BuyFrom(Url = "https://rustyloot.gg/?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto,
                  HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]
         Rustyloot = 36,
 
