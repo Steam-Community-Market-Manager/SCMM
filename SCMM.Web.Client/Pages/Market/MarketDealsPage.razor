@@ -596,9 +596,17 @@
         {
             MinimumPrice = minimumPriceDecimal;
         }
+        else
+        {
+            MinimumPrice = null;
+        }
         if (Double.TryParse(maximumPrice, out var maximumPriceDecimal))
         {
             MaximumPrice = maximumPriceDecimal;
+        }
+        else
+        {
+            MaximumPrice = null;
         }
         switch (TabIndex)
         {
