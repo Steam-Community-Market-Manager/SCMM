@@ -44,6 +44,7 @@
 		<ProjectReference Include="..\SCMM.Market.SkinSerpent.Client\SCMM.Market.SkinSerpent.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SkinsMonkey.Client\SCMM.Market.SkinsMonkey.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SkinSwap.Client\SCMM.Market.SkinSwap.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.SnipeSkins.Client\SCMM.Market.SnipeSkins.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.SwapGG.Client\SCMM.Market.SwapGG.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.TradeitGG.Client\SCMM.Market.TradeitGG.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.Waxpeer.Client\SCMM.Market.Waxpeer.Client.csproj" />

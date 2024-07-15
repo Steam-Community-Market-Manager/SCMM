@@ -171,6 +171,11 @@ namespace SCMM.Steam.Data.Models.Enums
                  HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]
         Rustyloot = 36,
 
+        [Display(Name = "SnipeSkins")]
+        [Market(Constants.RustAppId, Color = "#f8546f")]
+        [BuyFrom(Url = "https://snipeskins.com/market?search={3}&sortBy=price&sortDir=asc", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
+        SnipeSkins = 37,
+
         /*
          
          MARKETS TO BE INVESTIGATED

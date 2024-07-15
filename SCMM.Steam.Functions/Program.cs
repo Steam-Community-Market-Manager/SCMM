@@ -35,6 +35,7 @@ using SCMM.Market.SkinsMonkey.Client;
 using SCMM.Market.SkinsMonkey.Client.Extensions;
 using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.SkinSwap.Client.Extensions;
+using SCMM.Market.SnipeSkins.Client;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
 using SCMM.Market.Waxpeer.Client;
@@ -236,6 +237,7 @@ public static class HostExtensions
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetSkinsMonkeyConfiguration();
             });
+            services.AddSingleton<SnipeSkinsWebClient>();
             services.AddSingleton<SwapGGWebClient>();
             services.AddSingleton<TradeitGGWebClient>();
             services.AddSingleton<WaxpeerWebClient>();
