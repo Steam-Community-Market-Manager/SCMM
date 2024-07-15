@@ -1187,6 +1187,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("profiles/inventories/recentlyValued")]
+        [Obsolete("This is no longer used in the web app")]
         [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryValueStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfilesInventoriesByMostRecentlyValued([FromQuery] int start = 0, [FromQuery] int count = 10)
