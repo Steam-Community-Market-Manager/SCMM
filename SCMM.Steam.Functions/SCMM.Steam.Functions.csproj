@@ -19,7 +19,7 @@
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.20.0" />
 		<PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.7" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.3.0" />
 	</ItemGroup>
 	
 	<ItemGroup>
