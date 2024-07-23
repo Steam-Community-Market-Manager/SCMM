@@ -70,7 +70,7 @@ public class UpdateMarketItemPricesFromSnipeSkins
         {
             stopwatch.Start();
 
-            var snipeSkinsPrices = await _snipeSkinsWebClient.GetPricesAsync(app.SteamId);
+            var snipeSkinsItems = await _snipeSkinsWebClient.GetPricesAsync(app.SteamId);
             var dbItems = await _db.SteamMarketItems
                 .Where(x => x.AppId == app.Id)
                 .Select(x => new
@@ -81,20 +81,20 @@ public class UpdateMarketItemPricesFromSnipeSkins
                 })
                 .ToListAsync();
 
-            foreach (var snipeSkinsPrice in snipeSkinsPrices)
+            foreach (var snipeSkinsItem in snipeSkinsItems)
             {
-                var item = dbItems.FirstOrDefault(x => x.Name == snipeSkinsPrice.Key)?.Item;
+                var item = dbItems.FirstOrDefault(x => x.Name == snipeSkinsItem.MarketHashName)?.Item;
                 if (item != null)
                 {
                     item.UpdateBuyPrices(SnipeSkins, new PriceWithSupply
                     {
-                        Price = item.Currency.CalculateExchange(snipeSkinsPrice.Value, cnyCurrency),
-                        Supply = null
+                        Price = snipeSkinsItem.Quantity > 0 ? item.Currency.CalculateExchange(snipeSkinsItem.LowestMarketPrice, cnyCurrency) : 0,
+                        Supply = snipeSkinsItem.Quantity
                     });
                 }
             }
 
-            var missingItems = dbItems.Where(x => !snipeSkinsPrices.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(SnipeSkins));
+            var missingItems = dbItems.Where(x => !snipeSkinsItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(SnipeSkins));
             foreach (var missingItem in missingItems)
             {
                 missingItem.Item.UpdateBuyPrices(SnipeSkins, null);
@@ -104,8 +104,8 @@ public class UpdateMarketItemPricesFromSnipeSkins
 
             await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, SnipeSkins, x =>
             {
-                x.TotalItems = snipeSkinsPrices.Count();
-                x.TotalListings = null;
+                x.TotalItems = snipeSkinsItems.Count();
+                x.TotalListings = snipeSkinsItems.Sum(x => x.Quantity);
                 x.LastUpdatedItemsOn = DateTimeOffset.Now;
                 x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                 x.LastUpdateErrorOn = null;

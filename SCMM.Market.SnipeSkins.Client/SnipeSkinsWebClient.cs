@@ -15,7 +15,7 @@ namespace SCMM.Market.SnipeSkins.Client
         {
             using (var client = BuildWebApiHttpClient(host: new Uri(WebsiteBaseUri)))
             {
-                var url = $"{WebsiteBaseUri}/api/market/{appId}/prices";
+                var url = $"{WebsiteBaseUri}/api/v1.1/market/{appId}/prices";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
