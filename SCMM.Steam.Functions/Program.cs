@@ -21,6 +21,7 @@ using SCMM.Market.CSTrade.Client;
 using SCMM.Market.DMarket.Client;
 using SCMM.Market.DMarket.Client.Extensions;
 using SCMM.Market.iTradegg.Client;
+using SCMM.Market.iTradegg.Client.Extensions;
 using SCMM.Market.LootFarm.Client;
 using SCMM.Market.ManncoStore.Client;
 using SCMM.Market.RapidSkins.Client;
@@ -211,6 +212,11 @@ public static class HostExtensions
                 return configuration.GetDMarketConfiguration();
             });
             services.AddSingleton<iTradeggWebClient>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetiTradeggConfiguration();
+            });
             services.AddSingleton<LootFarmWebClient>();
             services.AddSingleton<ManncoStoreWebClient>();
             services.AddSingleton<RapidSkinsWebClient>();

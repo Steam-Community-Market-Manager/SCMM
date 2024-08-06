@@ -1,22 +1,24 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
     public class iTradeggWebClient : Shared.Web.Client.WebClientBase
     {
-        private const string WebBaseUri = "https://itrade.gg/";
+        private const string ApiBaseUri = "https://api.itrade.gg/";
 
-        public iTradeggWebClient(ILogger<iTradeggWebClient> logger) : base(logger) { }
+        private readonly iTradeggConfiguration _configuration;
 
-        // TODO: Implement new API, https://api.itrade.gg/inventory/bot/rust-data
-        [Obsolete("This no longer works, API has been removed")]
-        public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
+        public iTradeggWebClient(ILogger<iTradeggWebClient> logger, iTradeggConfiguration configuration) : base(logger)
         {
-            using (var client = BuildWebBrowserHttpClient(referrer: new Uri(WebBaseUri)))
+            _configuration = configuration;
+        }
+
+        public async Task<iTradeggItems> GetInventoryAsync(string appName)
+        {
+            using (var client = BuildWebApiHttpClient())
             {
-                var url = $"{WebBaseUri}ajax/getInventory?game={appId}&type=bot";
+                var url = $"{ApiBaseUri}inventory/bot/{appName.ToLower()}/{_configuration.ApiKey}";
                 var response = await RetryPolicy.ExecuteAsync(() => client.GetAsync(url));
                 response.EnsureSuccessStatusCode();
 
@@ -26,8 +28,8 @@ namespace SCMM.Market.iTradegg.Client
                     return default;
                 }
 
-                var responseJson = JsonSerializer.Deserialize<iTradeggInventoryResponse>(textJson);
-                return responseJson?.Inventory?.Items?.Select(x => x.Value);
+                var responseJson = JsonSerializer.Deserialize<iTradeggResponse<iTradeggItems>>(textJson);
+                return responseJson?.Data;
             }
         }
     }

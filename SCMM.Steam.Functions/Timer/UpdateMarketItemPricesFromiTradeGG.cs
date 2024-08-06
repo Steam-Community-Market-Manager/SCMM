@@ -70,7 +70,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
         {
             stopwatch.Start();
 
-            var iTradeggItems = (await _iTradeggWebClient.GetInventoryAsync(app.SteamId)) ?? new List<iTradeggItem>();
+            var iTradeggItems = (await _iTradeggWebClient.GetInventoryAsync(app.Name)) ?? new iTradeggItems();
             var dbItems = await _db.SteamMarketItems
                 .Where(x => x.AppId == app.Id)
                 .Select(x => new
@@ -83,18 +83,18 @@ public class UpdateMarketItemPricesFromiTradeggJob
 
             foreach (var iTradeggItem in iTradeggItems)
             {
-                var item = dbItems.FirstOrDefault(x => x.Name == iTradeggItem.Name)?.Item;
+                var item = dbItems.FirstOrDefault(x => x.Name == iTradeggItem.Key)?.Item;
                 if (item != null)
                 {
                     item.UpdateBuyPrices(iTradegg, new PriceWithSupply
                     {
-                        Price = iTradeggItem.Same > 0 ? item.Currency.CalculateExchange(iTradeggItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                        Supply = iTradeggItem.Same
+                        Price = iTradeggItem.Value.Stock > 0 ? item.Currency.CalculateExchange(iTradeggItem.Value.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                        Supply = iTradeggItem.Value.Stock
                     });
                 }
             }
 
-            var missingItems = dbItems.Where(x => !iTradeggItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(iTradegg));
+            var missingItems = dbItems.Where(x => !iTradeggItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(iTradegg));
             foreach (var missingItem in missingItems)
             {
                 missingItem.Item.UpdateBuyPrices(iTradegg, null);
@@ -105,7 +105,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
             await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, iTradegg, x =>
             {
                 x.TotalItems = iTradeggItems.Count();
-                x.TotalListings = iTradeggItems.Sum(i => i.Same);
+                x.TotalListings = iTradeggItems.Sum(i => i.Value.Stock);
                 x.LastUpdatedItemsOn = DateTimeOffset.Now;
                 x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                 x.LastUpdateErrorOn = null;
