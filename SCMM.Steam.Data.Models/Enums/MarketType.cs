@@ -173,7 +173,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "SnipeSkins")]
         [Market(Constants.RustAppId, Color = "#f8546f")]
-        [BuyFrom(Url = "https://snipeskins.com/market?search={3}&sortBy=price&sortDir=asc", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
+        [BuyFrom(Url = "https://snipeskins.com/buy-rust-skins?search={3}&sortBy=price&sortDir=asc", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
         SnipeSkins = 37,
 
         /*
