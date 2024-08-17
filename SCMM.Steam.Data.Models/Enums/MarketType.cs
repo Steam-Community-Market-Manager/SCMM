@@ -40,7 +40,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://swap.gg/?r=xu9CNezP5w&game={0}", AcceptedPayments = PriceFlags.Trade)]
         SwapGGTrade = 12,
 
-        // TODO: [Obsolete("Website discontinued from 29th February 2024")]
+        [Obsolete("Website discontinued from 29th February 2024")]
         [Display(Name = "Swap.gg (Market)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF")]
         [BuyFrom(Url = "https://market.swap.gg/{1}?search={3}", AcceptedPayments = PriceFlags.Cash)]
