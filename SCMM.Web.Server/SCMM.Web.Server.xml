@@ -98,7 +98,7 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSales(System.String,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSales(System.String,System.Int32,System.Boolean)">
             <summary>
             Get item sales history chart data, grouped by day (UTC)
             </summary>
@@ -108,6 +108,7 @@
             </remarks>
             <param name="id">Item GUID, ID64, or name</param>
             <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
+            <param name="ochl">If true, open/close/high/low prices will be included</param>
             <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="404">If the request item cannot be found.</response>

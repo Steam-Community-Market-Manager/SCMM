@@ -519,6 +519,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="id">Item GUID, ID64, or name</param>
         /// <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
+        /// <param name="ochl">If true, open/close/high/low prices will be included</param>
         /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If the request item cannot be found.</response>
@@ -529,7 +530,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemSales([FromRoute] string id, int maxDays = 30)
+        public async Task<IActionResult> GetItemSales([FromRoute] string id, int maxDays = 30, bool ochl = false)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -556,7 +557,6 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
-            var getCandleData = (maxDays >= 1 && maxDays <= 30);
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
                 .Where(x => x.ItemId == item.Id)
@@ -567,10 +567,10 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Date = x.Key,
                     Median = x.Average(y => y.MedianPrice),
-                    High = (getCandleData ? x.Max(y => y.MedianPrice) : 0),
-                    Low = (getCandleData ? x.Min(y => y.MedianPrice) : 0),
-                    Open = (getCandleData && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).FirstOrDefault().MedianPrice : 0),
-                    Close = (getCandleData && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).LastOrDefault().MedianPrice : 0),
+                    High = (ochl ? x.Max(y => y.MedianPrice) : 0),
+                    Low = (ochl ? x.Min(y => y.MedianPrice) : 0),
+                    Open = (ochl && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).FirstOrDefault().MedianPrice : 0),
+                    Close = (ochl && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).LastOrDefault().MedianPrice : 0),
                     Volume = x.Sum(y => y.Quantity)
                 });
 

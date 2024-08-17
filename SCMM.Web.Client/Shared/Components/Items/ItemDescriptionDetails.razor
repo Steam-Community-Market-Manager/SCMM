@@ -964,6 +964,10 @@
                                 }
                             </MudText>
                             <div class="pa-1 flex-shrink-1">
+                                <MudToggleIconButton @bind-Toggled="@MarketItemSalesDetailed" Disabled="State.IsPrerendering"
+                                                     Icon="fa fw-fw fa-toggle-off" Color="@Color.Secondary" Title="Off"
+                                                     ToggledIcon="fa fw-fw fa-toggle-on" ToggledColor="@Color.Primary" ToggledTitle="On" />
+                                <span class="mr-2">Details @(MarketItemSalesDetailed ? "On" : "Off")</span>
                                 <MudToggleIconButton @bind-Toggled="@MarketItemSalesAnnotations" Disabled="State.IsPrerendering"
                                         Icon="fa fw-fw fa-toggle-off" Color="@Color.Secondary" Title="Off"
                                         ToggledIcon="fa fw-fw fa-toggle-on" ToggledColor="@Color.Primary" ToggledTitle="On"/>
@@ -1004,7 +1008,7 @@
                                         <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketItemSalesChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.Column">
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                         <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketItemSalesChartData" YAxisName="PriceAxis" Name="Median Price" XName="Date" YName="Median" Volume="Volume" High="High" Low="Low" Open="Open" Close="Close"
-                                                                              Fill="#388e3c" BearFillColor="#2ecd71" BullFillColor="#e74c3d" Type="@(MarketItemSalesMaxDays >= 1 && MarketItemSalesMaxDays <= 30 ? ChartSeriesType.Candle : ChartSeriesType.Line)">
+                                                                              Fill="#388e3c" BearFillColor="#2ecd71" BullFillColor="#e74c3d" Type="@(MarketItemSalesDetailed ? ChartSeriesType.Candle : ChartSeriesType.Line)">
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                     </ChartSeriesCollection>
                                     <ChartAnnotations>
@@ -1156,6 +1160,8 @@
     private IEnumerable<object> ItemSupplyDistributionChartData;
 
     private IEnumerable<ItemHoldingUserDTO> ItemHolders;
+    
+    private bool MarketItemSalesDetailed = false;
 
     private bool MarketItemSalesAnnotations = true;
 
@@ -1274,7 +1280,7 @@
             MarketItemSalesMaxDays = maxDays;
             MarketItemSalesChartData = null;
             StateHasChanged();
-            MarketItemSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemSalesChartPointDTO>>($"api/item/{Item.Id}/sales?maxDays={maxDays}");
+            MarketItemSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemSalesChartPointDTO>>($"api/item/{Item.Id}/sales?maxDays={maxDays}&ochl={MarketItemSalesDetailed}");
         }
         catch (Exception ex)
         {
