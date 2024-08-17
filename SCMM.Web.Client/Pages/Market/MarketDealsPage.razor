@@ -127,9 +127,13 @@
                                                             <MudChip Variant="Variant.Text" Color="@(item.IsBeingManipulated ? Color.Warning : ((item.DiscountAmount > 0) ? Color.Success : Color.Secondary))" Size="@Size.Small" Text="@($"-{item.DiscountAmount.ToPercentageString(item.ReferemcePrice) ?? "0%"}")" />
                                                         </ChildContent>
                                                     </MudTooltip>
+                                                    @if (item.BuySupplyAvailable > 0)
+                                                    {
+                                                        <MudChip Variant="Variant.Text" Color="Color.Secondary" Size="@Size.Small" Text="@($"{item.BuySupplyAvailable.Value.ToQuantityString()} available")" />
+                                                    }
                                                     @if (GetTimeSinceLastMarketPriceUpdate(item.BuyFrom) != null)
                                                     {
-                                                        <small class="mud-secondary-text"> @GetTimeSinceLastMarketPriceUpdate(item.BuyFrom).Value.ToDurationString(maxGranularity: 2, prefix: "price checked", suffix: "ago") </small>
+                                                        <MudChip Variant="Variant.Text" Color="Color.Secondary" Size="@Size.Small" Text="@GetTimeSinceLastMarketPriceUpdate(item.BuyFrom).Value.ToDurationString(maxGranularity: 2, prefix: "Checked", suffix: "ago")" />
                                                     }
                                                 </MudText>
                                             </td>
@@ -278,9 +282,13 @@
                                                                 </ChildContent>
                                                             </MudTooltip>
                                                         }
+                                                        @if (item.BuySupplyAvailable > 0)
+                                                        {
+                                                            <MudChip Variant="Variant.Text" Color="Color.Secondary" Size="@Size.Small" Text="@($"{item.BuySupplyAvailable.Value.ToQuantityString()} available")" />
+                                                        }
                                                         @if (GetTimeSinceLastMarketPriceUpdate(item.BuyFrom) != null)
                                                         {
-                                                            <small class="mud-secondary-text"> @GetTimeSinceLastMarketPriceUpdate(item.BuyFrom).Value.ToDurationString(maxGranularity: 2, prefix: "price checked", suffix: "ago") </small>
+                                                            <MudChip Variant="Variant.Text" Color="Color.Secondary" Size="@Size.Small" Text="@GetTimeSinceLastMarketPriceUpdate(item.BuyFrom).Value.ToDurationString(maxGranularity: 2, prefix: "Checked", suffix: "ago")" />
                                                         }
                                                     </MudText>
                                                 </td>

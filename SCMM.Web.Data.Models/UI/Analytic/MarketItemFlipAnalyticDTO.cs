@@ -17,6 +17,8 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public DateTimeOffset? BuyPriceLastUpdatedOn { get; set; }
 
+        public int? BuySupplyAvailable { get; set; }
+
         public long BuyPrice { get; set; }
 
         public long BuyFee { get; set; }

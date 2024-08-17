@@ -178,6 +178,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
+                            Supply = p.Value.Supply,
                             BuyPrice = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
                             BuyFee = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
                             BuyUrl = p.Key.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
@@ -196,6 +197,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = x.Item.Name,
                     BuyFrom = x.LowestPrice.MarketType,
                     BuyPriceLastUpdatedOn = null,
+                    BuySupplyAvailable = x.LowestPrice.Supply,
                     BuyPrice = this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyFee = this.Currency().CalculateExchange(x.LowestPrice.BuyFee ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyUrl = x.LowestPrice.BuyUrl,
@@ -270,6 +272,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
+                            Supply = p.Value.Supply,
                             BuyPrice = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
                             BuyFee = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
                             BuyUrl = p.Key.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
@@ -288,6 +291,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = x.Item.Name,
                     BuyFrom = x.LowestPrice.MarketType,
                     BuyPriceLastUpdatedOn = null,
+                    BuySupplyAvailable = x.LowestPrice.Supply,
                     BuyPrice = this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyFee = this.Currency().CalculateExchange(x.LowestPrice.BuyFee ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyUrl = x.LowestPrice.BuyUrl,
