@@ -687,7 +687,7 @@
                                                             @if (price.Fee != 0 && State.Profile.ItemIncludeMarketFees)
                                                             {
                                                                 <p>
-                                                                    <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated @((price.Fee > 0) ? "fees charged" : "discounts given") when buying @price.MarketType.GetDisplayName() balance using @price.AcceptedPayments.ToString().ToLower()</span>
+                                                                    <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated @((price.Fee > 0) ? "fees charged" : "discounts received") when buying @price.MarketType.GetDisplayName() balance using @price.AcceptedPayments.ToString().ToLower()</span>
                                                                 </p>
                                                             }
                                                         </TooltipContent>

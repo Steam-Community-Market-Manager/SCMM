@@ -12,24 +12,19 @@ public class BuyFromAttribute : Attribute
     public PriceFlags AcceptedPayments { get; set; }
 
     /// <summary>
-    /// Fixed amount to subtract from the price
+    /// Multiplier of "bonus balance" earned from buying market site balance
     /// </summary>
-    public long DiscountFixedAmount { get; set; }
+    public float BonusBalanceMultiplier { get; set; }
 
     /// <summary>
-    /// Multiplier to subtract from the price
-    /// </summary>
-    public float DiscountMultiplier { get; set; }
-
-    /// <summary>
-    /// Fixed amount to add to the price
+    /// Fixed surcharge amount to add to the price
     /// </summary>
     public long SurchargeFixedAmount { get; set; }
 
     /// <summary>
-    /// Multiplier to add to the price
+    /// Percentage surcharge amount to add to the price
     /// </summary>
-    public float SurchargeMultiplier { get; set; }
+    public float SurchargePercentage { get; set; }
 
     /// <summary>
     /// If the market uses an in-house currency, this is the description (e.g. "coins")
@@ -55,17 +50,13 @@ public class BuyFromAttribute : Attribute
     public long CalculateBuyFees(long price)
     {
         var buyFees = 0L;
-        if (DiscountMultiplier > 0 && price > 0)
+        if (BonusBalanceMultiplier > 0 && price > 0)
         {
-            buyFees -= (long)Math.Round(price * DiscountMultiplier, 0);
+            buyFees -= (long)Math.Round(price - (price * BonusBalanceMultiplier), 0);
         }
-        if (DiscountFixedAmount != 0 && price > 0)
+        if (SurchargePercentage != 0 && price > 0)
         {
-            buyFees -= SurchargeFixedAmount;
-        }
-        if (SurchargeMultiplier != 0 && price > 0)
-        {
-            buyFees += (long)Math.Round(price * SurchargeMultiplier, 0);
+            buyFees += (long)Math.Round(price * SurchargePercentage, 0);
         }
         if (SurchargeFixedAmount != 0 && price > 0)
         {

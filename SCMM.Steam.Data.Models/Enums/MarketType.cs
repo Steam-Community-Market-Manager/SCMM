@@ -29,14 +29,14 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "LOOT.Farm")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#06FDDE")]
-        [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Crypto, DiscountMultiplier = 0.30f /* 30% */)]
-        [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Cash, DiscountMultiplier = 0.20f /* 20% */)]
+        [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Crypto, BonusBalanceMultiplier = 0.76923076923076923076923076923077f /* 30% */)]
+        [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Cash, BonusBalanceMultiplier = 0.83333333333333333333333333333333f /* 20% */)]
         [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Trade)]
         LOOTFarm = 11,
 
         [Display(Name = "Swap.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF", AffiliateUrl = "https://swap.gg/?r=xu9CNezP5w")]
-        [BuyFrom(Url = "https://swap.gg/?r=xu9CNezP5w&game={0}", AcceptedPayments = PriceFlags.Cash, DiscountMultiplier = 0.20f /* 20% */)]
+        [BuyFrom(Url = "https://swap.gg/?r=xu9CNezP5w&game={0}", AcceptedPayments = PriceFlags.Cash, BonusBalanceMultiplier = 0.83333333333333333333333333333333f /* 20% */)]
         [BuyFrom(Url = "https://swap.gg/?r=xu9CNezP5w&game={0}", AcceptedPayments = PriceFlags.Trade)]
         SwapGGTrade = 12,
 
@@ -48,7 +48,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F", AffiliateUrl = "https://tradeit.gg/?aff=scmm")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.35f /* 35% */)]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, BonusBalanceMultiplier = 0.74074074074074074074074074074074f /* 35% */)]
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Trade)]
         TradeitGG = 14,
 
@@ -75,7 +75,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [Display(Name = "RUST Skins")]
         [Market(Constants.RustAppId, Color = "#EF7070")]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Crypto)]
-        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Cash, SurchargeMultiplier = 0.099f /* 9.9% */)]
+        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Cash, SurchargePercentage = 0.099f /* 9.9% */)]
         RUSTSkins = 18,
 
         [Display(Name = "Rust.tm")]
@@ -97,7 +97,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "CS.TRADE")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#F3C207", AffiliateUrl = "https://cs.trade/ref/SCMM")]
-        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPayments = PriceFlags.Cash, DiscountMultiplier = 0.50f /* 50% */)]
+        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPayments = PriceFlags.Cash, BonusBalanceMultiplier = 0.66666666666666666666666666666667f /* 50% */)]
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPayments = PriceFlags.Trade)]
         CSTRADE = 22,
 
@@ -114,22 +114,22 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "SkinsMonkey")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#F5C71B")]
-        [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.30f /* 35% */)]
+        [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, BonusBalanceMultiplier = 0.74074074074074074074074074074074f /* 35% */)]
         [BuyFrom(Url = "https://skinsmonkey.com/trade", AcceptedPayments = PriceFlags.Trade)]
         SkinsMonkey = 25,
 
         [Obsolete("APIs have changed, web client needs updating")]
         [Display(Name = "Skin Swap")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#FF4B4B", AffiliateUrl = "https://skinswap.com/r/scmm")]
-        [BuyFrom(Url = "https://skinswap.com/r/scmm", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, DiscountMultiplier = 0.40f /* 40% */)]
+        [BuyFrom(Url = "https://skinswap.com/r/scmm", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, BonusBalanceMultiplier = 0.71428571428571428571428571428571f /* 40% */)]
         [BuyFrom(Url = "https://skinswap.com/r/scmm", AcceptedPayments = PriceFlags.Trade)]
         SkinSwap = 26,
 
         // TODO: Restricted to 100 items per query, too slow for CSGO items
         [Display(Name = "DMarket")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294", AffiliateUrl = "https://dmarket.com?ref=6tlej6xqvD")]
-        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}", AcceptedPayments = PriceFlags.Cash, SurchargeMultiplier = 0.0385f /* 3.85% */, SurchargeFixedAmount = 30 /* $0.30 */)]
-        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}", AcceptedPayments = PriceFlags.Crypto, SurchargeMultiplier = 0.02f /* 2% */ )]
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}", AcceptedPayments = PriceFlags.Cash, SurchargePercentage = 0.0385f /* 3.85% */, SurchargeFixedAmount = 30 /* $0.30 */)]
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}", AcceptedPayments = PriceFlags.Crypto, SurchargePercentage = 0.02f /* 2% */ )]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=exchange&title={3}", AcceptedPayments = PriceFlags.Trade)]
         DMarket = 28,
 
@@ -165,22 +165,22 @@ namespace SCMM.Steam.Data.Models.Enums
         [Obsolete("APIs have changed, web client needs updating")]
         [Display(Name = "RapidSkins")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#ffd500", AffiliateUrl = "https://rapidskins.com/a/scmm")]
-        [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPayments = PriceFlags.Cash, SurchargeMultiplier = 0.02f /* 5% */)]
-        [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPayments = PriceFlags.Crypto, SurchargeMultiplier = 0.02f /* 2% */)]
+        [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPayments = PriceFlags.Cash, SurchargePercentage = 0.02f /* 5% */)]
+        [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPayments = PriceFlags.Crypto, SurchargePercentage = 0.02f /* 2% */)]
         [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPayments = PriceFlags.Trade)]
         RapidSkins = 34,
 
         [Display(Name = "Skin Serpent")]
         [Market(Constants.RustAppId, Color = "#29d14a")]
-        [BuyFrom(Url = "https://skinserpent.com/?sortBy=P_DESC&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, SurchargeMultiplier = 0.02f /* 5% */)]
+        [BuyFrom(Url = "https://skinserpent.com/?sortBy=P_DESC&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, SurchargePercentage = 0.02f /* 5% */)]
         [BuyFrom(Url = "https://skinserpent.com/?sortBy=P_DESC&search={3}", AcceptedPayments = PriceFlags.Trade)]
         SkinSerpent = 35,
 
         [Display(Name = "Rustyloot.gg")]
         [Market(Constants.RustAppId, Color = "#ffb135", IsCasino = true /*, AffiliateUrl = "https://rustyloot.gg/r/SCMM" */)]
-        [BuyFrom(Url = "https://rustyloot.gg/?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Cash, DiscountMultiplier = 0.55f /* 55% */,
+        [BuyFrom(Url = "https://rustyloot.gg/?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Cash, BonusBalanceMultiplier = 0.64516129032258064516129032258065f /* 55% */,
                  HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]
-        [BuyFrom(Url = "https://rustyloot.gg/?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Crypto, DiscountMultiplier = 0.575f /* 57.5% */,
+        [BuyFrom(Url = "https://rustyloot.gg/?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Crypto, BonusBalanceMultiplier = 0.63492063492063492063492063492063f /* 57.5% */,
                  HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]
         [BuyFrom(Url = "https://rustyloot.gg/?withdraw=true&rust=true", AcceptedPayments = PriceFlags.Trade,
                  HouseCurrencyName = "Coin", HouseCurrencyScale = 2, HouseCurrencyToUsdExchangeRate = 0.64516129032258064516129032258065)]

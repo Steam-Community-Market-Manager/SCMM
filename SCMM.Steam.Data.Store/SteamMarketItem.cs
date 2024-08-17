@@ -375,8 +375,8 @@ namespace SCMM.Steam.Data.Store
                     .Select(x => new
                     {
                         From = x.Type,
-                        Price = x.Price,
-                        Fee = (x.SellTo.FeeRate != 0 ? x.Price.MarketSaleFeeComponentAsInt(x.SellTo.FeeRate) : 0) + x.SellTo.FeeSurcharge
+                        Price = x.SellTo?.CalculateSellPrice(x.Price) ?? 0,
+                        Fee = x.SellTo?.CalculateSellFees(x.Price) ?? 0
                     })
                     .MaxBy(x => x.Price);
                 SellNowTo = highestSellPrice.From;
@@ -397,8 +397,8 @@ namespace SCMM.Steam.Data.Store
                     .Select(x => new
                     {
                         From = x.Type,
-                        Price = (x.Price + 1),
-                        Fee = (x.BuyFrom.SurchargeMultiplier != 0 ? (x.Price + 1).MarketSaleFeeComponentAsInt(x.BuyFrom.SurchargeMultiplier) : 0) + x.BuyFrom.SurchargeFixedAmount
+                        Price = x.BuyFrom?.CalculateBuyPrice(x.Price + 1) ?? 0,
+                        Fee = x.BuyFrom?.CalculateBuyFees(x.Price + 1) ?? 0
                     })
                     .MinBy(x => x.Price);
                 BuyLaterFrom = lowestBuyPrice.From;
