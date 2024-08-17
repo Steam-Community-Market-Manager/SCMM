@@ -1,0 +1,52 @@
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
+
+@foreach (var itemHolder in ItemHolders)
+{
+    <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@($"{(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)} mb-4")">
+        <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} has {itemHolder.Items} of these items")" Placement="Placement.Top" RootClass="mx-2">
+            <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-3" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" Disabled="State.IsPrerendering">
+                <ActivatorContent>
+                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="99999" Overlap="true" Bordered="true" Origin="Origin.BottomCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
+                        <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="rounded-pill mr-1" style="width:3rem; height:3rem;" />
+                    </MudBadge>
+                </ActivatorContent>
+                <ChildContent>
+                    @if (!String.IsNullOrEmpty(itemHolder.SteamId))
+                    {
+                        <MudMenuItem OnClick="@(() => ViewProfileOnSteam(itemHolder.SteamId))">
+                            <i class="fab fa-fw fa-steam mr-1"></i>
+                            <span>View Inventory on Steam</span>
+                        </MudMenuItem>
+                    }
+                </ChildContent>
+            </MudMenu>
+        </MudTooltip>
+    </div>
+}
+
+@code {
+
+    [Parameter] 
+    public IEnumerable<ItemHoldingUserDTO> ItemHolders { get; set; }
+
+    private void ViewProfileInventory(string steamId)
+    {
+        if (!String.IsNullOrEmpty(steamId))
+        {
+            ExternalNavigationManager.NavigateToNewTabAsync($"/inventory/{Uri.EscapeDataString(steamId)}");
+        }
+    }
+
+    private void ViewProfileOnSteam(string steamId)
+    {
+        ExternalNavigationManager.NavigateToNewTabAsync(new SteamProfileInventoryPageRequest()
+        {
+            SteamId = Uri.EscapeDataString(steamId),
+            AppId = State.AppId.ToString()
+        });
+    }
+
+}

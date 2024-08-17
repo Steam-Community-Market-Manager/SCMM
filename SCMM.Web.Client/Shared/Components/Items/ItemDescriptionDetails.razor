@@ -748,17 +748,9 @@
             @if (Item.IsTradable && ItemHolders?.Any() == true)
             {
                 <MudItem xs="12">
-                    <MudPaper Outlined="true" Class="pa-2 pt-4 pb-6 d-flex scroll-x">
-                        @foreach (var itemHolder in ItemHolders)
-                        {
-                            <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)">
-                                <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} has {itemHolder.Items} of these items")" RootClass="mx-2">
-                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="99999" Overlap="true" Bordered="true" Origin="Origin.BottomCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
-                                        <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="rounded-pill mr-1" style="width:3rem; height:3rem;" />
-                                    </MudBadge>
-                                </MudTooltip>
-                            </div>
-                        }
+
+                    <MudPaper Outlined="true" Class="px-2 py-4 d-flex scroll-x">
+                        <ItemHoldersSummary ItemHolders="@ItemHolders" />
                     </MudPaper>
                 </MudItem>
             }
@@ -1388,14 +1380,6 @@
     private void DownloadItemWorkshopFile()
     {
         ExternalNavigationManager.NavigateToAsync(Item.WorkshopFileUrl);
-    }
-    
-    private void ViewProfileInventory(string steamId)
-    {
-        if (!String.IsNullOrEmpty(steamId))
-        {
-            ExternalNavigationManager.NavigateToNewTabAsync($"/inventory/{Uri.EscapeDataString(steamId)}");
-        }
     }
     
     private void ShowItemModelDialog()

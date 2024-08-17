@@ -56,17 +56,8 @@
                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="text-centered">
                         <span>Top 30 inventories holding this item</span>
                     </MudText>
-                    <div class="d-flex flex-wrap justify-center align-center pa-4">
-                        @foreach (var itemHolder in ItemHolders)
-                        {
-                            <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@($"{(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)} mb-4")">
-                                <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} has {itemHolder.Items} of these items")" RootClass="mx-2">
-                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="99999" Overlap="true" Bordered="true" Origin="Origin.BottomCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
-                                        <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="rounded-pill mr-1" style="width:3rem; height:3rem;" />
-                                    </MudBadge>
-                                </MudTooltip>
-                            </div>
-                        }
+                    <div class="d-flex flex-wrap justify-center align-center px-2 py-4">
+                        <ItemHoldersSummary ItemHolders="@ItemHolders" />
                     </div>
                 }
             </div>
@@ -125,14 +116,6 @@
                 Logger.LogError(ex, $"Error loading the item holders list");
                 Snackbar.Add($"Unable to load item holders list. {ex.Message}", MudBlazor.Severity.Error);
             }
-        }
-    }
-
-    private void ViewProfileInventory(string steamId)
-    {
-        if (!String.IsNullOrEmpty(steamId))
-        {
-            ExternalNavigationManager.NavigateToNewTabAsync($"/inventory/{Uri.EscapeDataString(steamId)}");
         }
     }
 
