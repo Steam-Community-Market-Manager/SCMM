@@ -3,7 +3,7 @@
 @inject AppState State
 
 <div @attributes="AdditionalAttributes">
-    <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change the user interface rendering mode">
+    <MudMenu ActivationEvent="@MouseEvent.LeftClick" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change the user interface rendering mode">
         <ActivatorContent>
             <MudIconButton Icon="@((State.Runtime == RuntimeType.Server) ? "fas fa-fw fa-bolt" : "fas fa-fw fa-frog")" Color="@((State.Runtime == RuntimeType.Server) ? Color.Secondary : Color.Secondary)" Disabled="State.IsPrerendering"></MudIconButton>
         </ActivatorContent>
