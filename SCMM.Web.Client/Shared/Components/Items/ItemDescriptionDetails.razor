@@ -650,15 +650,29 @@
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
                         <div class="d-flex flex-row align-stretch justify-center flex-wrap">
-                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || x.IsAvailable).OrderBy(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
+                            @foreach (var price in GetItemPrices())
                             {
-                                <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
-                                    <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
+                                <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()} using {price.AcceptedPayments.ToString().ToLower()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
+                                    <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)} {(price.MarketType.IsCasino() ? "mud-warning-text" : null)}")">
                                         <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
                                             <img src="@($"/images/app/{State.App.Id}/markets/{price.MarketType.ToString().ToLower()}.png")" alt="@price.MarketType.GetDisplayName()" title="@price.MarketType.GetDisplayName()" style="width:1.3em; height:1.3em" />
                                             @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) > 0)
                                             {
                                                 <span class="pl-2">@State.Currency.ToPriceString((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)))</span>
+                                                @if (price.MarketType.IsCasino())
+                                                {
+                                                    <MudTooltip>
+                                                        <TooltipContent>
+                                                            <p class="mud-warning-text">@price.MarketType.GetDisplayName() is a gambling website</p>
+                                                            <p>Gambling websites often have restrictions on deposits and withdraws (e.g. minimum wagers) which can impact the true cost of an item purchase.</p>
+                                                            <p>Make sure you read the @price.MarketType.GetDisplayName() terms of service, ensure you are legally allowed to gamble and that you fully understand the risks of gambling.</p>
+                                                        </TooltipContent>
+                                                        <ChildContent>
+                                                            <span> + </span>
+                                                            <i class="fa fa-fw fa-dice ml-1"></i>
+                                                        </ChildContent>
+                                                    </MudTooltip>
+                                                }
                                                 @if ((price.HousePrice != null) || (price.Fee != 0 && State.Profile.ItemIncludeMarketFees)) 
                                                 {
                                                     <MudTooltip>
@@ -673,31 +687,12 @@
                                                             @if (price.Fee != 0 && State.Profile.ItemIncludeMarketFees)
                                                             {
                                                                 <p>
-                                                                    @if (price.Fee > 0)
-                                                                    {
-                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated fees charged by @price.MarketType.GetDisplayName() or their payment providers</span>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated bonus balance from purchasing @price.MarketType.GetDisplayName() balance</span>
-                                                                    }
+                                                                    <span>This price includes @State.Currency.ToPriceString(price.Fee) in estimated @((price.Fee > 0) ? "fees charged" : "discounts given") when buying @price.MarketType.GetDisplayName() balance using @price.AcceptedPayments.ToString().ToLower()</span>
                                                                 </p>
                                                             }
                                                         </TooltipContent>
                                                         <ChildContent>
-                                                            <i class="fa fa-fw fa-comment-dollar ml-1"></i>
-                                                        </ChildContent>
-                                                    </MudTooltip>
-                                                }
-                                                @if (price.MarketType.IsCasino())
-                                                {
-                                                    <MudTooltip>
-                                                        <TooltipContent>
-                                                            <p>@price.MarketType.GetDisplayName() is a gambling website. There <i>might</i> be restrictions on deposits and withdraws, such as minimum wagers.</p>
-                                                            <p>Make sure you read the @price.MarketType.GetDisplayName() terms of service, ensure you are legally allowed to gamble and that you fully understand the risks of gambling.</p>
-                                                        </TooltipContent>
-                                                        <ChildContent>
-                                                            <i class="fa fa-fw fa-dice ml-1"></i>
+                                                            <i class="fa fa-fw fa-comment-dollar ml-1 mud-secondary-text"></i>
                                                         </ChildContent>
                                                     </MudTooltip>
                                                 }
@@ -706,27 +701,8 @@
                                             {
                                                 <span class="pl-2">Unavailable</span>
                                             }
-                                            @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) > 0 && price.MarketType != MarketType.SteamStore)
-                                            {
-                                                @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) == Item.BuyPrices.Where(x => x.IsAvailable).Min(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
-                                                {
-                                                    <MudChip Size="MudBlazor.Size.Small" Text="Best Deal" Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="ma-0 ml-2" />
-                                                }
-                                            }
 									    </MudText>
                                         <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Trade))
-                                            {
-                                                <i class="fa fa-fw fa-exchange-alt mr-1" title="Accepts item trade-in payments"></i>
-                                            }
-                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Cash))
-                                            {
-                                                <i class="fa fa-fw fa-credit-card mr-1" title="Accepts cash card payments"></i>
-                                            }
-                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Crypto))
-                                            {
-                                                <i class="fab fa-fw fa-bitcoin mr-1" title="Accepts crypto currency payments"></i>
-                                            }
                                             <span>@price.MarketType.GetDisplayName()</span>
                                             @if (price.MarketType == MarketType.SteamStore && Item.Stores?.Any() == true)
                                             {
@@ -735,6 +711,18 @@
                                             else if (price.MarketType != MarketType.SteamStore && price.Supply > 0)
                                             {
                                                 <span> (@(price.Supply != null ? price.Supply.Value.ToQuantityString() : "???"))</span>
+                                            }
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Trade))
+                                            {
+                                                <i class="fa fa-fw fa-exchange-alt ml-1" title="Accepts item trade-in payments"></i>
+                                            }
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Cash))
+                                            {
+                                                <i class="fa fa-fw fa-credit-card ml-1" title="Accepts cash card payments"></i>
+                                            }
+                                            @if (price.AcceptedPayments.HasFlag(PriceFlags.Crypto))
+                                            {
+                                                <i class="fab fa-fw fa-bitcoin ml-1" title="Accepts crypto currency payments"></i>
                                             }
                                         </MudText>
                                     </div>
@@ -1160,7 +1148,7 @@
     private IEnumerable<object> ItemSupplyDistributionChartData;
 
     private IEnumerable<ItemHoldingUserDTO> ItemHolders;
-    
+
     private bool MarketItemSalesDetailed = false;
 
     private bool MarketItemSalesAnnotations = true;
@@ -1315,7 +1303,7 @@
                 Value = (double) Item.SupplyTotalOwnersKnown.Value
             });
         }
-        
+
         var outstandingEstimatedInvestorsSupply = Math.Max((Item.SupplyTotalInvestorsEstimated ?? 0) - (Item.SupplyTotalInvestorsKnown ?? 0), 0);
         if (outstandingEstimatedInvestorsSupply > 0)
         {
@@ -1333,7 +1321,7 @@
                 Value = (double) Item.SupplyTotalInvestorsKnown.Value
             });
         }
-        
+
         if (Item.BuyPrices?.Any() == true)
         {
             foreach (var market in Item.BuyPrices.Where(x => x.IsAvailable && x.Supply > 0))
@@ -1358,7 +1346,7 @@
             ExternalNavigationManager.NavigateToNewTabAsync(price.Url);
         }
     }
-    
+
     private void ViewStorePage(string storeId)
     {
         ExternalNavigationManager.NavigateToNewTabAsync(
@@ -1382,12 +1370,12 @@
             Id = Item.WorkshopFileId.ToString()
         });
     }
-    
+
     private void DownloadItemWorkshopFile()
     {
         ExternalNavigationManager.NavigateToAsync(Item.WorkshopFileUrl);
     }
-    
+
     private void ShowItemModelDialog()
     {
         Dialogs.Show<ViewItemModelDialog>(null, parameters: new DialogParameters()
@@ -1408,7 +1396,7 @@
             AppId = Item.AppId.ToString()
         });
     }
-    
+
     private void ShowCreatorItemsDialog()
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
@@ -1442,7 +1430,7 @@
             ["CollectionUrl"] = $"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}"
         });
     }
-    
+
     private string GetGlowClass()
     {
         if (Item.HasGlow == true)
@@ -1470,7 +1458,18 @@
         }
         return null;
     }
-    
+
+    private IEnumerable<ItemMarketPriceDTO> GetItemPrices(bool bestPriceOnly = false)
+    {
+        var prices = Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || x.IsAvailable);
+        if (bestPriceOnly)
+        {
+            prices = prices.GroupBy(x => x.MarketType).Select(x => x.MinBy(y => y.Total));
+        }
+
+        return prices.OrderBy(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0)));
+    }
+
     private string GetActivityDescription(ItemActivityStatisticDTO activity)
     {
         if (activity.IsSale)

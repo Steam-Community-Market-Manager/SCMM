@@ -141,6 +141,7 @@ namespace SCMM.Web.Server.API.Controllers
                 profile.Currency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == command.Currency);
             }
             profile.StoreTopSellers = command.StoreTopSellers;
+            profile.PaymentTypes = command.PaymentTypes;
             profile.MarketTypes = command.MarketTypes;
             profile.MarketValue = command.MarketValue;
             profile.ItemInfo = command.ItemInfo;

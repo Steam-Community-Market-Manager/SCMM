@@ -105,17 +105,10 @@
                                                     {
                                                         <MudTooltip>
                                                             <TooltipContent>
-                                                                @if (item.BuyFee > 0)
-                                                                {
-                                                                    <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimated fees charged by @item.BuyFrom.GetDisplayName()</span>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimate discounts gained by purchasing new @item.BuyFrom.GetDisplayName() balance</span>
-                                                                }
+                                                                <span>This price includes @State.Currency.ToPriceString(item.BuyFee) in estimated @((item.BuyFee > 0) ? "fees charged" : "discounts given") when buying @item.BuyFrom.GetDisplayName() balance using @item.BuyAcceptedPayments?.ToString()?.ToLower()</span>
                                                             </TooltipContent>
                                                             <ChildContent>
-                                                                <i class="fa fa-fw fa-comment-dollar"></i>
+                                                                <i class="fa fa-fw fa-comment-dollar mud-secondary-text"></i>
                                                             </ChildContent>
                                                         </MudTooltip>
                                                     }
@@ -268,17 +261,10 @@
                                                         {
                                                             <MudTooltip>
                                                                 <TooltipContent>
-                                                                    @if (item.BuyFee > 0)
-                                                                    {
-                                                                        <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimated fees charged by @item.BuyFrom.GetDisplayName()</span>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimate discounts gained by purchasing @item.BuyFrom.GetDisplayName() balance</span>
-                                                                    }
+                                                                    <span>This price includes @State.Currency.ToPriceString(item.BuyFee) in estimated @((item.BuyFee > 0) ? "fees charged" : "discounts given") when buying @item.BuyFrom.GetDisplayName() balance using @item.BuyAcceptedPayments?.ToString()?.ToLower()</span>
                                                                 </TooltipContent>
                                                                 <ChildContent>
-                                                                    <i class="fa fa-fw fa-comment-dollar"></i>
+                                                                    <i class="fa fa-fw fa-comment-dollar mud-secondary-text"></i>
                                                                 </ChildContent>
                                                             </MudTooltip>
                                                         }

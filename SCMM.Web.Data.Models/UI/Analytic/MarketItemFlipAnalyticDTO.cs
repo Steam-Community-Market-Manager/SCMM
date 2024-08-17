@@ -19,6 +19,8 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public int? BuySupplyAvailable { get; set; }
 
+        public PriceFlags? BuyAcceptedPayments { get; set; }
+
         public long BuyPrice { get; set; }
 
         public long BuyFee { get; set; }

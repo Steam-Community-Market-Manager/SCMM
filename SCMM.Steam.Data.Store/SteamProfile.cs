@@ -82,6 +82,14 @@ namespace SCMM.Steam.Data.Store
 
         [JsonIgnore]
         [NotMapped]
+        public PriceFlags PaymentTypes
+        {
+            get { return Enum.Parse<PriceFlags>(Preferences.GetOrDefault(nameof(PaymentTypes), (PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto).ToString()), true); }
+            set { Preferences[nameof(PaymentTypes)] = value.ToString(); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
         public MarketType[] MarketTypes
         {
             get { return Preferences.GetOrDefault(nameof(MarketTypes), String.Join(",", Enum.GetValues<MarketType>())).Split(",").Where(x => !String.IsNullOrEmpty(x)).Select(x => Enum.Parse<MarketType>(x)).ToArray(); }

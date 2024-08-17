@@ -36,16 +36,18 @@ namespace SCMM.Steam.Data.Models.Extensions
             return GetCustomAttribute<MarketAttribute>(marketType)?.SupportedAppIds ?? new ulong[0];
         }
 
-        public static IEnumerable<BuyFromAttribute> GetBuyFromOptions(this MarketType marketType)
+        public static IEnumerable<BuyFromAttribute> GetBuyFromOptions(this MarketType marketType, PriceFlags? withAcceptedPayments = null)
         {
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);
-            return marketTypeField?.GetCustomAttributes<BuyFromAttribute>() ?? Enumerable.Empty<BuyFromAttribute>();
+            return (marketTypeField?.GetCustomAttributes<BuyFromAttribute>() ?? Enumerable.Empty<BuyFromAttribute>())
+                ?.Where(x => withAcceptedPayments == null || ((int)x.AcceptedPayments & (int)withAcceptedPayments) != 0);
         }
 
-        public static IEnumerable<SellToAttribute> GetSellToOptions(this MarketType marketType)
+        public static IEnumerable<SellToAttribute> GetSellToOptions(this MarketType marketType, PriceFlags? withAcceptedPayments = null)
         {
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);
-            return marketTypeField?.GetCustomAttributes<SellToAttribute>() ?? Enumerable.Empty<SellToAttribute>();
+            return (marketTypeField?.GetCustomAttributes<SellToAttribute>() ?? Enumerable.Empty<SellToAttribute>())
+                ?.Where(x => withAcceptedPayments == null || ((int)x.AcceptedPayments & (int)withAcceptedPayments) != 0);
         }
 
         private static T GetCustomAttribute<T>(this MarketType marketType) where T : Attribute

@@ -233,17 +233,17 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency, MarketType[] marketTypes = null)
+        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency, MarketType[] marketTypes = null, PriceFlags? withAcceptedPayments = null)
         {
             // TODO: Currently prioritises first part markets over third party markets, re-think this....
-            return GetBuyPrices(currency, marketTypes)
+            return GetBuyPrices(currency, marketTypes, withAcceptedPayments)
                 .Where(x => x.IsAvailable)
                 .OrderByDescending(x => x.IsFirstPartyMarket)
                 .ThenBy(x => x.Price + x.Fee)
                 .FirstOrDefault();
         }
 
-        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency, MarketType[] marketTypes = null)
+        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency, MarketType[] marketTypes = null, PriceFlags? withAcceptedPayments = null)
         {
             // Store price
             if (StoreItem != null && StoreItem.Currency != null)
@@ -295,7 +295,7 @@ namespace SCMM.Steam.Data.Store
                     };
                 }
                 var steamStoreMarket = MarketType.SteamStore;
-                foreach (var buyFromOption in steamStoreMarket.GetBuyFromOptions())
+                foreach (var buyFromOption in steamStoreMarket.GetBuyFromOptions(withAcceptedPayments))
                 {
                     yield return new MarketPrice
                     {
@@ -333,7 +333,7 @@ namespace SCMM.Steam.Data.Store
                         currency = MarketItem.Currency;
                         lowestPrice = marketPrice.Value.Price;
                     }
-                    foreach (var buyFromOption in marketPrice.Key.GetBuyFromOptions())
+                    foreach (var buyFromOption in marketPrice.Key.GetBuyFromOptions(withAcceptedPayments))
                     {
                         yield return new MarketPrice
                         {

@@ -269,7 +269,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             {
                 var marketName = marketItem.BuyNowFrom.GetDisplayName();
                 var marketColor = marketItem.BuyNowFrom.GetColor();
-                var marketUrl = marketItem.BuyNowFrom.GetBuyFromOptions()?.FirstOrDefault()?.GenerateBuyUrl(
+                var marketUrl = marketItem.BuyNowFrom.GetBuyFromOptions()?.FirstOrDefault()?.GenerateBuyUrl( // TODO: What happens if there are multiple buy options?
                     assetDescription.App.SteamId, assetDescription.App.Name, assetDescription.ClassId, assetDescription.Name
                 );
 

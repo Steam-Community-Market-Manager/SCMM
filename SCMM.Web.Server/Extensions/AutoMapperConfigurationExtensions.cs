@@ -193,7 +193,7 @@ namespace SCMM.Web.Server.Extensions
                     }
 
                     var profile = (MyProfileDTO)context.Items.GetOrDefault(ContextKeyProfile);
-                    var price = assetDescription.GetCheapestBuyPrice(currency, profile?.MarketTypes);
+                    var price = assetDescription.GetCheapestBuyPrice(currency, profile?.MarketTypes, profile?.PaymentTypes);
                     if (price == null)
                     {
                         return default;
@@ -232,7 +232,7 @@ namespace SCMM.Web.Server.Extensions
                     }
 
                     var profile = (MyProfileDTO)context.Items.GetOrDefault(ContextKeyProfile);
-                    return assetDescription.GetBuyPrices(currency, profile?.MarketTypes)
+                    return assetDescription.GetBuyPrices(currency, profile?.MarketTypes, profile?.PaymentTypes)
                         .Where(x => includeThirdPartyMarkets || x.IsFirstPartyMarket)
                         .Where(x => x.IsFirstPartyMarket || (profile == null || profile.MarketTypes.Contains(x.MarketType)))
                         .OrderBy(x => x.Price)

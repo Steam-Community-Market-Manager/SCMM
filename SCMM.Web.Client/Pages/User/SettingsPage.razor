@@ -143,6 +143,17 @@
                                         }
                                     </MudSelect>
                                 </Preference>
+                                <Preference Title="Payment Types"
+                                            Description="Which payment types are shown when displaying item prices.">
+                                    <MudSelect T="PriceFlags" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering"
+                                               @bind-SelectedValues="@SelectedPaymentTypes" ToStringFunc="@((x) => x.ToString())" OnClose="@((x) => UpdateProfile())"
+                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "All"))">
+                                        @foreach (var value in Enum.GetValues<PriceFlags>())
+                                        {
+                                            <MudSelectItem Value="@value">@value.ToString()</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </Preference>
                                 <Preference Title="Market Types" 
                                             Description="Which third-party markets are shown when displaying item prices. If you don't use third-party markets, de-select all markets to force the use of Steam market prices only.">
                                     <MudSelect T="MarketType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="State.IsPrerendering"
@@ -278,6 +289,8 @@
 
     private UpdateProfileCommand Update { get; set; }
 
+    private IEnumerable<PriceFlags> SelectedPaymentTypes { get; set; }
+
     private IEnumerable<MarketType> SelectedMarketTypes { get; set; }
 
     private IEnumerable<ItemInfoType> SelectedItemInfoTypes { get; set; }
@@ -292,6 +305,7 @@
         }
         else 
         {
+            SelectedPaymentTypes = Enum.GetValues<PriceFlags>().Where(x => State.Profile.PaymentTypes.HasFlag(x)).OrderBy(x => x.ToString());
             SelectedMarketTypes = State.Profile.MarketTypes.Where(x => x != MarketType.Unknown && x.IsEnabled() && !x.IsFirstParty()).OrderBy(x => x.ToString());
             SelectedItemInfoTypes = State.Profile.ItemInfo;
             Update = new UpdateProfileCommand()
@@ -333,8 +347,9 @@
         try 
         {
             IsUpdating = true;
-            Update.MarketTypes = SelectedMarketTypes?.ToArray();
-            Update.ItemInfo = SelectedItemInfoTypes?.ToArray();
+            Update.PaymentTypes = SelectedPaymentTypes.Aggregate((a,b) => a | b);
+            Update.MarketTypes = SelectedMarketTypes.ToArray();
+            Update.ItemInfo = SelectedItemInfoTypes.ToArray();
             StateHasChanged();
 
             var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);

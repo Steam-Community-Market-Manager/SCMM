@@ -127,13 +127,14 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get the cheapeast market listing for items
+        /// Get the cheapest market listing for items
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="acceptedPayments">Optional accepted payments filter. If specified, only item prices accepting the provided payment types will be returned</param>
         /// <param name="minimumPrice">Optional minimum price range filter. If specified, only items priced equal to or higher than this value will be returned</param>
         /// <param name="maximumPrice">Optional maximum price range filter. If specified, only items priced equal to or lower than this value will be returned</param>
         /// <param name="minimumInvestmentReliability"></param>
@@ -144,10 +145,15 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/cheapestListings")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemListingAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumPrice = null, [FromQuery] decimal? maximumPrice = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] PriceFlags? acceptedPayments = null, [FromQuery] decimal? minimumPrice = null, [FromQuery] decimal? maximumPrice = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            if (acceptedPayments == null)
+            {
+                acceptedPayments = this.User.Preference(_db, x => x.PaymentTypes);
+            }
+
             var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -179,9 +185,10 @@ namespace SCMM.Web.Server.API.Controllers
                         {
                             MarketType = p.Key,
                             Supply = p.Value.Supply,
-                            BuyPrice = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
+                            BuyAcceptedPayments = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.AcceptedPayments,
+                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
+                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault()
@@ -198,6 +205,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyFrom = x.LowestPrice.MarketType,
                     BuyPriceLastUpdatedOn = null,
                     BuySupplyAvailable = x.LowestPrice.Supply,
+                    BuyAcceptedPayments = x.LowestPrice.BuyAcceptedPayments,
                     BuyPrice = this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyFee = this.Currency().CalculateExchange(x.LowestPrice.BuyFee ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyUrl = x.LowestPrice.BuyUrl,
@@ -226,6 +234,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
         /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
+        /// <param name="acceptedPayments">Optional accepted payments filter. If specified, only item prices accepting the provided payment types will be returned</param>
         /// <param name="minimumPrice">Optional minimum price range filter. If specified, only items priced equal to or higher than this value will be returned</param>
         /// <param name="maximumPrice">Optional maximum price range filter. If specified, only items priced equal to or lower than this value will be returned</param>
         /// <param name="minimumInvestmentReliability"></param>
@@ -237,10 +246,15 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/flips")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] decimal? minimumPrice = null, [FromQuery] decimal? maximumPrice = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] PriceFlags? acceptedPayments = null, [FromQuery] decimal? minimumPrice = null, [FromQuery] decimal? maximumPrice = null, [FromQuery] decimal? minimumInvestmentReliability = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            if (acceptedPayments == null)
+            {
+                acceptedPayments = this.User.Preference(_db, x => x.PaymentTypes);
+            }
+
             var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -273,9 +287,10 @@ namespace SCMM.Web.Server.API.Controllers
                         {
                             MarketType = p.Key,
                             Supply = p.Value.Supply,
-                            BuyPrice = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
+                            BuyAcceptedPayments = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.AcceptedPayments,
+                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
+                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault()
@@ -292,6 +307,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyFrom = x.LowestPrice.MarketType,
                     BuyPriceLastUpdatedOn = null,
                     BuySupplyAvailable = x.LowestPrice.Supply,
+                    BuyAcceptedPayments = x.LowestPrice.BuyAcceptedPayments,
                     BuyPrice = this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyFee = this.Currency().CalculateExchange(x.LowestPrice.BuyFee ?? 0, x.Item.CurrencyExchangeRateMultiplier),
                     BuyUrl = x.LowestPrice.BuyUrl,
@@ -324,16 +340,22 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
+        /// <param name="acceptedPayments">Optional accepted payments filter. If specified, only item prices accepting the provided payment types will be returned</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("market/cheapestCraftingResourceCosts")]
         [ProducesResponseType(typeof(PaginatedResult<MarketCraftingItemCostAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetCraftingCheapestComponentCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetCraftingCheapestComponentCosts([FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] PriceFlags? acceptedPayments = null)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            if (acceptedPayments == null)
+            {
+                acceptedPayments = this.User.Preference(_db, x => x.PaymentTypes);
+            }
+
             var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
@@ -381,9 +403,9 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
-                            BuyPrice = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
+                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
+                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault(),
@@ -427,16 +449,22 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Max 100.</param>
+        /// <param name="acceptedPayments">Optional accepted payments filter. If specified, only item prices accepting the provided payment types will be returned</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("market/cheapestCraftableContainerCosts")]
         [ProducesResponseType(typeof(PaginatedResult<MarketCraftableItemCostAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetMarketCheapestCraftableContainerCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public IActionResult GetMarketCheapestCraftableContainerCosts([FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] PriceFlags? acceptedPayments = null)
         {
             var marketTypes = this.User.Preference(_db, x => x.MarketTypes);
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            if (acceptedPayments == null)
+            {
+                acceptedPayments = this.User.Preference(_db, x => x.PaymentTypes);
+            }
+
             var appId = this.App().Guid;
             var resources = _db.SteamAssetDescriptions
                 .AsNoTracking()
@@ -486,9 +514,9 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
-                            BuyPrice = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
+                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
+                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault(),
@@ -526,9 +554,9 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
-                            BuyPrice = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions().FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions().FirstOrDefault()?.GenerateBuyUrl(x.Container.AppId, x.Container.AppName, x.Container.Id, x.Container.Name)
+                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
+                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.Container.AppId, x.Container.AppName, x.Container.Id, x.Container.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault(),

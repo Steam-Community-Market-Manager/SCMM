@@ -267,8 +267,8 @@ namespace SCMM.Steam.Data.Store
                     Type = x.Key,
                     Supply = x.Value.Supply,
                     Price = x.Value.Price,
-                    BuyFrom = x.Key.GetBuyFromOptions()?.FirstOrDefault(),
-                    SellTo = x.Key.GetSellToOptions()?.FirstOrDefault()
+                    BuyFrom = x.Key.GetBuyFromOptions()?.FirstOrDefault(), // TODO: What happens if there are multiple buy options?
+                    SellTo = x.Key.GetSellToOptions()?.FirstOrDefault() // TODO: What happens if there are multiple sell options?
                 })
                 .ToArray();
 
@@ -361,8 +361,8 @@ namespace SCMM.Steam.Data.Store
                     Type = x.Key,
                     Supply = x.Value.Supply,
                     Price = x.Value.Price,
-                    SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>(),
-                    BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()
+                    SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttributes<SellToAttribute>()?.FirstOrDefault(),
+                    BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttributes<BuyFromAttribute>()?.FirstOrDefault()
                 })
                 .ToArray();
 
