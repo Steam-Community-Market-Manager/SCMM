@@ -77,11 +77,19 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @if (MarketCheapestListingsCount == null)
+                                {
+                                    <th colspan="3">
+                                        <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                            <Loading />
+                                        </div>
+                                    </th>
+                                }
                                 <Virtualize @ref="VirtualiseMarketCheapestListings" ItemsProvider="LoadMarketCheapestListings" Context="item" SpacerElement="tr" OverscanCount="10">
                                     <EmptyContent>
                                         <div class="d-flex flex-column justify-center align-center full-height pa-4">
                                             <TumbleWeed Light="true" />
-                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search more</MudText>
+                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search</MudText>
                                         </div>
                                     </EmptyContent>
                                     <ItemContent>
@@ -233,11 +241,19 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (MarketFlipsCount == null)
+                                    {
+                                        <th colspan="3">
+                                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                                <Loading />
+                                            </div>
+                                        </th>
+                                    }
                                     <Virtualize @ref="VirtualiseMarketFlips" ItemsProvider="LoadMarketFlips" Context="item" SpacerElement="tr" OverscanCount="10">
                                         <EmptyContent>
                                             <div class="d-flex flex-column justify-center align-center full-height pa-4">
                                                 <TumbleWeed Light="true" />
-                                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search more</MudText>
+                                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search </MudText>
                                             </div>
                                         </EmptyContent>
                                         <ItemContent>
@@ -533,7 +549,11 @@
 
     private Virtualize<MarketItemListingAnalyticDTO> VirtualiseMarketCheapestListings;
 
+    private int? MarketCheapestListingsCount = null;
+
     private Virtualize<MarketItemFlipAnalyticDTO> VirtualiseMarketFlips;
+
+    private int? MarketFlipsCount = null;
 
     private SystemStatusDTO SystemStatus { get; set; }
 
@@ -660,7 +680,13 @@
     {
         try
         {
+            MarketFlipsCount = null;
+            StateHasChanged();
+
             var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/stats/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&minimumPrice={MinimumPrice}&maximumPrice={MaximumPrice}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
+            MarketFlipsCount = response.Total;
+            StateHasChanged();
+
             return new ItemsProviderResult<MarketItemFlipAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -674,7 +700,13 @@
     {
         try
         {
+            MarketCheapestListingsCount = null;
+            StateHasChanged();
+
             var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/stats/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&minimumPrice={MinimumPrice}&maximumPrice={MaximumPrice}&start={request.StartIndex}&count={request.Count}");
+            MarketCheapestListingsCount = response.Total;
+            StateHasChanged();
+
             return new ItemsProviderResult<MarketItemListingAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

@@ -78,9 +78,11 @@
                             <tbody>
                                 @if (HighestValueInventoryCache?.Total == 0)
                                 {
-                                    <div class="d-flex flex-column justify-center align-center full-height pa-4">
-                                        <Loading />
-                                    </div>
+                                    <th colspan="2">
+                                        <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                            <Loading />
+                                        </div>
+                                    </th>
                                 }
                                 <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile" SpacerElement="tr" OverscanCount="10">
                                     <EmptyContent>
