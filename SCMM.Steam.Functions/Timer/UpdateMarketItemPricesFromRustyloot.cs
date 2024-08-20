@@ -94,7 +94,7 @@ public class UpdateMarketItemPricesFromRustyloot
                     var supply = rustylootItemGroup.Sum(x => x.Amount);
                     item.UpdateBuyPrices(Rustyloot, new PriceWithSupply
                     {
-                        Price = supply > 0 ? item.Currency.CalculateExchange(normalisedUsdPrice, usdCurrency) : 0,
+                        Price = supply > 0 ? item.Currency.CalculateExchange(normalisedHousePrice, usdCurrency) : 0,
                         Supply = supply
                     });
                 }
