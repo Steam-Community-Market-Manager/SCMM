@@ -87,10 +87,12 @@
                                 }
                                 <Virtualize @ref="VirtualiseMarketCheapestListings" ItemsProvider="LoadMarketCheapestListings" Context="item" SpacerElement="tr" OverscanCount="10">
                                     <EmptyContent>
-                                        <div class="d-flex flex-column justify-center align-center full-height pa-4">
-                                            <TumbleWeed Light="true" />
-                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search</MudText>
-                                        </div>
+                                        <th colspan="3">
+                                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                                <TumbleWeed Light="true" />
+                                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search</MudText>
+                                            </div>
+                                        </th>
                                     </EmptyContent>
                                     <ItemContent>
                                         <tr>
@@ -251,10 +253,12 @@
                                     }
                                     <Virtualize @ref="VirtualiseMarketFlips" ItemsProvider="LoadMarketFlips" Context="item" SpacerElement="tr" OverscanCount="10">
                                         <EmptyContent>
-                                            <div class="d-flex flex-column justify-center align-center full-height pa-4">
-                                                <TumbleWeed Light="true" />
-                                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search </MudText>
-                                            </div>
+                                            <th colspan="3">
+                                                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                                                    <TumbleWeed Light="true" />
+                                                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try broadening your search</MudText>
+                                                </div>
+                                            </th>
                                         </EmptyContent>
                                         <ItemContent>
                                             <tr>
