@@ -1462,6 +1462,10 @@
     private IEnumerable<ItemMarketPriceDTO> GetItemPrices(bool bestPriceOnly = false)
     {
         var prices = Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || x.IsAvailable);
+        if (!State.Profile.ItemIncludeMarketFees)
+        {
+            prices = prices.GroupBy(x => x.MarketType).Select(x => x.MinBy(y => y.Price));
+        }
         if (bestPriceOnly)
         {
             prices = prices.GroupBy(x => x.MarketType).Select(x => x.MinBy(y => y.Total));
