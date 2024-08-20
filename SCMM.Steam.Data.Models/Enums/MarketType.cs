@@ -158,7 +158,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Mannco.store")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#5ad1e8")]
-        [BuyFrom(Url = "https://mannco.store/rust?a=&b=&c=&d=&e={3}&f=ASC&g=&h=2&j=1&t=&s=&appid={0}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
+        [BuyFrom(Url = "https://mannco.store/{1}?&search={3}&page=1", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
         ManncoStore = 33,
 
         // TODO: Update web client to support new APIs
