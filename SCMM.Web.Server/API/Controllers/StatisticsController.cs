@@ -185,17 +185,17 @@ namespace SCMM.Web.Server.API.Controllers
                         {
                             MarketType = p.Key,
                             Supply = p.Value.Supply,
-                            BuyAcceptedPayments = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.AcceptedPayments,
-                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
+                            BuyAcceptedPayments = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.AcceptedPayments,
+                            BuyPrice = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = includeFees ? p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyFees(p.Value.Price) : 0,
+                            BuyUrl = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault()
                 })
                 .Where(x => x.LowestPrice != null)
-                .Where(x => (minimumPrice == null || minimumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) >= minimumPrice))
-                .Where(x => (maximumPrice == null || maximumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) <= maximumPrice))
+                .Where(x => (minimumPrice == null || minimumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange((x.LowestPrice.BuyPrice ?? 0) + (x.LowestPrice.BuyFee ?? 0), x.Item.CurrencyExchangeRateMultiplier)) >= minimumPrice))
+                .Where(x => (maximumPrice == null || maximumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange((x.LowestPrice.BuyPrice ?? 0) + (x.LowestPrice.BuyFee ?? 0), x.Item.CurrencyExchangeRateMultiplier)) <= maximumPrice))
                 .Select(x => new MarketItemListingAnalyticDTO()
                 {
                     Id = x.Item.Id ?? 0,
@@ -216,9 +216,9 @@ namespace SCMM.Web.Server.API.Controllers
                     ManipulationReason = x.Item.ManipulationReason
                 })
                 .AsQueryable()
-                .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) <= x.ReferemcePrice)
-                .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.ReferemcePrice > 0)
-                .OrderByDescending(x => (decimal)(x.ReferemcePrice - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)x.ReferemcePrice);
+                .Where(x => (x.BuyPrice + x.BuyFee) <= x.ReferemcePrice)
+                .Where(x => (x.BuyPrice + x.BuyFee) > 0 && x.ReferemcePrice > 0)
+                .OrderByDescending(x => (decimal)(x.ReferemcePrice - (x.BuyPrice + x.BuyFee)) / (decimal)x.ReferemcePrice);
 
             count = Math.Max(0, Math.Min(100, count));
             return Ok(
@@ -287,17 +287,17 @@ namespace SCMM.Web.Server.API.Controllers
                         {
                             MarketType = p.Key,
                             Supply = p.Value.Supply,
-                            BuyAcceptedPayments = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.AcceptedPayments,
-                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
+                            BuyAcceptedPayments = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.AcceptedPayments,
+                            BuyPrice = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = includeFees ? p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyFees(p.Value.Price) : 0,
+                            BuyUrl = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.GenerateBuyUrl(x.AppId, x.AppName, x.Id, x.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault()
                 })
                 .Where(x => x.LowestPrice != null)
-                .Where(x => (minimumPrice == null || minimumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) >= minimumPrice))
-                .Where(x => (maximumPrice == null || maximumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange(x.LowestPrice.BuyPrice ?? 0, x.Item.CurrencyExchangeRateMultiplier)) <= maximumPrice))
+                .Where(x => (minimumPrice == null || minimumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange((x.LowestPrice.BuyPrice ?? 0) + (x.LowestPrice.BuyFee ?? 0), x.Item.CurrencyExchangeRateMultiplier)) >= minimumPrice))
+                .Where(x => (maximumPrice == null || maximumPrice == 0 || this.Currency().ToPrice(this.Currency().CalculateExchange((x.LowestPrice.BuyPrice ?? 0) + (x.LowestPrice.BuyFee ?? 0), x.Item.CurrencyExchangeRateMultiplier)) <= maximumPrice))
                 .Select(x => new MarketItemFlipAnalyticDTO()
                 {
                     Id = x.Item.Id ?? 0,
@@ -325,9 +325,9 @@ namespace SCMM.Web.Server.API.Controllers
                     ManipulationReason = x.Item.ManipulationReason
                 })
                 .AsQueryable()
-                .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.SellPrice > 0)
-                .Where(x => (x.SellPrice - (x.SellPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
-                .OrderByDescending(x => (decimal)(x.SellPrice - ((decimal)(x.SellPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)(x.BuyPrice + (includeFees ? x.BuyFee : 0)));
+                .Where(x => (x.BuyPrice + x.BuyFee) > 0 && x.SellPrice > 0)
+                .Where(x => (x.SellPrice - x.SellFee - (x.BuyPrice + x.BuyFee)) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
+                .OrderByDescending(x => (decimal)(x.SellPrice - x.SellFee - (x.BuyPrice + x.BuyFee)) / (decimal)(x.BuyPrice + x.BuyFee));
 
             count = Math.Max(0, Math.Min(100, count));
             return Ok(
@@ -403,9 +403,9 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
-                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
+                            BuyPrice = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = includeFees ? p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyFees(p.Value.Price) : 0,
+                            BuyUrl = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault(),
@@ -422,7 +422,7 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.Resource.IconUrl,
                     BuyFrom = x.LowestBuyPrice.MarketType,
                     BuyPrice = this.Currency().CalculateExchange(x.LowestBuyPrice.BuyPrice ?? 0, x.Resource.CurrencyExchangeRateMultiplier),
-                    BuyFee = (includeFees ? this.Currency().CalculateExchange(x.LowestBuyPrice.BuyFee ?? 0, x.Resource.CurrencyExchangeRateMultiplier) : 0),
+                    BuyFee = this.Currency().CalculateExchange(x.LowestBuyPrice.BuyFee ?? 0, x.Resource.CurrencyExchangeRateMultiplier),
                     BuyUrl = x.LowestBuyPrice.BuyUrl,
                     CheapestItem = new ItemValueStatisticDTO()
                     {
@@ -436,7 +436,7 @@ namespace SCMM.Web.Server.API.Controllers
                     }
                 })
                 .AsQueryable()
-                .OrderBy(x => x.BuyPrice);
+                .OrderBy(x => x.BuyPrice + x.BuyFee);
 
             count = Math.Max(0, Math.Min(100, count));
             return Ok(
@@ -514,9 +514,9 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
-                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
+                            BuyPrice = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = includeFees ? p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyFees(p.Value.Price) : 0,
+                            BuyUrl = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.GenerateBuyUrl(x.Resource.AppId, x.Resource.AppName, x.Resource.Id, x.Resource.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault(),
@@ -554,9 +554,9 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(p => new
                         {
                             MarketType = p.Key,
-                            BuyPrice = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyPrice(p.Value.Price),
-                            BuyFee = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.CalculateBuyFees(p.Value.Price),
-                            BuyUrl = p.Key.GetBuyFromOptions(acceptedPayments).FirstOrDefault()?.GenerateBuyUrl(x.Container.AppId, x.Container.AppName, x.Container.Id, x.Container.Name)
+                            BuyPrice = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyPrice(p.Value.Price),
+                            BuyFee = includeFees ? p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.CalculateBuyFees(p.Value.Price) : 0,
+                            BuyUrl = p.Key.GetCheapestBuyOption(acceptedPayments, includeFees)?.GenerateBuyUrl(x.Container.AppId, x.Container.AppName, x.Container.Id, x.Container.Name)
                         })
                         .OrderBy(p => p.BuyPrice + p.BuyFee)
                         .FirstOrDefault(),
@@ -572,14 +572,14 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.Container.IconUrl,
                     BuyFrom = x.LowestBuyPrice.MarketType,
                     BuyPrice = this.Currency().CalculateExchange(x.LowestBuyPrice.BuyPrice ?? 0, x.Container.CurrencyExchangeRateMultiplier),
-                    BuyFee = (includeFees ? this.Currency().CalculateExchange(x.LowestBuyPrice.BuyFee ?? 0, x.Container.CurrencyExchangeRateMultiplier) : 0),
+                    BuyFee = this.Currency().CalculateExchange(x.LowestBuyPrice.BuyFee ?? 0, x.Container.CurrencyExchangeRateMultiplier),
                     BuyUrl = x.LowestBuyPrice.BuyUrl,
                     CraftingComponents = x.Container.CraftingComponents
                         .Join(resources, x => x.Key, x => x.Resource.Name, (x, y) => new
                         {
                             Resource = y.Resource,
                             Quantity = x.Value,
-                            CheapestBuyNowPrice = (y.LowestBuyPrice.BuyPrice <= y.CheapestBreakdownItem.BuyNowPrice) ? y.LowestBuyPrice.BuyPrice : y.CheapestBreakdownItem.BuyNowPrice,
+                            CheapestBuyNowPrice = ((y.LowestBuyPrice.BuyPrice + y.LowestBuyPrice.BuyFee) <= y.CheapestBreakdownItem.BuyNowPrice) ? (y.LowestBuyPrice.BuyPrice + y.LowestBuyPrice.BuyFee) : y.CheapestBreakdownItem.BuyNowPrice,
                         })
                         .Select(y => new ItemCraftingComponentCostDTO()
                         {
@@ -599,7 +599,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .ToArray()
                 })
                 .AsQueryable()
-                .OrderBy(x => x.BuyPrice);
+                .OrderBy(x => x.BuyPrice + x.BuyFee);
 
             count = Math.Max(0, Math.Min(100, count));
             return Ok(

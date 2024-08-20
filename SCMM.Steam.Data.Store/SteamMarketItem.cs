@@ -267,8 +267,8 @@ namespace SCMM.Steam.Data.Store
                     Type = x.Key,
                     Supply = x.Value.Supply,
                     Price = x.Value.Price,
-                    BuyFrom = x.Key.GetBuyFromOptions()?.FirstOrDefault(), // TODO: What happens if there are multiple buy options?
-                    SellTo = x.Key.GetSellToOptions()?.FirstOrDefault() // TODO: What happens if there are multiple sell options?
+                    BuyFrom = x.Key.GetCheapestBuyOption(),
+                    SellTo = x.Key.GetPriciestSellOption()
                 })
                 .ToArray();
 

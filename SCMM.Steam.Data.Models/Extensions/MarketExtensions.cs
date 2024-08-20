@@ -43,11 +43,26 @@ namespace SCMM.Steam.Data.Models.Extensions
                 ?.Where(x => withAcceptedPayments == null || ((int)x.AcceptedPayments & (int)withAcceptedPayments) != 0);
         }
 
+        public static BuyFromAttribute GetCheapestBuyOption(this MarketType marketType, PriceFlags? withAcceptedPayments = null, bool includeFees = true)
+        {
+            return GetBuyFromOptions(marketType, withAcceptedPayments)
+                ?.OrderBy(x => x.CalculateBuyPrice(1) + (includeFees ? x.CalculateBuyFees(1) : 0))
+                ?.FirstOrDefault();
+        }
+
         public static IEnumerable<SellToAttribute> GetSellToOptions(this MarketType marketType, PriceFlags? withAcceptedPayments = null)
         {
             var marketTypeField = typeof(MarketType).GetField(marketType.ToString(), BindingFlags.Public | BindingFlags.Static);
             return (marketTypeField?.GetCustomAttributes<SellToAttribute>() ?? Enumerable.Empty<SellToAttribute>())
                 ?.Where(x => withAcceptedPayments == null || ((int)x.AcceptedPayments & (int)withAcceptedPayments) != 0);
+        }
+
+        public static SellToAttribute GetPriciestSellOption(this MarketType marketType, PriceFlags? withAcceptedPayments = null, bool includeFees = true)
+        {
+            return GetSellToOptions(marketType, withAcceptedPayments)
+                ?.Where(x => withAcceptedPayments == null || ((int)x.AcceptedPayments & (int)withAcceptedPayments) != 0)
+                ?.OrderBy(x => x.CalculateSellPrice(1) + (includeFees ? x.CalculateSellFees(1) : 0))
+                ?.FirstOrDefault();
         }
 
         private static T GetCustomAttribute<T>(this MarketType marketType) where T : Attribute

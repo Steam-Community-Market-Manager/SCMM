@@ -90,7 +90,7 @@ public class UpdateMarketItemPricesFromRustyloot
                 {
                     var lowestHousePrice = rustylootItemGroup.Min(x => x.Price);
                     var normalisedHousePrice = lowestHousePrice > 0 ? (long)(Math.Round((decimal)lowestHousePrice / 1000, 2) * 100) : 0; // Round and remove 1 digit of precision to normalise with the Steam price format
-                    var normalisedUsdPrice = usdCurrency.CalculateExchange(normalisedHousePrice, Rustyloot.GetBuyFromOptions()?.FirstOrDefault()?.GetHouseCurrency()); // Convert from coins to USD
+                    var normalisedUsdPrice = usdCurrency.CalculateExchange(normalisedHousePrice, Rustyloot.GetCheapestBuyOption()?.GetHouseCurrency()); // Convert from coins to USD
                     var supply = rustylootItemGroup.Sum(x => x.Amount);
                     item.UpdateBuyPrices(Rustyloot, new PriceWithSupply
                     {
