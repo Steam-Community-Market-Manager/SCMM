@@ -48,7 +48,8 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Tradeit.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#27273F", AffiliateUrl = "https://tradeit.gg/?aff=scmm")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto, BonusBalanceMultiplier = 0.74074074074074074074074074074074f /* 35% */)]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Cash, BonusBalanceMultiplier = 0.74074074074074074074074074074074f /* 35% */, SurchargeFixedAmount = 30 /* $0.30 */, SurchargePercentage = 0.028f /* 0.28% */ )]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Crypto, BonusBalanceMultiplier = 0.74074074074074074074074074074074f /* 35% */)]
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Trade)]
         TradeitGG = 14,
 
