@@ -46,7 +46,7 @@ namespace SCMM.Steam.Data.Models.Extensions
         public static BuyFromAttribute GetCheapestBuyOption(this MarketType marketType, PriceFlags? withAcceptedPayments = null, bool includeFees = true)
         {
             return GetBuyFromOptions(marketType, withAcceptedPayments)
-                ?.OrderBy(x => x.CalculateBuyPrice(1) + (includeFees ? x.CalculateBuyFees(1) : 0))
+                ?.OrderBy(x => x.CalculateBuyPrice(100) + (includeFees ? x.CalculateBuyFees(100) : 0))
                 ?.FirstOrDefault();
         }
 
@@ -61,7 +61,7 @@ namespace SCMM.Steam.Data.Models.Extensions
         {
             return GetSellToOptions(marketType, withAcceptedPayments)
                 ?.Where(x => withAcceptedPayments == null || ((int)x.AcceptedPayments & (int)withAcceptedPayments) != 0)
-                ?.OrderBy(x => x.CalculateSellPrice(1) + (includeFees ? x.CalculateSellFees(1) : 0))
+                ?.OrderBy(x => x.CalculateSellPrice(100) + (includeFees ? x.CalculateSellFees(100) : 0))
                 ?.FirstOrDefault();
         }
 

@@ -284,7 +284,7 @@ namespace SCMM.Steam.Data.Store
                         Price = x.BuyFrom?.CalculateBuyPrice(x.Price) ?? 0,
                         Fee = x.BuyFrom?.CalculateBuyFees(x.Price) ?? 0
                     })
-                    .MinBy(x => x.Price + x.Fee);
+                    .MinBy(x => x.Price);
                 var buyNowDealHasImproved = (
                     lowestBuyPrice.Price > 0 && lastBestBuyPrice > 0 &&
                     lowestBuyPrice.Price < lastBestBuyPrice &&
@@ -293,7 +293,7 @@ namespace SCMM.Steam.Data.Store
                 BuyNowFrom = lowestBuyPrice.From;
                 BuyNowPrice = lowestBuyPrice.Price;
                 BuyNowFee = lowestBuyPrice.Fee;
-                if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: true))
+                if (App?.FeatureFlags.HasFlag(SteamAppFeatureFlags.ItemMarketNotifications) == true && buyNowDealHasImproved && IsBuyNowAGoodDeal(includeFees: false))
                 {
                     RaiseEvent(new MarketItemPriceProfitableBuyDealDetectedMessage()
                     {
