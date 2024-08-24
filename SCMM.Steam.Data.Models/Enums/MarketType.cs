@@ -74,8 +74,8 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "RUST Skins")]
         [Market(Constants.RustAppId, Color = "#EF7070")]
-        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Crypto)]
-        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Cash, SurchargePercentage = 0.099f /* 9.9% */)]
+        [BuyFrom(Url = "https://rustskins.com/market?order=ASC&name={3}", AcceptedPayments = PriceFlags.Crypto)]
+        [BuyFrom(Url = "https://rustskins.com/market?order=ASC&name={3}", AcceptedPayments = PriceFlags.Cash, SurchargePercentage = 0.099f /* 9.9% */)]
         RustSkins = 18,
 
         [Display(Name = "Rust.tm")]
