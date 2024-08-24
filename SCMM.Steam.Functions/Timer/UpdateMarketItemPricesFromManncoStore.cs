@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromManncoStore
     }
 
     [Function("Update-Market-Item-Prices-From-Mannco-Store")]
-    public async Task Run([TimerTrigger("0 26/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 6/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!ManncoStore.IsEnabled())
         {

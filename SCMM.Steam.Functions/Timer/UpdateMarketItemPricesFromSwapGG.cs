@@ -31,7 +31,7 @@ public class UpdateMarketItemPricesFromSwapGG
     }
 
     [Function("Update-Market-Item-Prices-From-SwapGG")]
-    public async Task Run([TimerTrigger("0 4/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 18/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!SwapGGTrade.IsEnabled())
         {

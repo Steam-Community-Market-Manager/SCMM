@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromSkinSerpent
     }
 
     [Function("Update-Market-Item-Prices-From-SkinSerpent")]
-    public async Task Run([TimerTrigger("0 3/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 14/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!SkinSerpent.IsEnabled())
         {

@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromShadowPay
     }
 
     [Function("Update-Market-Item-Prices-From-Shadow-Pay")]
-    public async Task Run([TimerTrigger("0 29/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 11/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!ShadowPay.IsEnabled())
         {

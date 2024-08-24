@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromTradeitGG
     }
 
     [Function("Update-Market-Item-Prices-From-TradeitGG")]
-    public async Task Run([TimerTrigger("0 6/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 19/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!TradeitGG.IsEnabled())
         {

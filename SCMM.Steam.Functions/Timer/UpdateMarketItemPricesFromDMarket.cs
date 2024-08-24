@@ -31,7 +31,7 @@ public class UpdateMarketItemPricesFromDMarketJob
     }
 
     [Function("Update-Market-Item-Prices-From-DMarket")]
-    public async Task Run([TimerTrigger("0 22/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 3/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!DMarket.IsEnabled())
         {

@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromRustyloot
     }
 
     [Function("Update-Market-Item-Prices-From-Rustyloot")]
-    public async Task Run([TimerTrigger("0 5/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 10/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!Rustyloot.IsEnabled())
         {

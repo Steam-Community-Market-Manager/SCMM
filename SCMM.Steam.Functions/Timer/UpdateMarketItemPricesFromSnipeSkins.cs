@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromSnipeSkins
     }
 
     [Function("Update-Market-Item-Prices-From-SnipeSkins")]
-    public async Task Run([TimerTrigger("0 24/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 17/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!SnipeSkins.IsEnabled())
         {

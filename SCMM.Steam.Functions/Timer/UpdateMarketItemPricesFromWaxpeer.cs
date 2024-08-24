@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromWaxpeer
     }
 
     [Function("Update-Market-Item-Prices-From-Waxpeer")]
-    public async Task Run([TimerTrigger("0 24/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 20/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!Waxpeer.IsEnabled())
         {

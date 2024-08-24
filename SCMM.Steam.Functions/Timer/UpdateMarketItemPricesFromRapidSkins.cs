@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromRapidSkins
     }
 
     [Function("Update-Market-Item-Prices-From-Rapid-Skins")]
-    public async Task Run([TimerTrigger("0 28/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 7/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!RapidSkins.IsEnabled())
         {

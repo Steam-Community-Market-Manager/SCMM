@@ -30,7 +30,7 @@ public class UpdateMarketItemPricesFromRustSkins
     }
 
     [Function("Update-Market-Item-Prices-From-Rust-Skins")]
-    public async Task Run([TimerTrigger("* * * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 8/30 * * * *")] /* every 30mins */ TimerInfo timerInfo, FunctionContext context)
     {
         if (!RustSkins.IsEnabled())
         {
