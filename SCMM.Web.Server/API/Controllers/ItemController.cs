@@ -1031,7 +1031,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<ItemBestMarketPriceDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<ItemMarketPricesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Item])]
+        //[OutputCache(PolicyName = CachePolicy.Expire1h, Tags = [CacheTag.Item])] // Don't cache prices as users check this frequently when new deals are posted
         public async Task<IActionResult> GetItemPrices([FromQuery] MarketType[] markets = null)
         {
             var appId = this.App().Guid;
