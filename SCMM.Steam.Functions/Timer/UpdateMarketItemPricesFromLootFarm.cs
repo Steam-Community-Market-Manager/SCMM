@@ -16,7 +16,7 @@ namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemPricesFromLootFarmJob
 {
-    private const MarketType LOOTFarm = MarketType.LOOTFarm;
+    private const MarketType LOOTFarm = MarketType.LootFarm;
 
     private readonly SteamDbContext _db;
     private readonly LootFarmWebClient _lootFarmWebClient;

@@ -32,7 +32,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Crypto, BonusBalanceMultiplier = 0.76923076923076923076923076923077f /* 30% */)]
         [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Cash, BonusBalanceMultiplier = 0.83333333333333333333333333333333f /* 20% */)]
         [BuyFrom(Url = "https://loot.farm/", AcceptedPayments = PriceFlags.Trade)]
-        LOOTFarm = 11,
+        LootFarm = 11,
 
         [Display(Name = "Swap.gg")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF", AffiliateUrl = "https://swap.gg/?r=xu9CNezP5w")]
@@ -40,7 +40,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://swap.gg/?r=xu9CNezP5w&game={0}", AcceptedPayments = PriceFlags.Trade)]
         SwapGGTrade = 12,
 
-        [Obsolete("Website discontinued from 29th February 2024")]
+        [Obsolete("Website discontinued; merged with main site on https://swap.gg/")]
         [Display(Name = "Swap.gg (Market)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF")]
         [BuyFrom(Url = "https://market.swap.gg/{1}?search={3}", AcceptedPayments = PriceFlags.Cash)]
@@ -53,7 +53,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Trade)]
         TradeitGG = 14,
 
-        [Obsolete("P2P trades are no longer supported")]
+        [Obsolete("P2P trades are no longer offered")]
         [Display(Name = "CS.Deals (Trade)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/trade-skins?appid={0}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
@@ -72,12 +72,12 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", AcceptedPayments = PriceFlags.Cash)]
         SkinBaron = 17,
 
-        [Obsolete("Needs to be revalidated again. Website is back online, but social links are dead")]
+        [Obsolete("Needs to be revalidated")]
         [Display(Name = "RUST Skins")]
         [Market(Constants.RustAppId, Color = "#EF7070")]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Crypto)]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Cash, SurchargePercentage = 0.099f /* 9.9% */)]
-        RUSTSkins = 18,
+        RustSkins = 18,
 
         [Display(Name = "Rust.tm")]
         [Market(Constants.RustAppId, Color = "#4E2918")]
@@ -88,9 +88,9 @@ namespace SCMM.Steam.Data.Models.Enums
         [Display(Name = "RUSTVendor")]
         [Market(Constants.RustAppId)]
         [BuyFrom(Url = "https://rustvendor.com/trade", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash)]
-        RUSTVendor = 20,
+        RustVendor = 20,
 
-        [Obsolete("Website is live, but seems to be inactive now")]
+        [Obsolete("Needs to be revalidated")]
         [Display(Name = "RustyTrade")]
         [Market(Constants.RustAppId)]
         [BuyFrom(Url = "https://rustytrade.com/", AcceptedPayments = PriceFlags.Trade)]
@@ -100,7 +100,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#F3C207", AffiliateUrl = "https://cs.trade/ref/SCMM")]
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPayments = PriceFlags.Cash, BonusBalanceMultiplier = 0.66666666666666666666666666666667f /* 50% */)]
         [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader", AcceptedPayments = PriceFlags.Trade)]
-        CSTRADE = 22,
+        CSTrade = 22,
 
         [Display(Name = "iTrade.gg")]
         [Market(Constants.RustAppId, Color = "#EA473B")]
@@ -135,7 +135,7 @@ namespace SCMM.Steam.Data.Models.Enums
         DMarket = 28,
 
         // TODO: Restricted to 100 items per query, too slow for CSGO items
-        [Obsolete("P2P trades are no longer supported")]
+        [Obsolete("P2P trades are no longer offered")]
         [Display(Name = "DMarket (F2F)")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=f2fOffers&title={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
