@@ -92,7 +92,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public MarketType[] MarketTypes
         {
-            get { return Preferences.GetOrDefault(nameof(MarketTypes), String.Join(",", Enum.GetValues<MarketType>())).Split(",").Where(x => !String.IsNullOrEmpty(x)).Select(x => Enum.Parse<MarketType>(x)).ToArray(); }
+            get { return Preferences.GetOrDefault(nameof(MarketTypes), String.Join(",", Enum.GetValues<MarketType>())).Split(",").Where(x => !String.IsNullOrEmpty(x)).Select(x => Enum.Parse<MarketType>(x, true)).ToArray(); }
             set { Preferences[nameof(MarketTypes)] = String.Join(",", value); }
         }
 

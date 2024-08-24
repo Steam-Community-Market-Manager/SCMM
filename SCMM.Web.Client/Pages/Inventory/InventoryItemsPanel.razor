@@ -147,7 +147,7 @@ else
         }
         if (!String.IsNullOrEmpty(SortBy))
         {
-            items = items.AsQueryable().SortBy(SortBy, Enum.Parse<Data.Models.SortDirection>(SortDirection));
+            items = items.AsQueryable().SortBy(SortBy, Enum.Parse<Data.Models.SortDirection>(SortDirection, true));
         }
 
         return items;
