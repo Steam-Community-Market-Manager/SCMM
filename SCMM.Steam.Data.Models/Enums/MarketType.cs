@@ -72,7 +72,6 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", AcceptedPayments = PriceFlags.Cash)]
         SkinBaron = 17,
 
-        [Obsolete("Needs to be revalidated")]
         [Display(Name = "RUST Skins")]
         [Market(Constants.RustAppId, Color = "#EF7070")]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", AcceptedPayments = PriceFlags.Crypto)]
