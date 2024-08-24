@@ -40,7 +40,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://swap.gg/?r=xu9CNezP5w&game={0}", AcceptedPayments = PriceFlags.Trade)]
         SwapGGTrade = 12,
 
-        [Obsolete("Website discontinued; merged with main site on https://swap.gg/")]
+        [Obsolete("Discontinued; merged with main site on https://swap.gg/")]
         [Display(Name = "Swap.gg (Market)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#15C9AF")]
         [BuyFrom(Url = "https://market.swap.gg/{1}?search={3}", AcceptedPayments = PriceFlags.Cash)]
@@ -53,7 +53,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}", AcceptedPayments = PriceFlags.Trade)]
         TradeitGG = 14,
 
-        [Obsolete("P2P trades are no longer offered")]
+        [Obsolete("Discontinued; P2P trades are no longer offered")]
         [Display(Name = "CS.Deals (Trade)")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#78FFFF")]
         [BuyFrom(Url = "https://cs.deals/trade-skins?appid={0}", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
@@ -134,7 +134,7 @@ namespace SCMM.Steam.Data.Models.Enums
         DMarket = 28,
 
         // TODO: Restricted to 100 items per query, too slow for CSGO items
-        [Obsolete("P2P trades are no longer offered")]
+        [Obsolete("Discontinued; P2P trades are no longer offered")]
         [Display(Name = "DMarket (F2F)")]
         [Market(Constants.RustAppId, /*Constants.CSGOAppId,*/ Color = "#8dd294")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&exchangeTab=f2fOffers&title={3}", AcceptedPayments = PriceFlags.Cash | PriceFlags.Crypto)]
@@ -194,6 +194,7 @@ namespace SCMM.Steam.Data.Models.Enums
         /*
          
          MARKETS TO BE INVESTIGATED
+         BUY:  https://skinsdrip.com/ 
          BUY:  https://skin.land/market/rust/
          BUY:  https://rustysaloon.com/withdraw (gambling site)
          BUY:  https://bandit.camp/ (gambling site)
