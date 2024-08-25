@@ -190,7 +190,7 @@
                 </MudItem>
             }
             
-            @if (SystemStatus.SteamApp?.Markets?.Any() == true)
+            @if (SystemStatus.Markets?.Any() == true)
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Class="pa-4">
@@ -201,13 +201,13 @@
                             </MudText>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center" Class="mb-2">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Success">
-                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-check mr-1" /> Normal <strong>(@SystemStatus.SteamApp.Markets.Count(x => x.Status == SystemStatusSeverity.Normal))</strong></span>
+                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-check mr-1" /> Normal <strong>(@SystemStatus.Markets.Count(x => x.Status == SystemStatusSeverity.Normal))</strong></span>
                                 </MudText>
                                 <MudText Typo="Typo.subtitle1" Color="Color.Warning">
-                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-exclamation mr-1" /> Degraded <strong>(@SystemStatus.SteamApp.Markets.Count(x => x.Status == SystemStatusSeverity.Degraded))</strong></span>
+                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-exclamation mr-1" /> Degraded <strong>(@SystemStatus.Markets.Count(x => x.Status == SystemStatusSeverity.Degraded))</strong></span>
                                 </MudText>
                                 <MudText Typo="Typo.subtitle1" Color="Color.Error">
-                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-xmark mr-1" /> Unavailable <strong>(@SystemStatus.SteamApp.Markets.Count(x => x.Status == SystemStatusSeverity.Critical))</strong></span>
+                                    <span class="no-wrap"><i class="fas fa-fw fa-circle-xmark mr-1" /> Unavailable <strong>(@SystemStatus.Markets.Count(x => x.Status == SystemStatusSeverity.Critical))</strong></span>
                                 </MudText>
                             </MudStack>
                             <MudIconButton Size="Size.Small" Variant="Variant.Text" Icon="fas fa-fw fa-rotate" Color="Color.Secondary" Title="Refresh system status" Disabled="State.IsPrerendering"
@@ -227,7 +227,7 @@
                                 @{
                                     var now = DateTimeOffset.Now;
                                 }
-                                @foreach (var market in SystemStatus.SteamApp.Markets)
+                                @foreach (var market in SystemStatus.Markets)
                                 {
                                     <tr>
                                         <td>
@@ -405,7 +405,7 @@
         {
             try
             {
-                return await SystemService.GetSystemStatusAsync(State.AppId, includeAppMarkets: true, includeWebProxiesStatus: true);
+                return await SystemService.GetSystemStatusAsync(State.AppId, includeAppStatus: true, includeMarketStatus: true, includeWebProxyStatus: true);
             }
             catch (Exception ex)
             {
@@ -429,7 +429,7 @@
             SystemStatus = null;
             StateHasChanged();
 
-            SystemStatus = await SystemService.GetSystemStatusAsync(State.AppId, includeAppMarkets: true, includeWebProxiesStatus: true);
+            SystemStatus = await SystemService.GetSystemStatusAsync(State.AppId, includeAppStatus: true, includeMarketStatus: true, includeWebProxyStatus: true);
             if (SystemStatus != null)
             {
                 State.SystemStatus = SystemStatus;

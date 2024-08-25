@@ -3,7 +3,7 @@
 namespace SCMM.Web.Data.Models.Services;
 public interface ISystemService
 {
-    Task<SystemStatusDTO> GetSystemStatusAsync(ulong appId, bool includeAppMarkets = false, bool includeWebProxiesStatus = false);
+    Task<SystemStatusDTO> GetSystemStatusAsync(ulong appId, bool includeAppStatus = false, bool includeMarketStatus = false, bool includeWebProxyStatus = false);
 
     Task<IEnumerable<SystemUpdateMessageDTO>> ListLatestSystemUpdateMessagesAsync();
 }

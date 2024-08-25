@@ -577,7 +577,7 @@
         {
             try
             {
-                return await SystemService.GetSystemStatusAsync(State.AppId, includeAppMarkets: true, includeWebProxiesStatus: true);
+                return await SystemService.GetSystemStatusAsync(State.AppId, includeMarketStatus: true);
             }
             catch (Exception ex)
             {
@@ -750,7 +750,7 @@
 
     protected TimeSpan? GetTimeSinceLastMarketPriceUpdate(MarketType marketType)
     {
-        var lastUpdate = SystemStatus?.SteamApp?.Markets?.FirstOrDefault(x => x.Type == marketType)?.LastUpdatedItemsOn;
+        var lastUpdate = SystemStatus?.Markets?.FirstOrDefault(x => x.Type == marketType)?.LastUpdatedItemsOn;
         return lastUpdate != null
             ? (DateTimeOffset.Now - lastUpdate.Value).Duration()
             : null;

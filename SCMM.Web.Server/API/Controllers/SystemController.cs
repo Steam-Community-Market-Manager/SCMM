@@ -31,8 +31,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <remarks>Response is cached for 3mins</remarks>
         /// <param name="appId">The app to check the status of</param>
-        /// <param name="includeAppMarkets">If true, status details for item markets will be included</param>
-        /// <param name="includeWebProxiesStatus">If true, status details for web proxies will be included</param>
+        /// <param name="includeAppStatus">If true, status details for the active steam app will be included</param>
+        /// <param name="includeMarketStatus">If true, status details for all markets will be included</param>
+        /// <param name="includeWebProxyStatus">If true, status details for web proxies will be included</param>
         /// <returns>The system status for the requested app</returns>
         /// <response code="200">The system status for the requested app.</response>
         /// <response code="404">If the system status is not currently available.</response>
@@ -43,13 +44,14 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [OutputCache(PolicyName = CachePolicy.Expire3m, Tags = [CacheTag.System])]
-        public async Task<IActionResult> GetSystemStatus([FromQuery] ulong? appId = null, [FromQuery] bool includeAppMarkets = false, [FromQuery] bool includeWebProxiesStatus = false)
+        public async Task<IActionResult> GetSystemStatus([FromQuery] ulong? appId = null, [FromQuery] bool includeAppStatus = false, [FromQuery] bool includeMarketStatus = false, [FromQuery] bool includeWebProxyStatus = false)
         {
             var systemStatus = await _queryProcessor.ProcessAsync(new GetSystemStatusRequest()
             {
                 AppId = appId ?? this.App().Id,
-                IncludeAppMarkets = includeAppMarkets,
-                IncludeWebProxies = includeWebProxiesStatus
+                IncludeAppStatus = includeAppStatus,
+                IncludeMarketStatus = includeMarketStatus,
+                IncludeWebProxyStatus = includeWebProxyStatus
             });
             if (systemStatus?.Status == null)
             {
