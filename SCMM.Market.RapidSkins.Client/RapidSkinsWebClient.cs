@@ -11,7 +11,7 @@ namespace SCMM.Market.RapidSkins.Client
 
         public RapidSkinsWebClient(ILogger<RapidSkinsWebClient> logger) : base(logger) { }
 
-        public async Task<RapidSkinsPaginatedItems> GetSiteInventoryAsync(string appId, int page = 1)
+        public async Task<RapidSkinsPaginatedItems> GetSiteInventoryAsync(string appId, string appName, int page = 1)
         {
             using (var client = BuildWebApiHttpClient(host: new Uri(ApiBaseUri)))
             {
@@ -26,7 +26,7 @@ namespace SCMM.Market.RapidSkins.Client
                           }
                         }
                         fragment InventoryFragment on CompleteInventory {
-                          rust {
+                          " + appName.ToLower() + @" {
                             ... on SteamInventory {
                               lastPage
                               items {

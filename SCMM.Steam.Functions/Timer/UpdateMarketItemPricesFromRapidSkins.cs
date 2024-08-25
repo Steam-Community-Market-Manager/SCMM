@@ -75,7 +75,7 @@ public class UpdateMarketItemPricesFromRapidSkins
             var page = 1;
             do
             {
-                rapidSkinsPaginatedItems = await _rapidSkinsWebClient.GetSiteInventoryAsync(app.SteamId, page);
+                rapidSkinsPaginatedItems = await _rapidSkinsWebClient.GetSiteInventoryAsync(app.SteamId, app.Name, page);
                 if (rapidSkinsPaginatedItems.Items?.Any() == true)
                 {
                     rapidSkinsAppItems.AddRange(rapidSkinsPaginatedItems.Items);
