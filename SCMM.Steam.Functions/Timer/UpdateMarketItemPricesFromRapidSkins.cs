@@ -70,7 +70,19 @@ public class UpdateMarketItemPricesFromRapidSkins
         {
             stopwatch.Start();
 
-            var rapidSkinsAppItems = (await _rapidSkinsWebClient.GetInventoryAsync())?.Data?.GetOrDefault(app.SteamId) ?? new List<RapidSkinsItem>();
+            var rapidSkinsAppItems = new List<RapidSkinsItem>();
+            var rapidSkinsPaginatedItems = (RapidSkinsPaginatedItems)null;
+            var page = 1;
+            do
+            {
+                rapidSkinsPaginatedItems = await _rapidSkinsWebClient.GetSiteInventoryAsync(app.SteamId, page);
+                if (rapidSkinsPaginatedItems.Items?.Any() == true)
+                {
+                    rapidSkinsAppItems.AddRange(rapidSkinsPaginatedItems.Items);
+                }
+                page++;
+            } while (rapidSkinsPaginatedItems?.LastPage == false);
+
             var dbItems = await _db.SteamMarketItems
                 .Where(x => x.AppId == app.Id)
                 .Select(x => new
@@ -81,15 +93,14 @@ public class UpdateMarketItemPricesFromRapidSkins
                 })
                 .ToListAsync();
 
-            var rapidSkinsItemGroups = rapidSkinsAppItems.GroupBy(x => x.Name);
+            var rapidSkinsItemGroups = rapidSkinsAppItems.GroupBy(x => x.MarketHashName);
             foreach (var rapidSkinsItemGroup in rapidSkinsItemGroups)
             {
                 var item = dbItems.FirstOrDefault(x => x.Name == rapidSkinsItemGroup.Key)?.Item;
                 if (item != null)
                 {
-                    // RapidSkins add a 15% fee on top of the API listed price
-                    var price = (long)Math.Round(rapidSkinsItemGroup.Min(x => x.Price) * 1.15m, 0);
-                    var supply = rapidSkinsItemGroup.Sum(x => x.Amount);
+                    var price = rapidSkinsItemGroup.Where(x => x.Price != null).Min(x => x.Price.CoinAmount);
+                    var supply = rapidSkinsItemGroup.Where(x => x.Stack != null).Sum(x => x.Stack.Sum(y => y.Amount));
                     item.UpdateBuyPrices(RapidSkins, new PriceWithSupply
                     {
                         Price = supply > 0 ? item.Currency.CalculateExchange(price, usdCurrency) : 0,
@@ -98,7 +109,7 @@ public class UpdateMarketItemPricesFromRapidSkins
                 }
             }
 
-            var missingItems = dbItems.Where(x => !rapidSkinsAppItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(RapidSkins));
+            var missingItems = dbItems.Where(x => !rapidSkinsAppItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(RapidSkins));
             foreach (var missingItem in missingItems)
             {
                 missingItem.Item.UpdateBuyPrices(RapidSkins, null);
@@ -109,7 +120,7 @@ public class UpdateMarketItemPricesFromRapidSkins
             await _statisticsService.PatchDictionaryValueAsync<MarketType, MarketStatusStatistic>(statisticsKey, RapidSkins, x =>
             {
                 x.TotalItems = rapidSkinsItemGroups.Count();
-                x.TotalListings = rapidSkinsAppItems.Sum(i => i.Amount);
+                x.TotalListings = rapidSkinsAppItems.Sum(x => x.Stack?.Sum(y => y.Amount) ?? 0);
                 x.LastUpdatedItemsOn = DateTimeOffset.Now;
                 x.LastUpdatedItemsDuration = stopwatch.Elapsed;
                 x.LastUpdateErrorOn = null;

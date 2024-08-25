@@ -161,8 +161,6 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://mannco.store/{1}?&search={3}&page=1", AcceptedPayments = PriceFlags.Trade | PriceFlags.Cash | PriceFlags.Crypto)]
         ManncoStore = 33,
 
-        // TODO: Update web client to support new APIs
-        [Obsolete("APIs have changed, web client needs updating")]
         [Display(Name = "RapidSkins")]
         [Market(Constants.RustAppId, Constants.CSGOAppId, Color = "#ffd500", AffiliateUrl = "https://rapidskins.com/a/scmm")]
         [BuyFrom(Url = "https://rapidskins.com/a/scmm", AcceptedPayments = PriceFlags.Cash, SurchargePercentage = 0.02f /* 5% */)]
