@@ -8,7 +8,7 @@ namespace SCMM.Shared.Web.Client.Tests;
 
 public class WebClientBaseTests
 {
-    private const string GetRequestUri = "https://rust.scmm.app";
+    private const string GetRequestUri = "https://github.com/Steam-Community-Market-Manager/SCMM";
 
     [Fact]
     public async Task HttpClientGetReturnASuccessStatusCode()
