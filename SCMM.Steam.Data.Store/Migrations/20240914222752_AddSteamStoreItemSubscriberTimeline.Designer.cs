@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
@@ -11,9 +12,11 @@ using SCMM.Steam.Data.Store;
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240914222752_AddSteamStoreItemSubscriberTimeline")]
+    partial class AddSteamStoreItemSubscriberTimeline
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1908,31 +1911,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .WithOne("StoreItem")
                         .HasForeignKey("SCMM.Steam.Data.Store.SteamStoreItem", "DescriptionId");
 
-                    b.OwnsMany("SCMM.Steam.Data.Store.SteamStoreItem+SubscriberSnapshot", "SubscriberTimeline", b1 =>
-                        {
-                            b1.Property<Guid>("SteamStoreItemId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            b1.Property<decimal>("Subscribers")
-                                .HasColumnType("decimal(20,0)");
-
-                            b1.Property<DateTimeOffset>("Timestamp")
-                                .HasColumnType("datetimeoffset");
-
-                            b1.HasKey("SteamStoreItemId", "Id");
-
-                            b1.ToTable("SteamStoreItems");
-
-                            b1.ToJson("SubscriberTimeline");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamStoreItemId");
-                        });
-
                     b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistablePriceDictionary", "Prices", b1 =>
                         {
                             b1.Property<Guid>("SteamStoreItemId")
@@ -1945,6 +1923,31 @@ namespace SCMM.Steam.Data.Store.Migrations
                             b1.HasKey("SteamStoreItemId");
 
                             b1.ToTable("SteamStoreItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamStoreItemId");
+                        });
+
+                    b.OwnsMany("SCMM.Steam.Data.Store.SubscriberSnapshot", "SubscriberTimeline", b1 =>
+                        {
+                            b1.Property<Guid>("SteamStoreItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            b1.Property<long>("Subscribers")
+                                .HasColumnType("bigint");
+
+                            b1.Property<DateTimeOffset>("Timestamp")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.HasKey("SteamStoreItemId", "Id");
+
+                            b1.ToTable("SteamStoreItems");
+
+                            b1.ToJson("SubscriberTimeline");
 
                             b1.WithOwner()
                                 .HasForeignKey("SteamStoreItemId");

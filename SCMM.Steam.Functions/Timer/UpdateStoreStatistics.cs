@@ -96,6 +96,21 @@ public class UpdateStoreStatistics
                 AssetDescription = item.AssetDescription,
                 PublishedFile = item.PublishedFile
             });
+
+            var itemStoreItem = itemStore.Items.FirstOrDefault(x => x.Item.DescriptionId == item.AssetDescription.Id);
+            if (itemStoreItem != null && item.AssetDescription?.TimeAccepted != null)
+            {
+                var now = DateTimeOffset.UtcNow;
+                var lastSubscriberSnapshotOn = itemStoreItem.Item.SubscriberTimeline.Max(x => x.Timestamp);
+                if ((now - lastSubscriberSnapshotOn) >= GetSubscriberSnapshotUpdateFrequencyFromAge(item.AssetDescription.TimeAccepted.Value))
+                {
+                    itemStoreItem.Item.SubscriberTimeline.Add(new SteamStoreItem.SubscriberSnapshot()
+                    {
+                        Timestamp = now,
+                        Subscribers = item.PublishedFile.Subscriptions
+                    });
+                }
+            }
         }
 
         await _steamDb.SaveChangesAsync();
@@ -192,5 +207,21 @@ public class UpdateStoreStatistics
         }
 
         await _steamDb.SaveChangesAsync();
+    }
+
+    private TimeSpan GetSubscriberSnapshotUpdateFrequencyFromAge(DateTimeOffset acceptedOn)
+    {
+        // Snapshot every 15 minutes for the first 24hrs since accepted; Then every 30 minutes until 48hrs old. Then every 1 hour beyond 48hrs.
+        var age = DateTimeOffset.UtcNow - acceptedOn;
+        if (age < TimeSpan.FromHours(24))
+        {
+            return TimeSpan.FromMinutes(15);
+        }
+        if (age < TimeSpan.FromHours(48))
+        {
+            return TimeSpan.FromMinutes(30);
+        }
+
+        return TimeSpan.FromHours(1);
     }
 }

@@ -10,6 +10,7 @@ namespace SCMM.Steam.Data.Store
         {
             Stores = new Collection<SteamStoreItemItemStore>();
             Prices = new PersistablePriceDictionary();
+            SubscriberTimeline = new Collection<SubscriberSnapshot>();
         }
 
         public Guid? CurrencyId { get; private set; }
@@ -40,6 +41,8 @@ namespace SCMM.Steam.Data.Store
         public bool HasReturnedToStore { get; set; }
 
         public ICollection<SteamStoreItemItemStore> Stores { get; set; }
+
+        public ICollection<SubscriberSnapshot> SubscriberTimeline { get; set; }
 
         public void UpdatePrice(SteamCurrency currency, long price, PersistablePriceDictionary prices)
         {
@@ -83,6 +86,13 @@ namespace SCMM.Steam.Data.Store
             var totalTimeInStore = limitedStores.Select(x => ((x.Store.End ?? x.Store.Start.Value.AddDays(7)) - x.Store.Start.Value)).Aggregate(TimeSpan.Zero, (t1, t2) => t1 + t2);
             var totalTimeInExistance = (lastTimeSeen - firstTimeSeen).Subtract(TimeSpan.FromHours(1));
             HasReturnedToStore = (totalTimeInExistance > totalTimeInStore);
+        }
+
+        public class SubscriberSnapshot
+        {
+            public DateTimeOffset Timestamp { get; set; }
+
+            public ulong Subscribers { get; set; }
         }
     }
 }

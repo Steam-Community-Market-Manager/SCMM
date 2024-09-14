@@ -287,6 +287,11 @@ namespace SCMM.Steam.Data.Store
                 .HasOne(x => x.Currency);
             builder.Entity<SteamStoreItem>()
                 .OwnsOne(x => x.Prices);
+            builder.Entity<SteamStoreItem>()
+                .OwnsMany(x => x.SubscriberTimeline, navigationBuilder =>
+                {
+                    navigationBuilder.ToJson();
+                });
 
             builder.Entity<SteamStoreItemItemStore>()
                 .HasKey(bc => new { bc.ItemId, bc.StoreId });
