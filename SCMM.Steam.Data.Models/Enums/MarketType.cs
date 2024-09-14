@@ -102,8 +102,8 @@ namespace SCMM.Steam.Data.Models.Enums
         CSTrade = 22,
 
         [Display(Name = "iTrade.gg")]
-        [Market(Constants.RustAppId, Color = "#EA473B")]
-        [BuyFrom(Url = "https://itrade.gg/trade/{1}", AcceptedPayments = PriceFlags.Trade)]
+        [Market(Constants.RustAppId, Color = "#EA473B", AffiliateUrl = "https://itrade.gg/?ref=scmm")]
+        [BuyFrom(Url = "https://itrade.gg/trade/{1}?search={3}&ref_code=scmm", AcceptedPayments = PriceFlags.Trade)]
         iTradegg = 23,
 
         [Obsolete("Website is dead")]
