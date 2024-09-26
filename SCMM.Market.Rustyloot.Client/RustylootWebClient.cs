@@ -85,6 +85,11 @@ namespace SCMM.Market.Rustyloot.Client
             });
 
             inventoryWasLoadedEvent.WaitOne(TimeSpan.FromMinutes(3));
+            if (!inventoryWasLoadedEvent.Equals(true))
+            {
+                throw new Exception("No response to 'steam:market' socket event after within 3mins from 'system:connect' event, assuming failure.");
+            }
+
             return inventory;
         }
     }
