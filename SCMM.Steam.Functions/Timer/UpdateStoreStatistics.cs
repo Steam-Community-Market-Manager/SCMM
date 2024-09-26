@@ -89,6 +89,7 @@ public class UpdateStoreStatistics
             }
         );
 
+        var now = DateTimeOffset.Now;
         foreach (var item in assetWorkshopJoined)
         {
             _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
@@ -100,9 +101,8 @@ public class UpdateStoreStatistics
             var itemStoreItem = itemStore.Items.FirstOrDefault(x => x.Item.DescriptionId == item.AssetDescription.Id);
             if (itemStoreItem != null && item.AssetDescription?.TimeAccepted != null)
             {
-                var now = DateTimeOffset.UtcNow;
-                var lastSubscriberSnapshotOn = itemStoreItem.Item.SubscriberTimeline.Max(x => x.Timestamp);
-                if ((now - lastSubscriberSnapshotOn) >= GetSubscriberSnapshotUpdateFrequencyFromAge(item.AssetDescription.TimeAccepted.Value))
+                var lastSubscriberSnapshotOn = itemStoreItem.Item.SubscriberTimeline.Any() ? itemStoreItem.Item.SubscriberTimeline.Max(x => x.Timestamp) : DateTimeOffset.MinValue;
+                if ((now - lastSubscriberSnapshotOn) >= GetSubscriberSnapshotUpdateFrequencyFromAge(now - item.AssetDescription.TimeAccepted.Value))
                 {
                     itemStoreItem.Item.SubscriberTimeline.Add(new SteamStoreItem.SubscriberSnapshot()
                     {
@@ -171,6 +171,7 @@ public class UpdateStoreStatistics
             })
             .ToListAsync();
 
+        var now = DateTimeOffset.UtcNow;
         var total = storeItemIds.Count;
         foreach (var item in items)
         {
@@ -181,14 +182,14 @@ public class UpdateStoreStatistics
                 {
                     item.LastPosition.IsActive = true;
                     // TODO: System.OverflowException: SqlDbType.Time overflow. Value '1.04:35:01.9954923' is out of range. Must be between 00:00:00.0000000 and 23:59:59.9999999. 
-                    //item.LastPosition.Duration = (DateTimeOffset.UtcNow - item.LastPosition.Timestamp);
+                    //item.LastPosition.Duration = (now - item.LastPosition.Timestamp);
                 }
                 if (item.LastPosition == null || item.LastPosition.Position != position || item.LastPosition.Total != total)
                 {
                     _steamDb.SteamStoreItemTopSellerPositions.Add(
                         new SteamStoreItemTopSellerPosition()
                         {
-                            Timestamp = DateTimeOffset.UtcNow,
+                            Timestamp = now,
                             DescriptionId = item.DescriptionId,
                             Position = position,
                             Total = total,
@@ -209,10 +210,9 @@ public class UpdateStoreStatistics
         await _steamDb.SaveChangesAsync();
     }
 
-    private TimeSpan GetSubscriberSnapshotUpdateFrequencyFromAge(DateTimeOffset acceptedOn)
+    private TimeSpan GetSubscriberSnapshotUpdateFrequencyFromAge(TimeSpan age)
     {
         // Snapshot every 15 minutes for the first 24hrs since accepted; Then every 30 minutes until 48hrs old. Then every 1 hour beyond 48hrs.
-        var age = DateTimeOffset.UtcNow - acceptedOn;
         if (age < TimeSpan.FromHours(24))
         {
             return TimeSpan.FromMinutes(15);
