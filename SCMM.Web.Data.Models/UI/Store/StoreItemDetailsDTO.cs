@@ -88,6 +88,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public long? Subscriptions { get; set; }
 
+        public IDictionary<long, ulong> SubscriptionsTimeline { get; set; }
+
         public bool IsCommodity { get; set; }
 
         public bool IsMarketable { get; set; }

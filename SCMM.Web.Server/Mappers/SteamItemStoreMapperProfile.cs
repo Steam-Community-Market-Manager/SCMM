@@ -59,6 +59,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.MarketDemand24hrs, o => o.MapFrom(p => p.Item.Description.MarketItem != null ? (long?)p.Item.Description.MarketItem.Last24hrSales : null))
                 .ForMember(x => x.SupplyTotalEstimated, o => o.MapFrom(p => p.Item.Description.SupplyTotalEstimated))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Item.Description.SubscriptionsCurrent))
+                .ForMember(x => x.SubscriptionsTimeline, o => o.MapFrom(p => p.Item.SubscriberTimeline.ToDictionary(x => x.Timestamp.Ticks, x => x.Subscribers)))
                 .ForMember(x => x.IsCommodity, o => o.MapFrom(p => p.Item.Description.IsCommodity))
                 .ForMember(x => x.IsMarketable, o => o.MapFrom(p => p.Item.Description.IsMarketable))
                 .ForMember(x => x.MarketableRestrictionDays, o => o.MapFrom(p => p.Item.Description.MarketableRestrictionDays))
