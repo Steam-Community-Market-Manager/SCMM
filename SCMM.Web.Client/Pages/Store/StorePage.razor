@@ -498,9 +498,9 @@ else if (StoreList.Any())
                                                         </MudButton>
                                                         @if (!String.IsNullOrEmpty(item.WorkshopFileUrl))
                                                         {
-                                                            <MudButton OnClick="@(() => ShowItemModelDialog(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fab fa-fw fa-unity" Size="@Size.Small" 
-                                                                       Class="ml-2" Disabled="State.IsPrerendering" title="Click to view an interactive 3D render of this item">     
-                                                                <strong>3D</strong>
+                                                            <MudButton OnClick="@(() => ViewItemInteractiveModel(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fas fa-fw fa-arrows-rotate" Size="@Size.Small"
+                                                                       Class="ml-2" Disabled="State.IsPrerendering" title="Click to view an interactive 3D render of this item on rust360.com">     
+                                                                <strong>360</strong>
                                                             </MudButton>
                                                         }
                                                     </div>
@@ -788,8 +788,12 @@ else
         });
     }
 
-    private void ShowItemModelDialog(StoreItemDetailsDTO item)
+    private void ViewItemInteractiveModel(StoreItemDetailsDTO item)
     {
+        ExternalNavigationManager.NavigateToNewTabAsync(
+            $"https://rust360.com/{item.WorkshopFileId}"
+        );
+        /*
         Dialogs.Show<ViewItemModelDialog>(null, parameters: new DialogParameters()
         {
             ["ItemName"] = item.Name,
@@ -798,6 +802,7 @@ else
             ["DisableCutoutControls"] = item.HasCutout != true,
             ["DisableGlowControls"] = item.HasGlow != true
         });
+        */
     }
 
     private void ShowStoreListDialog(StoreIdentifierDTO[] stores)

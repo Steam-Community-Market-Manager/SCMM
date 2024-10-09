@@ -55,10 +55,10 @@
                                             <span class="no-wrap">Workshop</span>
                                         </MudButton>
 								    </MudTooltip>
-                                    <MudTooltip Text="View an interactive 3D render of this item">
-                                        <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl) || State.IsPrerendering">
-                                            <i class="fab fa-fw fa-unity mr-1"></i>
-                                            <span class="no-wrap">3D</span>
+                                    <MudTooltip Text="Click to view an interactive 3D render of this item on rust360.com">
+                                        <MudButton OnClick="@ViewItemInteractiveModel" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl) || State.IsPrerendering">
+                                            <i class="fas fa-fw fa-arrows-rotate mr-1"></i>
+                                            <span class="no-wrap">360</span>
                                         </MudButton>
 								    </MudTooltip>
                                     <MudTooltip Text="Download the workshop file for this item">
@@ -1376,8 +1376,12 @@
         ExternalNavigationManager.NavigateToAsync(Item.WorkshopFileUrl);
     }
 
-    private void ShowItemModelDialog()
+    private void ViewItemInteractiveModel()
     {
+        ExternalNavigationManager.NavigateToNewTabAsync(
+            $"https://rust360.com/{Item.WorkshopFileId}"
+        );
+        /*
         Dialogs.Show<ViewItemModelDialog>(null, parameters: new DialogParameters()
         {
             ["ItemName"] = Item.Name,
@@ -1386,6 +1390,7 @@
             ["DisableCutoutControls"] = Item.HasCutout != true,
             ["DisableGlowControls"] = Item.HasGlow != true
         });
+        */
     }
 
     private void ViewCreatorWorkshopPage()
